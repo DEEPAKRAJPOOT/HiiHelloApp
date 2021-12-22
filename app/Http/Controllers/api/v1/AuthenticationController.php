@@ -28,7 +28,7 @@ class AuthenticationController extends Controller
                     $attempt = ['email' => $request->email, 'password' => $request->password];
                     if( Auth::attempt($attempt) ){
                         $user = User::where('id',Auth::id())->firstOrFail();
-                            
+
                         return (new UserProfile($user))
                                 ->additional([
                                 'meta' => [
@@ -77,7 +77,7 @@ class AuthenticationController extends Controller
                 'meta' => [
                     'message'       =>  trans('api.registered'),
                     'auth_token'    =>  $user->createToken(config('utility.token'))->plainTextToken,
-                    ] ]);
+                ] ]);
         }
         $this->response['meta']['api']      =   $this->getVersion();
         $this->response['meta']['url']      =   url()->current();

@@ -67,6 +67,21 @@ class RoleTableSeeder extends Seeder
                 ],
                 [
                     'section_id'                =>  4,
+                    'title'                     =>  'Passion Management',
+                    'route'                     =>  'admin.passions.index',
+                    'params'                    =>  '',
+                    'icon'                      =>  'fas fa-drum',
+                    'image'                     =>  '',
+                    'icon_type'                 =>  'font-awesome',
+                    'allowed_permissions'       =>  'access,add,edit,delete',
+                    'sequence'                  =>  1,
+                    'is_display'                =>  'y',
+                    'is_active'                 =>  'y',
+                    'created_at'                => \Carbon\Carbon::now(),
+                    'updated_at'                => \Carbon\Carbon::now(),
+                ],
+                [
+                    'section_id'                =>  5,
                     'title'                     =>  'Countries',
                     'route'                     =>  'admin.countries.index',
                     'params'                    =>  '',
@@ -81,7 +96,7 @@ class RoleTableSeeder extends Seeder
                     'updated_at'                => \Carbon\Carbon::now(),
                 ],
                 [
-                    'section_id'                =>  5,
+                    'section_id'                =>  6,
                     'title'                     =>  'States',
                     'route'                     =>  'admin.states.index',
                     'params'                    =>  '',
@@ -96,7 +111,7 @@ class RoleTableSeeder extends Seeder
                     'updated_at'                => \Carbon\Carbon::now(),
                 ],
                 [
-                    'section_id'                =>  6,
+                    'section_id'                =>  7,
                     'title'                     =>  'Cities',
                     'route'                     =>  'admin.cities.index',
                     'params'                    =>  '',
@@ -111,7 +126,7 @@ class RoleTableSeeder extends Seeder
                     'updated_at'                => \Carbon\Carbon::now(),
                 ],
                 [
-                    'section_id'                =>  7,
+                    'section_id'                =>  8,
                     'title'                     =>  'CMS Pages',
                     'route'                     =>  'admin.pages.index',
                     'params'                    =>  '',
@@ -126,7 +141,7 @@ class RoleTableSeeder extends Seeder
                     'updated_at'                => \Carbon\Carbon::now(),
                 ],
                 [
-                    'section_id'                => 8,
+                    'section_id'                => 9,
                     'title'                     => 'Site Configuration',
                     'route'                     => 'admin.settings.index',
                     'params'                    => '',

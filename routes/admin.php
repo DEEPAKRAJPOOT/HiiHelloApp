@@ -29,6 +29,10 @@ Route::group(['namespace' => 'Admin', 'middleware' => ['check_permit','revalidat
 	Route::get('roles/listing', 'AdminController@listing')->name('roles.listing');
 	Route::resource('roles','AdminController');
 
+	/* Passions Management */
+	Route::get('passions/listing', 'PassionController@listing')->name('passions.listing');
+	Route::resource('passions','PassionController');
+
 	/* Country Management*/
 	Route::get('countries/listing', 'CountryController@listing')->name('countries.listing');
 	Route::resource('countries', 'CountryController');

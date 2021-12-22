@@ -30,5 +30,6 @@ class DatabaseSeeder extends Seeder
         $this->call(CitiesSeeder::class);
         $this->call(CmsPageSeeder::class);
         $this->call(SettingSeeder::class);
+        $this->call(LanguageSeeder::class);
     }
 }
