@@ -16,19 +16,27 @@ class CreateUsersTable extends Migration
         Schema::create('users', function (Blueprint $table) {
             $table->id();
             $table->string('custom_id')->nullable();
-            $table->string('first_name');
-            $table->string('last_name');
-            $table->string('email');//unique email added with deleted_at
+
+            $table->string('first_name')->nullable();
+            $table->string('last_name')->nullable();
+            $table->string('email')->nullable();
+
+            $table->string('country_code')->nullable();
             $table->string('contact_no')->nullable();
+
+            $table->date('birth_date')->nullable();
             $table->string('profile_photo')->nullable();
-            $table->string('password');
+
+            $table->enum('gender', ['Male', 'Female'])->nullable();
+            $table->enum('interest', ['Male', 'Female','Both'])->nullable();
+
+            $table->string('password')->nullable();
             $table->enum('is_active', ['y', 'n'])->default('y')->nullable();
             $table->timestamp('email_verified_at')->nullable();
+            
             $table->rememberToken();
             $table->timestamps();
             $table->softDeletes();
-
-            $table->unique(['email', 'deleted_at']);
         });
     }
 

@@ -33,7 +33,7 @@
                     <input type="text"class="form-control" 
                     id="{{ $language->getField($language->lang_code,'name') }}"
                     name="{{ $language->getField($language->lang_code,'name') }}"
-                    value="@if(old($language->getField($language->lang_code,'name'))){{ old($language->getField($language->lang_code,'name')) }} @else {{ $passion->getValue($language->lang_code,'name') }} @endif"
+                    value="@if(old($language->getField($language->lang_code,'name'))){{ old($language->getField($language->lang_code,'name')) }}@else{{ $passion->getValue($language->lang_code,'name') }}@endif"
                     placeholder="Enter {{ $language->hint }} name"
                     autocomplete="{{ $language->getField($language->lang_code,'name') }}"
                     spellcheck="false" autocapitalize="sentences" tabindex="0" autofocus />
@@ -51,7 +51,7 @@
                     id="{{ $language->getField($language->lang_code,'type') }}"
                     name="{{ $language->getField($language->lang_code,'type') }}"
                     
-                    value="@if(old($language->getField($language->lang_code,'type'))){{ old($language->getField($language->lang_code,'type')) }} @else {{ $passion->getValue($language->lang_code,'type') }} @endif"
+                    value="@if(old($language->getField($language->lang_code,'type'))){{ old($language->getField($language->lang_code,'type')) }}@else{{ $passion->getValue($language->lang_code,'type') }}@endif"
                     
                     placeholder="Enter {{ $language->hint }} type"
                     autocomplete="{{ $language->getField($language->lang_code,'type') }}"

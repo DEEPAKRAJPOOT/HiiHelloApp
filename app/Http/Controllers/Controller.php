@@ -164,10 +164,67 @@ class Controller extends BaseController
         return true;
     }
 
-     // Send JSON object as response
-    public function return_response()
+    // Send JSON object as response
+    public function returnResponse()
     {
+        $this->response['meta']['url'] = url()->current();
+        $this->response['meta']['api'] = request()->route()->controller->getVersion();
         $this->response['meta']['language'] = app()->getLocale();
         return response()->json($this->response, $this->status);
+    }
+
+    public function validateCheckSum($checksum, $contact)
+    {
+        $data = [
+            'validate'  =>  false,
+            'contact'   =>  $contact,
+            'message'   =>  "Unable to process request!"
+        ];
+        try {
+            $details = $this->decodeCheckSum($checksum)->details;
+            if( !empty($details) ) {
+                $details = json_decode($details);
+                if( !empty($details->contact_no) && !empty($details->time) ) {
+                    $requestTime = \Carbon\Carbon::parse($details->time);
+                    if( $contact == $details->contact_no && $requestTime->addMinutes(config('utility.checksum.timelimit')) >= \Carbon\Carbon::now() ) {
+                        $data = [
+                            'validate'  =>  true,
+                            'contact'   =>  $contact,
+                            'message'   =>  'Contact validated successfully!'
+                        ];
+                        return (object) $data;
+                    }
+                    throw new \App\Http\Controllers\Exceptions\InvalidCheckSum('485-412', $requestTime);
+                }
+                throw new \App\Http\Controllers\Exceptions\InvalidCheckSum('485-500');
+            }
+            throw new \App\Http\Controllers\Exceptions\InvalidCheckSum('485-404');
+            // Return FALSE
+        } catch (\App\Http\Controllers\Exceptions\InvalidCheckSum $exception) {
+            $data = [
+                'validate'  =>  false,
+                'contact'   =>  $contact,
+                'message'   =>  $exception->getMessage()
+            ];
+            return (object)$data;
+        }
+    }
+
+    public function decodeCheckSum($checksum)
+    {
+        $key = config('utility.checksum.key');
+        $algorithm = config('utility.checksum.algorithm');
+        $pData = json_decode(base64_decode($checksum));
+
+        $details = NULL;
+        if( !empty($pData) ) {
+            $details = openssl_decrypt(
+                $pData->value, $algorithm, $key,
+                0, base64_decode($pData->iv)
+            );
+        }
+        return (object) [
+            'details' => $details
+        ];
     }
 }

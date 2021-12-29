@@ -56,6 +56,8 @@ return [
     'not_registered' => 'You are not registered with us',
     'login' => 'You are succesfully login to your account',
     'registered' => 'You are succesfully registered with us',
+    'profile_setuped' => 'You profile details are saved succesfully',
+    'profile_setuped_fail' => 'Unable to update profile details',
     'logout' => 'You are succesfully logout',
     'push_token_added' => 'Push token added to our records',
 

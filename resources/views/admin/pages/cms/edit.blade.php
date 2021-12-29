@@ -1,6 +1,6 @@
 @extends('admin.layouts.app')
 @push('breadcrumb')
-    {!! Breadcrumbs::render('cms_update', $page->id) !!}
+    {!! Breadcrumbs::render('cms_update', $page->custom_id) !!}
 @endpush
 
 @section('content')
@@ -16,33 +16,49 @@
         </div>
 
         <!--begin::Form-->
-        <form id="frmEditcms" method="POST" action="{{ route('admin.pages.update', $page->id) }}" enctype="multipart/form-data">
+        <form id="frmEditcms" method="POST" action="{{ route('admin.pages.update', $page->custom_id) }}" enctype="multipart/form-data">
             @csrf
             @method('put')
-            <div class="card-body">
 
-                {{--  Name --}}
+            @forelse($languages as $language)
+            <div class="card-body">
+                <div class="card-title">
+                    <h3 class="card-label text-uppercase">{{ $language->hint }} ({{ $language->language }})</h3>
+                </div>
+
+                {{-- Name --}}
                 <div class="form-group">
-                    <label for="title">Title{!!$mend_sign!!}</label>
-                    <input type="text" class="form-control @error('title') is-invalid @enderror" id="title" name="title" value="{{ old('title') != null ? old('title') : $page->title }}" placeholder="Enter title" autocomplete="title" spellcheck="false" autocapitalize="sentences" tabindex="0" autofocus />
-                    @if ($errors->has('title'))
+                    <label for="{{ $language->getField($language->lang_code,'title') }}">@if($language->lang_code == $default_lang) {!!$mend_sign!!} @endif Name:</label>
+                    <input type="text"class="form-control" 
+                    id="{{ $language->getField($language->lang_code,'title') }}"
+                    name="{{ $language->getField($language->lang_code,'title') }}"
+                    value="@if(old($language->getField($language->lang_code,'title'))){{ old($language->getField($language->lang_code,'title')) }}@else{{ $page->getValue($language->lang_code,'title') }}@endif"
+                    placeholder="Enter {{ $language->hint }} title"
+                    autocomplete="{{ $language->getField($language->lang_code,'title') }}"
+                    spellcheck="false" autocapitalize="sentences" tabindex="0" autofocus />
+                    @if ($errors->has($language->getField($language->lang_code,'title')))
                         <span class="help-block">
-                            <strong class="form-text">{{ $errors->first('title') }}</strong>
+                            <strong class="form-text">{{ $errors->first($language->getField($language->lang_code,'title')) }}</strong>
                         </span>
                     @endif
                 </div>
 
                 {{-- Description --}}
                 <div class="form-group">
-                    <label for="description">Description{!!$mend_sign!!}</label>
-                    <textarea class="form-control @error('description') is-invalid @enderror" id="description" name="description" placeholder="Enter description" autocomplete="description" spellcheck="true">{{ old('description') != null ? old('description') : $page->description }}</textarea>
-                    @if ($errors->has('description'))
-                        <span class="text-danger">
-                            <strong class="form-text">{{ $errors->first('description') }}</strong>
+                    <label for="{{ $language->getField($language->lang_code,'description') }}">@if($language->lang_code == $default_lang) {!!$mend_sign!!} @endif Description:</label>
+                    
+                    <textarea class="form-control description @error($language->getField($language->lang_code,'description')) is-invalid @enderror" id="{{ $language->getField($language->lang_code,'description') }}" name="{{ $language->getField($language->lang_code,'description') }}" placeholder="Enter {{ $language->hint }} description" autocomplete="{{ $language->getField($language->lang_code,'description') }}" spellcheck="true">@if(old($language->getField($language->lang_code,'description'))){{ old($language->getField($language->lang_code,'description')) }}@else{{ $page->getValue($language->lang_code,'description') }}@endif</textarea>
+
+                    @if ($errors->has($language->getField($language->lang_code,'description')))
+                        <span class="help-block">
+                            <strong class="form-text">{{ $errors->first($language->getField($language->lang_code,'description')) }}</strong>
                         </span>
                     @endif
                 </div>
+            </div>
+            @endforeach
 
+            <div class="card-body">
                 {{-- Image --}}
                 <div class="form-group">
                     <label for="image">Image</label>
@@ -56,7 +72,6 @@
                         @endif
                     </div>
                 </div>
-
             </div>
             <div class="card-footer">
                 <button type="submit" class="btn btn-primary mr-2">Update {{ $custom_title }}</button>
@@ -76,7 +91,8 @@
 <script src="{{ asset('admin/plugins/summernote/summernotecustom.js') }}"></script>
 <script>
 $(document).ready(function () {
-    var summernoteElement = $('#description');
+    // var summernoteElement = $('#description');
+    var summernoteElement = $('.description');
     var imagePath = 'summernote/cms/image';
     summernoteElement.summernote({
             height: 300,
@@ -93,24 +109,23 @@ $(document).ready(function () {
     });
     $("#frmEditcms").validate({
         rules: {
-            title: {
+            '{{ $default_lang }}_title': {
                 required: true,
                 not_empty: true,
                 minlength: 3,
-                remote: {
-                    url: "{{ route('admin.check.title') }}",
-                    type: "post",
-                    data: {
-                        _token: "{{csrf_token()}}",
-                        id: "{{$page->id}}",
-                        type: "cms",
-                    }
-                },
+                // remote: {
+                //     url: "{{ route('admin.check.title') }}",
+                //     type: "post",
+                //     data: {
+                //         _token: "{{csrf_token()}}",
+                //         id: "{{$page->id}}",
+                //         type: "cms",
+                //     }
+                // },
             },
-            url: {
+            '{{ $default_lang }}_description': {
                 required: true,
                 not_empty: true,
-                isurl:true,
             },
             image:{
                 required:false,
@@ -118,15 +133,15 @@ $(document).ready(function () {
             },
         },
         messages: {
-            title: {
+            '{{ $default_lang }}_title': {
                 required: "@lang('validation.required',['attribute'=>'title'])",
                 not_empty: "@lang('validation.not_empty',['attribute'=>'title'])",
                 minlength:"@lang('validation.min.string',['attribute'=>'title','min'=>3])",
-                remote:"@lang('validation.unique',['attribute'=>'title'])",
+                // remote:"@lang('validation.unique',['attribute'=>'title'])",
             },
-            url: {
-                required: "@lang('validation.required',['attribute'=>'url'])",
-                not_empty: "@lang('validation.not_empty',['attribute'=>'url'])",
+            '{{ $default_lang }}_description': {
+                required: "@lang('validation.required',['attribute'=>'description'])",
+                not_empty: "@lang('validation.not_empty',['attribute'=>'description'])",
             },
             image: {
                 required: "@lang('validation.required',['attribute'=>'image'])",

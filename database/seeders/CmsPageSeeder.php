@@ -16,43 +16,37 @@ class CmsPageSeeder extends Seeder
      */
     public function run()
     {
+        Schema::disableForeignKeyConstraints();
         CmsPage::truncate();
+        Schema::enableForeignKeyConstraints();
+
         $pages = [
             [
-                'edited_by' => 1,
-                'title' => 'Home',
-                'slug' => 'home',
-                'description' => '<p>home</p>',
-                'file' => null,
-                'created_at' => \Carbon\Carbon::now(),
-                'updated_at' => \Carbon\Carbon::now(),
+                'custom_id'     => getUniqueString('cms_pages'),
+                'slug'          => 'about-us',
+                'edited_by'     => 1,
+                'hint'          => 'About Us',
+                'file'          => null,
+                'created_at'    => \Carbon\Carbon::now(),
+                'updated_at'    => \Carbon\Carbon::now(),
             ],
             [
-                'edited_by' => 1,
-                'title' => 'About Us',
-                'slug' => 'about-us',
-                'description' => '<p>&nbsp; &nbsp; &nbsp;About Us</p>',
-                'file' => null,
-                'created_at' => \Carbon\Carbon::now(),
-                'updated_at' => \Carbon\Carbon::now(),
+                'custom_id'     => getUniqueString('cms_pages'),
+                'slug'          => 'terms-and-conditions',
+                'edited_by'     => 1,
+                'hint'          => 'Terms and Conditions',
+                'file'          => null,
+                'created_at'    => \Carbon\Carbon::now(),
+                'updated_at'    => \Carbon\Carbon::now(),
             ],
             [
-                'edited_by' => 1,
-                'title' => 'Terms and Conditions',
-                'slug' => 'terms-and-conditions',
-                'description' => '<p>&nbsp; &nbsp; &nbsp;Terms and Conditions</p>',
-                'file' => null,
-                'created_at' => \Carbon\Carbon::now(),
-                'updated_at' => \Carbon\Carbon::now(),
-            ],
-            [
-                'edited_by' => 1,
-                'title' => 'Privacy',
-                'slug' => 'privacy',
-                'description' => '<p>&nbsp; &nbsp; &nbsp;Privacy</p>',
-                'file' => null,
-                'created_at' => \Carbon\Carbon::now(),
-                'updated_at' => \Carbon\Carbon::now(),
+                'custom_id'     => getUniqueString('cms_pages'),
+                'slug'          => 'privacy',
+                'edited_by'     => 1,
+                'hint'          => 'Privacy',
+                'file'          => null,
+                'created_at'    => \Carbon\Carbon::now(),
+                'updated_at'    => \Carbon\Carbon::now(),
             ],
         ];
         DB::table('cms_pages')->insert($pages);
