@@ -81,6 +81,7 @@ class AuthenticationController extends Controller
                 'birth_date'        =>  $request->birth_date ?? NULL,
                 'gender'            =>  $request->gender ?? NULL,
                 'interest'          =>  $request->interest ?? NULL,
+                'password'          =>  Hash::make(config('utility.default_password'));
             ]);
 
             if( !empty($request->profile_photo) ) {

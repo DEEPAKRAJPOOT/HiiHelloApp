@@ -130,13 +130,12 @@ class CmsPagesController extends Controller
                 'checked' => ($cms_page->is_active == 'y' ? 'checked' : ''),
                 'getaction' => $cms_page->display_upload,
                 'class' => '',
-                'id' => $cms_page->id,
+                'id' => $cms_page->custom_id,
             ];
 
             $records['data'][] = [
                 'id' => $cms_page->id,
                 'title' =>  $cms_page->getDefaultValue('title'),
-                'description' =>  $cms_page->getDefaultValue('description'),
                 'active' => view('admin.layouts.includes.switch', compact('params'))->render(),
                 'action' => view('admin.layouts.includes.actions')->with(['custom_title' => 'User', 'id' => $cms_page->custom_id], $cms_page)->render(),
                 'checkbox' => view('admin.layouts.includes.checkbox')->with('id', $cms_page->custom_id)->render(),

@@ -56,14 +56,13 @@
             ajax: {
                 url: "{{ route('admin.pages.listing') }}",
                 data: {
-                    columnsDef: ['checkbox','title', 'description', 'active', 'action'],
+                    columnsDef: ['checkbox','title', 'active', 'action'],
                 },
             },
             columns: [
                 { data: 'checkbox' },
                 { data: 'id' },
                 { data: 'title' },
-                { data: 'description' },
                 { data: 'action', responsivePriority: -1 },
             ],
             columnDefs: [
@@ -71,7 +70,6 @@
                 { targets: 0, title: "<center><input type='checkbox' class='all_select'></center>", orderable: false },
                 { targets: 1, title: 'Id', orderable: true },
                 { targets: 2, title: 'Title', orderable: false },
-                { targets: 3, title: 'Description', orderable: false },
                 // Action buttons
                 { targets: -1, title: 'Action',
                 orderable: false },
