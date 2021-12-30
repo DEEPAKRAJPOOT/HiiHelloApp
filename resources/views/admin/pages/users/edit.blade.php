@@ -197,7 +197,7 @@ $(document).ready(function () {
                 minlength: 2,
             },
             email: {
-                required: true,
+                required: false,
                 maxlength: 150,
                 email: true,
                 valid_email: true,
