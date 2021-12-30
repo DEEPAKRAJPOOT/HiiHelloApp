@@ -65,7 +65,7 @@ class SectionsTableSeeder extends Seeder
                     'image'         =>  '',
                     'icon_type'     =>  'font-awesome',
                     'sequence'      =>  5,
-                    'is_active'     => 'n',
+                    'is_active'     => 'y',
                     'created_at'    => \Carbon\Carbon::now(),
                     'updated_at'    => \Carbon\Carbon::now(),
                 ],

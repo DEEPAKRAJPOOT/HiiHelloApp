@@ -26,6 +26,7 @@ class UserProfile extends JsonResource
             'birth_date'        =>  $this->birth_date ?? "",
             'gender'            =>  $this->gender ?? "",
             'interest'          =>  $this->interest ?? "",
+            'country'           =>  new CountryResource($this->country),
             'profile_photo'     =>  generateURL($this->profile_photo) ?? "",
             'flags'             =>  [
                 'profile_setuped'     =>  $this->isProfileSetuped(),

@@ -21,10 +21,11 @@ class User extends Authenticatable
     public function getRouteKeyName(){ return 'custom_id'; }
 
     protected $fillable = [
-        'custom_id', 'first_name', 'last_name', 'email', 'country_code', 'contact_no', 'birth_date', 'gender', 'interest', 'profile_photo', 'password',
+        'custom_id', 'first_name', 'last_name', 'email', 'country_code', 'contact_no', 'birth_date', 'gender', 'interest', 'country_id', 'profile_photo', 'password',
     ];
 
     public function userDetails(){ return $this->hasMany('App\Models\UserDetail'); }
+    public function country(){ return $this->belongsTo('App\Models\Country'); }
 
     public function setBirthDateAttribute($birth_date){
         $this->attributes['birth_date'] = \Carbon\Carbon::createFromFormat('m/d/Y', $birth_date);

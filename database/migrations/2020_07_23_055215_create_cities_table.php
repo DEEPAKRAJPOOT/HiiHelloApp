@@ -16,7 +16,7 @@ class CreateCitiesTable extends Migration
     {
         Schema::create('cities', function (Blueprint $table) {
             $table->id()->index();
-            $table->string('name');
+            $table->string('name')->nullable();
             $table->unsignedBigInteger('state_id');
             $table->enum('is_active', ['y', 'n'])->default('y')->nullable();
             $table->timestamp('created_at')->default(DB::raw('CURRENT_TIMESTAMP'));

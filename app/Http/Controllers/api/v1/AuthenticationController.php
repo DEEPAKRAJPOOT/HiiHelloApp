@@ -55,10 +55,15 @@ class AuthenticationController extends Controller
 
     public function setProfile(Request $request)
     {
+        $phone_codes = Country::whereIsActive('y')->pluck('phonecode')->toArray();
+        $country_ids = Country::whereIsActive('y')->pluck('custom_id')->toArray();
+        
         $rules = [
             'first_name'        =>  'required|min:2|max:100',
             'last_name'         =>  'required|min:2|max:100',
-            'country_code'      =>  'required|exists:countries,phonecode',
+            'email'             =>  'nullable|email|max:150',
+            'country_code'      =>  'required|in:'.implode(',', $phone_codes),
+            'country'           =>  'nullable|in:'.implode(',', $country_ids),
             'contact_no'        =>  'required|digits_between:6,16',
             'birth_date'        =>  'required|date|before:tomorrow',
             'gender'            =>  'required|in:'.implode(',', ['Male','Female']),
@@ -71,6 +76,12 @@ class AuthenticationController extends Controller
         ];
 
         if( $this->apiValidator($request->all(), $rules) ) {
+            $country_id = NULL;
+            if($request->has('country')){
+                $country = Country::whereIsActive('y')->where('custom_id',$request->country)->first();
+                if($country){ $country_id = $country->id; }
+            }
+
             $user = User::updateOrCreate([
                 'country_code'      =>  $request->country_code ?? NULL,
                 'contact_no'        =>  $request->contact_no ?? NULL,
@@ -78,10 +89,12 @@ class AuthenticationController extends Controller
                 'custom_id'         =>  getUniqueString('users'),
                 'first_name'        =>  $request->first_name ?? NULL,
                 'last_name'         =>  $request->last_name ?? NULL,
+                'email'             =>  $request->email ?? NULL,
                 'birth_date'        =>  $request->birth_date ?? NULL,
                 'gender'            =>  $request->gender ?? NULL,
                 'interest'          =>  $request->interest ?? NULL,
-                'password'          =>  Hash::make(config('utility.default_password'));
+                'country_id'        =>  $country_id ?? NULL,
+                'password'          =>  Hash::make(config('utility.default_password')),
             ]);
 
             if( !empty($request->profile_photo) ) {

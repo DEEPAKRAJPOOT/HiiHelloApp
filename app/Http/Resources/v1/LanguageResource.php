@@ -2,9 +2,9 @@
 
 namespace App\Http\Resources\v1;
 
-use Illuminate\Http\Resources\Json\ResourceCollection;
+use Illuminate\Http\Resources\Json\JsonResource;
 
-class LanguageCollection extends ResourceCollection
+class LanguageResource extends JsonResource
 {
     /**
      * Transform the resource collection into an array.
@@ -14,16 +14,13 @@ class LanguageCollection extends ResourceCollection
      */
     public function toArray($request)
     {
-        $data = [];
-        foreach ($this as $key => $value) {
-            $data[] = [
-                'id'                =>  $value->custom_id ?? "",
-                'language'          =>  $value->language ?? "",
-                'lang_code'         =>  $value->lang_code ?? "",
-                'hint'              =>  $value->hint ?? "",
-            ];
-        }
-        return $data;
+        return [
+            'id'            =>  $this->custom_id ?? "",
+            'language'      =>  $this->language ?? "",
+            'lang_code'     =>  $this->lang_code ?? "",
+            'hint'          =>  $this->hint ?? "",
+        ];
+        return parent::toArray($request);
     }
 
     public function with($request)
