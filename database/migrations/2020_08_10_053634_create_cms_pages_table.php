@@ -15,15 +15,15 @@ class CreateCmsPagesTable extends Migration
     {
         Schema::create('cms_pages', function (Blueprint $table) {
             $table->id();
-            $table->integer('edited_by')->unsigned()->nullable();
-            $table->string('title')->nullable();
+            $table->string('custom_id')->nullable();
             $table->string('slug')->nullable();
-            $table->text('description')->nullable();
+            $table->integer('edited_by')->unsigned()->nullable();
+            $table->string('hint')->nullable();
             $table->string('file')->nullable();
             $table->enum('display_upload', ['y', 'n'])->default('y')->nullable();
             $table->timestamps();
 
-            $table->foreign('edited_by')->references('id')->on('admins')->onUpdate('cascade')->onDelete('SET NULL');
+            $table->foreign('edited_by')->references('id')->on('admins')->onUpdate('cascade')->onDelete('cascade');
         });
     }
 

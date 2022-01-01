@@ -7,6 +7,7 @@ use Illuminate\Foundation\Bus\DispatchesJobs;
 use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Routing\Controller as BaseController;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Http\Response;
 
 class Controller extends BaseController
 {
@@ -21,6 +22,17 @@ class Controller extends BaseController
                     'message'   =>  "",
                 ],
             ];
+
+    // protected $response = array('data' => null, 'message' => '');
+    // protected $status = 422;
+    // protected $statusArr = [
+    //     'success' => 200,
+    //     'not_found' => 404,
+    //     'unauthorised' => 412,
+    //     'already_exist' => 409,
+    //     'validation' => 422,
+    //     'something_wrong' => 405,
+    // ];
 
     public $status = 412;
     public $statusArr = [
@@ -60,6 +72,59 @@ class Controller extends BaseController
         Validator::make($fields, $rules)->validate();
     }
 
+    public function getLangCodeFromField($field){
+        $lang_code = 'en';
+        if (str_contains($field, '_')) { 
+            $position = strpos($field, '_');
+            $lang_code = substr($field,0,$position);
+        }
+        return $lang_code;
+    }
+
+    public function getColumnNameFromField($field){
+        $column = '';
+        if (str_contains($field, '_')) { 
+            $position = strpos($field, '_') + 1;
+            $column = substr($field,$position);
+        }
+        return $column;
+    }
+
+    public function getLangStoreData($request){
+        $actual_data = $data = $lang_codes = $columns = [];
+        foreach($request->all() as $key => $req_data){
+            if($req_data){
+                $lang_code = $this->getLangCodeFromField($key);
+                if($lang_code){
+                    if(!in_array($lang_code,$lang_codes)){
+                        array_push($lang_codes, $lang_code);
+                    }
+                    $column = $this->getColumnNameFromField($key);
+                    if($column){
+                        if(!in_array($column,$columns)){
+                            array_push($columns, $column);
+                        }
+                        $data[$lang_code][$column] = $req_data; 
+                    }
+                }
+            }
+        }
+        if(count($data) > 0){
+            foreach($lang_codes as $lang_code){
+                foreach($columns as $column){
+                    if(array_key_exists($lang_code,$data)){
+                        if(array_key_exists($column,$data[$lang_code])){
+                            $actual_data[$lang_code][$column] = $data[$lang_code][$column];
+                        }else{
+                            $actual_data[$lang_code][$column] = null;
+                        }
+                    }
+                }
+            }
+        }
+        return $actual_data;
+    }
+
     public function DTFilters($request)
     {
         $filters = array(
@@ -73,16 +138,16 @@ class Controller extends BaseController
         return $filters;
     }
 
-     // APIs Validations
+    // APIs Validations
     public function apiValidator($fields, $rules, $version = "v.0.0", $message = array())
     {
         $validator = Validator::make($fields, $rules, $message);
-        if ($validator->fails()) {
+        if($validator->fails()){
             $errors = $validator->errors();
             $r_message  = '';
-            $i = 1;
-            foreach ($errors->messages() as $key => $message) {
-                if ($i == 1) {
+            $i=1;
+            foreach($errors->messages() as $key => $message){
+                if($i==1){
                     $r_message = $message[0];
                 } else {
                     break;
@@ -100,9 +165,66 @@ class Controller extends BaseController
     }
 
     // Send JSON object as response
-    public function return_response()
+    public function returnResponse()
     {
+        $this->response['meta']['url'] = url()->current();
+        $this->response['meta']['api'] = request()->route()->controller->getVersion();
         $this->response['meta']['language'] = app()->getLocale();
         return response()->json($this->response, $this->status);
+    }
+
+    public function validateCheckSum($checksum, $contact)
+    {
+        $data = [
+            'validate'  =>  false,
+            'contact'   =>  $contact,
+            'message'   =>  "Unable to process request!"
+        ];
+        try {
+            $details = $this->decodeCheckSum($checksum)->details;
+            if( !empty($details) ) {
+                $details = json_decode($details);
+                if( !empty($details->contact_no) && !empty($details->time) ) {
+                    $requestTime = \Carbon\Carbon::parse($details->time);
+                    if( $contact == $details->contact_no && $requestTime->addMinutes(config('utility.checksum.timelimit')) >= \Carbon\Carbon::now() ) {
+                        $data = [
+                            'validate'  =>  true,
+                            'contact'   =>  $contact,
+                            'message'   =>  'Contact validated successfully!'
+                        ];
+                        return (object) $data;
+                    }
+                    throw new \App\Http\Controllers\Exceptions\InvalidCheckSum('485-412', $requestTime);
+                }
+                throw new \App\Http\Controllers\Exceptions\InvalidCheckSum('485-500');
+            }
+            throw new \App\Http\Controllers\Exceptions\InvalidCheckSum('485-404');
+            // Return FALSE
+        } catch (\App\Http\Controllers\Exceptions\InvalidCheckSum $exception) {
+            $data = [
+                'validate'  =>  false,
+                'contact'   =>  $contact,
+                'message'   =>  $exception->getMessage()
+            ];
+            return (object)$data;
+        }
+    }
+
+    public function decodeCheckSum($checksum)
+    {
+        $key = config('utility.checksum.key');
+        $algorithm = config('utility.checksum.algorithm');
+        $pData = json_decode(base64_decode($checksum));
+
+        $details = NULL;
+        if( !empty($pData) ) {
+            $details = openssl_decrypt(
+                $pData->value, $algorithm, $key,
+                0, base64_decode($pData->iv)
+            );
+        }
+        return (object) [
+            'details' => $details
+        ];
     }
 }

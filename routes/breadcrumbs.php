@@ -54,6 +54,25 @@ Breadcrumbs::register('dashboard', function ($breadcrumbs) {
 		$breadcrumbs->push(__('Edit Role'), route('admin.roles.edit', $id));
 	});
 
+
+// Passion Management -------------------------------------------------------------------------------------------------------------------------------------------------------
+	Breadcrumbs::register('passions_list', function($breadcrumbs)
+	{
+		$breadcrumbs->parent('dashboard');
+	    $breadcrumbs->push('Passions', route(Auth::getDefaultDriver().'.passions.index'));
+	});
+	Breadcrumbs::register('passions_create', function($breadcrumbs)
+	{
+		$breadcrumbs->parent('passions_list');
+	    $breadcrumbs->push('Add New Passion', route(Auth::getDefaultDriver().'.passions.create'));
+	});
+	Breadcrumbs::register('passions_update', function ($breadcrumbs, $id)
+	{
+		$breadcrumbs->parent('passions_list');
+		$breadcrumbs->push(__('Edit Passion'), route('admin.passions.edit', $id));
+	});
+
+
 	// countries -------------------------------------------------------------------------------------------------------------------------------------------------------
 	Breadcrumbs::register('countries_list', function($breadcrumbs)
 	{

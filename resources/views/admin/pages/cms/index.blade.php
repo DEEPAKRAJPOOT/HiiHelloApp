@@ -45,11 +45,10 @@
 
 @push('extra-js-scripts')
 <script src="{{ asset('assets/plugins/custom/datatables/datatables.bundle.js') }}"></script>
-<script type="text/javascript">
-    $(function(){
-        var table = $('#pages_DT');
-
-        oTable = table.DataTable({
+<script>
+    $(document).ready(function () {
+        // datatable
+        oTable = $('#pages_DT').DataTable({
             responsive: true,
             searchDelay: 500,
             processing: true,
@@ -57,48 +56,23 @@
             ajax: {
                 url: "{{ route('admin.pages.listing') }}",
                 data: {
-                    columnsDef: ['','title','description','action'],
+                    columnsDef: ['checkbox','title', 'active', 'action'],
                 },
             },
             columns: [
-                {
-                    data: 'checkbox'
-                },
-                {
-                    data: 'title'
-                },
-                {
-                    data: 'description'
-                },
-                {
-                    data: 'action',
-                    responsivePriority: -1
-                },
+                { data: 'checkbox' },
+                { data: 'id' },
+                { data: 'title' },
+                { data: 'action', responsivePriority: -1 },
             ],
             columnDefs: [
                 // Specify columns titles here...
-                {
-                    targets: 0,
-                    title: "<center><input type='checkbox' class='all_select'></center>",
-                    orderable: false,
-                    visible: false
-                },
-                {
-                    targets: 1,
-                    title: 'Page',
-                    orderable: true
-                },
-                {
-                    targets: 2,
-                    title: 'Description',
-                    orderable: false,
-                    class: 'none'
-                },
-                {
-                    targets: -1,
-                    title: 'Action',
-                    orderable: false
-                },
+                { targets: 0, title: "<center><input type='checkbox' class='all_select'></center>", orderable: false },
+                { targets: 1, title: 'Id', orderable: true },
+                { targets: 2, title: 'Title', orderable: false },
+                // Action buttons
+                { targets: -1, title: 'Action',
+                orderable: false },
             ],
             order: [
                 [1, 'asc']
@@ -109,9 +83,6 @@
             ],
             pageLength: 10,
         });
-
-
-
     });
 </script>
 @endpush

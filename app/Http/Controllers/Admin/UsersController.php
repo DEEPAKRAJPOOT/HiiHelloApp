@@ -42,8 +42,11 @@ class UsersController extends Controller
      */
     public function store(UserRequest $request)
     {
+        if(!empty($request->birth_date)){
+            $request['birth_date'] = date('m/d/y', strtotime( $request->birth_date));
+        }
         $request['custom_id']   =   getUniqueString('users');
-        $request['password']    =   Hash::make(str_random(config('utility.default_password')));
+        $request['password']    =   Hash::make(config('utility.default_password'));
         $path = NULL;
         if( $request->has('profile_photo') ) {
             $path = $request->file('profile_photo')->store('users/profile_photo');
@@ -87,7 +90,7 @@ class UsersController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(UserRequest $request, User $user)
+    public function update(Request $request, User $user)
     {
         try{
             DB::beginTransaction();
@@ -103,6 +106,12 @@ class UsersController extends Controller
                 }
                 return response()->json($content);
             } else {
+                if($request->birth_date){
+                    $request['birth_date'] = \Carbon\Carbon::parse($request->birth_date)->format('m/d/y');
+                }else{
+                    $request['birth_date'] = \Carbon\Carbon::parse($user->birth_date)->format('m/d/y');
+                }
+
                 $path = $user->profile_photo;
                 //request has remove_profie_photo then delete user image
                 if( $request->has('remove_profie_photo') ){
@@ -145,32 +154,32 @@ class UsersController extends Controller
     public function destroy(Request $request, $id)
     {
         if(!empty($request->action) && $request->action == 'delete_all'){
-        $content = ['status'=>204, 'message'=>"something went wrong"];
+            $content = ['status'=>204, 'message'=>"something went wrong"];
 
-        $users_profile_photos = User::whereIn('custom_id', explode(',', $request->ids))->pluck('profile_photo')->toArray();
-        foreach ($users_profile_photos as $image) {
-            if(!empty($image)){
-              Storage::delete($image);
+            $users_profile_photos = User::whereIn('custom_id', explode(',', $request->ids))->pluck('profile_photo')->toArray();
+            foreach ($users_profile_photos as $image) {
+                if(!empty($image)){
+                  Storage::delete($image);
+                }
             }
-        }
-        User::whereIn('custom_id',explode(',',$request->ids))->delete();
-        $content['status']=200;
-        $content['message'] = "User deleted successfully.";
-        $content['count'] = User::all()->count();
-        return response()->json($content);
+            User::whereIn('custom_id',explode(',',$request->ids))->delete();
+            $content['status']=200;
+            $content['message'] = "User deleted successfully.";
+            $content['count'] = User::all()->count();
+            return response()->json($content);
         }else{
-        $user = User::where('custom_id', $id)->firstOrFail();
-        if( $user->profile_photo ){
-        Storage::delete($user->profile_photo);
-        }
-        $user->delete();
-        if(request()->ajax()){
-        $content = array('status'=>200, 'message'=>"User deleted successfully.", 'count' => User::all()->count());
-        return response()->json($content);
-        }else{
-        flash('User deleted successfully.')->success();
-        return redirect()->route('admin.users.index');
-        }
+            $user = User::where('custom_id', $id)->firstOrFail();
+            if( $user->profile_photo ){
+                Storage::delete($user->profile_photo);
+            }
+            $user->delete();
+            if(request()->ajax()){
+                $content = array('status'=>200, 'message'=>"User deleted successfully.", 'count' => User::all()->count());
+                return response()->json($content);
+            }else{
+                flash('User deleted successfully.')->success();
+                return redirect()->route('admin.users.index');
+            }
         }
     }
 
@@ -184,7 +193,10 @@ class UsersController extends Controller
             $users->where(function ($query) use ($search) {
                 $query->where('first_name', 'like', "%{$search}%")
                     ->orWhere('last_name', 'like', "%{$search}%")
+                    ->orWhere('country_code', 'like', "%{$search}%")
                     ->orWhere('contact_no', 'like', "%{$search}%")
+                    ->orWhere('gender', 'like', "%{$search}%")
+                    ->orWhere('interest', 'like', "%{$search}%")
                     ->orWhere('email', 'like', "%{$search}%");
             });
         }
@@ -211,8 +223,9 @@ class UsersController extends Controller
                 'id' => $user->id,
                 'first_name' => $user->first_name,
                 'last_name' => $user->last_name,
-                'email' => '<a href="mailto:' . $user->email . '" >' . $user->email . '</a>',
+                'country_code' => $user->country_code,
                 'contact_no' => $user->contact_no ? '<a href="tel:' . $user->contact_no . '" >' . $user->contact_no . '</a>' : 'N/A',
+                'gender' => $user->gender,
                 'active' => view('admin.layouts.includes.switch', compact('params'))->render(),
                 'action' => view('admin.layouts.includes.actions')->with(['custom_title' => 'User', 'id' => $user->custom_id], $user)->render(),
                 'checkbox' => view('admin.layouts.includes.checkbox')->with('id', $user->custom_id)->render(),
@@ -236,9 +249,12 @@ class UsersController extends Controller
 
         if ($search != '') {
             $users->where(function ($query) use ($search) {
-                $query->where('first_name', 'like', "%{$search}%")
+                $querywhere('first_name', 'like', "%{$search}%")
                     ->orWhere('last_name', 'like', "%{$search}%")
+                    ->orWhere('country_code', 'like', "%{$search}%")
                     ->orWhere('contact_no', 'like', "%{$search}%")
+                    ->orWhere('gender', 'like', "%{$search}%")
+                    ->orWhere('interest', 'like', "%{$search}%")
                     ->orWhere('email', 'like', "%{$search}%");
             });
         }
@@ -265,8 +281,9 @@ class UsersController extends Controller
             $records['data'][] = [
                 'first_name' => $user->first_name,
                 'last_name' => $user->last_name,
-                'email' => '<a href="mailto:' . $user->email . '" >' . $user->email . '</a>',
+                'country_code' => $user->country_code,
                 'contact_no' => $user->contact_no ? '<a href="tel:' . $user->contact_no . '" >' . $user->contact_no . '</a>' : 'N/A',
+                'gender' => $user->gender,
                 'active' => view('admin.layouts.includes.switch', compact('params'))->render(),
                 'display' => view('admin.layouts.includes.switchDisplay', compact('params'))->render(),
                 'action' => view('admin.layouts.includes.actions')->with(['custom_title' => 'User', 'id' => $user->id], $user)->render(),

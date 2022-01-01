@@ -3,7 +3,9 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\CmsPageRequest;
 use App\Models\CmsPage;
+use App\Models\Language;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -53,7 +55,8 @@ class CmsPagesController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function edit(CmsPage $page) {
-        return view('admin.pages.cms.edit', ['page' => $page])->with(['custom_title' => 'Page']);
+        $languages = Language::whereIsActive('y')->get();
+        return view('admin.pages.cms.edit', ['page' => $page, 'languages' => $languages])->with(['custom_title' => 'Page','default_lang' => config('utility.default_lang_code')]);
     }
 
     /**
@@ -63,23 +66,19 @@ class CmsPagesController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, CmsPage $page) {
-        $request->validate([
-            'title' => 'required',
-            'image' => 'nullable|mimes:jpeg,jpg,png',
-            'description' => 'required',
-        ]);
-        $request['edited_by'] = Auth::id();
+    public function update(CmsPageRequest $request, CmsPage $page) {
+        $data = $this->getLangStoreData($request);
+
+        $data['edited_by'] = Auth::id();
         if ($request->has('image')) {
             if ($page->file) {
                 Storage::delete($page->file);
             }
-
             $path = $request->file('image')->store('general/files');
             $page->file = $path;
         }
 
-        $page->fill($request->all());
+        $page->update($data);
         if ($page->save()) {
             flash(trans('flash_message.update', ['entity' => 'Page details']))->success();
         } else {
@@ -104,43 +103,44 @@ class CmsPagesController extends Controller
     {
         extract($this->DTFilters($request->all()));
         $records = [];
-        $users = CmsPage::orderBy($sort_column, $sort_order);
+        $cms_pages = CmsPage::with('cmsPageTranslations')->orderBy($sort_column, $sort_order);
 
         if ($search != '') {
-            $users->where(function ($query) use ($search) {
-                $query->where('title', 'like', "%{$search}%")
-                ->orWhere('description','like', "%{$search}%");
-               });
+            $cms_pages->where(function ($query) use ($search) {
+                $query->where('custom_id', 'like', "%{$search}%")
+                    ->orWhereHas('cmsPageTranslations', function ($query) use ($search) {
+                        $query->where('title', 'like', "%{$search}%")
+                             ->orWhere('description', 'like', "%{$search}%");
+                });
+            });
         }
 
-        $count = $users->count();
+        $count = $cms_pages->count();
 
         $records['recordsTotal'] = $count;
         $records['recordsFiltered'] = $count;
         $records['data'] = [];
 
-        $users = $users->offset($offset)->limit($limit)->orderBy($sort_column, $sort_order);
+        $cms_pages = $cms_pages->offset($offset)->limit($limit)->orderBy($sort_column, $sort_order);
+        $cms_pages = $cms_pages->get();
 
-        $users = $users->get();
-        foreach ($users as $user) {
+        foreach ($cms_pages as $cms_page) {
 
             $params = [
-                'checked' => ($user->is_active == 'y' ? 'checked' : ''),
-                'getaction' => $user->display_upload,
+                'checked' => ($cms_page->is_active == 'y' ? 'checked' : ''),
+                'getaction' => $cms_page->display_upload,
                 'class' => '',
-                'id' => $user->id,
+                'id' => $cms_page->custom_id,
             ];
 
             $records['data'][] = [
-                'id' => $user->id,
-                'title' => $user->title,
-                'description' => $user->description,
+                'id' => $cms_page->id,
+                'title' =>  $cms_page->getDefaultValue('title'),
                 'active' => view('admin.layouts.includes.switch', compact('params'))->render(),
-                'action' => view('admin.layouts.includes.actions')->with(['custom_title' => 'User', 'id' => $user->id], $user)->render(),
-                'checkbox' => view('admin.layouts.includes.checkbox')->with('id', $user->id)->render(),
+                'action' => view('admin.layouts.includes.actions')->with(['custom_title' => 'User', 'id' => $cms_page->custom_id], $cms_page)->render(),
+                'checkbox' => view('admin.layouts.includes.checkbox')->with('id', $cms_page->custom_id)->render(),
             ];
         }
-        // dd($records);
         return $records;
     }
 }

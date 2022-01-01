@@ -23,6 +23,11 @@ Route::get('login', 'AdminAuth\LoginController@showLoginForm')->name('login');
 
 Route::get('/home', 'HomeController@index')->name('home');
 
+/* CMS Pages */
+  Route::get('about-us', 'FrontendPagesController@about')->name('about.us');
+  Route::get('terms-and-conditions', 'FrontendPagesController@terms')->name('terms');
+  Route::get('privacy-policy', 'FrontendPagesController@privacy')->name('privacy.policy');
+    
 Route::group(['prefix' => 'admin'], function () {
   Route::get('login', 'AdminAuth\LoginController@showLoginForm')->name('admin.login');
   Route::post('login', 'AdminAuth\LoginController@login');

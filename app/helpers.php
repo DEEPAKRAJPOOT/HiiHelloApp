@@ -16,19 +16,22 @@ function getPermissions($user_type = 'normal')
             3 =>[ //Role Management
                 'permissions' => 'access,add,edit,delete'
             ],
-            4 =>[ //Country
+            4 =>[ //Passion Management
                 'permissions' => 'access,add,edit,delete'
             ],
-            5 =>[ //State
+            5 =>[ //Country
                 'permissions' => 'access,add,edit,delete'
             ],
-            6 =>[ //City
+            6 =>[ //State
                 'permissions' => 'access,add,edit,delete'
             ],
-            7 =>[ //CMS Pages
+            7 =>[ //City
+                'permissions' => 'access,add,edit,delete'
+            ],
+            8 =>[ //CMS Pages
                 'permissions' => 'access,edit'
             ],
-            8 =>[ //Site Configurations
+            9 =>[ //Site Configurations
                 'permissions' => 'access'
             ],
         ];

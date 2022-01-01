@@ -2,7 +2,9 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Middleware\CheckApiLanguage;
 use App\Http\Controllers\api\v1\AuthenticationController;
+use App\Http\Controllers\api\v1\GeneralController;
 
 /*
 |--------------------------------------------------------------------------
@@ -22,5 +24,15 @@ use App\Http\Controllers\api\v1\AuthenticationController;
 Route::group(['namespace' => 'v1', 'prefix' => 'v1'], function () {
     // Authentication
     Route::post('login', [AuthenticationController::class,'login'])->name('api.user.login');
-    Route::post('register', [AuthenticationController::class,'register'])->name('api.user.register');
+    Route::any('generate-checksum', [AuthenticationController::class,'generateChecksum'])->name('api.generate-checksum');
+    Route::post('user/set-profile', [AuthenticationController::class,'setProfile'])->name('api.user.set-profile');
+    
+    // Listing
+    Route::post('app-status', [GeneralController::class,'appStatus'])->name('api.app-status');
+    Route::post('get/languages', [GeneralController::class,'getLanguages'])->name('api.get-languages');
+    Route::post('get/countries',[GeneralController::class,'getCountries'])->name('api.get-countries');
+    Route::post('get/cms-pages',[GeneralController::class,'getCmsPages'])->name('api.user.get-cms-pages');
 });
+
+// Route::group(['namespace' => 'v1', 'prefix' => 'v1', 'middleware' => 'auth:sanctum'], function () {
+// });

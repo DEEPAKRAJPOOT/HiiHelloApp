@@ -29,6 +29,8 @@ class DatabaseSeeder extends Seeder
         $this->call(StatesSeeder::class);
         $this->call(CitiesSeeder::class);
         $this->call(CmsPageSeeder::class);
+        $this->call(CmsPageTranslationSeeder::class);
         $this->call(SettingSeeder::class);
+        $this->call(LanguageSeeder::class);
     }
 }
