@@ -15,7 +15,7 @@ return [
 
     /* Commnon Messages */
     'error' =>  'Something went wrong. Try again later',
-    'success'   =>  'success',
+    'success' =>  ':entity details get sucessfully',
     'add' => ':entity added successfully',
     'remove' => ':entity removed successfully',
     'update' => ':entity updated successfully',
@@ -39,15 +39,10 @@ return [
     'expired'     =>  ':entity is expired',
     'min_amount'    => ':entity must be greater than or equal to :entity2',
     'empty' => ':entity is empty',
-    'sold'      => ':entity is sold out',
     'not_cancel'      => ':entity cannot be cancelled',
-    'order_cancel'      => ':entity cancelled successfully',
-    'own_product' => 'You cant add your own product to cart',
     'max_referred' => 'This referrel code cannot be used',
-    'not_order' => 'You cannot cancel Other User :entity',
-    'not_your_product' => 'You cannot delete other seller product',
-    'not_your_product' => 'You cannot delete other seller product',
     'generated'  =>  ':entity generated successfully',
+    'apply_success' =>  ':entity applied succesfully',
 
     /* Login Messages */
     'login_fail' => 'These credentials do not match our records',
@@ -60,16 +55,6 @@ return [
     'profile_setuped_fail' => 'Unable to update profile details',
     'logout' => 'You are succesfully logout',
     'push_token_added' => 'Push token added to our records',
-
-    /* User Preference */
-    'user_preferences' => 'Unable to store user details',
-
-    /* Shop */
-    'not_added'     => 'Unable to add :entity',
-    'unable_address'    => 'You have not permission to add address',
-
-    /* Apply Promo Code & Referral Code */
-    'apply_success' =>  ':entity applied succesfully',
 
     /* Edit Profile */
     'invalid' => 'The selected :entity is invalid',
