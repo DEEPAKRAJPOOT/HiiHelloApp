@@ -33,11 +33,14 @@ Route::group(['namespace' => 'v1', 'prefix' => 'v1'], function () {
     Route::post('get/languages', [GeneralController::class,'getLanguages'])->name('api.get-languages');
     Route::post('get/countries',[GeneralController::class,'getCountries'])->name('api.get-countries');
     Route::post('get/cms-pages',[GeneralController::class,'getCmsPages'])->name('api.user.get-cms-pages');
+    Route::post('get/locations',[GeneralController::class,'getLocations'])->name('api.get-locations');
+    Route::post('get/interests',[GeneralController::class,'getInterests'])->name('api.get-interests');
 
     // User
-    Route::post('user/get-list', [UserController::class,'getUsersList'])->name('api.user.get-list');
     Route::post('user/get-profile', [UserController::class,'getProfile'])->name('api.user.get-profile');
+    Route::post('user/common-age',[UserController::class,'getCommonAge'])->name('api.user.common-age');
 });
 
-// Route::group(['namespace' => 'v1', 'prefix' => 'v1', 'middleware' => 'auth:sanctum'], function () {
-// });
+Route::group(['namespace' => 'v1', 'prefix' => 'v1', 'middleware' => 'auth:sanctum'], function () {
+    Route::post('user/get-list', [UserController::class,'getUsersList'])->name('api.user.get-list');
+});

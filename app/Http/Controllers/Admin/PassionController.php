@@ -28,7 +28,7 @@ class PassionController extends Controller
     public function create()
     {
         $languages = Language::whereIsActive('y')->get();
-        return view('admin.pages.passions.create',compact('languages'))->with(['custom_title' => 'Create Passion', 'default_lang' => config('utility.default_lang_code')]);
+        return view('admin.pages.passions.create',compact('languages'))->with(['custom_title' => 'Passion', 'default_lang' => config('utility.default_lang_code')]);
     }
 
     /**
@@ -81,7 +81,7 @@ class PassionController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Passion $passion)
+    public function update(Request $request, PassionRequest $passion)
     {
         if(!empty($request->action) && $request->action == 'change_status') {
             $content = ['status'=>204, 'message'=>"something went wrong"];
@@ -99,7 +99,7 @@ class PassionController extends Controller
             if( $passion->save() ) {
                 flash('Passion details updated successfully!')->success();
             } else {
-                flash('Unable to passion user. Try again later')->error();
+                flash('Unable to passion. Try again later')->error();
             }
             return redirect(route('admin.passions.index'));
         }

@@ -24,7 +24,6 @@ Route::group(['namespace' => 'Admin', 'middleware' => ['check_permit','revalidat
 	Route::get('users/listing', 'UsersController@listing')->name('users.listing');
 	Route::resource('users','UsersController');
 
-
 	/* Role Management */
 	Route::get('roles/listing', 'AdminController@listing')->name('roles.listing');
 	Route::resource('roles','AdminController');
@@ -36,6 +35,14 @@ Route::group(['namespace' => 'Admin', 'middleware' => ['check_permit','revalidat
 	/* Country Management*/
 	Route::get('countries/listing', 'CountryController@listing')->name('countries.listing');
 	Route::resource('countries', 'CountryController');
+
+	/* Interests Management*/
+	Route::get('interests/listing', 'InterestController@listing')->name('interests.listing');
+	Route::resource('interests', 'InterestController');
+
+	/* Locations Management*/
+	Route::get('locations/listing', 'LocationController@listing')->name('locations.listing');
+	Route::resource('locations', 'LocationController');
 
 	/* State Management*/
 	Route::get('states/listing', 'StateController@listing')->name('states.listing');

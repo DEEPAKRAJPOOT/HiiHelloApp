@@ -91,6 +91,43 @@ Breadcrumbs::register('dashboard', function ($breadcrumbs) {
 	    $breadcrumbs->push('Edit Country', route(Auth::getDefaultDriver().'.countries.edit', $id));
 	});
 
+
+	// Interests Management -------------------------------------------------------------------------------------------------------------------------------------------------------
+	Breadcrumbs::register('interests_list', function($breadcrumbs)
+	{
+		$breadcrumbs->parent('dashboard');
+	    $breadcrumbs->push('Interests', route(Auth::getDefaultDriver().'.interests.index'));
+	});
+	Breadcrumbs::register('interests_create', function($breadcrumbs)
+	{
+		$breadcrumbs->parent('interests_list');
+	    $breadcrumbs->push('Add New Interest', route(Auth::getDefaultDriver().'.interests.create'));
+	});
+	Breadcrumbs::register('interests_update', function ($breadcrumbs, $id)
+	{
+		$breadcrumbs->parent('interests_list');
+		$breadcrumbs->push(__('Edit Interest'), route('admin.interests.edit', $id));
+	});
+
+
+	// Locations Management -------------------------------------------------------------------------------------------------------------------------------------------------------
+	Breadcrumbs::register('locations_list', function($breadcrumbs)
+	{
+		$breadcrumbs->parent('dashboard');
+	    $breadcrumbs->push('Locations', route(Auth::getDefaultDriver().'.locations.index'));
+	});
+	Breadcrumbs::register('locations_create', function($breadcrumbs)
+	{
+		$breadcrumbs->parent('locations_list');
+	    $breadcrumbs->push('Add New Location', route(Auth::getDefaultDriver().'.locations.create'));
+	});
+	Breadcrumbs::register('locations_update', function ($breadcrumbs, $id)
+	{
+		$breadcrumbs->parent('locations_list');
+		$breadcrumbs->push(__('Edit Location'), route('admin.locations.edit', $id));
+	});
+
+
 	// states -------------------------------------------------------------------------------------------------------------------------------------------------------
 	Breadcrumbs::register('states_list', function($breadcrumbs)
 	{
