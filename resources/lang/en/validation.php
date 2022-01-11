@@ -40,7 +40,7 @@ return [
     'dimensions' => 'The :attribute has invalid image dimensions.',
     'distinct' => 'The :attribute field has a duplicate value.',
     'email' => 'The :attribute must be a valid email address.',
-    'ends_with' => 'The :attribute must end with one of the following: :values.',
+    'ends_with' => 'The :attribute must end with one of the following: :values',
     'exists' => 'The selected :attribute is invalid.',
     'file' => 'The :attribute must be a file.',
     'filled' => 'The :attribute field must have a value.',
@@ -93,7 +93,6 @@ return [
     'not_in' => 'The selected :attribute is invalid.',
     'not_regex' => 'The :attribute format is invalid.',
     'numeric' => 'The :attribute must be a number.',
-    'password' => 'The password is incorrect.',
     'present' => 'The :attribute field must be present.',
     'regex' => 'The :attribute format is invalid.',
     'required' => 'The :attribute field is required.',
@@ -110,7 +109,7 @@ return [
         'string' => 'The :attribute must be :size characters.',
         'array' => 'The :attribute must contain :size items.',
     ],
-    'starts_with' => 'The :attribute must start with one of the following: :values.',
+    'starts_with' => 'The :attribute must start with one of the following: :values',
     'string' => 'The :attribute must be a string.',
     'timezone' => 'The :attribute must be a valid zone.',
     'unique' => 'The :attribute has already been taken.',
@@ -146,15 +145,21 @@ return [
     |
     */
 
-    'attributes' => [],
-
     'not_empty' => "The :attribute does not allow only space.",
     'not_exists' => 'The :attribute is not exists.',
     'no_space' => "The :attribute must not have space.",
     'not_match' => 'The :attribute is not matching with our records.',
     'not_equal' => 'The :attribute and :other must not be same',
+    'equal_to' => 'The :attribute and :other must be same',
     'lettersonly' => 'The :attribute may only contain letters and spaces.',
     'alpha_numeric' => 'The :attribute may only contain letters, numbers and spaces.',
-    'image_dimentions' => 'The :attribute must be of :width x :height px dimensions.',
+    'image_dimentions' => 'The :attribute must be of :min x :max px dimensions.',
+    'emoji_found'   =>  'Emojis are not allowed in :attribute',
 
+    // 'duration'      =>  'The duration of video must be between 1 to 60 seconds only.',
+    'duration'      =>  'The duration of video may not be greater than 60 seconds.',
+    'video'         =>  [
+        'portrait'  =>  'Video must be in portrait mode',
+        'landscape' =>  'Video must be in landscape mode',
+    ],
 ];

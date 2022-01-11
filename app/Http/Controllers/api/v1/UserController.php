@@ -11,6 +11,7 @@ use App\Http\Requests\Api\User\ProfileRequest;
 use App\Http\Requests\Api\User\UserListRequest;
 use Illuminate\Http\Request;
 use App\Models\User;
+use App\Models\Location;
 
 class UserController extends Controller
 {
@@ -51,15 +52,29 @@ class UserController extends Controller
         if( $this->apiValidator($request->all(), $rules) ) {
             try{
                 $users = User::where('id','!=',Auth::id())->whereIsActive('y');
-                if(!empty($request->gender)){
-                    $users = $users->whereGender($request->gender);
+
+                if(!empty($request->start_age) && !empty($request->end_age)){
+                    $from   =   \Carbon\Carbon::today()->subYears($request->start_age);
+                    $to     =   \Carbon\Carbon::today()->subYears($request->end_age);
+                    $users  =   $users->whereBetween('birth_date',[$to, $from]);
                 }
+                if(!empty($request->gender)){ $users = $users->whereGender($request->gender); }
+                if(!empty($request->interests)){
+                    $interests = $request->interests;
+                    $users = $users->whereHas('interests.interest',function($q) use ($interests){
+                                $q->whereIn('custom_id',$interests);
+                            });
+                }
+                if(!empty($request->location)){
+                    $location = Location::whereCustomId($request->location)->whereIsActive('y')->firstOrFail();
+                    $users = $users->whereLocationId($location->id);
+                }
+
                 $users = $users->inRandomOrder();
                 $count = $users->count();
                 $users = $users->limit($request->limit ?? config('utility.pagination.limit'))
-                        ->offset($request->offset ?? config('utility.pagination.offset'))
-                        ->get();
-
+                                ->offset($request->offset ?? config('utility.pagination.offset'))
+                                ->get();
                 if($users->isNotEmpty()){
                     return (UserProfile::collection($users))->additional([
                         'meta' => [
@@ -79,6 +94,9 @@ class UserController extends Controller
                 switch ($exception->getModel()) {
                     case 'App\Models\User':
                         $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("Users")]);
+                        break;
+                    case 'App\Models\Location':
+                        $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("Location")]);
                         break;
                     default:
                         $this->response['meta']['message'] = trans('api.went_wrong');

@@ -13,12 +13,16 @@ use App\Http\Requests\Api\Authentication\RegisterRequest;
 use App\Models\User;
 use App\Models\Country;
 use App\Models\UserDetail;
+use App\Models\Location;
+use App\Models\Interest;
+use App\Models\UserInterest;
 
 class AuthenticationController extends Controller
 {
     private $version = "v.1.0";
     public function getVersion(){ return $this->version; }
 
+    // User Login
     public function login(Request $request)
     {   
         $rules = LoginRequest::rules();
@@ -51,15 +55,21 @@ class AuthenticationController extends Controller
         return $this->returnResponse();
     }
 
+    // Signup/Profile Setup For User
     public function setProfile(Request $request)
     {
         $rules = RegisterRequest::rules();
         if( $this->apiValidator($request->all(), $rules) ) {
             try{
-                $country_id = NULL;
-                if($request->has('country')){
-                    $country = Country::whereIsActive('y')->where('custom_id',$request->country)->first();
-                    if($country){ $country_id = $country->id; }
+                $country_id = $location_id = NULL;
+                if(!empty($request->country)){
+                    $country = Country::where('custom_id',$request->country)->whereIsActive('y')->firstOrFail();
+                    $country_id = $country->id;
+                }
+
+                if(!empty($request->location)){
+                    $location = Location::where('custom_id',$request->location)->whereIsActive('y')->firstOrFail();
+                    $location_id = $location->id;
                 }
 
                 $user = User::updateOrCreate([
@@ -74,6 +84,7 @@ class AuthenticationController extends Controller
                     'gender'            =>  $request->gender ?? NULL,
                     'interest'          =>  $request->interest ?? NULL,
                     'country_id'        =>  $country_id ?? NULL,
+                    'location_id'       =>  $location_id ?? NULL,
                     'password'          =>  Hash::make(config('utility.default_password')),
                 ]);
 
@@ -86,6 +97,25 @@ class AuthenticationController extends Controller
                 }
 
                 if($user->save()){
+                    if(!empty($request->interests)){
+                        $not_delete_interests = [];
+                        $interest_ids = Interest::whereIn('custom_id',$request->interests)->whereIsActive('y')->pluck('id')->toArray();
+                        foreach($interest_ids as $interest_id){
+                            $custom_id = getUniqueString('user_interests');
+
+                            UserInterest::updateOrCreate([
+                                'user_id'       =>  $user->id,
+                                'interest_id'   =>  $interest_id,
+                            ],[
+                                'custom_id'     =>  $custom_id,
+                            ]);
+                            $not_delete_interests[] = $custom_id;
+                        }
+
+                        // Delete Interests
+                        UserInterest::whereUserId($user->id)->whereNotIn('custom_id',$not_delete_interests)->delete();
+                    }
+
                     //Store Images
                     if($request->has('images')){
                         if($user->userDetails->isNotEmpty()){
@@ -153,6 +183,12 @@ class AuthenticationController extends Controller
                 switch ($exception->getModel()) {
                     case 'App\Models\User':
                         $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("User")]);
+                        break;
+                    case 'App\Models\Country':
+                        $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("Country")]);
+                        break;
+                    case 'App\Models\Location':
+                        $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("Location")]);
                         break;
                     case 'App\Models\UserDetail':
                         $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("User")]);

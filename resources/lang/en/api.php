@@ -66,6 +66,9 @@ return [
     'edit_profile_image' => 'Profile image updated successfully',
     'password_not_match' => 'Old password doesn\'t match with our records',
 
+    'maintenance'   =>  'Application is currently under maintenance. We will be back soon!',
+    'token-expired'     =>  'Your session has expired. Please log in again.',
+
     /* Order Tracking */
     'to_many_request'   =>  'To Many Requests',
     'already_cenceled'  =>  ':entity Already Cancelled',
@@ -73,19 +76,25 @@ return [
     /* Reset Password */
     'link_sent'     =>  ':entity link sent successfully',
     'link_not_send' =>  'Enable to send an e-mail. Please try again later',
+
     'reset_success' =>  'Password reset successfully',
     
     'favourite'     =>  ':entity :detail successfully',
+
     'already_exists'    =>  ':entity details are already exists',
+
     'dynamic-link'  =>  [
         'success'   =>  'Dynamic link generated successfully',
         'fail'      =>  'Unable to generated dynamic link',
     ],
+
     'validate'          =>  ':entity validated successfully!',
     'validate_fail'     =>  'Invalid :entity, please try again later',
+
     'qr'    =>  [
         'generated' =>  ':entity generated successfully!',
     ],
+
     'payment'   =>  [
         'success'   =>  [
             'url-generated' =>  'Payment url generated successfully.'
@@ -94,6 +103,10 @@ return [
             'url-generated' =>  'Unable to generate payment URL',
         ],
     ],
+
+    'verified'    =>  "Your :entity has been successfully verified.",
+    'already_verified'    =>  "Your :entity was already verified.",
+    'thanks'    =>  'Thanks for :entity :type.',
 
     /* Custom Message */    
 ];
