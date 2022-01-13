@@ -25,11 +25,13 @@ class CountryRequest extends FormRequest
     public function rules()
     {
         $unless = "change_status";
+        $default_lang = config('utility.default_lang_code');
         $id = (!empty(Route::current()->parameters()['user']->id) ? ','.Route::current()->parameters()['user']->id : '');
+
         return [
-            'name'         =>  'required_unless:action,'.$unless.'|max:50',
-            'code'         =>  'required_unless:action,'.$unless.'|max:5',
-            'phonecode'    =>  'required_unless:action,'.$unless.'|max:5',
+            $default_lang.'_name'   =>  'required_unless:action,'.$unless.'|max:50',
+            'code'                  =>  'required_unless:action,'.$unless.'|max:5',
+            'phonecode'             =>  'required_unless:action,'.$unless.'|max:5',
         ];
     }
 }

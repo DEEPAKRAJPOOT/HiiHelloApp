@@ -47,7 +47,7 @@
 @push('extra-js-scripts')
 <script src="{{ asset('assets/plugins/custom/datatables/datatables.bundle.js') }}"></script>
 <script>
-    $(document).ready(function() {
+    $(document).ready(function () {
         // datatable
         oTable = $('#countries_table').DataTable({
             responsive: true,
@@ -57,62 +57,29 @@
             ajax: {
                 url: "{{ route('admin.countries.listing') }}",
                 data: {
-                    columnsDef: ['checkbox', 'name', 'code', 'phonecode', 'active', 'action'],
+                    columnsDef: ['checkbox','name', 'code', 'phonecode', 'active', 'action'],
                 },
             },
-            columns: [{
-                    data: 'checkbox'
-                },
-                {
-                    data: 'name'
-                },
-                {
-                    data: 'code'
-                },
-                {
-                    data: 'phonecode'
-                },
-                {
-                    data: 'active'
-                },
-                {
-                    data: 'action',
-                    responsivePriority: -1
-                },
+            columns: [
+                { data: 'checkbox' },
+                { data: 'id' },
+                { data: 'name' },
+                { data: 'code' },
+                { data: 'phonecode' },
+                { data: 'active' },
+                { data: 'action', responsivePriority: -1 },
             ],
             columnDefs: [
                 // Specify columns titles here...
-                {
-                    targets: 0,
-                    title: "<center><input type='checkbox' class='all_select'></center>",
-                    orderable: false
-                },
-                {
-                    targets: 1,
-                    title: 'Name',
-                    orderable: true
-                },
-                {
-                    targets: 2,
-                    title: 'Code',
-                    orderable: true
-                },
-                {
-                    targets: 3,
-                    title: 'Phonecode',
-                    orderable: true
-                },
-                {
-                    targets: 4,
-                    title: 'Active',
-                    orderable: false
-                },
+                { targets: 0, title: "<center><input type='checkbox' class='all_select'></center>", orderable: false },
+                { targets: 1, title: 'Id', orderable: true },
+                { targets: 2, title: 'Name', orderable: false },
+                { targets: 3, title: 'Code', orderable: true },
+                { targets: 4, title: 'Phone Code', orderable: true },
+                { targets: 5, title: 'Active', orderable: false },
                 // Action buttons
-                {
-                    targets: -1,
-                    title: 'Action',
-                    orderable: false
-                },
+                { targets: -1, title: 'Action',
+                orderable: false },
             ],
             order: [
                 [1, 'asc']

@@ -3,6 +3,7 @@
 namespace App\Http\Resources\v1;
 
 use Illuminate\Http\Resources\Json\JsonResource;
+use App\Http\Resources\v1\UserInterestResource;
 
 class UserProfile extends JsonResource
 {
@@ -27,6 +28,8 @@ class UserProfile extends JsonResource
             'gender'            =>  $this->gender ?? "",
             'interest'          =>  $this->interest ?? "",
             'country'           =>  new CountryResource($this->country),
+            'location'          =>  new LocationResource($this->location),
+            'interests'         =>  UserInterestResource::collection($this->interests),
             'profile_photo'     =>  generateURL($this->profile_photo) ?? "",
             'flags'             =>  [
                 'profile_setuped'     =>  $this->isProfileSetuped(),

@@ -7,10 +7,10 @@ function getPermissions($user_type = 'normal')
 
     if ($user_type == 'admin') {
         $permissions = [
-            1 => [                                                   // Dashboard
+            1 =>[ // Dashboard
                 'permissions' => 'access'
             ],
-            2 => [                                                   // Users
+            2 =>[ // Users
                 'permissions' => 'access,add,edit,delete'
             ],
             3 =>[ //Role Management
@@ -22,16 +22,25 @@ function getPermissions($user_type = 'normal')
             5 =>[ //Country
                 'permissions' => 'access,add,edit,delete'
             ],
-            6 =>[ //State
+            6 =>[ //Interests
                 'permissions' => 'access,add,edit,delete'
             ],
-            7 =>[ //City
+            7 =>[ //Locations
                 'permissions' => 'access,add,edit,delete'
             ],
-            8 =>[ //CMS Pages
+            8 =>[ //Profile Reports
+                'permissions' => 'access,view,edit'
+            ],
+            9 =>[ //State
+                'permissions' => 'access,add,edit,delete'
+            ],
+            10 =>[ //City
+                'permissions' => 'access,add,edit,delete'
+            ],
+            11 =>[ //CMS Pages
                 'permissions' => 'access,edit'
             ],
-            9 =>[ //Site Configurations
+            12 =>[ //Site Configurations
                 'permissions' => 'access'
             ],
         ];

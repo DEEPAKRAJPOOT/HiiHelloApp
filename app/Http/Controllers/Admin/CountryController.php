@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\CountryRequest;
+use App\Models\Language;
 use App\Models\Country;
 use Illuminate\Http\Request;
 
@@ -26,7 +27,8 @@ class CountryController extends Controller
      */
     public function create()
     {
-        return view('admin.pages.general.countries.create')->with(['custom_title' => 'Country']);
+        $languages = Language::whereIsActive('y')->get();
+        return view('admin.pages.general.countries.create',compact('languages'))->with(['custom_title' => 'Country', 'default_lang' => config('utility.default_lang_code')]);
     }
 
      /**
@@ -37,8 +39,13 @@ class CountryController extends Controller
      */
     public function store(CountryRequest $request)
     {
-        $country = Country::create($request->all());
-        if ($country) {
+        $data = $this->getLangStoreData($request);
+        $data['custom_id'] = getUniqueString('countries');
+        $data['code'] = $request->code;
+        $data['phonecode'] = $request->phonecode;
+
+        $country = Country::create($data);
+        if ($country->save()) {
             flash('Country created successfully!')->success();
         } else {
             flash('Unable to save country. Please try again later.')->error();
@@ -54,7 +61,8 @@ class CountryController extends Controller
      */
     public function edit(Country $country)
     {
-        return view('admin.pages.general.countries.edit', compact('country'))->with(['custom_title' => 'Country']);
+        $languages = Language::whereIsActive('y')->get();
+        return view('admin.pages.general.countries.edit', compact('country','languages'))->with(['custom_title' => 'Country', 'default_lang' => config('utility.default_lang_code')]);
     }
 
     /**
@@ -77,7 +85,11 @@ class CountryController extends Controller
             }
             return response()->json($content);
         } else {
-            $country->fill($request->all());
+            $data = $this->getLangStoreData($request);
+            $data['code'] = $request->code;
+            $data['phonecode'] = $request->phonecode;
+
+            $country->update($data);
             if ($country->save()) {
                 flash('User details updated successfully!')->success();
             } else {
@@ -97,13 +109,19 @@ class CountryController extends Controller
     {
         if (!empty($request->action) && $request->action == 'delete_all') {
             $content = ['status' => 204, 'message' => "something went wrong"];
-            Country::whereIn('id', explode(',', $request->ids))->delete();
+            $countries = Country::select('id')->whereIn('custom_id',explode(',',$request->ids))->get();
+            foreach($countries as $country){
+                $country->countryTranslations()->delete();
+                $country->delete();
+            }
+            // Country::whereIn('id', explode(',', $request->ids))->delete();
             $content['status'] = 200;
             $content['message'] = "Country deleted successfully.";
             $content['count'] = Country::all()->count();
             return response()->json($content);
         } else {
-            $country = Country::where('id', $id)->firstOrFail();
+            $country = Country::where('custom_id', $id)->firstOrFail();
+            $country->countryTranslations()->delete();
             $country->delete();
             if (request()->ajax()) {
                 $content = array('status' => 200, 'message' => "Country deleted successfully.", 'count' => Country::all()->count());
@@ -115,19 +133,20 @@ class CountryController extends Controller
         }
     }
 
-
-
     public function listing(Request $request)
     {
         extract($this->DTFilters($request->all()));
         $records = [];
-        $countries = Country::orderBy($sort_column, $sort_order);
+        $countries = Country::with('countryTranslations')->orderBy($sort_column, $sort_order);
 
         if ($search != '') {
             $countries->where(function ($query) use ($search) {
-                $query->where('name', 'like', "%{$search}%")
+                $query->where('custom_id', 'like', "%{$search}%")
                     ->orWhere('code', 'like', "%{$search}%")
-                    ->orWhere('phonecode', 'like', "%{$search}%");
+                    ->orWhere('phonecode', 'like', "%{$search}%")
+                    ->orWhereHas('countryTranslations', function ($query) use ($search) {
+                        $query->where('name', 'like', "%{$search}%");
+                    });                   
             });
         }
 
@@ -143,20 +162,20 @@ class CountryController extends Controller
         foreach ($countries as $country) {
 
             $params = [
-                'checked' => ($country->is_active == 'y' ? 'checked' : ''),
-                'getaction' => $country->is_active,
-                'class' => '',
-                'id' => $country->id,
+                'checked'   =>  ($country->is_active == 'y' ? 'checked' : ''),
+                'getaction' =>  $country->is_active,
+                'class'     =>  '',
+                'id'        =>  $country->custom_id,
             ];
 
             $records['data'][] = [
-                'id' => $country->id,
-                'name' => $country->name,
-                'code' => $country->code,
-                'phonecode' => $country->phonecode,
-                'active' => view('admin.layouts.includes.switch', compact('params'))->render(),
-                'action' => view('admin.layouts.includes.actions')->with(['custom_title' => 'Countries', 'id' => $country->id], $country)->render(),
-                'checkbox' => view('admin.layouts.includes.checkbox')->with('id', $country->id)->render(),
+                'id'            =>  $country->id,
+                'name'          =>  $country->translate(config('utility.default_lang_code')) ? $country->translate(config('utility.default_lang_code'))->name : $country->translate('en')->name,
+                'code'          =>  $country->code,
+                'phonecode'     =>  $country->phonecode,
+                'active'        =>  view('admin.layouts.includes.switch', compact('params'))->render(),
+                'action'        =>  view('admin.layouts.includes.actions')->with(['custom_title' => 'Countries', 'id' => $country->custom_id], $country)->render(),
+                'checkbox'      =>  view('admin.layouts.includes.checkbox')->with('id', $country->custom_id)->render(),
             ];
 
         }

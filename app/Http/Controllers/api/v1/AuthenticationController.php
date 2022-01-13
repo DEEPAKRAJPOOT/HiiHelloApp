@@ -8,22 +8,24 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use App\Http\Resources\v1\UserProfile;
+use App\Http\Requests\Api\Authentication\LoginRequest;
+use App\Http\Requests\Api\Authentication\RegisterRequest;
 use App\Models\User;
 use App\Models\Country;
 use App\Models\UserDetail;
+use App\Models\Location;
+use App\Models\Interest;
+use App\Models\UserInterest;
 
 class AuthenticationController extends Controller
 {
     private $version = "v.1.0";
     public function getVersion(){ return $this->version; }
 
+    // User Login
     public function login(Request $request)
-    {
-        $rules = [
-            'contact_no'            =>  'required|min:2|max:16',
-            'security_token'        =>  'required_with:contact_no|min:10|string',
-        ];
-        
+    {   
+        $rules = LoginRequest::rules();
         if( $this->apiValidator($request->all(), $rules) ) {
             $this->response['meta']['message']  = trans('api.login_fail');
             $this->status = $this->statusArr['forbidden'];
@@ -53,121 +55,148 @@ class AuthenticationController extends Controller
         return $this->returnResponse();
     }
 
+    // Signup/Profile Setup For User
     public function setProfile(Request $request)
     {
-        $phone_codes = Country::whereIsActive('y')->pluck('phonecode')->toArray();
-        $country_ids = Country::whereIsActive('y')->pluck('custom_id')->toArray();
-        
-        $rules = [
-            'first_name'        =>  'required|min:2|max:100',
-            'last_name'         =>  'required|min:2|max:100',
-            'email'             =>  'nullable|email|max:150',
-            'country_code'      =>  'required|in:'.implode(',', $phone_codes),
-            'country'           =>  'nullable|in:'.implode(',', $country_ids),
-            'contact_no'        =>  'required|digits_between:6,16',
-            'birth_date'        =>  'required|date|before:tomorrow',
-            'gender'            =>  'required|in:'.implode(',', ['Male','Female']),
-            'interest'          =>  'required|in:'.implode(',', ['Male','Female', 'Both']),
-            'profile_photo'     =>  'required|mimes:jpg,jpeg,png',
-            'images'            =>  'required|array|max:4',
-            'images.*'          =>  'required|mimes:jpg,jpeg,png',
-            'videos'            =>  'nullable|array|max:1',
-            'videos.*'          =>  'nullable|mimes:mp4,ogx,oga,ogv,ogg,webm,flv,m3u8,ts,3gp,mov,avi,wmv,m4v',
-        ];
-
+        $rules = RegisterRequest::rules();
         if( $this->apiValidator($request->all(), $rules) ) {
-            $country_id = NULL;
-            if($request->has('country')){
-                $country = Country::whereIsActive('y')->where('custom_id',$request->country)->first();
-                if($country){ $country_id = $country->id; }
-            }
-
-            $user = User::updateOrCreate([
-                'country_code'      =>  $request->country_code ?? NULL,
-                'contact_no'        =>  $request->contact_no ?? NULL,
-            ],[
-                'custom_id'         =>  getUniqueString('users'),
-                'first_name'        =>  $request->first_name ?? NULL,
-                'last_name'         =>  $request->last_name ?? NULL,
-                'email'             =>  $request->email ?? NULL,
-                'birth_date'        =>  $request->birth_date ?? NULL,
-                'gender'            =>  $request->gender ?? NULL,
-                'interest'          =>  $request->interest ?? NULL,
-                'country_id'        =>  $country_id ?? NULL,
-                'password'          =>  Hash::make(config('utility.default_password')),
-            ]);
-
-            if( !empty($request->profile_photo) ) {
-                if(!empty($user->profile_photo)){
-                    if( Storage::exists($user->profile_photo) ) { Storage::delete($user->profile_photo); }
+            try{
+                $country_id = $location_id = NULL;
+                if(!empty($request->country)){
+                    $country = Country::where('custom_id',$request->country)->whereIsActive('y')->firstOrFail();
+                    $country_id = $country->id;
                 }
-                $path = $request->file('profile_photo')->store('users/profile_photo');
-                $user->profile_photo = $path;
-            }
 
-            if($user->save()){
-                //Store Images
-                if($request->has('images')){
-                    if($user->userDetails->isNotEmpty()){
-                        foreach($user->userDetails as $userDetail){
-                            if(!empty($userDetail->image)){
-                                if( Storage::exists($userDetail->image) ) { Storage::delete($userDetail->image); }
-                                $userDetail->delete();
+                if(!empty($request->location)){
+                    $location = Location::where('custom_id',$request->location)->whereIsActive('y')->firstOrFail();
+                    $location_id = $location->id;
+                }
+
+                $user = User::updateOrCreate([
+                    'country_code'      =>  $request->country_code ?? NULL,
+                    'contact_no'        =>  $request->contact_no ?? NULL,
+                ],[
+                    'custom_id'         =>  getUniqueString('users'),
+                    'first_name'        =>  $request->first_name ?? NULL,
+                    'last_name'         =>  $request->last_name ?? NULL,
+                    'email'             =>  $request->email ?? NULL,
+                    'birth_date'        =>  $request->birth_date ?? NULL,
+                    'gender'            =>  $request->gender ?? NULL,
+                    'interest'          =>  $request->interest ?? NULL,
+                    'country_id'        =>  $country_id ?? NULL,
+                    'location_id'       =>  $location_id ?? NULL,
+                    'password'          =>  Hash::make(config('utility.default_password')),
+                ]);
+
+                if( !empty($request->profile_photo) ) {
+                    if(!empty($user->profile_photo)){
+                        if( Storage::exists($user->profile_photo) ) { Storage::delete($user->profile_photo); }
+                    }
+                    $path = $request->file('profile_photo')->store('users/profile_photo');
+                    $user->profile_photo = $path;
+                }
+
+                if($user->save()){
+                    if(!empty($request->interests)){
+                        $not_delete_interests = [];
+                        $interest_ids = Interest::whereIn('custom_id',$request->interests)->whereIsActive('y')->pluck('id')->toArray();
+                        foreach($interest_ids as $interest_id){
+                            $custom_id = getUniqueString('user_interests');
+
+                            UserInterest::updateOrCreate([
+                                'user_id'       =>  $user->id,
+                                'interest_id'   =>  $interest_id,
+                            ],[
+                                'custom_id'     =>  $custom_id,
+                            ]);
+                            $not_delete_interests[] = $custom_id;
+                        }
+
+                        // Delete Interests
+                        UserInterest::whereUserId($user->id)->whereNotIn('custom_id',$not_delete_interests)->delete();
+                    }
+
+                    //Store Images
+                    if($request->has('images')){
+                        if($user->userDetails->isNotEmpty()){
+                            foreach($user->userDetails as $userDetail){
+                                if(!empty($userDetail->image)){
+                                    if( Storage::exists($userDetail->image) ) { Storage::delete($userDetail->image); }
+                                    $userDetail->delete();
+                                }
                             }
                         }
-                    }
 
-                    $image_data = [];
-                    foreach ($request->images as $key => $image) {
-                        if($image){
-                            $image_path = $image->store('users/images');
-                            $image_data[] = [
-                                'custom_id'         =>  getUniqueString('user_details'),
-                                'user_id'           =>  $user->id,
-                                'image'             =>  $image_path,
-                                'created_at'        =>  \Carbon\Carbon::now(),
-                                'updated_at'        =>  \Carbon\Carbon::now(),
-                            ];
-                        }
-                    }
-                    UserDetail::insert($image_data);
-                }
-                
-                //Store Video
-                if($request->hasFile('videos')){
-                    if($user->userDetails->isNotEmpty()){
-                        foreach($user->userDetails as $userDetail){
-                            if(!empty($userDetail->video)){
-                                if( Storage::exists($userDetail->video) ) { Storage::delete($userDetail->video); }
-                                $userDetail->delete();
+                        $image_data = [];
+                        foreach ($request->images as $key => $image) {
+                            if($image){
+                                $image_path = $image->store('users/images');
+                                $image_data[] = [
+                                    'custom_id'         =>  getUniqueString('user_details'),
+                                    'user_id'           =>  $user->id,
+                                    'image'             =>  $image_path,
+                                    'created_at'        =>  \Carbon\Carbon::now(),
+                                    'updated_at'        =>  \Carbon\Carbon::now(),
+                                ];
                             }
                         }
+                        UserDetail::insert($image_data);
                     }
-
-                    $video_data = [];
-                    foreach ($request->videos as $key => $video) {
-                        if($video){
-                            $video_path = $video->store('users/videos');
-                            $video_data[] = [
-                                'custom_id'         =>  getUniqueString('user_details'),
-                                'user_id'           =>  $user->id,
-                                'video'             =>  $video_path,
-                                'created_at'        =>  \Carbon\Carbon::now(),
-                                'updated_at'        =>  \Carbon\Carbon::now(),
-                            ];
+                    
+                    //Store Video
+                    if($request->hasFile('videos')){
+                        if($user->userDetails->isNotEmpty()){
+                            foreach($user->userDetails as $userDetail){
+                                if(!empty($userDetail->video)){
+                                    if( Storage::exists($userDetail->video) ) { Storage::delete($userDetail->video); }
+                                    $userDetail->delete();
+                                }
+                            }
                         }
-                    }
-                    UserDetail::insert($video_data);
-                }   
 
-                return (new UserProfile($user))
-                    ->additional([
-                        'meta' => [
-                            'message' =>  trans('api.profile_setuped'), 
-                        ]
-                    ]);
-            }else{
-                $this->response['meta']['message']  = trans('api.profile_setuped_fail');
+                        $video_data = [];
+                        foreach ($request->videos as $key => $video) {
+                            if($video){
+                                $video_path = $video->store('users/videos');
+                                $video_data[] = [
+                                    'custom_id'         =>  getUniqueString('user_details'),
+                                    'user_id'           =>  $user->id,
+                                    'video'             =>  $video_path,
+                                    'created_at'        =>  \Carbon\Carbon::now(),
+                                    'updated_at'        =>  \Carbon\Carbon::now(),
+                                ];
+                            }
+                        }
+                        UserDetail::insert($video_data);
+                    }   
+
+                    return (new UserProfile($user))
+                        ->additional([
+                            'meta' => [
+                                'message' =>  trans('api.profile_setuped'), 
+                            ]
+                        ]);
+                }else{
+                    $this->response['meta']['message']  = trans('api.profile_setuped_fail');
+                }
+            } catch(ModelNotFoundException $exception) {                
+                switch ($exception->getModel()) {
+                    case 'App\Models\User':
+                        $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("User")]);
+                        break;
+                    case 'App\Models\Country':
+                        $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("Country")]);
+                        break;
+                    case 'App\Models\Location':
+                        $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("Location")]);
+                        break;
+                    case 'App\Models\UserDetail':
+                        $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("User")]);
+                        break;
+                    default:
+                        $this->response['meta']['message'] = trans('api.went_wrong');
+                        break;
+                };
             }
         }
 
@@ -256,7 +285,7 @@ class AuthenticationController extends Controller
                 'data'  =>  [
                     'checksum'  =>  $payload,
                     'data'      =>  $data,
-                    'message'   =>  'Payload generated successfully'
+                    'message'   =>  trans('Payload generated successfully')
                 ]
             ], 200);
         }

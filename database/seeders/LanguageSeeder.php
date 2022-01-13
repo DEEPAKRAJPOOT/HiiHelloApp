@@ -23,17 +23,17 @@ class LanguageSeeder extends Seeder
         $languages = [
             [
                 'custom_id'     => getUniqueString('languages'),
-                'language'      => 'English',
-                'lang_code'     => 'en',
-                'hint'          => 'English',
+                'language'      => 'हिंदी',
+                'lang_code'     => 'hi',
+                'hint'          => 'Hindi',
                 'created_at'    => \Carbon\Carbon::now(),
                 'updated_at'    => \Carbon\Carbon::now(),
             ],
             [
                 'custom_id'     => getUniqueString('languages'),
-                'language'      => 'हिंदी',
-                'lang_code'     => 'hi',
-                'hint'          => 'Hindi',
+                'language'      => 'English',
+                'lang_code'     => 'en',
+                'hint'          => 'English',
                 'created_at'    => \Carbon\Carbon::now(),
                 'updated_at'    => \Carbon\Carbon::now(),
             ],

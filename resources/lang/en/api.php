@@ -15,7 +15,8 @@ return [
 
     /* Commnon Messages */
     'error' =>  'Something went wrong. Try again later',
-    'success'   =>  'success',
+    'success' =>  ':entity details get sucessfully',
+    'fail'   =>  ':entity unsucessfully',
     'add' => ':entity added successfully',
     'remove' => ':entity removed successfully',
     'update' => ':entity updated successfully',
@@ -39,15 +40,10 @@ return [
     'expired'     =>  ':entity is expired',
     'min_amount'    => ':entity must be greater than or equal to :entity2',
     'empty' => ':entity is empty',
-    'sold'      => ':entity is sold out',
     'not_cancel'      => ':entity cannot be cancelled',
-    'order_cancel'      => ':entity cancelled successfully',
-    'own_product' => 'You cant add your own product to cart',
     'max_referred' => 'This referrel code cannot be used',
-    'not_order' => 'You cannot cancel Other User :entity',
-    'not_your_product' => 'You cannot delete other seller product',
-    'not_your_product' => 'You cannot delete other seller product',
     'generated'  =>  ':entity generated successfully',
+    'apply_success' =>  ':entity applied succesfully',
 
     /* Login Messages */
     'login_fail' => 'These credentials do not match our records',
@@ -61,16 +57,6 @@ return [
     'logout' => 'You are succesfully logout',
     'push_token_added' => 'Push token added to our records',
 
-    /* User Preference */
-    'user_preferences' => 'Unable to store user details',
-
-    /* Shop */
-    'not_added'     => 'Unable to add :entity',
-    'unable_address'    => 'You have not permission to add address',
-
-    /* Apply Promo Code & Referral Code */
-    'apply_success' =>  ':entity applied succesfully',
-
     /* Edit Profile */
     'invalid' => 'The selected :entity is invalid',
     'old_password' => 'Old :entity is invalid',
@@ -81,6 +67,9 @@ return [
     'edit_profile_image' => 'Profile image updated successfully',
     'password_not_match' => 'Old password doesn\'t match with our records',
 
+    'maintenance'   =>  'Application is currently under maintenance. We will be back soon!',
+    'token-expired'     =>  'Your session has expired. Please log in again.',
+
     /* Order Tracking */
     'to_many_request'   =>  'To Many Requests',
     'already_cenceled'  =>  ':entity Already Cancelled',
@@ -88,19 +77,25 @@ return [
     /* Reset Password */
     'link_sent'     =>  ':entity link sent successfully',
     'link_not_send' =>  'Enable to send an e-mail. Please try again later',
+
     'reset_success' =>  'Password reset successfully',
     
     'favourite'     =>  ':entity :detail successfully',
+
     'already_exists'    =>  ':entity details are already exists',
+
     'dynamic-link'  =>  [
         'success'   =>  'Dynamic link generated successfully',
         'fail'      =>  'Unable to generated dynamic link',
     ],
+
     'validate'          =>  ':entity validated successfully!',
     'validate_fail'     =>  'Invalid :entity, please try again later',
+
     'qr'    =>  [
         'generated' =>  ':entity generated successfully!',
     ],
+
     'payment'   =>  [
         'success'   =>  [
             'url-generated' =>  'Payment url generated successfully.'
@@ -108,6 +103,15 @@ return [
         'fail'  =>  [
             'url-generated' =>  'Unable to generate payment URL',
         ],
+    ],
+
+    'verified'    =>  "Your :entity has been successfully verified.",
+    'already_verified'    =>  "Your :entity was already verified.",
+    'thanks'    =>  'Thanks for :entity :type.',
+
+    'report'    =>  [
+        'success'   =>  'Profile repoted succesfully',
+        'fail'      =>  'Profile repoted unsuccesfully',
     ],
 
     /* Custom Message */    
