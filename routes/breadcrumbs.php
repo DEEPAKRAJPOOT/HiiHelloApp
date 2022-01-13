@@ -128,6 +128,24 @@ Breadcrumbs::register('dashboard', function ($breadcrumbs) {
 	});
 
 
+	// Profile Reports Management -------------------------------------------------------------------------------------------------------------------------------------------------------
+	Breadcrumbs::register('profile_reports_list', function($breadcrumbs)
+	{
+		$breadcrumbs->parent('dashboard');
+	    $breadcrumbs->push('Profile Reports', route(Auth::getDefaultDriver().'.profile-reports.index'));
+	});
+	Breadcrumbs::register('profile_reports_update', function ($breadcrumbs, $id)
+	{
+		$breadcrumbs->parent('profile_reports_list');
+		$breadcrumbs->push(__('Edit Profile Report'), route('admin.profile-reports.edit', $id));
+	});
+	Breadcrumbs::register('profile_reports_view', function ($breadcrumbs, $id)
+	{
+		$breadcrumbs->parent('profile_reports_list');
+		$breadcrumbs->push(__('View Profile Report'), route('admin.profile-reports.edit', $id));
+	});
+
+
 	// states -------------------------------------------------------------------------------------------------------------------------------------------------------
 	Breadcrumbs::register('states_list', function($breadcrumbs)
 	{

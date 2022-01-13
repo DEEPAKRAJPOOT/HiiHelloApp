@@ -7,11 +7,15 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Resources\v1\UserProfile;
+use App\Http\Resources\v1\ProfileReportResource;
 use App\Http\Requests\Api\User\ProfileRequest;
 use App\Http\Requests\Api\User\UserListRequest;
+use App\Http\Requests\Api\User\ProfileReportRequest;
 use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\Location;
+use App\Models\ProfileReport;
+
 
 class UserController extends Controller
 {
@@ -97,6 +101,46 @@ class UserController extends Controller
                         break;
                     case 'App\Models\Location':
                         $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("Location")]);
+                        break;
+                    default:
+                        $this->response['meta']['message'] = trans('api.went_wrong');
+                        break;
+                };
+            }
+        }
+        return $this->returnResponse();
+    }
+
+    // Store Profile Report Details
+    public function storeProfileReport(Request $request)
+    {
+        $rules = ProfileReportRequest::rules();
+        if( $this->apiValidator($request->all(), $rules) ) {
+            try{
+                $reported_user = User::whereCustomId($request->reported_user)->whereIsActive('y')->firstOrFail();
+
+                $profile_report = ProfileReport::firstOrCreate([
+                    'user_id'           =>  Auth::id(),
+                    'reported_user_id'  =>  $reported_user->id,
+                    'message'           =>  $request->message,
+                ],[
+                    'custom_id'         =>  getUniqueString('profile_reports'),
+                ]);
+
+                if($profile_report->save()){
+                    return (new ProfileReportResource($profile_report))
+                            ->additional([
+                            'meta' => [
+                                'message'  =>  trans('api.report.success'),
+                            ] ]);
+                }else{
+                    $this->response['meta']['message']  =   trans('api.report.fail'); 
+                    $this->status = $this->statusArr['not_found'];     
+                }
+            } catch(ModelNotFoundException $exception) {                
+                switch ($exception->getModel()) {
+                    case 'App\Models\User':
+                        $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("User")]);
                         break;
                     default:
                         $this->response['meta']['message'] = trans('api.went_wrong');

@@ -16,6 +16,7 @@ return [
     /* Commnon Messages */
     'error' =>  'Something went wrong. Try again later',
     'success' =>  ':entity details get sucessfully',
+    'fail'   =>  ':entity unsucessfully',
     'add' => ':entity added successfully',
     'remove' => ':entity removed successfully',
     'update' => ':entity updated successfully',
@@ -107,6 +108,11 @@ return [
     'verified'    =>  "Your :entity has been successfully verified.",
     'already_verified'    =>  "Your :entity was already verified.",
     'thanks'    =>  'Thanks for :entity :type.',
+
+    'report'    =>  [
+        'success'   =>  'Profile repoted succesfully',
+        'fail'      =>  'Profile repoted unsuccesfully',
+    ],
 
     /* Custom Message */    
 ];

@@ -43,4 +43,5 @@ Route::group(['namespace' => 'v1', 'prefix' => 'v1'], function () {
 
 Route::group(['namespace' => 'v1', 'prefix' => 'v1', 'middleware' => 'auth:sanctum'], function () {
     Route::post('user/get-list', [UserController::class,'getUsersList'])->name('api.user.get-list');
+    Route::post('user/profile-report',[UserController::class,'storeProfileReport'])->name('api.user.profile-report');
 });

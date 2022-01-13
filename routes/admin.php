@@ -44,6 +44,10 @@ Route::group(['namespace' => 'Admin', 'middleware' => ['check_permit','revalidat
 	Route::get('locations/listing', 'LocationController@listing')->name('locations.listing');
 	Route::resource('locations', 'LocationController');
 
+	/* Locations Management*/
+	Route::get('profile-reports/listing', 'ProfileReportController@listing')->name('profile-reports.listing');
+	Route::resource('profile-reports', 'ProfileReportController');
+
 	/* State Management*/
 	Route::get('states/listing', 'StateController@listing')->name('states.listing');
 	Route::resource('states', 'StateController');
