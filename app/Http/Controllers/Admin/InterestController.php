@@ -172,7 +172,7 @@ class InterestController extends Controller
 
             $records['data'][] = [
                 'id'            =>  $interest->id,
-                'title'         =>  $interest->translate(config('utility.default_lang_code')) ? $interest->translate(config('utility.default_lang_code'))->title : $interest->translate('en')->title,
+                'title'         =>  $interest->translate(config('utility.default_lang_code')) ? $interest->translate(config('utility.default_lang_code'))->title : "",
                 'active'        =>  view('admin.layouts.includes.switch', compact('params'))->render(),
                 'action'        =>  view('admin.layouts.includes.actions')->with(['custom_title' => 'Interest', 'id' => $interest->custom_id], $interest)->render(),
                 'checkbox'      =>  view('admin.layouts.includes.checkbox')->with('id', $interest->custom_id)->render(),

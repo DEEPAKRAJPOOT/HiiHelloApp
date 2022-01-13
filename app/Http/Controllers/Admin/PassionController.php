@@ -173,8 +173,8 @@ class PassionController extends Controller
 
             $records['data'][] = [
                 'id'            =>  $passion->id,
-                'name'          =>  $passion->translate(config('utility.default_lang_code')) ? $passion->translate(config('utility.default_lang_code'))->name : $passion->translate('en')->name,
-                'type'          =>  $passion->translate(config('utility.default_lang_code')) ? $passion->translate(config('utility.default_lang_code'))->type : $passion->translate('en')->type,
+                'name'          =>  $passion->translate(config('utility.default_lang_code')) ? $passion->translate(config('utility.default_lang_code'))->name : "",
+                'type'          =>  $passion->translate(config('utility.default_lang_code')) ? $passion->translate(config('utility.default_lang_code'))->type : "",
                 'active'        =>  view('admin.layouts.includes.switch', compact('params'))->render(),
                 'action'        =>  view('admin.layouts.includes.actions')->with(['custom_title' => 'Passion', 'id' => $passion->custom_id], $passion)->render(),
                 'checkbox'      =>  view('admin.layouts.includes.checkbox')->with('id', $passion->custom_id)->render(),

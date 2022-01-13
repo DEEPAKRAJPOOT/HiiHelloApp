@@ -170,7 +170,7 @@ class CountryController extends Controller
 
             $records['data'][] = [
                 'id'            =>  $country->id,
-                'name'          =>  $country->translate(config('utility.default_lang_code')) ? $country->translate(config('utility.default_lang_code'))->name : $country->translate('en')->name,
+                'name'          =>  $country->translate(config('utility.default_lang_code')) ? $country->translate(config('utility.default_lang_code'))->name : "",
                 'code'          =>  $country->code,
                 'phonecode'     =>  $country->phonecode,
                 'active'        =>  view('admin.layouts.includes.switch', compact('params'))->render(),
