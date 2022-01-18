@@ -6,6 +6,7 @@ use App\Http\Middleware\CheckApiLanguage;
 use App\Http\Controllers\api\v1\AuthenticationController;
 use App\Http\Controllers\api\v1\GeneralController;
 use App\Http\Controllers\api\v1\UserController;
+use App\Http\Controllers\api\v1\LikeController;
 
 /*
 |--------------------------------------------------------------------------
@@ -44,4 +45,8 @@ Route::group(['namespace' => 'v1', 'prefix' => 'v1'], function () {
 Route::group(['namespace' => 'v1', 'prefix' => 'v1', 'middleware' => 'auth:sanctum'], function () {
     Route::post('user/get-list', [UserController::class,'getUsersList'])->name('api.user.get-list');
     Route::post('user/profile-report',[UserController::class,'storeProfileReport'])->name('api.user.profile-report');
+
+    // Like
+    Route::post('user/add-like', [LikeController::class,'addNewLike'])->name('api.user.add-like');
+    Route::post('user/get-likes', [LikeController::class,'getLikes'])->name('api.user.get-likes');
 });

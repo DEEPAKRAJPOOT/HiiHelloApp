@@ -4,6 +4,7 @@ namespace App\Http\Controllers\api\v1;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -16,6 +17,7 @@ use App\Models\UserDetail;
 use App\Models\Location;
 use App\Models\Interest;
 use App\Models\UserInterest;
+use App\Models\Language;
 
 class AuthenticationController extends Controller
 {
@@ -45,8 +47,8 @@ class AuthenticationController extends Controller
                     }else{
                         $this->response['meta']['message']  = trans('api.in_active');
                     }
-                } catch(\Exception $exception) {
-                    $this->response['meta']['message']  = trans('api.login_fail');
+                } catch (\Exception $e) {
+                    $this->storeErrorLog($e,'login',trans('api.login_fail'));
                 }
             } else {
                 $this->response['meta']['message']  = $checksumDetails->message;
@@ -61,7 +63,7 @@ class AuthenticationController extends Controller
         $rules = RegisterRequest::rules();
         if( $this->apiValidator($request->all(), $rules) ) {
             try{
-                $country_id = $location_id = NULL;
+                $country_id = $location_id = $language_id = NULL;
                 if(!empty($request->country)){
                     $country = Country::where('custom_id',$request->country)->whereIsActive('y')->firstOrFail();
                     $country_id = $country->id;
@@ -70,6 +72,11 @@ class AuthenticationController extends Controller
                 if(!empty($request->location)){
                     $location = Location::where('custom_id',$request->location)->whereIsActive('y')->firstOrFail();
                     $location_id = $location->id;
+                }
+
+                if(!empty($request->language)){
+                    $language = Language::where('custom_id',$request->language)->whereIsActive('y')->firstOrFail();
+                    $language_id = $language->id;
                 }
 
                 $user = User::updateOrCreate([
@@ -85,6 +92,7 @@ class AuthenticationController extends Controller
                     'interest'          =>  $request->interest ?? NULL,
                     'country_id'        =>  $country_id ?? NULL,
                     'location_id'       =>  $location_id ?? NULL,
+                    'language_id'       =>  $language_id ?? NULL,
                     'password'          =>  Hash::make(config('utility.default_password')),
                 ]);
 
@@ -197,6 +205,8 @@ class AuthenticationController extends Controller
                         $this->response['meta']['message'] = trans('api.went_wrong');
                         break;
                 };
+            } catch (\Exception $e) {
+                $this->storeErrorLog($e,'set_profile');
             }
         }
 
@@ -220,6 +230,8 @@ class AuthenticationController extends Controller
                         'message'   =>  'Contact details not found!'
                     ]
                 ], 404);
+            } catch (\Exception $e) {
+                $this->storeErrorLog($e,'generate_checksum');
             }
 
             $key = config('utility.checksum.key');

@@ -17,6 +17,7 @@ class ProfileReportResource extends JsonResource
         return [
             'id'                =>  $this->custom_id,
             'message'           =>  $this->message,
+            'image'             =>  generateURL($this->image),
             'user'              =>  new CommonProfileResource($this->user),
             'reported_user'     =>  new CommonProfileResource($this->reportedUser),
             'status'            =>  $this->status,

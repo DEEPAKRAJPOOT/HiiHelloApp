@@ -8,6 +8,8 @@ use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Routing\Controller as BaseController;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Http\Response;
+use Monolog\Handler\StreamHandler;
+use Monolog\Logger;
 
 class Controller extends BaseController
 {
@@ -171,6 +173,18 @@ class Controller extends BaseController
         $this->response['meta']['api'] = request()->route()->controller->getVersion();
         $this->response['meta']['language'] = app()->getLocale();
         return response()->json($this->response, $this->status);
+    }
+
+    // Store Error Log
+    public function storeErrorLog($error,$filename = 'laravel',$message = null)
+    {
+        if(empty($message)){ $message = trans('api.went_wrong'); }
+        $this->response['meta']['message'] = $message;
+
+        // Add error log
+        $iqTrackingLog = new Logger($filename);
+        $iqTrackingLog->pushHandler(new StreamHandler(storage_path('logs/' . $filename . '.log')), Logger::ERROR);
+        $iqTrackingLog->error($filename, ['error' => $error->getMessage()]);
     }
 
     public function validateCheckSum($checksum, $contact)

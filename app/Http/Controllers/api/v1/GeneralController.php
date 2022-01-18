@@ -4,6 +4,7 @@ namespace App\Http\Controllers\api\v1;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use App\Http\Resources\v1\LanguageResource;
 use App\Http\Resources\v1\CmsResource;
 use App\Http\Resources\v1\CountryResource;
@@ -91,45 +92,39 @@ class GeneralController extends Controller
                     $this->response['meta']['message'] = trans('api.went_wrong');
                     break;
             };
+        } catch (\Exception $e) {
+            $this->storeErrorLog($e,'get_languages');
         }
     }
 
     // Get Countries List
     public function getCountries(Request $request)
     {
-        $rules = PaginationRequest::rules();
-        if( $this->apiValidator($request->all(), $rules) ) {
-            try{
-                $countries = Country::whereIsActive('y');
-                $count = $countries->count();
-                $countries = $countries->limit($request->limit ?? config('utility.pagination.limit'))
-                        ->offset($request->offset ?? config('utility.pagination.offset'))
-                        ->get();
-                if($countries->isNotEmpty()){
-                    return (CountryResource::collection($countries))->additional([
-                        'meta' => [
-                            'limit'     =>  $request->limit,
-                            'offset'    =>  $request->offset,
-                            'total'     =>  $count,
-                            'url'       =>  url()->current(),
-                            'api'       =>  $this->getVersion(),
-                            'language'  =>  app()->getLocale(),
-                            'message'   =>  trans('api.list', ['entity' => __('Countries')]),
-                        ] ]);
-                }else{
-                    $this->response['meta']['message']  =   trans('api.not_found',['entity' => __('Countries')]); 
-                    $this->status = $this->statusArr['not_found'];     
-                }
-            } catch(ModelNotFoundException $exception) {                
-                switch ($exception->getModel()) {
-                    case 'App\Models\Country':
-                        $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("Countries")]);
-                        break;
-                    default:
-                        $this->response['meta']['message'] = trans('api.went_wrong');
-                        break;
-                };
+        try{
+            $countries = Country::whereIsActive('y')->get();
+            if($countries->isNotEmpty()){
+                return (CountryResource::collection($countries))->additional([
+                    'meta' => [
+                        'url'       =>  url()->current(),
+                        'api'       =>  $this->getVersion(),
+                        'language'  =>  app()->getLocale(),
+                        'message'   =>  trans('api.list', ['entity' => __('Countries')]),
+                    ] ]);
+            }else{
+                $this->response['meta']['message']  =   trans('api.not_found',['entity' => __('Countries')]); 
+                $this->status = $this->statusArr['not_found'];     
             }
+        } catch(ModelNotFoundException $exception) {                
+            switch ($exception->getModel()) {
+                case 'App\Models\Country':
+                    $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("Countries")]);
+                    break;
+                default:
+                    $this->response['meta']['message'] = trans('api.went_wrong');
+                    break;
+            };
+        } catch (\Exception $e) {
+            $this->storeErrorLog($e,'get_countries');
         }
         return $this->returnResponse();
     }
@@ -164,6 +159,8 @@ class GeneralController extends Controller
                         $this->response['meta']['message'] = trans('api.went_wrong');
                         break;
                 };
+            } catch (\Exception $e) {
+                $this->storeErrorLog($e,'get_cms_pages');
             }
         }
         return $this->returnResponse();
@@ -210,6 +207,8 @@ class GeneralController extends Controller
                         $this->response['meta']['message'] = trans('api.went_wrong');
                         break;
                 };
+            } catch (\Exception $e) {
+                $this->storeErrorLog($e,'get_locations');
             }
         }
         return $this->returnResponse();
@@ -250,6 +249,8 @@ class GeneralController extends Controller
                         $this->response['meta']['message'] = trans('api.went_wrong');
                         break;
                 };
+            } catch (\Exception $e) {
+                $this->storeErrorLog($e,'get_interests');
             }
         }
         return $this->returnResponse();

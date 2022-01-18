@@ -4,6 +4,7 @@ namespace App\Http\Controllers\api\v1;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Resources\v1\UserProfile;
@@ -15,7 +16,6 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\Location;
 use App\Models\ProfileReport;
-
 
 class UserController extends Controller
 {
@@ -34,7 +34,6 @@ class UserController extends Controller
                             'meta' => [
                                 'message'  =>  trans('api.success', ['entity' => __("User")]),
                             ] ]);
-
             } catch(ModelNotFoundException $exception) {                
                 switch ($exception->getModel()) {
                     case 'App\Models\User':
@@ -44,6 +43,8 @@ class UserController extends Controller
                         $this->response['meta']['message'] = trans('api.went_wrong');
                         break;
                 };
+            } catch (\Exception $e) {
+                $this->storeErrorLog($e,'get_profile');
             }
         }
         return $this->returnResponse();
@@ -72,6 +73,12 @@ class UserController extends Controller
                 if(!empty($request->location)){
                     $location = Location::whereCustomId($request->location)->whereIsActive('y')->firstOrFail();
                     $users = $users->whereLocationId($location->id);
+                }
+                if(!empty($request->languages)){
+                    $languages = $request->languages;
+                    $users = $users->whereHas('language',function($q) use ($languages){
+                                $q->whereIn('custom_id',$languages);
+                            });
                 }
 
                 $users = $users->inRandomOrder();
@@ -106,6 +113,8 @@ class UserController extends Controller
                         $this->response['meta']['message'] = trans('api.went_wrong');
                         break;
                 };
+            } catch (\Exception $e) {
+                $this->storeErrorLog($e,'get_users_list');
             }
         }
         return $this->returnResponse();
@@ -117,7 +126,11 @@ class UserController extends Controller
         $rules = ProfileReportRequest::rules();
         if( $this->apiValidator($request->all(), $rules) ) {
             try{
+                $path = NULL;
                 $reported_user = User::whereCustomId($request->reported_user)->whereIsActive('y')->firstOrFail();
+                if(!empty($request->image)){
+                    $path = $request->file('image')->store('profile_report');
+                }
 
                 $profile_report = ProfileReport::firstOrCreate([
                     'user_id'           =>  Auth::id(),
@@ -125,6 +138,7 @@ class UserController extends Controller
                     'message'           =>  $request->message,
                 ],[
                     'custom_id'         =>  getUniqueString('profile_reports'),
+                    'image'             =>  $path,
                 ]);
 
                 if($profile_report->save()){
@@ -146,6 +160,8 @@ class UserController extends Controller
                         $this->response['meta']['message'] = trans('api.went_wrong');
                         break;
                 };
+            } catch (\Exception $e) {
+                $this->storeErrorLog($e,'store_profile_report');
             }
         }
         return $this->returnResponse();
@@ -182,6 +198,8 @@ class UserController extends Controller
                     $this->response['meta']['message'] = trans('api.went_wrong');
                     break;
             };
+        } catch (\Exception $e) {
+            $this->storeErrorLog($e,'get_common_age');
         }
         return $this->returnResponse();
     }

@@ -11,7 +11,7 @@ class ProfileReport extends Model
     
     public function getRouteKeyName(){ return 'custom_id'; }
     
-    protected $fillable = ['custom_id', 'user_id', 'reported_user_id', 'message', 'status'];
+    protected $fillable = ['custom_id', 'user_id', 'reported_user_id', 'message', 'image', 'status'];
 
     public function user(){ return $this->belongsTo('App\Models\User','user_id','id'); }
 

@@ -4,7 +4,7 @@ namespace App\Http\Resources\v1;
 
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class CommonProfileResource extends JsonResource
+class LikeResource extends JsonResource
 {
     /**
      * Transform the resource into an array.
@@ -15,18 +15,10 @@ class CommonProfileResource extends JsonResource
     public function toArray($request)
     {
         return [
-            'id'                =>  $this->custom_id ?? "",
-            'first_name'        =>  $this->first_name ?? "",
-            'last_name'         =>  $this->last_name ?? "",
-            'contact'       =>  [
-                'code'      =>  $this->country_code,
-                'number'    =>  $this->contact_no,
-            ],
-            'birth_date'        =>  $this->birth_date ?? "",
-            'age'               =>  $this->getAge(),
-            'gender'            =>  $this->gender ?? "",
-            'location'          =>  new LocationResource($this->location),
+            'id'            =>  $this->custom_id,
+            'user'          =>  new CommonProfileResource($this->user),
         ];
+        return parent::toArray($request);
     }
 
     public function with($request)

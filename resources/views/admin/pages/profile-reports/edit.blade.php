@@ -72,10 +72,19 @@
                             </label>
                         </div>
 
+                        @if(generateURL($profile_report->image))
+                        <div class="form-group col-md-6">
+                            <label class="control-label"><span class="mendatory" style="font-size: 20px;"></span>
+                                <h4>Report Image</h4>
+                                <a href="{{ generateURL($profile_report->image) }}" target="_blank"><img style="height:100px; width:100px" src="{{ generateURL($profile_report->image) }}"></a>
+                            </label>
+                        </div>
+                        @endif
+
                         <div class="form-group col-md-6">
                             <br>
                             <label class="control-label"><span class="mendatory" style="font-size: 20px;"></span>
-                                <h4>Reporte Message</h4>
+                                <h4>Report Message</h4>
                                 <label>{{ $profile_report->message }}</label>
                             </label>
                         </div>
