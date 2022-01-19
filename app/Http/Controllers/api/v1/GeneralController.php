@@ -14,7 +14,6 @@ use App\Http\Resources\v1\InterestResource;
 use App\Http\Resources\v1\FaqResource;
 use App\Http\Requests\Api\General\PaginationRequest;
 use App\Http\Requests\Api\General\LocationRequest;
-use App\Http\Requests\Api\General\CountryRequest;
 use App\Models\Language;
 use App\Models\CmsPage;
 use App\Models\Country;
@@ -104,47 +103,31 @@ class GeneralController extends Controller
     // Get Countries List
     public function getCountries(Request $request)
     {
-        $rules = CountryRequest::rules();
-        if( $this->apiValidator($request->all(), $rules) ) {
-            try{
-                $countries = Country::whereIsActive('y');
-                if(!empty($request->search)){
-                    $search = $request->search;
-                    $countries = $countries->whereHas('countryTranslations', function ($query) use ($search) {
-                                    $query->where('name', 'like', "%{$search}%");
-                                });
-                }
-                $count = $countries->count();
-                $countries = $countries->limit($request->limit ?? config('utility.pagination.limit'))
-                            ->offset($request->offset ?? config('utility.pagination.offset'))
-                            ->get();
-                if($countries->isNotEmpty()){
-                    return (CountryResource::collection($countries))->additional([
-                        'meta' => [
-                            'limit'     =>  $request->limit,
-                            'offset'    =>  $request->offset,
-                            'total'     =>  $count,
-                            'url'       =>  url()->current(),
-                            'api'       =>  $this->getVersion(),
-                            'language'  =>  app()->getLocale(),
-                            'message'   =>  trans('api.list', ['entity' => __('Countries')]),
-                        ] ]);
-                }else{
-                    $this->response['meta']['message']  =   trans('api.not_found',['entity' => __('Countries')]); 
-                    $this->status = Response::HTTP_NOT_FOUND;
-                }
-            } catch(ModelNotFoundException $exception) {                
-                switch ($exception->getModel()) {
-                    case 'App\Models\Country':
-                        $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("Countries")]);
-                        break;
-                    default:
-                        $this->response['meta']['message'] = trans('api.went_wrong');
-                        break;
-                };
-            } catch (\Exception $e) {
-                $this->storeErrorLog($e,'get_countries');
+        try{
+            $countries = Country::whereIsActive('y')->get();
+            if($countries->isNotEmpty()){
+                return (CountryResource::collection($countries))->additional([
+                    'meta' => [
+                        'url'       =>  url()->current(),
+                        'api'       =>  $this->getVersion(),
+                        'language'  =>  app()->getLocale(),
+                        'message'   =>  trans('api.list', ['entity' => __('Countries')]),
+                    ] ]);
+            }else{
+                $this->response['meta']['message']  =   trans('api.not_found',['entity' => __('Countries')]); 
+                $this->status = Response::HTTP_NOT_FOUND;
             }
+        } catch(ModelNotFoundException $exception) {                
+            switch ($exception->getModel()) {
+                case 'App\Models\Country':
+                    $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("Countries")]);
+                    break;
+                default:
+                    $this->response['meta']['message'] = trans('api.went_wrong');
+                    break;
+            };
+        } catch (\Exception $e) {
+            $this->storeErrorLog($e,'get_countries');
         }
         return $this->returnResponse();
     }
