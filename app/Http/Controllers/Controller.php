@@ -8,6 +8,8 @@ use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Routing\Controller as BaseController;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Http\Response;
+use Monolog\Handler\StreamHandler;
+use Monolog\Logger;
 
 class Controller extends BaseController
 {
@@ -35,37 +37,39 @@ class Controller extends BaseController
     // ];
 
     public $status = 412;
-    public $statusArr = [
-        'success'=> 200,
-        'bad_request' => 400,
-        'authorization_required' => 401,
-        'payment_required' => 402,
-        'forbidden' => 403,
-        'not_found' => 404,
-        'method_not_allowed' => 405,
-        'not_acceptable' => 406,
-        'proxy_authentication_required' => 407,
-        'request_timeout' => 408,
-        'conflict' => 409,
-        'gone' => 410,
-        'length_required' => 411,
-        'precondition_failed' => 412,
-        'request_entity_too_large' => 413,
-        'request_URI_too_large' => 414,
-        'unsupported_media_type' => 415,
-        'request_range_not_satisfiable' => 416,
-        'expectation_failed' => 417,
-        'unprocessable_entity' => 422,
-        'locked' => 423,
-        'failed_dependency' => 424,
-        'to_many_request'   =>  429,
-        'internal_server_error' => 500,
-        'not_implemented' => 501,
-        'bad_gateway' => 502,
-        'service_unavailable' => 503,
-        'gateway_timeout' => 504,
-        'insufficient_storage' => 507,
-    ];
+
+    // Instead Of this Now Using Response.php Provided By Laravel
+    // public $statusArr = [
+    //     'success'=> 200,
+    //     'bad_request' => 400,
+    //     'authorization_required' => 401,
+    //     'payment_required' => 402,
+    //     'forbidden' => 403,
+    //     'not_found' => 404,
+    //     'method_not_allowed' => 405,
+    //     'not_acceptable' => 406,
+    //     'proxy_authentication_required' => 407,
+    //     'request_timeout' => 408,
+    //     'conflict' => 409,
+    //     'gone' => 410,
+    //     'length_required' => 411,
+    //     'precondition_failed' => 412,
+    //     'request_entity_too_large' => 413,
+    //     'request_URI_too_large' => 414,
+    //     'unsupported_media_type' => 415,
+    //     'request_range_not_satisfiable' => 416,
+    //     'expectation_failed' => 417,
+    //     'unprocessable_entity' => 422,
+    //     'locked' => 423,
+    //     'failed_dependency' => 424,
+    //     'to_many_request'   =>  429,
+    //     'internal_server_error' => 500,
+    //     'not_implemented' => 501,
+    //     'bad_gateway' => 502,
+    //     'service_unavailable' => 503,
+    //     'gateway_timeout' => 504,
+    //     'insufficient_storage' => 507,
+    // ];
 
     public function ValidateForm($fields, $rules)
     {
@@ -171,6 +175,18 @@ class Controller extends BaseController
         $this->response['meta']['api'] = request()->route()->controller->getVersion();
         $this->response['meta']['language'] = app()->getLocale();
         return response()->json($this->response, $this->status);
+    }
+
+    // Store Error Log
+    public function storeErrorLog($error,$filename = 'laravel',$message = null)
+    {
+        if(empty($message)){ $message = trans('api.went_wrong'); }
+        $this->response['meta']['message'] = $message;
+
+        // Add error log
+        $iqTrackingLog = new Logger($filename);
+        $iqTrackingLog->pushHandler(new StreamHandler(storage_path('logs/' . $filename . '.log')), Logger::ERROR);
+        $iqTrackingLog->error($filename, ['error' => $error->getMessage()]);
     }
 
     public function validateCheckSum($checksum, $contact)

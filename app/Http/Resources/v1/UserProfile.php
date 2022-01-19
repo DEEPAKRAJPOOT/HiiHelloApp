@@ -25,14 +25,17 @@ class UserProfile extends JsonResource
                 'number'    =>  $this->contact_no,
             ],
             'birth_date'        =>  $this->birth_date ?? "",
+            'age'               =>  $this->getAge(),
             'gender'            =>  $this->gender ?? "",
             'interest'          =>  $this->interest ?? "",
             'country'           =>  new CountryResource($this->country),
             'location'          =>  new LocationResource($this->location),
+            'language'          =>  new LanguageResource($this->language),
             'interests'         =>  UserInterestResource::collection($this->interests),
             'profile_photo'     =>  generateURL($this->profile_photo) ?? "",
             'flags'             =>  [
-                'profile_setuped'     =>  $this->isProfileSetuped(),
+                'profile_setuped'       =>  $this->isProfileSetuped(),
+                'likes'                 =>  $this->countLikes(),
             ],
         ];
     }

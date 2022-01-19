@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+use App\Models\Like;
 
 class User extends Authenticatable
 {
@@ -21,16 +22,26 @@ class User extends Authenticatable
     public function getRouteKeyName(){ return 'custom_id'; }
 
     protected $fillable = [
-        'custom_id', 'first_name', 'last_name', 'email', 'country_code', 'contact_no', 'birth_date', 'gender', 'interest', 'country_id', 'location_id', 'profile_photo', 'password',
+        'custom_id', 'first_name', 'last_name', 'email', 'country_code', 'contact_no', 'birth_date', 'gender', 'interest', 'country_id', 'location_id', 'language_id', 'profile_photo', 'password',
     ];
 
-    public function userDetails(){ return $this->hasMany('App\Models\UserDetail'); }
     public function country(){ return $this->belongsTo('App\Models\Country'); }
     public function location(){ return $this->belongsTo('App\Models\Location'); }
+    public function language(){ return $this->belongsTo('App\Models\Language'); }
+
     public function interests(){ return $this->hasMany('App\Models\UserInterest'); }
+    public function userDetails(){ return $this->hasMany('App\Models\UserDetail'); }
 
     public function setBirthDateAttribute($birth_date){
         $this->attributes['birth_date'] = \Carbon\Carbon::createFromFormat('m/d/Y', $birth_date);
+    }
+
+    public function getAge(){
+        return \Carbon\Carbon::parse($this->birth_date)->diff(\Carbon\Carbon::now())->y;
+    }
+
+    public function countLikes(){
+        return Like::whereUserId($this->id)->count() ?? 0;
     }
 
     public function isProfileSetuped(){
@@ -38,7 +49,7 @@ class User extends Authenticatable
             && !empty($this->first_name) && !empty($this->last_name)
             && !empty($this->country_code) && !empty($this->contact_no) && !empty($this->birth_date)
             && !empty($this->gender) && !empty($this->interest)
-            && !empty($this->country_id) && !empty($this->location_id) 
+            && !empty($this->country_id) && !empty($this->location_id) && !empty($this->language_id) 
             && !empty($this->profile_photo) ? true : false;
     }
 

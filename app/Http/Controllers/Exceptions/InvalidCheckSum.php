@@ -23,15 +23,15 @@ class InvalidCheckSum extends Exception
 	{
 		switch ($errorCode) {
 			case '485-412':
-				return "Security token was expired, please try again!";
+				return __('Security token was expired, please try again!');
 				break;
 			
 			case '485-500': 
-				return "Invalid contact details or checksum";
+				return __('Invalid contact details or checksum');
 				break;
 
 			case '485-404': 
-				return "Invalid security token. Please try again!";
+				return __('Invalid security token. Please try again!');
 				break;
 			default:
 				# code...

@@ -6,6 +6,7 @@ use Illuminate\Foundation\Http\FormRequest;
 use App\Models\Country;
 use App\Models\Location;
 use App\Models\Interest;
+use App\Models\Language;
 
 class RegisterRequest extends FormRequest
 {
@@ -30,6 +31,7 @@ class RegisterRequest extends FormRequest
         $country_ids    =   Country::whereIsActive('y')->pluck('custom_id')->toArray();
         $location_ids   =   Location::whereIsActive('y')->pluck('custom_id')->toArray();
         $interest_ids   =   Interest::whereIsActive('y')->pluck('custom_id')->toArray();
+        $language_ids   =   Language::whereIsActive('y')->pluck('custom_id')->toArray();
 
         return [
             'first_name'        =>  'required|min:2|max:100',
@@ -44,6 +46,7 @@ class RegisterRequest extends FormRequest
             'location'          =>  'required|in:'.implode(',', $location_ids),
             'interests'         =>  'required|array',
             'interests.*'       =>  'required|in:'.implode(',', $interest_ids),
+            'language'          =>  'required|in:'.implode(',', $language_ids),
             'profile_photo'     =>  'required|mimes:jpg,jpeg,png',
             'images'            =>  'required|array|max:4',
             'images.*'          =>  'required|mimes:jpg,jpeg,png',

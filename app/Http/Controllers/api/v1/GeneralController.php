@@ -4,18 +4,23 @@ namespace App\Http\Controllers\api\v1;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use App\Http\Resources\v1\LanguageResource;
 use App\Http\Resources\v1\CmsResource;
 use App\Http\Resources\v1\CountryResource;
 use App\Http\Resources\v1\LocationResource;
 use App\Http\Resources\v1\InterestResource;
+use App\Http\Resources\v1\FaqResource;
 use App\Http\Requests\Api\General\PaginationRequest;
 use App\Http\Requests\Api\General\LocationRequest;
+use App\Http\Requests\Api\General\CountryRequest;
 use App\Models\Language;
 use App\Models\CmsPage;
 use App\Models\Country;
 use App\Models\Location;
 use App\Models\Interest;
+use App\Models\Faq;
 
 class GeneralController extends Controller
 {
@@ -58,7 +63,7 @@ class GeneralController extends Controller
                 ],
             ],
         ];
-        $this->status = $this->statusArr['success'];
+        $this->status = Response::HTTP_OK;
         $this->response['meta']['message'] = trans('api.list', ['entity' => __('App details')]);
         return $this->returnResponse();
     }
@@ -78,7 +83,7 @@ class GeneralController extends Controller
                             'message'   =>  trans('api.list', ['entity' => __('Languages')]),
                         ] ]);
             }else{
-                $this->status = $this->statusArr['forbidden'];
+                $this->status = Response::HTTP_FORBIDDEN;
                 $this->response['meta']['message']  = trans('api.not_found',['entity' => __('Languages')]);
             }
             return $this->returnResponse();
@@ -91,20 +96,28 @@ class GeneralController extends Controller
                     $this->response['meta']['message'] = trans('api.went_wrong');
                     break;
             };
+        } catch (\Exception $e) {
+            $this->storeErrorLog($e,'get_languages');
         }
     }
 
     // Get Countries List
     public function getCountries(Request $request)
     {
-        $rules = PaginationRequest::rules();
+        $rules = CountryRequest::rules();
         if( $this->apiValidator($request->all(), $rules) ) {
             try{
                 $countries = Country::whereIsActive('y');
+                if(!empty($request->search)){
+                    $search = $request->search;
+                    $countries = $countries->whereHas('countryTranslations', function ($query) use ($search) {
+                                    $query->where('name', 'like', "%{$search}%");
+                                });
+                }
                 $count = $countries->count();
                 $countries = $countries->limit($request->limit ?? config('utility.pagination.limit'))
-                        ->offset($request->offset ?? config('utility.pagination.offset'))
-                        ->get();
+                            ->offset($request->offset ?? config('utility.pagination.offset'))
+                            ->get();
                 if($countries->isNotEmpty()){
                     return (CountryResource::collection($countries))->additional([
                         'meta' => [
@@ -118,7 +131,7 @@ class GeneralController extends Controller
                         ] ]);
                 }else{
                     $this->response['meta']['message']  =   trans('api.not_found',['entity' => __('Countries')]); 
-                    $this->status = $this->statusArr['not_found'];     
+                    $this->status = Response::HTTP_NOT_FOUND;
                 }
             } catch(ModelNotFoundException $exception) {                
                 switch ($exception->getModel()) {
@@ -129,6 +142,8 @@ class GeneralController extends Controller
                         $this->response['meta']['message'] = trans('api.went_wrong');
                         break;
                 };
+            } catch (\Exception $e) {
+                $this->storeErrorLog($e,'get_countries');
             }
         }
         return $this->returnResponse();
@@ -137,34 +152,33 @@ class GeneralController extends Controller
     // Get CMS Pages List (T&C, Privacy Policy, About Us)
     public function getCmsPages(Request $request)
     {
-        $rules = PaginationRequest::rules();
-        if( $this->apiValidator($request->all(), $rules) ) {
-            try{
-                $cms_pages = CmsPage::get();
-                if($cms_pages->isNotEmpty()){
-                    return (CmsResource::collection($cms_pages))
-                    ->additional([
-                        'meta' => [
-                            'url'       =>  url()->current(),
-                            'api'       =>  $this->getVersion(),
-                            'language'  =>  app()->getLocale(),
-                            'message'   =>  trans('api.list', ['entity' => __('Cms Pages')]),
-                        ] ]);
-                }else{
-                    $this->response['meta']['message']  =   trans('api.not_found',['entity' => __('Cms Pages')]); 
-                    $this->status = $this->statusArr['not_found'];     
-                }
-                return $this->returnResponse();
-            } catch(ModelNotFoundException $exception) {                
-                switch ($exception->getModel()) {
-                    case 'App\Models\CmsPage':
-                        $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("Cms Pages")]);
-                        break;
-                    default:
-                        $this->response['meta']['message'] = trans('api.went_wrong');
-                        break;
-                };
+        try{
+            $cms_pages = CmsPage::get();
+            if($cms_pages->isNotEmpty()){
+                return (CmsResource::collection($cms_pages))
+                ->additional([
+                    'meta' => [
+                        'url'       =>  url()->current(),
+                        'api'       =>  $this->getVersion(),
+                        'language'  =>  app()->getLocale(),
+                        'message'   =>  trans('api.list', ['entity' => __('Cms Pages')]),
+                    ] ]);
+            }else{
+                $this->response['meta']['message']  =   trans('api.not_found',['entity' => __('Cms Pages')]); 
+                $this->status = Response::HTTP_NOT_FOUND;     
             }
+            return $this->returnResponse();
+        } catch(ModelNotFoundException $exception) {                
+            switch ($exception->getModel()) {
+                case 'App\Models\CmsPage':
+                    $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("Cms Pages")]);
+                    break;
+                default:
+                    $this->response['meta']['message'] = trans('api.went_wrong');
+                    break;
+            };
+        } catch (\Exception $e) {
+            $this->storeErrorLog($e,'get_cms_pages');
         }
         return $this->returnResponse();
     }
@@ -199,7 +213,7 @@ class GeneralController extends Controller
                         ] ]);
                 }else{
                     $this->response['meta']['message']  =   trans('api.not_found',['entity' => __('Locations')]); 
-                    $this->status = $this->statusArr['not_found'];     
+                    $this->status = Response::HTTP_NOT_FOUND;     
                 }
             } catch(ModelNotFoundException $exception) {                
                 switch ($exception->getModel()) {
@@ -210,6 +224,8 @@ class GeneralController extends Controller
                         $this->response['meta']['message'] = trans('api.went_wrong');
                         break;
                 };
+            } catch (\Exception $e) {
+                $this->storeErrorLog($e,'get_locations');
             }
         }
         return $this->returnResponse();
@@ -239,7 +255,7 @@ class GeneralController extends Controller
                         ] ]);
                 }else{
                     $this->response['meta']['message']  =   trans('api.not_found',['entity' => __('Interests')]); 
-                    $this->status = $this->statusArr['not_found'];     
+                    $this->status = Response::HTTP_NOT_FOUND;     
                 }
             } catch(ModelNotFoundException $exception) {                
                 switch ($exception->getModel()) {
@@ -250,6 +266,52 @@ class GeneralController extends Controller
                         $this->response['meta']['message'] = trans('api.went_wrong');
                         break;
                 };
+            } catch (\Exception $e) {
+                $this->storeErrorLog($e,'get_interests');
+            }
+        }
+        return $this->returnResponse();
+    }
+
+    // Get Faq Question And Answers
+    public function getFaqs(Request $request)
+    {
+        $rules = PaginationRequest::rules();
+        if( $this->apiValidator($request->all(), $rules) ) {
+            try{
+                $faqs = Faq::whereIsActive('y');
+                $count = $faqs->count();
+                $faqs = $faqs->limit($request->limit ?? config('utility.pagination.limit'))
+                            ->offset($request->offset ?? config('utility.pagination.offset'))
+                            ->get();
+                if($faqs->isNotEmpty()){
+                    return (FaqResource::collection($faqs))
+                    ->additional([
+                        'meta' => [
+                            'limit'     =>  $request->limit,
+                            'offset'    =>  $request->offset,
+                            'total'     =>  $count,
+                            'url'       =>  url()->current(),
+                            'api'       =>  $this->getVersion(),
+                            'language'  =>  app()->getLocale(),
+                            'message'   =>  trans('api.list', ['entity' => __('Faqs')]),
+                        ] ]);
+                }else{
+                    $this->response['meta']['message']  =   trans('api.not_found',['entity' => __('Faqs')]); 
+                    $this->status = Response::HTTP_NOT_FOUND;     
+                }
+                return $this->returnResponse();
+            } catch(ModelNotFoundException $exception) {                
+                switch ($exception->getModel()) {
+                    case 'App\Models\CmsPage':
+                        $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("Faqs")]);
+                        break;
+                    default:
+                        $this->response['meta']['message'] = trans('api.went_wrong');
+                        break;
+                };
+            } catch (\Exception $e) {
+                $this->storeErrorLog($e,'get_faqs');
             }
         }
         return $this->returnResponse();

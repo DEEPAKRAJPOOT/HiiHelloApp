@@ -146,6 +146,24 @@ Breadcrumbs::register('dashboard', function ($breadcrumbs) {
 	});
 
 
+	// Faqs -------------------------------------------------------------------------------------------------------------------------------------------------------
+	Breadcrumbs::register('faqs_list', function($breadcrumbs)
+	{
+		$breadcrumbs->parent('dashboard');
+	    $breadcrumbs->push('Faqs', route(Auth::getDefaultDriver().'.faqs.index'));
+	});
+	Breadcrumbs::register('faqs_create', function($breadcrumbs)
+	{
+		$breadcrumbs->parent('faqs_list');
+	    $breadcrumbs->push('Add New Faq', route(Auth::getDefaultDriver().'.faqs.create'));
+	});
+
+	Breadcrumbs::register('faqs_update', function($breadcrumbs, $id)
+	{
+		$breadcrumbs->parent('faqs_list');
+	    $breadcrumbs->push('Edit Faq', route(Auth::getDefaultDriver().'.faqs.edit', $id));
+	});
+
 	// states -------------------------------------------------------------------------------------------------------------------------------------------------------
 	Breadcrumbs::register('states_list', function($breadcrumbs)
 	{

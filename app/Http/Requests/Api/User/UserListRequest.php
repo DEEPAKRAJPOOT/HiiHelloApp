@@ -5,6 +5,7 @@ namespace App\Http\Requests\Api\User;
 use Illuminate\Foundation\Http\FormRequest;
 use App\Models\Interest;
 use App\Models\Location;
+use App\Models\Language;
 
 class UserListRequest extends FormRequest
 {
@@ -27,6 +28,7 @@ class UserListRequest extends FormRequest
     {
         $interest_ids = Interest::whereIsActive('y')->pluck('custom_id')->toArray();
         $location_ids = Location::whereIsActive('y')->pluck('custom_id')->toArray();
+        $language_ids = Language::whereIsActive('y')->pluck('custom_id')->toArray();
 
         return [
             'limit'             =>  'nullable|numeric',
@@ -37,6 +39,8 @@ class UserListRequest extends FormRequest
             'interests'         =>  'nullable|array',
             'interests.*'       =>  'nullable|in:'.implode(',', $interest_ids),
             'location'          =>  'nullable|in:'.implode(',', $location_ids),
+            'languages'         =>  'nullable|array',
+            'languages.*'       =>  'nullable|in:'.implode(',', $language_ids),
         ];
     }
 }

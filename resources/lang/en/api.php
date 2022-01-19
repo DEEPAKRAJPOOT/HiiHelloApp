@@ -28,7 +28,7 @@ return [
     'went_wrong'    =>  'Oops! Something went wrong, please try again later',
     'not_empty'     => 'Please select valid :entity',
     'not_available' =>  ':entity is not available',
-    'not_liked'     =>  ':entity is already liked',
+    'liked'     =>  ':entity liked successfully',
     'dis-liked'     =>  ':entity is already Dis-liked',
     'follow'     =>  ':entity followed successfully',
     'unfollow'     =>  ':entity un-followed successfully',

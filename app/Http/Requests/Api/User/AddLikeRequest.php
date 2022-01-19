@@ -6,7 +6,7 @@ use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
 use App\Models\User;
 
-class ProfileReportRequest extends FormRequest
+class AddLikeRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -28,9 +28,7 @@ class ProfileReportRequest extends FormRequest
         $user_ids = User::where('id','!=',Auth::id())->whereIsActive('y')->pluck('custom_id')->toArray();
 
         return  [
-            'reported_user'     =>  'required|in:'.implode(',', $user_ids),
-            'message'           =>  'required|min:3|max:400',
-            'image'             =>  'nullable|mimes:jpg,jpeg,png',
+            'user_id'      =>  'required|in:'.implode(',', $user_ids),
         ];
     }
 }
