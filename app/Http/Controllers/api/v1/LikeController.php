@@ -4,6 +4,7 @@ namespace App\Http\Controllers\api\v1;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Requests\api\user\AddLikeRequest;
@@ -39,7 +40,7 @@ class LikeController extends Controller
                             ] ]);
                 }else{
                     $this->response['meta']['message']  =   trans('api.not_found',['entity' => __('User')]); 
-                    $this->status = $this->statusArr['not_found']; 
+                    $this->status = Response::HTTP_NOT_FOUND; 
                 }
             } catch(ModelNotFoundException $exception) {                
                 switch ($exception->getModel()) {
@@ -66,7 +67,7 @@ class LikeController extends Controller
         $rules = PaginationRequest::rules();
         if( $this->apiValidator($request->all(), $rules) ) {
             try{
-                $likes = Like::whereHas('user')->where('liker_id',Auth::id())->latest();
+                $likes = Like::whereHas('likerUser')->where('user_id',Auth::id())->latest();
                 $count = $likes->count();
                 $likes = $likes->limit($request->limit ?? config('utility.pagination.limit'))
                             ->offset($request->offset ?? config('utility.pagination.offset'))
@@ -86,7 +87,7 @@ class LikeController extends Controller
                             ] ]);     
                 }else{
                     $this->response['meta']['message']  =   trans('api.not_found', ['entity' => __("Users")]);   
-                    $this->status = $this->statusArr['not_found'];     
+                    $this->status = Response::HTTP_NOT_FOUND;     
                 }
             } catch(ModelNotFoundException $exception) {                
                 switch ($exception->getModel()) {

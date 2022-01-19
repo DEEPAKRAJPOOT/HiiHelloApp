@@ -13,6 +13,7 @@ use App\Http\Requests\Api\User\ProfileRequest;
 use App\Http\Requests\Api\User\UserListRequest;
 use App\Http\Requests\Api\User\ProfileReportRequest;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use App\Models\User;
 use App\Models\Location;
 use App\Models\ProfileReport;
@@ -99,7 +100,7 @@ class UserController extends Controller
                         ] ]);
                 }else{
                     $this->response['meta']['message']  =   trans('api.not_found',['entity' => __('Users')]); 
-                    $this->status = $this->statusArr['not_found'];     
+                    $this->status = Response::HTTP_NOT_FOUND;     
                 }
             } catch(ModelNotFoundException $exception) {                
                 switch ($exception->getModel()) {
@@ -149,7 +150,7 @@ class UserController extends Controller
                             ] ]);
                 }else{
                     $this->response['meta']['message']  =   trans('api.report.fail'); 
-                    $this->status = $this->statusArr['not_found'];     
+                    $this->status = Response::HTTP_NOT_FOUND;     
                 }
             } catch(ModelNotFoundException $exception) {                
                 switch ($exception->getModel()) {
@@ -187,7 +188,7 @@ class UserController extends Controller
                     ] ]);
             }else{
                 $this->response['meta']['message']  =   trans('api.not_found',['entity' => __('Users Age')]); 
-                $this->status = $this->statusArr['not_found'];     
+                $this->status = Response::HTTP_NOT_FOUND;     
             }
         } catch(ModelNotFoundException $exception) {                
             switch ($exception->getModel()) {

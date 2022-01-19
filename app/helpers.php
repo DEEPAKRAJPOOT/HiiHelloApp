@@ -31,16 +31,19 @@ function getPermissions($user_type = 'normal')
             8 =>[ //Profile Reports
                 'permissions' => 'access,view,edit'
             ],
-            9 =>[ //State
+            9 =>[ //Faqs
                 'permissions' => 'access,add,edit,delete'
             ],
-            10 =>[ //City
+            10 =>[ //State
                 'permissions' => 'access,add,edit,delete'
             ],
-            11 =>[ //CMS Pages
+            11 =>[ //City
+                'permissions' => 'access,add,edit,delete'
+            ],
+            12 =>[ //CMS Pages
                 'permissions' => 'access,edit'
             ],
-            12 =>[ //Site Configurations
+            13 =>[ //Site Configurations
                 'permissions' => 'access'
             ],
         ];

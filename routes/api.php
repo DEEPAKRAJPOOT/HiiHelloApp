@@ -36,6 +36,7 @@ Route::group(['namespace' => 'v1', 'prefix' => 'v1'], function () {
     Route::post('get/cms-pages',[GeneralController::class,'getCmsPages'])->name('api.user.get-cms-pages');
     Route::post('get/locations',[GeneralController::class,'getLocations'])->name('api.get-locations');
     Route::post('get/interests',[GeneralController::class,'getInterests'])->name('api.get-interests');
+    Route::post('get/faqs',[GeneralController::class,'getFaqs'])->name('api.get-faqs');
 
     // User
     Route::post('user/get-profile', [UserController::class,'getProfile'])->name('api.user.get-profile');

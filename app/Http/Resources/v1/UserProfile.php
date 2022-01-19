@@ -34,7 +34,8 @@ class UserProfile extends JsonResource
             'interests'         =>  UserInterestResource::collection($this->interests),
             'profile_photo'     =>  generateURL($this->profile_photo) ?? "",
             'flags'             =>  [
-                'profile_setuped'     =>  $this->isProfileSetuped(),
+                'profile_setuped'       =>  $this->isProfileSetuped(),
+                'likes'                 =>  $this->countLikes(),
             ],
         ];
     }

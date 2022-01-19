@@ -48,6 +48,10 @@ Route::group(['namespace' => 'Admin', 'middleware' => ['check_permit','revalidat
 	Route::get('profile-reports/listing', 'ProfileReportController@listing')->name('profile-reports.listing');
 	Route::resource('profile-reports', 'ProfileReportController');
 
+	/* Faqs*/
+	Route::get('faqs/listing', 'FaqController@listing')->name('faqs.listing');
+	Route::resource('faqs', 'FaqController');
+
 	/* State Management*/
 	Route::get('states/listing', 'StateController@listing')->name('states.listing');
 	Route::resource('states', 'StateController');

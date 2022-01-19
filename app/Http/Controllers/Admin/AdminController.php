@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\RoleDetails;
 use App\Admin;
@@ -99,11 +100,11 @@ class AdminController extends Controller
     public function update(RoleDetails $request, Admin $role)
     {
         if (!empty($request->action) && $request->action == 'change_status') {
-                $content = ['status' => $this->statusArr['something_wrong'], 'message' => trans('flash_message.something')];
+                $content = ['status' => Response::HTTP_METHOD_NOT_ALLOWED, 'message' => trans('flash_message.something')];
                 if ($role->id) {
                     $role->is_active = $request->value;
                     if ($role->save()) {
-                        $content['status'] = $this->statusArr['success'];
+                        $content['status'] = Response::HTTP_OK;
                         $content['message'] = trans('flash_message.update', ['entity' => 'Status']);
                     }
                 }
@@ -144,9 +145,9 @@ class AdminController extends Controller
     public function destroy(Request $request, $id)
     {
         if (!empty($request->action) && $request->action == 'delete_all') {
-            $content = ['status' => $this->statusArr['something_wrong'], 'message' => trans('flash_message.something')];
+            $content = ['status' => Response::HTTP_METHOD_NOT_ALLOWED, 'message' => trans('flash_message.something')];
             Admin::whereIn('id', explode(',', $request->ids))->delete();
-            $content['status'] = $this->statusArr['success'];
+            $content['status'] = Response::HTTP_OK;
             $content['message'] = trans('flash_message.delete', ['entity' => 'User role']);
             $content['count'] = Admin::where('type', 'role')->count();
             return response()->json($content);
@@ -154,7 +155,7 @@ class AdminController extends Controller
         else {
             Admin::where('id', $id)->delete();
             if (request()->ajax()) {
-                $content = ['status' => $this->statusArr['success'], 'message' => trans('flash_message.delete', ['entity' => 'User role']), 'count' => Admin::where('type', 'role')->count()];
+                $content = ['status' => Response::HTTP_OK, 'message' => trans('flash_message.delete', ['entity' => 'User role']), 'count' => Admin::where('type', 'role')->count()];
                 return response()->json($content);
             } else {
                 flash(trans('flash_message.delete', ['entity' => 'User role']))->success();

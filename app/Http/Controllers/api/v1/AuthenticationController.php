@@ -4,6 +4,7 @@ namespace App\Http\Controllers\api\v1;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Auth;
@@ -30,7 +31,7 @@ class AuthenticationController extends Controller
         $rules = LoginRequest::rules();
         if( $this->apiValidator($request->all(), $rules) ) {
             $this->response['meta']['message']  = trans('api.login_fail');
-            $this->status = $this->statusArr['forbidden'];
+            $this->status = Response::HTTP_FORBIDDEN;
 
             $checksumDetails = $this->validateCheckSum($request->security_token, $request->contact_no);
             if( $checksumDetails->validate ) {

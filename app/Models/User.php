@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+use App\Models\Like;
 
 class User extends Authenticatable
 {
@@ -37,6 +38,10 @@ class User extends Authenticatable
 
     public function getAge(){
         return \Carbon\Carbon::parse($this->birth_date)->diff(\Carbon\Carbon::now())->y;
+    }
+
+    public function countLikes(){
+        return Like::whereUserId($this->id)->count() ?? 0;
     }
 
     public function isProfileSetuped(){

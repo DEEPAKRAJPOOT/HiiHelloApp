@@ -4,7 +4,7 @@ namespace App\Http\Resources\v1;
 
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class LikeResource extends JsonResource
+class FaqResource extends JsonResource
 {
     /**
      * Transform the resource into an array.
@@ -16,7 +16,8 @@ class LikeResource extends JsonResource
     {
         return [
             'id'            =>  $this->custom_id,
-            'user'          =>  new CommonProfileResource($this->likerUser),
+            'question'      =>  $this->getQuestion(),
+            'answer'        =>  $this->getAnswer(),
         ];
         return parent::toArray($request);
     }
