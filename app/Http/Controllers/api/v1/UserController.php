@@ -78,7 +78,7 @@ class UserController extends Controller
                 if(!empty($request->languages)){
                     $languages = $request->languages;
                     $users = $users->whereHas('language',function($q) use ($languages){
-                                $q->whereIn('custom_id',$languages);
+                                $q->whereIn('lang_code',$languages);
                             });
                 }
 

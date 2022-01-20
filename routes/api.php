@@ -31,12 +31,12 @@ Route::group(['namespace' => 'v1', 'prefix' => 'v1'], function () {
     
     // Listing
     Route::post('app-status', [GeneralController::class,'appStatus'])->name('api.app-status');
-    Route::post('get/languages', [GeneralController::class,'getLanguages'])->name('api.get-languages');
     Route::post('get/countries',[GeneralController::class,'getCountries'])->name('api.get-countries');
     Route::post('get/cms-pages',[GeneralController::class,'getCmsPages'])->name('api.user.get-cms-pages');
     Route::post('get/locations',[GeneralController::class,'getLocations'])->name('api.get-locations');
     Route::post('get/interests',[GeneralController::class,'getInterests'])->name('api.get-interests');
     Route::post('get/faqs',[GeneralController::class,'getFaqs'])->name('api.get-faqs');
+    // Route::post('get/languages', [GeneralController::class,'getLanguages'])->name('api.get-languages');
 
     // User
     Route::post('user/get-profile', [UserController::class,'getProfile'])->name('api.user.get-profile');

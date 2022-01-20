@@ -87,9 +87,9 @@ class LanguageSeeder extends Seeder
             ],
             [
                 'custom_id'     => getUniqueString('languages'),
-                'language'      => 'भोजपुरी',
-                'lang_code'     => 'bho',
-                'hint'          => 'Bhojpuri',
+                'language'      => 'ଓଡ଼ିଆ',
+                'lang_code'     => 'or',
+                'hint'          => 'Oriya',
                 'created_at'    => \Carbon\Carbon::now(),
                 'updated_at'    => \Carbon\Carbon::now(),
             ],
