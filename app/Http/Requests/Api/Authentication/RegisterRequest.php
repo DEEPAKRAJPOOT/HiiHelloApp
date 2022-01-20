@@ -28,17 +28,15 @@ class RegisterRequest extends FormRequest
     public function rules()
     {
         $phone_codes    =   Country::whereIsActive('y')->pluck('phonecode')->toArray();
-        $country_ids    =   Country::whereIsActive('y')->pluck('custom_id')->toArray();
         $location_ids   =   Location::whereIsActive('y')->pluck('custom_id')->toArray();
         $interest_ids   =   Interest::whereIsActive('y')->pluck('custom_id')->toArray();
-        $language_ids   =   Language::whereIsActive('y')->pluck('custom_id')->toArray();
+        $language_ids   =   Language::whereIsActive('y')->pluck('lang_code')->toArray();
 
         return [
             'first_name'        =>  'required|min:2|max:100',
             'last_name'         =>  'required|min:2|max:100',
             'email'             =>  'nullable|email|max:150',
             'country_code'      =>  'required|in:'.implode(',', $phone_codes),
-            'country'           =>  'required|in:'.implode(',', $country_ids),
             'contact_no'        =>  'required|digits_between:6,16',
             'birth_date'        =>  'required|date|before:tomorrow',
             'gender'            =>  'required|in:Male,Female',

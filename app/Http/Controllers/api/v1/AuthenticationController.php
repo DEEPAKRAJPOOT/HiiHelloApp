@@ -65,18 +65,16 @@ class AuthenticationController extends Controller
         if( $this->apiValidator($request->all(), $rules) ) {
             try{
                 $country_id = $location_id = $language_id = NULL;
-                if(!empty($request->country)){
-                    $country = Country::where('custom_id',$request->country)->whereIsActive('y')->firstOrFail();
+                if(!empty($request->country_code)){
+                    $country = Country::wherePhonecode($request->country_code)->whereIsActive('y')->firstOrFail();
                     $country_id = $country->id;
                 }
-
                 if(!empty($request->location)){
-                    $location = Location::where('custom_id',$request->location)->whereIsActive('y')->firstOrFail();
+                    $location = Location::whereCustomId($request->location)->whereIsActive('y')->firstOrFail();
                     $location_id = $location->id;
                 }
-
                 if(!empty($request->language)){
-                    $language = Language::where('custom_id',$request->language)->whereIsActive('y')->firstOrFail();
+                    $language = Language::whereLangCode($request->language)->whereIsActive('y')->firstOrFail();
                     $language_id = $language->id;
                 }
 
