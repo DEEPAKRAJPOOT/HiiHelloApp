@@ -36,13 +36,11 @@ class User extends Authenticatable
         $this->attributes['birth_date'] = \Carbon\Carbon::createFromFormat('m/d/Y', $birth_date);
     }
 
-    public function getAge(){
-        return \Carbon\Carbon::parse($this->birth_date)->diff(\Carbon\Carbon::now())->y;
-    }
-
-    public function countLikes(){
-        return Like::whereUserId($this->id)->count() ?? 0;
-    }
+    public function getAge(){ return \Carbon\Carbon::parse($this->birth_date)->diff(\Carbon\Carbon::now())->y; }
+    public function getVerifiedStatus(){ return 'verified'; }
+    public function countLikes(){ return Like::whereUserId($this->id)->count() ?? 0; }
+    public function countMatches(){ return 0; }
+    public function countChats(){ return 0; }
 
     public function isProfileSetuped(){
         return $this->userDetails->isNotEmpty() && $this->interests->isNotEmpty()
