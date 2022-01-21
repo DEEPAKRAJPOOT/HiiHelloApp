@@ -14,7 +14,12 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/', function () {
-  return view('welcome');
+  $random_file = rand(0,1);
+  if($random_file == 0){
+    return view('frontend.pages.hindi');
+  }else{
+    return view('frontend.pages.english');
+  }
 });
 
 Auth::routes(['register' => false, 'login' => false]);

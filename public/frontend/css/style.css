@@ -1,407 +1,122 @@
-@charset "utf-8";
-/* CSS Document */
-
-/******* Fonts Face CSS Start **********/
-@import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,300;0,400;0,500;0,700;0,900;1,400;1,500;1,700&display=swap');
-/********* Fonts Face CSS End **********/
-
-/******* Common Element CSS Start ******/
-*							{ margin: 0px; padding: 0px;}
-body						{ font-family: 'Roboto', sans-serif; font-size:16px;}
-.clear						{ clear:both;}
-img							{ border: 0px; max-width: 100%; }
-ul,ol						{ list-style: none;}
-a							{ text-decoration: none; outline: none; transition-duration: 0.5s; }
-a:focus, a:active,a:visited	{ outline: none; border: 0px; transition-duration: 0.5s; }
-h1							{ font-size: 64px; line-height: 86px; font-weight: 700; }
-h2							{ font-size: 38px; line-height: 52px; font-weight: 700; }
-h3							{ font-size: 30px; line-height: 50px; font-weight: 700; }
-h4							{ font-size: 24px; line-height: 36px; font-weight: 500; }
-h5                          { font-size: 22px; font-weight: 500; color: #222A38; }
-p							{ font-size: 20px; line-height: 36px; }
-.section-title              { margin-bottom: 80px; color: #222A38; text-transform: capitalize; position: relative; text-align: center; }
-.section-title::before      { position: absolute; content: ''; bottom: -8px; left: 50%; transform: translateX(-50%); width: 40px; height: 4px; background-color: #222A38; }
-.spacing                    { padding-top: 100px; padding-bottom: 100px; }
-.custom-mb                  { margin-bottom: 24px; }
-.theme-btn                  { background-color: #67C4F9; border-radius: 8px; padding: 11.5px 64px; color: #fff; font-size: 22px; line-height: 33px; font-weight: 500; transition-duration: 0.5s; }
-.theme-btn:hover            { background-color: #F3FAFE; color: #67C4F9; transition-duration: 0.5s; }
-.shape                      { position: absolute; z-index: 1;; }
-/* .navbar-toggler .navbar-toggler-icon 							{ background-image: url(../images/bars-solid.svg); } */
-
-#data-sticky-offset         { position: absolute; z-index: -1; height: 80px; }
-.navbar-toggler-icon        { color: #fff; font-size: 25px; margin-top: 12px; }
-.navbar-toggler:focus       { box-shadow: none }
+/* inter google font included  */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&display=swap');
 
 
-/******* Common Element CSS End *********/
+*							            { margin: 0px; padding: 0px; box-sizing: border-box; }
+ul,ol						            { list-style: none; margin: 0px;}
+a							            { text-decoration: none; outline: none; transition-duration: 0.5s; }
+h1,h2,h3,h4,h5,h6                       { font-family: 'Inter', sans-serif; }
+h1,h4                                   { color: #362063; }
+h1                                      { font-size: 94px; line-height: 100px; font-weight: 300;  }
+h4                                      { font-size: 24px; line-height: 38.4px; font-weight: 400; }
+/* banner section start */
+body                                    { height: 100vh; position: relative;}
+.logo                                   { display: block;}
+.logo img                               { max-width: 350px; width: 100%;}
+.bg-wrapper                             { flex-direction: column; position: absolute; left: 0px; top: 0px; width: 100%; height: 100%; z-index: -1; align-items: flex-end; }
+.banner-landing-page                    { padding: 0px 0px 48px; height: 100%; }
+.banner-wrapper                         { padding-top: 65px; position: relative; height: 100%; }
+.mobile-slider-wrapper                  { margin-left: -20%; }
+.mobile-slider-wrapper .slick-slide img { margin: 0 auto; padding-bottom: 20px; width: auto; height: auto; max-width: 100%; max-height: 80vh; filter:drop-shadow(12px 8px 5px rgba(0, 0, 0, 0.7));}
+.banner-landing-page h1 span            { font-weight: 700; }
+.banner-landing-page h4 span            { font-weight: 600; }
+.banner-left-box                        { display: flex; padding-left: 80px; position: relative; height: 100%; flex-direction: column;}
+.banner-txt-wrap                        { margin-top: 150px; }
+.banner-txt-wrap  h1                    { margin-bottom: 24px; }
+.social-box                             { margin-top: auto; }
+.social-box h4                          { font-weight: 500; }
+.slick-slider .slick-slide              { display: inline-block;}
+.social-list                            { margin-left: 32px; padding-left: 0px; }
+.social-list li                         { margin-right: 35px; }
+.social-box h4,.social-box a            { color: #9B8FB1; }
+.social-box a                           { font-size: 30px; line-height: 30px; }
+.main-image                             {  width: 50%; height: 100%; background: url('../images/banner-bg-right1.png') no-repeat top left / cover;}
+.gradient                               { background: radial-gradient(96.64% 86.79% at 3.36% 13.21%, #FFBD15 0%, #FF55C6 100%); border-radius: 64px 0px 0px 140px; width: 70%; height: 37vh;}
 
-:root{
-    --bs-gutter-x: 15px;
+
+@media (min-width: 1600px) and (max-width: 1699px)
+{
+    h1                                      { font-size: 70px; line-height: 75px;  }
+    h4                                      { font-size: 18px; line-height: 30.4px; }
 }
-.row > * {
-    padding-right: calc(var(--bs-gutter-x));
-    padding-left: calc(var(--bs-gutter-x));
+
+@media (min-width: 1400px) and (max-width: 1599px)
+{
+    h1                                      { font-size: 70px; line-height: 75px;  }
+    h4                                      { font-size: 18px; line-height: 30.4px; }
 }
-.container, .container-fluid, .container-xxl, .container-xl, .container-lg, .container-md, .container-sm {
-    padding-right: var(--bs-gutter-x,0);
-    padding-left: var(--bs-gutter-x, 0);
+@media (min-width: 1200px) and (min-height: 600px) and (max-height: 750px){
+    .banner-txt-wrap                        { margin: auto 0; }
 }
-/* color code : Black #222A38 || white #fff || skyblue bg #83D0F5 || Form Control bg #F3FAFE || Grey text #707B8E || Get in touch skyblue= #67C4F9  */
-
-/******* Header Section CSS Start *******/
-header						{ position: absolute; background: transparent; width: 100%; padding-right: 100px; padding-left: 100px; }
-.navbar                     { padding-bottom: 0px; transition-duration: 0.5s; }
-.navbar .navbar-brand       { padding-top: 25px; padding-bottom: 25px; }
-.logo						{ max-width: 100%;  max-height: 80px; }
-/* max-width: 187px; */
-.navbar-nav li              { font-size: 20px; line-height: 30px; position: relative; font-weight: 500; }           
-.navbar-nav li:nth-child(odd)           { margin-right: 63px; }      
-.navbar-nav li:nth-child(even)          { margin-right: 64px; }  
-.navbar-nav li:first-child              { margin-right: 77px; }      
-.navbar-nav li:last-child               { margin-right: 0px; } 
-.navbar-expand-lg .navbar-nav .nav-link { padding: 0px; }
-.navbar .nav-link          { color: #fff; padding: 0px; }
-.navbar .nav-link:hover    { color: #222A38;  }
-.nav-item .mPS2id-highlight         { position: relative; }
-.navbar .nav-link:hover::before,.nav-item .mPS2id-highlight::before { position: absolute; content: ''; width: 50%; height: 2px; background-color: #222A38; bottom: 0px; left: 50%; transform: translateX(-50%); }
-.navbar .active .nav-link,.nav-item .mPS2id-highlight   { color: #222A38; }
-
-.navbar-expand-md .navbar-nav .nav-link { padding-left: 0px; padding-right: 0px; }
-.sticky                     { position: fixed; top: 0; width: 100%; background-color: #4eb3e3; z-index: 100; }
-.sticky .navbar             { padding-top: 0px; transition-duration: 0.5s; }
-.sticky .navbar .navbar-brand   { padding-top: 15px; padding-bottom: 15px; }
-
-/******* Header Section CSS End *********/
-
-/******* Banner section CSS Start *******/
-.banner                     { padding-top: 177px; padding-bottom: 136px; padding-right: 5%; padding-left: 5%; color: #fff; background: url('../images/banner-shape1.png') left 32% top 31px no-repeat, url('../images/banner-shape2.png') left bottom no-repeat, url('../images/banner-bg.png') left top no-repeat; background-size: auto, auto, cover; }
-.banner-left-box            { max-width: 738px; }
-.banner-left-box h1         { margin-bottom: 16px; max-width: 558px; }
-.banner-left-box p          { margin-bottom: 56px; font-size: 24px; line-height: 36px; font-weight: 400; }
-.banner-right-box           { padding-right: 30px; } 
-.download-options a:first-child     { margin-right: 40px; }
-.download-options a:hover   { opacity: 0.8; }
-/******* Banner section CSS End *********/
-
-/******* Middle sections CSS Start ******/
-/* How it works section start */
-.how-it-works               { position: relative; background: url('../images/work-shape1.png') right top 5% no-repeat, url('../images/work-shape2.png') left top 37% no-repeat, url('../images/work-shape3.png') right bottom 2% no-repeat; background-size: auto, auto, auto; }
-.how-it-works .row:nth-child(2) { margin-bottom: 140px; }
-/* .work-image img             { width: 416px; height: 416px; } */
-.work-text-box h3           { margin-bottom: 24px; }
-.work-text-box p            { margin-bottom: 0px; color: #707B8E; }
-.shape-box                  { position: absolute; }
-
-/* Features section start */
-.features                   { padding-top: 180px; padding-bottom: 96px; background: url('../images/features-shape1.png') left top 73% no-repeat,url('../images/features-shape2.png') right bottom 27% no-repeat, url('../images/features-bg.png') no-repeat; background-size: auto, auto, cover; }
-.feature-box                { padding: 36px 36px 34px; text-align: center; border-radius: 8px; transition-duration: 0.5s; }
-.features div[class^="col-"]    { margin-bottom: 24px; }
-.feature-box:hover          { background-color: #fff; box-shadow: 0px 20px 40px 0px rgba(193,211,226,0.24); -webkit-box-shadow: 0px 20px 40px 0px rgba(193,211,226,0.24); -moz-box-shadow: 0px 20px 40px 0px rgba(193,211,226,0.24); transition-duration: 0.5s; }
-.features-icon-box          { margin-bottom: 28px; border: 1px dashed; display: inline-flex; }
-.features-icon-box img      { width: 64px; height: 64px; }
-.feature-box h4             { margin-bottom: 14px; color: #222A38; }
-.feature-box p              { margin-bottom: 0px; color: #707B8E; line-height: 34px; font-weight: 400; }
-
-/* Contact us section start */
-.contact-us                 { padding-top: 98px; padding-bottom: 100px; z-index: 2; position: relative; background: url('../images/get-in-touch-shape1.png') left top 2% no-repeat, url('../images/getintouch-shape2.png') right bottom 12% no-repeat; background-size: auto, auto; }
-.contact-us .section-title  { margin-bottom: 72px; }
-.contact-us textarea        { height: 156px; resize: none; }
-.contact-inner-box          { position: relative; padding: 50px; }
-.contact-inner-box::before  { position: absolute; content: ''; width: 80%; height: 100%; background-color: #67C4F9 ; z-index: -1; right: 0px; top: 0px; }
-.contact-form-box           { max-width: 100%; box-shadow: 0px 11px 20px 0px rgba(193,211,226,0.25); -webkit-box-shadow: 0px 11px 20px 0px rgba(193,211,226,0.25); -moz-box-shadow: 0px 11px 20px 0px rgba(193,211,226,0.25);  border-radius: 8px; padding: 32px; left: 0px;  background-color: #fff; }
-.contact-form-box label     { margin-bottom: 20px; color: #707B8E; font-size: 18px; line-height: 28px; }
-.contact-form-box .form-control     { background-color: #F3FAFE; border: none; border-radius: 8px; }
-.contact-form-box .theme-btn        { margin-top: 32px; }
-/******** Middle sections CSS End *******/
-
-/***** Bottom section CSS Start *******/
-footer							{ padding-top: 170px; padding-bottom: 50px; position: relative; background: url('../images/footer-shape1.png') left top 33% no-repeat,url('../images/footer-shape2.png') right bottom no-repeat, url('../images/footer-bg.png')no-repeat; background-size: auto, auto,cover; }
-.footer-wrap                    { padding-bottom: 100px; border-bottom: 1px solid #707B8E;  }
-footer img                      { margin-bottom: 40px; height: 64px; width: 150px; }
-.footer-left-box p              { margin-bottom: 0px; max-width: 350px; }
-.footer-left-box p,footer a     { font-size: 16px; line-height: 32px; color: #707B8E; font-weight: 500; }
-footer h5                       { margin-bottom: 40px; position: relative; }
-footer h5::before               { position: absolute; content: ''; bottom: -8px; left: 0; width: 24px; height: 3px; background-color: #222A38; }
-footer ul,li                    { text-decoration: none; list-style-type: none; }
-footer ul                       { padding: 0px; }
-.footer-middle-box ul           { margin-top: 8px; }
-.footer-middle-box a:last-child { margin-bottom: 0px; }
-.footer-middle-box a:hover      { color: #222A38; }
-.social-list li                 { margin-right: 16px; border-radius: 21px; width: 42px; height: 42px; border: 1px solid #707B8E; text-align: center; }
-.social-list li:last-child      { margin-right: 0px;}
-.social-list li a               { font-size: 21px; line-height: 42px; display: block; }
-.social-list li:hover           { background-color: #707B8E; }
-.social-list li:hover a         { color: #fff; }
-.copyright-box                  { padding-top: 60px; }
-.copyright-box p,.copyright-box a                { margin-bottom: 0px; font-size: 12px; line-height: 15px; color: #222A38; font-weight: 400; }
-.copyright-box a:hover          { color: #707B8E; }
-
-/****** Bottom section CSS End *******/
-
-/****** Privacy page's css starts *******/
-.privacy-page header            { background: #4eb3e3; }
-.policy-wrap                    { padding: 180px 0px 60px; background-color: #f3fafe; }
-.policy-wrap h1                 { margin-bottom: 60px; } 
-.policy-box                     { background-color: #ffffff; padding: 30px; }
-.policy-box ol                  { list-style-type: decimal; font-size: 24px; line-height: 36px; }
-.policy-box ol li               { margin-bottom: 20px; list-style-type: auto; }
-.policy-box ol ul li            { list-style-type: disc; }
-.policy-box .title-box          { margin-bottom: 20px; }
-/****** Privacy page's css End *******/
 
 @media (min-width: 1200px) and (max-width: 1399px)
 {
-h1							{ font-size: 57px; line-height: 65px; }
-h2							{ font-size: 32px; line-height: 48px; }
-h3							{ font-size: 27px; line-height: 45px; }
-h4,.policy-box ol           { font-size: 23px; line-height: 35px; }
-h5                          { font-size: 21px; }
-p							{ font-size: 18px; line-height: 34px; }
-
-
-/* header start */
-header                      { padding-left: 20px; padding-right: 20px; }
-
-/* Banner section start */
-.banner                     { padding-left: 20px; padding-right: 20px; }
+    h1                                      { font-size: 55px; line-height: 60px;  }
+    h4                                      { font-size: 20px; line-height: 34.4px; }
+    .banner-landing-page                    { padding: 0px 0px 48px; height: 100%; }
+    .banner-wrapper                         { padding-top: 65px; position: relative; height: 100%; }
 
 }
+@media (min-width: 992px){
+    .banner-wrapper .container-fluid,
+    .banner-wrapper .row                    { height: 100%;}
+    .banner-txt-wrap                        { padding-right: 20px;}
+}
 
-@media (min-width: 992px) and (max-width: 1199px) 
+@media (min-width: 992px) and (max-width: 1199px)
 {
-/* common css start */
-h1							{ font-size: 45px; line-height: 76px; }
-h2							{ font-size: 36px; line-height: 45px; }
-h3							{ font-size: 22px; line-height: 40px; }
-h4,.policy-box ol           { font-size: 22px; line-height: 34px; }
-h5                          { font-size: 18px; }
-p							{ font-size: 14px; line-height: 30px; }
-.spacing                    { padding-top: 90px; padding-bottom: 90px; }
-.section-title              { margin-bottom: 75px; }
-.custom-mb                  { margin-bottom: 18px; }
-.theme-btn                  { padding: 10.5px 50px; font-size: 18px; line-height: 28px; }
-/* header start */
-header                      { padding-left: 20px; padding-right: 20px; }
-.logo                       { max-height: 60px; }
-.navbar-nav li:nth-child(odd)           { margin-right: 58px; }      
-.navbar-nav li:nth-child(even)          { margin-right: 57px; }  
-.navbar-nav li:first-child              { margin-right: 60px; }      
-.navbar-nav li:last-child               { margin-right: 0px; } 
-.navbar .navbar-brand       { padding-top: 30px; padding-bottom: 30px; }
-.navbar-expand-md .navbar-nav .nav-link { padding:0px; }
-
-/* Banner section start */
-.banner                     { padding-left: 20px; padding-right: 20px; }
-.banner-left-box            { max-width: 420px; }
-.banner-left-box p          { margin-bottom: 50px; font-size: 15px; line-height: 30px; }
-.banner-right-box           { padding-right: 30px; }
-.banner-right-box  img      { width: 500px; }
-.download-options a:first-child { margin-right: 35px; }
-.banner-left-box img        { width: 120px; }
-.banner                     { padding-top: 170px; padding-bottom: 130px; background-size: 120px, 260px, cover; }
-
-/* Work section start */
-.how-it-works               { background: url(../images/work-shape1.png) right top 5% no-repeat, url(../images/work-shape2.png) left top 48% no-repeat, url(../images/work-shape3.png) right bottom 15% no-repeat; background-size: 65px, 90px, 90px; }
-.work-text-box h3           { margin-bottom: 20px; }
-
-/* Features section start  */
-.features                   { padding-top: 160px; padding-bottom: 82px; background: url(../images/features-shape1.png) left top 60% no-repeat,url(../images/features-shape2.png) right bottom 33% no-repeat, url(../images/features-bg.png) no-repeat; background-size: 100px, 100px, cover;  }
-.features-icon-box img      { width: 54px; height: 54px; }
-.feature-box                { padding: 25px 16px 23px; }
-
-/* Contact us section start */
-.contact-us                 { padding-top: 88px; padding-bottom: 90px; background-size: 100px, 100px; }
-.contact-form-box           { padding: 22px;}
-.contact-form-box label     { margin-bottom: 12px; font-size: 14px; line-height: 24px; }
-.contact-form-box .theme-btn { margin-top: 25px; }
-.contact-us textarea        { height: 100px; }
-
-/* footer section start */
-footer img                  { margin-bottom: 35px; height: 55px; width: 140px; }
-.footer-left-box p, footer a { font-size: 12px; line-height: 27px; }
-.social-list li             { margin-right: 15px; width: 36px; height: 36px; }
-.social-list li a           { font-size: 16px; line-height: 36px; }
-.footer-wrap                { padding-bottom: 70px; }
-.copyright-box              { padding-top: 40px; }
-footer                      { padding-top: 160px; padding-bottom: 40px; background-size: 110px, 200px,cover; }
-
+    h1                                      { font-size: 52px; line-height: 57px;  }
+    h4                                      { font-size: 205x; line-height: 34.4px; }
+    .banner-left-box img                    { max-width: 55%; }
+    .mobile-slider-wrapper                  { margin-left: -20%; }
+    .mobile-slider-wrapper .slick-slide img { height: 62vh;   }
+    .banner-left-box                        { padding-left: 45px;}
+    .social-box                             { left: 45px; }
+    .banner-txt-wrap                        { margin-top: 110px; }
+    .banner-txt-wrap  h1                    { margin-bottom: 22px; }
+    .social-box a                           { font-size: 25px; line-height: 25px; }
+    .gradient                               { width: 65%;}
 }
+
 
 @media (min-width: 768px) and (max-width: 991px) 
 {
-/* common css start */
-h1							{ font-size: 38px; line-height: 50px; }
-h2							{ font-size: 25px; line-height: 35px; }
-h3							{ font-size: 18px; line-height: 35px; }
-h4,.policy-box ol           { font-size: 17px; line-height: 27px; }
-h5                          { font-size: 16px; }
-p							{ font-size: 13px; line-height: 25px; }
-.spacing                    { padding-top: 70px; padding-bottom: 70px; }
-.section-title              { margin-bottom: 60px; }
-.custom-mb                  { margin-bottom: 12px; }
-/* Header  start */
-header                      { padding-right: 20px; padding-left: 20px; }
-.navbar-expand-md .navbar-nav .nav-link { padding:0px; }
-.logo                       { max-height: 55px; }
-.navbar-nav li              { font-size: 16px; line-height: 25px; } 
-.navbar-nav li:nth-child(odd)           { margin-right: 50px; }      
-.navbar-nav li:nth-child(even)          { margin-right: 54px; }  
-.navbar-nav li:first-child              { margin-right: 55px; }      
-.navbar-nav li:last-child               { margin-right: 0px; } 
-.navbar .navbar-brand       { padding-top: 30px; padding-bottom: 30px; }
-
-/* Banner section start */
-.banner                     { background-size: 100px, 315px, cover; padding-top: 150px; padding-bottom: 100px; }
-.banner-left-box            { max-width: 350px; }
-.banner-left-box p          { margin-bottom: 30px; font-size: 13px; line-height: 25px; }
-.banner-right-box           { padding-right: 0px; }
-.banner-right-box  img      { width: 400px; }
-.download-options a:first-child { margin-right: 30px; }
-.banner-left-box img        { width: 100px; }
-
-/* Work section start */
-.how-it-works               { background: url(../images/work-shape1.png) right top 5% no-repeat, url(../images/work-shape2.png) left top 48% no-repeat, url(../images/work-shape3.png) right bottom 15% no-repeat; background-size: 65px, 90px, 90px; }
-.how-it-works .row:nth-child(2) { margin-bottom: 95px; }
-.work-text-box h3           { margin-bottom: 20px; }
-
-
-/* Features section start  */
-.features                   { padding-top: 150px; padding-bottom: 60px; background: url(../images/features-shape1.png) left top 60% no-repeat,url(../images/features-shape2.png) right bottom 33% no-repeat, url(../images/features-bg.png) no-repeat; background-size: 100px, 100px, cover;  }
-.features-icon-box img      { width: 54px; height: 54px; }
-.feature-box                { padding: 15px 10px 13px; }
-.feature-box p              { line-height: 25px; }
-
-/* Contact us section start */
-.contact-us                 { padding-top: 78px; padding-bottom: 80px; background-size: 100px, 100px; }
-.contact-form-box           { padding: 22px; }
-.contact-form-box label     { margin-bottom: 12px; font-size: 14px; line-height: 24px; }
-.contact-form-box .theme-btn { margin-top: 22px; padding: 9.5px 55px; font-size: 16px; line-height: 28px; }
-.contact-us textarea        { height: 100px; }
-
-/* footer section start */
-footer img                  { margin-bottom: 35px; height: 55px; width: 140px; }
-.footer-left-box p, footer a { font-size: 12px; line-height: 27px; }
-.social-list li             { margin-right: 15px; width: 36px; height: 36px; }
-.social-list li a           { font-size: 16px; line-height: 36px; }
-.footer-wrap                { padding-bottom: 35px; }
-.copyright-box              { padding-top: 45px; }
-footer                      { padding-top: 160px; padding-bottom: 40px; background-size: 110px, 200px,cover; text-align: center; }
-
-
+    h1                                      { font-size: 46px; line-height: 51px;  }
+    h4                                      { font-size: 22px; line-height: 32.4px; }
+    body                                    { height: auto;}
+    .logo img                               { max-width: 250px;}
+    .banner-left-box                        { padding-left: 0px; padding-right: 20px;}
+    .banner-wrapper                         { padding-top: 35px;}
+    .banner-landing-page,
+    .banner-wrapper                         { position: static; height: auto;}
+    .slick-slide                            { height: auto;}
+    .banner-left-box                        { padding-left: 0px;}
+    .banner-txt-wrap                        { margin-top: 40px; text-align: center;}
+    .social-box a                           { font-size: 20px; line-height: 30px; }
+    .social-list li                         { margin-right: 25px; }
+    .mobile-slider-wrapper                  { margin: 40px 0;}
+    .mobile-slider-wrapper .slick-slide img { height: auto; width: 100%; max-width: 85%; max-height: inherit; }
+    .main-image                             { display: none;}
+    .gradient                               { margin: auto 0 95px; width: 95%; border-radius: 64px 0px 0px 92px; height: 215px;}
 }
 
-@media (max-width: 767px)   
-{ 
-/* common css start */
-h1							{ font-size: 32px; line-height: 45px; }
-h2							{ font-size: 22px; line-height: 32px; }
-h3							{ font-size: 18px; line-height: 35px; }
-h4,.policy-box ol           { font-size: 17px; line-height: 27px; }
-h5                          { font-size: 16px; }
-p							{ font-size: 13px; line-height: 25px; }
-.spacing                    { padding-top: 60px; padding-bottom: 60px; }
-.section-title              { margin-bottom: 60px; }
-.custom-mb                  { margin-bottom: 12px; }
-#data-sticky-offset         { height: 70px;}
-/* header start */
-header                      { padding-left: 20px; padding-right: 20px; }
-.navbar                     { padding-top: 0px; }
-.navbar-expand-md .navbar-nav .nav-link { padding:0px; }
-.logo                       { max-height: 50px; }
-.navbar-nav li,.navbar-nav li:first-child,.navbar-nav li:nth-child(even),.navbar-nav li:nth-child(odd)  { margin-right: 0px; margin-bottom: 12px; }
-.navbar-nav                 { background: #4eb3e3; width: 100%; padding: 15px 0px; margin-top: -30px;  }
-#navbarSupportedContent .navbar-nav .nav-link { font-size: 16px; line-height: 22px; text-align: center; background: #4eb3e3; }
-.cust-navbar .nav-link:hover      { color: #222A38; }
-.cust-navbar .nav-link:hover::before    { width: 10%; }
-.navbar-collapse            { width: 100vw; position: absolute; top: 98px; left: -35px; }
-.navbar .navbar-brand       { padding: 15px 0px; }
-.sticky .navbar .navbar-brand   { padding: 10px 0px; }
-.navbar .nav-link:hover::before, .nav-item .mPS2id-highlight::before { width: 5%; }
-/* Banner section start */
-.banner                     { background-size: 100px, 265px, cover; padding-left: 20px; padding-right: 20px; text-align: center; padding-top: 140px; padding-bottom: 90px; }
-.banner-left-box            { max-width: 300px; }
-.banner-left-box p          { margin-bottom: 25px; font-size: 13px; line-height: 25px; }
-.banner-right-box           { padding-right: 0px; }
-.banner-right-box  img      { width: auto; }
-.download-options           { justify-content: center; }
-.download-options a:first-child { margin-right: 25px; }
-.banner-left-box img        { width: 90px; }
 
-/* Work section start */
-.how-it-works               { background: url(../images/work-shape1.png) right top 5% no-repeat, url(../images/work-shape2.png) left top 48% no-repeat, url(../images/work-shape3.png) right bottom 15% no-repeat; background-size: 65px, 90px, 90px; }
-.work-text-box h3           { margin-bottom: 20px; }
-.work-text-box p            { margin-bottom: 24px; }
-.work-image                 { text-align: center; margin-bottom: 30px; }
-.how-it-works .row:nth-child(2) { margin-bottom: 50px; }
-
-/* Features section start  */
-.features                   { padding-top: 90px; padding-bottom: 50px; background: url(../images/features-shape1.png) left top 60% no-repeat,url(../images/features-shape2.png) right bottom 33% no-repeat, url(../images/features-bg.png) no-repeat; background-size: 100px, 100px, cover;  }
-.features-icon-box img      { width: 54px; height: 54px; }
-.feature-box                { padding: 15px 10px 13px; }
-.feature-box p              { line-height: 25px; }
-
-/* Contact us section start */
-.contact-us                 { padding-top: 65px; padding-bottom: 70px; background-size: 100px, 100px; }
-.contact-form-box           { padding: 22px;}
-.contact-inner-box::before  { width: 100%; border-radius: 8px; }
-.contact-form-box           { margin-top: 40px; }
-.contact-form-box label     { margin-bottom: 12px; font-size: 13px; line-height: 23px; }
-.contact-form-box .theme-btn { margin-top: 20px; padding: 9.5px 55px; font-size: 15px; line-height: 25px; }
-.contact-us textarea        { height: 90px; }
-.contact-inner-box          { padding: 35px;  }
-.contact-us .section-title  { margin-bottom: 60px; }
-
-/* footer section start */
-footer img                  { margin-bottom: 35px; height: 55px; width: 140px; }
-.footer-left-box p, footer a { font-size: 13px; line-height: 27px; }
-.social-list li             { margin-right: 15px; width: 36px; height: 36px; }
-.social-list li a           { font-size: 16px; line-height: 36px; }
-.footer-wrap                { padding-bottom: 35px; }
-.footer-right-box           { margin-top: 20px; }
-.copyright-box              { padding-top: 40px; }
-footer                      { padding-top: 140px; padding-bottom: 35px; background-size: 100px, 180px,cover; }
-
-}
-
-@media ( max-width: 575px ) 
+@media (max-width: 767px)  
 {
-/* common css start */
-h1							{ font-size: 30px; line-height: 40px; }
-h2                          { font-size: 20px; line-height: 30px; }
-h3                          { line-height: 28px; }
-h4,.policy-box ol           { font-size: 16px; line-height: 26px; }
-p                           { line-height: 23px; }
-.contact-us .section-title,.section-title              { margin-bottom: 45px; }
-.spacing                    { padding-top: 45px; padding-bottom: 45px; }
-#data-sticky-offset         { height: 60px;}
-/* header start */
-.logo                       { max-height: 40px; }
-.navbar                     { padding-top: 0px; }
-.navbar-nav                 { margin-top: -40px; }
-/* banner section start */
-.banner                     { padding-top: 130px; padding-bottom: 90px;background: url(../images/banner-shape1.png) left 67% top 35px no-repeat, url(../images/banner-shape2.png) left bottom no-repeat, url(../images/banner-bg.png) left top no-repeat; background-size: 80px, 190px, cover;   }
-.banner-left-box            { margin-top: 30px; }
-.banner-right-box img       { width: auto; max-width: 300px; }
-.banner-left-box            { max-width: 270px; }
-/*How It Works section start */
-.work-text-box p            { margin-bottom: 10px; }
-
-/* Features section start */
-.features div[class^="col-"] { margin-bottom: 30px; }
-
-/* contact us section start */
-.contact-us                 { padding-top: 50px; padding-bottom: 40px; }
-.contact-inner-box          { padding: 10px 10px 24px;  }
-.contact-form-box           { padding: 10px; }
-.contact-form-box .theme-btn{ padding: 7.5px 35px; font-size: 14px; line-height: 20px; }
-
-/* footer start */
-.footer-wrap                { text-align: center; }
-footer                      { padding-top: 85px; }
-footer img,footer h5        { margin-bottom: 25px; }
-footer h5::before           { left: 50%; transform: translateX(-50%); }
-.footer-middle-box          { margin-top: 20px; }
-.footer-middle-box ul       { margin-bottom: 0px; }
-.footer-left-box p          { max-width: 280px; margin: 0 auto; }
-.footer-wrap .social-list   { margin-bottom: 0px; justify-content: center; }
+    h1                                      { font-size: 42px; line-height: 47px;  }
+    h4                                      { font-size: 20px; line-height: 30.4px; }
+    body                                    { height: auto;}
+    .logo img                               { max-width: 200px;}
+    .banner-wrapper                         { padding-top: 35px;}
+    .banner-landing-page,
+    .banner-wrapper                         { position: static; height: auto;}
+    .slick-slide                            { height: auto;}
+    .banner-left-box                        { padding-left: 0px;}
+    .banner-txt-wrap                        { margin-top: 40px; text-align: center;}
+    .social-box a                           { font-size: 20px; line-height: 30px; }
+    .social-list li                         { margin-right: 25px; }
+    .mobile-slider-wrapper                  { margin: 40px 0;}
+    .mobile-slider-wrapper .slick-slide img { height: auto; width: 100%; max-width: 85%; }
+    .main-image                             { display: none;}
+    .gradient                               { margin: auto 0 95px; width: 95%; border-radius: 64px 0px 0px 92px; height: 215px;}
 }
