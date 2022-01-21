@@ -13,20 +13,11 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/', function () {
-  $random_file = rand(0,1);
-  if($random_file == 0){
-    return view('frontend.pages.hindi');
-  }else{
-    return view('frontend.pages.english');
-  }
-});
+Route::get('/','FrontendPagesController@index')->name('home');
 
 Auth::routes(['register' => false, 'login' => false]);
 
 Route::get('login', 'AdminAuth\LoginController@showLoginForm')->name('login');
-
-Route::get('/home', 'HomeController@index')->name('home');
 
 /* CMS Pages */
   Route::get('about-us', 'FrontendPagesController@about')->name('about.us');
