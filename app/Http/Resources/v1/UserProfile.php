@@ -35,7 +35,10 @@ class UserProfile extends JsonResource
             'profile_photo'     =>  generateURL($this->profile_photo) ?? "",
             'flags'             =>  [
                 'profile_setuped'       =>  $this->isProfileSetuped(),
+                'verified_staus'        =>  $this->getVerifiedStatus(),
                 'likes'                 =>  $this->countLikes(),
+                'matches'               =>  $this->countMatches(),
+                'chats'                 =>  $this->countChats(),
             ],
         ];
     }
