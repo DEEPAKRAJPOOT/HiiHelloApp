@@ -177,10 +177,12 @@ class AuthenticationController extends Controller
                         UserDetail::insert($video_data);
                     }   
 
+                    Auth::login($user);
                     return (new UserProfile($user))
                         ->additional([
                             'meta' => [
-                                'message' =>  trans('api.profile_setuped'), 
+                                'message'       =>  trans('api.profile_setuped'), 
+                                'auth_token'    =>  $user->createToken(config('utility.token'))->plainTextToken,
                             ]
                         ]);
                 }else{
