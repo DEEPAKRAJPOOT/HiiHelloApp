@@ -53,7 +53,7 @@
                     <div class="row">
                         <div class="col-lg-5">
                             <div class="banner-left-box">
-                                <a href="index.html" class="logo"><img src="{{ asset('frontend/images/logo.png') }}" alt="logo"></a>
+                                <a href="{{ route('home') }}" class="logo"><img src="{{ asset('frontend/images/logo.png') }}" alt="logo"></a>
                                 <div class="banner-txt-wrap">
                                     <h1 class="text-uppercase">
                                         we are

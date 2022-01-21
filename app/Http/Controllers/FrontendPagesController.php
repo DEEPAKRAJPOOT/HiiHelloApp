@@ -8,20 +8,25 @@ use Illuminate\Http\Request;
 
 class FrontendPagesController extends Controller
 {
-    public function terms()
-    {
+    public function index(){
+        $random_file = rand(0,1);
+        if($random_file == 0){
+            return view('frontend.pages.hindi');
+        }
+        return view('frontend.pages.english');
+    }
+
+    public function terms(){
         $page = CmsPage::with('cmsPageTranslations')->whereSlug('terms-and-conditions')->firstOrFail();
         return view('frontend.pages.cms-page', compact('page'))->withTitle($page->getTitle());
     }
     
-    public function privacy()
-    {
+    public function privacy(){
         $page = CmsPage::with('cmsPageTranslations')->whereSlug('privacy')->firstOrFail();
         return view('frontend.pages.cms-page', compact('page'))->withTitle($page->getTitle());
     }
 
-    public function about()
-    {
+    public function about(){
         $page = CmsPage::with('cmsPageTranslations')->whereSlug('about-us')->firstOrFail();
         return view('frontend.pages.cms-page', compact('page'))->withTitle($page->getTitle());
     }
