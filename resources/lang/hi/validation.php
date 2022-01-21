@@ -212,6 +212,7 @@ return [
         'message'           =>  'संदेश',
         'user_id'           =>  'उपयोगकर्ता',
         'language'          =>  'भाषा',
+        "birth_date"        =>  "जन्म दिन",
     ],
 
 ];

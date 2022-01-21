@@ -31,6 +31,7 @@ class RegisterRequest extends FormRequest
         $location_ids   =   Location::whereIsActive('y')->pluck('custom_id')->toArray();
         $interest_ids   =   Interest::whereIsActive('y')->pluck('custom_id')->toArray();
         $language_ids   =   Language::whereIsActive('y')->pluck('lang_code')->toArray();
+        $min_birth_date =   now()->subYears(config('utility.minimum_age'))->format('m/d/Y');
 
         return [
             'first_name'        =>  'required|min:2|max:100',
@@ -38,7 +39,7 @@ class RegisterRequest extends FormRequest
             'email'             =>  'nullable|email|max:150',
             'country_code'      =>  'required|in:'.implode(',', $phone_codes),
             'contact_no'        =>  'required|digits_between:6,16',
-            'birth_date'        =>  'required|date|before:tomorrow',
+            'birth_date'        =>  'required|date|before:'.$min_birth_date,
             'gender'            =>  'required|in:Male,Female',
             'interest'          =>  'required|in:Male,Female,Both',
             'location'          =>  'required|in:'.implode(',', $location_ids),
