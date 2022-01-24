@@ -26,6 +26,7 @@ class CommonProfileResource extends JsonResource
             'age'               =>  $this->getAge(),
             'gender'            =>  $this->gender ?? "",
             'location'          =>  new LocationResource($this->location),
+            'profile_photo'     =>  generateURL($this->profile_photo) ?? "",
         ];
     }
 
