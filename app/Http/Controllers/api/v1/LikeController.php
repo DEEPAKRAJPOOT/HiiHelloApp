@@ -7,7 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\Auth;
-use App\Http\Requests\api\user\AddLikeRequest;
+use App\Http\Requests\Api\User\AddLikeRequest;
 use App\Http\Requests\Api\General\PaginationRequest;
 use App\Http\Resources\v1\LikeResource;
 use App\Models\Like;
