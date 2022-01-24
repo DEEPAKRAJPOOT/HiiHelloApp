@@ -41,6 +41,26 @@ class User extends Authenticatable
     public function countLikes(){ return Like::whereUserId($this->id)->count() ?? 0; }
     public function countMatches(){ return 0; }
     public function countChats(){ return 0; }
+    public function getProfileImages(){
+        $imgs = [];
+        if($this->userDetails){
+            foreach($this->userDetails as $userDetail){
+                $image = generateURL($userDetail->image);
+                if($image){ $imgs[] = $image; }
+            }
+        }
+        return $imgs;
+    }
+    public function getProfileVideos(){ 
+        $videos = [];
+        if($this->userDetails){
+            foreach($this->userDetails as $userDetail){
+                $video = generateURL($userDetail->video);
+                if($video){ $videos[] = $video; }
+            }
+        }
+        return $videos;
+    }
 
     public function isProfileSetuped(){
         return $this->userDetails->isNotEmpty() && $this->interests->isNotEmpty()
