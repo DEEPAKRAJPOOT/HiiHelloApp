@@ -33,6 +33,10 @@ class UserProfile extends JsonResource
             'language'          =>  new LanguageResource($this->language),
             'interests'         =>  UserInterestResource::collection($this->interests),
             'profile_photo'     =>  generateURL($this->profile_photo) ?? "",
+            'media' =>  [
+                'profile_images'    =>  $this->getProfileImages(),
+                'profile_videos'    =>  $this->getProfileVideos(),
+            ],
             'flags'             =>  [
                 'profile_setuped'       =>  $this->isProfileSetuped(),
                 'verified_staus'        =>  $this->getVerifiedStatus(),
