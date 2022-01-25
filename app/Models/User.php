@@ -44,9 +44,12 @@ class User extends Authenticatable
     public function getProfileImages(){
         $imgs = [];
         if($this->userDetails){
-            foreach($this->userDetails as $userDetail){
+            foreach($this->userDetails as $key => $userDetail){
                 $image = generateURL($userDetail->image);
-                if($image){ $imgs[] = $image; }
+                if(!empty($image)){
+                    $imgs[$key]['id']     =   $userDetail->custom_id; 
+                    $imgs[$key]['url']    =   $image; 
+                }
             }
         }
         return $imgs;
@@ -54,9 +57,12 @@ class User extends Authenticatable
     public function getProfileVideos(){ 
         $videos = [];
         if($this->userDetails){
-            foreach($this->userDetails as $userDetail){
+            foreach($this->userDetails as $key => $userDetail){
                 $video = generateURL($userDetail->video);
-                if($video){ $videos[] = $video; }
+                if(!empty($video)){
+                    $videos[$key]['id']   =   $userDetail->custom_id;  
+                    $videos[$key]['url']  =   $video; 
+                }
             }
         }
         return $videos;
