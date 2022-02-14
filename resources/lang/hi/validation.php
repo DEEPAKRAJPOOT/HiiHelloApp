@@ -226,5 +226,7 @@ return [
         'videos'            =>  'वीडियो',
         'videos.*'          =>  'वीडियो',
         'search'            =>  'तलाश',
+        'image'             =>  'छवि',
+        'image_path'        =>  'छवि पथ',
     ],
 ];

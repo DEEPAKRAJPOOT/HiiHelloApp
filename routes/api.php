@@ -41,6 +41,9 @@ Route::group(['namespace' => 'v1', 'prefix' => 'v1'], function () {
     // User
     Route::post('user/get-profile', [UserController::class,'getProfile'])->name('api.user.get-profile');
     Route::post('user/common-age',[UserController::class,'getCommonAge'])->name('api.user.common-age');
+
+    // Third Party Api
+    Route::post('image/moderation', [GeneralController::class,'checkImageModeration'])->name('api.image.moderation');
 });
 
 Route::group(['namespace' => 'v1', 'prefix' => 'v1', 'middleware' => 'auth:sanctum'], function () {

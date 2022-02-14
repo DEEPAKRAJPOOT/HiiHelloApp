@@ -5,6 +5,7 @@ namespace App\Http\Controllers\api\v1;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use App\Http\Resources\v1\LanguageResource;
 use App\Http\Resources\v1\CmsResource;
@@ -295,6 +296,82 @@ class GeneralController extends Controller
                 };
             } catch (\Exception $e) {
                 $this->storeErrorLog($e,'get_faqs');
+            }
+        }
+        return $this->returnResponse();
+    }
+
+    // Check Image Moderation Things
+    public function checkImageModeration(Request $request)
+    {
+        $rules = [
+            // 'image'     =>  'required|mimes:jpg,jpeg,png',
+            'image_path'     =>  'required|string',
+        ];
+        if( $this->apiValidator($request->all(), $rules) ) {
+            try{
+                $api_url    =   config('utility.image_moderation.api_url');
+                $api_user   =   config('utility.image_moderation.api_user');
+                $api_secret =   config('utility.image_moderation.api_secret');
+                $models     =   'nudity'; // We can also pass array if we have multiple models
+
+                // $image      =   $request->file('image')->store('moderation/images');
+                // $image_path =   generateURL($image);
+
+                // $image_path = 'http://127.0.0.1:8000/storage/moderation/images/yvCY3xx4bMcIw47MdF354GyoZmxlFpaqmhttO4Zq.jpg';
+
+                // $image_path = 'http://la.webdevprojects.cloud/hi-hello/storage/users/profile_photo/gXQrpAaROu893nzhuS6uI7JdRFcHcYq2musi2Y7r.jpg';
+
+                $image_path = $request->image_path;
+
+                $client     =   new \GuzzleHttp\Client();
+                $file       =   fopen($image_path, 'r');
+                $response   =   $client->request('POST', $api_url, 
+                                [
+                                    'query' => [
+                                        'api_user'      =>  $api_user,
+                                        'api_secret'    =>  $api_secret,
+                                        'models'        =>  $models
+                                    ],
+                                    'multipart' => [
+                                        [
+                                            'name'      =>  'media',
+                                            'contents'  =>  $file
+                                        ]
+                                    ]
+                                ]); 
+
+                $output = json_decode($response->getBody());
+                    
+                // Delete Image From Storage
+                // Storage::delete($image);
+
+                if($output->status == 'success'){
+                    // if($output->nudity){
+                        // $row            =   $output->nudity->raw;
+                        // $safe           =   $output->nudity->safe;
+                        // $partial        =   $output->nudity->partial;
+                        // $safe_image     =   true;
+
+                        // $row_condition      =   $row > $row_value;
+                        // $partial_condition  =   $partial > $partial_value;
+                        // $safe_condition     =   $safe < $safe_value;
+
+                        // if($row_condition || $partial_condition || $safe_condition){
+                        //     $safe_image = false;
+                        // }
+
+                    // }
+                    return $output;
+                }else{
+                    $this->response['meta']['message']  =   trans('api.not_found',['entity' => __('Image Moderation')]); 
+                    $this->status = Response::HTTP_NOT_FOUND;    
+                }
+            } catch (\Exception $e) {
+                $this->response['meta']['message'] = trans('api.went_wrong');
+                $this->status = Response::HTTP_NOT_FOUND;  
+
+                $this->storeErrorLog($e,'image_moderation');
             }
         }
         return $this->returnResponse();
