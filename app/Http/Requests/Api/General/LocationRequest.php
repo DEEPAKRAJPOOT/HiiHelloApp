@@ -26,7 +26,7 @@ class LocationRequest extends FormRequest
         return [
             'limit'         =>  'nullable|numeric',
             'offset'        =>  'nullable|numeric',
-            'search'        =>  'nullable',
+            'search'        =>  'nullable|max:150',
         ];
     }
 }

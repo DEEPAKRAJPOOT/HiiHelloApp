@@ -15,5 +15,10 @@
 	"Invalid contact details or checksum" : "अमान्य संपर्क विवरण या चेकसम",
 	"Invalid security token. Please try again!" : "अमान्य सुरक्षा टोकन। कृपया पुन: प्रयास करें!",
 	"Faqs" : "पूछे जाने वाले प्रश्न",
-	"contact_no" : "संपर्क"
+	"contact_no" : "संपर्क",
+	"search" : "तलाश",
+	"limit" : "सीमा",
+	"id" : "आईडी",
+	"reported_user" : "रिपोर्ट किया गया उपयोगकर्ता",
+	"user_id" : "उपयोगकर्ता"
 }

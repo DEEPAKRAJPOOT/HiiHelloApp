@@ -33,6 +33,7 @@ class LikeController extends Controller
                 ]);
 
                 if($like->save()){
+                    $this->status = Response::HTTP_OK;
                     return (new LikeResource($like))
                         ->additional([
                             'meta' => [

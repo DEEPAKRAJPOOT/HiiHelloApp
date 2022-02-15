@@ -7,13 +7,7 @@ use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\UploadedFile;
 use Tests\InitialiseUserTrait;
-
 use Tests\TestCase;
-use App\Models\User;
-use App\Models\Country;
-use App\Models\Location;
-use App\Models\Interest;
-use App\Models\Language;
 
 class AuthenticationTest extends TestCase
 {
@@ -49,8 +43,8 @@ class AuthenticationTest extends TestCase
             'data'
         ])->assertJson([
             'meta'  =>  [
-                'api'       =>  'v.1.0',
-                'url'       =>  route('api.generate-checksum'),
+                'api'       =>  $this->getVersion(),
+                'url'       =>  url()->current(),
                 'language'  =>  config('utility.default_lang_code'),
                 'message'   =>  trans('validation.required', ['attribute' => __('contact_no')])
             ],
@@ -89,8 +83,8 @@ class AuthenticationTest extends TestCase
             'data'
         ])->assertJson([
             'meta'  =>  [
-                'api'       =>  'v.1.0',
-                'url'       =>  route('api.user.set-profile'),
+                'api'       =>  $this->getVersion(),
+                'url'       =>  url()->current(),
                 'language'  =>  config('utility.default_lang_code'),
             ],
             'data' => NULL
@@ -112,8 +106,8 @@ class AuthenticationTest extends TestCase
             ],
         ])->assertJson([
             'meta'  =>  [
-                'api'       =>  'v.1.0',
-                'url'       =>  route('api.user.set-profile'),
+                'api'       =>  $this->getVersion(),
+                'url'       =>  url()->current(),
                 'message'   =>  trans('api.profile_setuped'),
             ],
             'data'  =>  [
@@ -126,9 +120,6 @@ class AuthenticationTest extends TestCase
                 ],
                 'gender'        =>  $user['gender'],
                 'interest'      =>  $user['interest'],
-                'flags'         =>  [
-                    'profile_setuped'   =>  true,
-                ],
             ],
         ]);
     }

@@ -32,7 +32,7 @@ Route::group(['namespace' => 'v1', 'prefix' => 'v1'], function () {
     // Listing
     Route::post('app-status', [GeneralController::class,'appStatus'])->name('api.app-status');
     Route::post('get/countries',[GeneralController::class,'getCountries'])->name('api.get-countries');
-    Route::post('get/cms-pages',[GeneralController::class,'getCmsPages'])->name('api.user.get-cms-pages');
+    Route::post('get/cms-pages',[GeneralController::class,'getCmsPages'])->name('api.get-cms-pages');
     Route::post('get/locations',[GeneralController::class,'getLocations'])->name('api.get-locations');
     Route::post('get/interests',[GeneralController::class,'getInterests'])->name('api.get-interests');
     Route::post('get/faqs',[GeneralController::class,'getFaqs'])->name('api.get-faqs');

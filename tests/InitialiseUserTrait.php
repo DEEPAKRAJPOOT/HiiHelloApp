@@ -9,6 +9,8 @@ use App\Models\Country;
 use App\Models\Location;
 use App\Models\Interest;
 use App\Models\Language;
+use App\Models\Faq;
+use App\Models\User;
 
 trait InitialiseUserTrait
 {
@@ -22,6 +24,8 @@ trait InitialiseUserTrait
     {
         parent::setUp();
     }
+
+    protected function getVersion(){ return "v.1.0"; }
 
     protected function setCountry(){
         $faker = \Faker\Factory::create('en_UK');
@@ -70,6 +74,7 @@ trait InitialiseUserTrait
         $language       =   Language::whereIsActive('y')->firstOrFail();
 
         $user = [
+            'custom_id'         =>  getUniqueString('users'),
             'x-language'        =>  config('utility.default_lang_code'),
             'first_name'        =>  'Abc',
             'last_name'         =>  'Xyz',
@@ -86,6 +91,39 @@ trait InitialiseUserTrait
             'images'            =>  [ UploadedFile::fake()->image('profile_image_1.jpg') ],     // Array
         ];
 
+        return $user;
+    }
+
+    protected function setFaq(){
+        $faker = \Faker\Factory::create('en_UK');
+        $data = [
+            'en'    =>  [
+                'question'      =>  'This is test question ?',
+                'answer'        =>  'Yes, This is test answer.',
+            ],
+            'custom_id'     =>  getUniqueString('faqs'),
+        ];
+        $faq = Faq::create($data);
+        return $faq;
+    }
+
+    public function createUser()
+    {
+        $user = $this->getUser();
+        $user = User::create($user);
+        $user->save();
+        return $user;
+    }
+
+    protected function getActiveUser(){
+        $user = User::whereIsActive('y')->latest()->firstOrFail();
+        return $user;
+    }
+
+    protected function setUserToken($user){
+        $token = $user->createToken(config('utility.token'))->plainTextToken;
+        $this->withHeader('Authorization', 'Bearer ' . $token);
+        
         return $user;
     }
 }

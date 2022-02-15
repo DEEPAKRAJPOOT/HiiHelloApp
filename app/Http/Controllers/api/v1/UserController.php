@@ -143,6 +143,7 @@ class UserController extends Controller
                 ]);
 
                 if($profile_report->save()){
+                    $this->status = Response::HTTP_OK;     
                     return (new ProfileReportResource($profile_report))
                             ->additional([
                             'meta' => [
