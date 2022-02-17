@@ -26,13 +26,15 @@ class UserRequest extends FormRequest
     {
         $unless = "change_status";
         $id = (!empty(Route::current()->parameters()['user']->id) ? Route::current()->parameters()['user']->id : NULL);
+        $min_birth_date = now()->subYears(config('utility.minimum_age'))->format('m/d/Y');
+
         return [
             'first_name'        =>  'required_unless:action,'.$unless.'|min:2|max:100',
             'last_name'         =>  'required_unless:action,'.$unless.'|min:2|max:100',
             'email'             =>  'nullable|max:150|unique:users,email,'.$id.',id,deleted_at,NULL',
             'country_code'      =>  'required_unless:action,'.$unless.'|exists:countries,phonecode',
             'contact_no'        =>  'required_unless:action,'.$unless.'|digits_between:6,16|unique:users,contact_no,'.$id.',id,deleted_at,NULL',
-            'birth_date'        =>  'required_unless:action,'.$unless.'|date|before:tomorrow',
+            'birth_date'        =>  'required_unless:action,'.$unless.'|date|before:'.$min_birth_date,
             'gender'            =>  'required_unless:action,'.$unless.'|in:'.implode(',', ['Male','Female']),
             'interest'          =>  'nullable|in:'.implode(',', ['Male','Female', 'Both']),
             'profile_photo'     =>  'nullable|mimes:jpg,jpeg,png',

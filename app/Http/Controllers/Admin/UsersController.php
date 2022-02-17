@@ -42,9 +42,6 @@ class UsersController extends Controller
      */
     public function store(UserRequest $request)
     {
-        if(!empty($request->birth_date)){
-            $request['birth_date'] = date('m/d/y', strtotime( $request->birth_date));
-        }
         $request['custom_id']   =   getUniqueString('users');
         $request['password']    =   Hash::make(config('utility.default_password'));
         $path = NULL;
@@ -90,7 +87,7 @@ class UsersController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, User $user)
+    public function update(UserRequest $request, User $user)
     {
         try{
             DB::beginTransaction();
@@ -106,12 +103,6 @@ class UsersController extends Controller
                 }
                 return response()->json($content);
             } else {
-                if($request->birth_date){
-                    $request['birth_date'] = \Carbon\Carbon::parse($request->birth_date)->format('m/d/y');
-                }else{
-                    $request['birth_date'] = \Carbon\Carbon::parse($user->birth_date)->format('m/d/y');
-                }
-
                 $path = $user->profile_photo;
                 //request has remove_profie_photo then delete user image
                 if( $request->has('remove_profie_photo') ){
