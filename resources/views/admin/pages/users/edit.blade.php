@@ -69,7 +69,7 @@
                 {{-- Birth Date --}}
                 <div class="form-group">
                     <label for="birth_date">Birth Date:</label>
-                    <input type="date" class="form-control @error('birth_date') is-invalid @enderror" id="birth_date" name="birth_date" value="{{ old('birth_date') != null ? old('birth_date') : $user->birth_date }}" max="{{ \Carbon\Carbon::today()->format('d/m/y') }}" placeholder="Enter birth date" autocomplete="birth_date" spellcheck="false" tabindex="0" />
+                    <input type="date" class="form-control @error('birth_date') is-invalid @enderror" id="birth_date" name="birth_date" value="{{ old('birth_date') != null ? old('birth_date') : $user->birth_date }}" max="{{ now()->subYears(config('utility.minimum_age'))->format('Y-m-d') }}"  placeholder="Enter birth date" autocomplete="birth_date" spellcheck="false" tabindex="0" />
                     @if ($errors->has('birth_date'))
                         <span class="text-danger">
                             <strong class="form-text">{{ $errors->first('birth_date') }}</strong>
@@ -80,7 +80,7 @@
                 {{-- Gender --}}
                 <div class="form-group">
                     <label for="gender">{!!$mend_sign!!}Gender</label>
-                    <select type="text" class="form-control @error('gender') is-invalid @enderror" id="gender" name="gender" spellcheck="false" tabindex="0" />
+                    <select type="text" class="form-control @error('gender') is-invalid @enderror" id="gender" name="gender" spellcheck="false" tabindex="0">
                         @if($user->gender == 'Male')
                             <option value="">Select Gender</option>
                             <option value="Male" selected>Male</option>

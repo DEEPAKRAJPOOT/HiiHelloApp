@@ -32,10 +32,6 @@ class User extends Authenticatable
     public function interests(){ return $this->hasMany('App\Models\UserInterest'); }
     public function userDetails(){ return $this->hasMany('App\Models\UserDetail'); }
 
-    public function setBirthDateAttribute($birth_date){
-        $this->attributes['birth_date'] = \Carbon\Carbon::createFromFormat('m/d/Y', $birth_date);
-    }
-
     public function getAge(){ return \Carbon\Carbon::parse($this->birth_date)->diff(\Carbon\Carbon::now())->y; }
     public function getVerifiedStatus(){ return 'verified'; }
     public function countLikes(){ return Like::whereUserId($this->id)->count() ?? 0; }
