@@ -60,9 +60,14 @@
                     columnsDef: ['checkbox', 'name', 'country_name','active','action'],
                 },
             },
-            columns: [{
+            columns: [
+                {
                     data: 'checkbox'
                 },
+                {
+                    data: 'id'
+                },
+
                 {
                     data: 'name'
                 },
@@ -86,16 +91,21 @@
                 },
                 {
                     targets: 1,
-                    title: 'Name',
+                    title: 'Id',
                     orderable: true
                 },
                 {
                     targets: 2,
-                    title: 'Country Name',
+                    title: 'Name',
                     orderable: false
                 },
                 {
                     targets: 3,
+                    title: 'Country Name',
+                    orderable: false
+                },
+                {
+                    targets: 4,
                     title: 'Active',
                     orderable: false
                 },

@@ -20,7 +20,7 @@
             @csrf
             <div class="card-body">
                 {{-- Name --}}
-                <div class="form-group">
+                {{-- <div class="form-group">
                     <label for="name">Name{!!$mend_sign!!}</label>
                     <input type="text" class="form-control @error('name') is-invalid @enderror" id="name" name="name" value="{{ old('name') }}" placeholder="Enter name" autocomplete="name" spellcheck="false" autocapitalize="sentences" tabindex="0" autofocus />
                     @if ($errors->has('name'))
@@ -28,7 +28,35 @@
                             <strong class="form-text">{{ $errors->first('name') }}</strong>
                         </span>
                     @endif
+                </div> --}}
+
+                @forelse($languages as $language)
+                <div class="card-body">
+                    <div class="card-title">
+                        <h3 class="card-label text-uppercase">{{ $language->hint }} ({{ $language->language }})</h3>
+                    </div>
+    
+                    {{-- Name --}}
+                    <div class="form-group">
+                        <label for="{{ $language->getField($language->lang_code,'name') }}">@if($language->lang_code == $default_lang) {!!$mend_sign!!} @endif Name:</label>
+                        <input type="text" class="form-control @error('name') is-invalid @enderror" 
+                        id="{{ $language->getField($language->lang_code,'name') }}" 
+                        name="{{ $language->getField($language->lang_code,'name') }}" 
+                        value="{{ old($language->getField($language->lang_code,'name')) }}" 
+                        placeholder="Enter {{ $language->hint }} name" 
+                        autocomplete="{{ $language->getField($language->lang_code,'name') }}" 
+                        spellcheck="false" 
+                        autocapitalize="sentences" 
+                        tabindex="0" autofocus />
+                        @if ($errors->has($language->getField($language->lang_code,'name')))
+                            <span class="help-block">
+                                <strong class="form-text">{{ $errors->first($language->getField($language->lang_code,'name')) }}</strong>
+                            </span>
+                        @endif
+                    </div>
+    
                 </div>
+                @endforeach
 
                 {{-- State --}}
                 <div class="form-group">
@@ -64,7 +92,7 @@ $(document).ready(function () {
     $('#state_id').select2({ placeholder: 'Select a city'});
     $("#frmAddCity").validate({
         rules: {
-            name: {
+            '{{ $default_lang }}_name': {
                 required: true,
                 not_empty: true,
                 minlength: 3,
@@ -76,7 +104,7 @@ $(document).ready(function () {
 
         },
         messages: {
-            name: {
+            '{{ $default_lang }}_name': {
                 required: "@lang('validation.required',['attribute'=>'name'])",
                 not_empty: "@lang('validation.not_empty',['attribute'=>'name'])",
                 minlength:"@lang('validation.min.string',['attribute'=>'name','min'=>3])",

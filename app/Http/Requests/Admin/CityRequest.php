@@ -25,9 +25,11 @@ class CityRequest extends FormRequest
     public function rules()
     {
         $unless = "change_status";
+        $default_lang = config('utility.default_lang_code');
         $id = (!empty(Route::current()->parameters()['user']->id) ? ','.Route::current()->parameters()['user']->id : '');
         return [
-            'name'         =>  'required_unless:action,'.$unless.'|max:50',
+            $default_lang.'_name'   =>  'required_unless:action,'.$unless.'|max:50',
+            // 'name'         =>  'required_unless:action,'.$unless.'|max:50',
             'state_id'         =>  'required_unless:action,'.$unless,
         ];
 

@@ -7,6 +7,7 @@ use App\Http\Requests\Admin\CityRequest;
 use App\Models\City;
 use App\Models\State;
 use Illuminate\Http\Request;
+use App\Models\Language;
 
 class CityController extends Controller
 {
@@ -27,8 +28,9 @@ class CityController extends Controller
      */
     public function create()
     {
+        $languages = Language::whereIsActive('y')->select('hint','language','lang_code')->get();
         $states = State::with('country')->get();
-        return view('admin.pages.general.cities.create',compact('states'))->with(['custom_title' => 'City']);
+        return view('admin.pages.general.cities.create',compact('states','languages'))->with(['custom_title' => 'City','default_lang' => config('utility.default_lang_code')]);
     }
 
      /**
@@ -39,8 +41,13 @@ class CityController extends Controller
      */
     public function store(CityRequest $request)
     {
-        $city = City::create($request->all());
-        if ($city) {
+        // $city = City::create($request->all());
+        $data = $this->getLangStoreData($request);
+        $data['custom_id'] = getUniqueString('cities');
+        $data['state_id'] = $request->state_id;
+
+        $city = City::create($data);
+        if ($city->save()) {
             flash('state created successfully!')->success();
         } else {
             flash('Unable to save state. Please try again later.')->error();
@@ -57,7 +64,9 @@ class CityController extends Controller
     public function edit(City $city)
     {
         $states = State::with('country')->get();
-        return view('admin.pages.general.cities.edit', compact('city','states'))->with(['custom_title' => 'state']);
+        $languages = Language::whereIsActive('y')->get();
+
+        return view('admin.pages.general.cities.edit', compact('city','states','languages'))->with(['custom_title' => 'city' , 'default_lang' => config('utility.default_lang_code')]);
     }
 
     /**
@@ -80,7 +89,10 @@ class CityController extends Controller
             }
             return response()->json($content);
         } else {
-            $city->fill($request->all());
+            // $city->fill($request->all());
+            $data = $this->getLangStoreData($request);
+            $data['state_id'] = $request->state_id;
+            $city->update($data);
             if ($city->save()) {
                 flash('User details updated successfully!')->success();
             } else {
@@ -100,13 +112,15 @@ class CityController extends Controller
     {
         if (!empty($request->action) && $request->action == 'delete_all') {
             $content = ['status' => 204, 'message' => "something went wrong"];
-            City::whereIn('id', explode(',', $request->ids))->delete();
+            $citys=City::whereIn('id', explode(',', $request->ids))->delete();
+           
             $content['status'] = 200;
             $content['message'] = "state deleted successfully.";
             $content['count'] = City::all()->count();
             return response()->json($content);
         } else {
             $city = City::where('id', $id)->firstOrFail();
+            $city->cityTranslations()->delete();
             $city->delete();
             if (request()->ajax()) {
                 $content = array('status' => 200, 'message' => "state deleted successfully.", 'count' => City::all()->count());
@@ -128,10 +142,13 @@ class CityController extends Controller
 
         if ($search != '') {
             $cities->where(function ($query) use ($search) {
-                $query->where('name', 'like', "%{$search}%")
+                $query
+                // ->where('name', 'like', "%{$search}%")
                 ->orWhereHas('state',function($q) use ($search){
                     $q->where('name', 'like', "%{$search}%");
-                });
+                })  ->orWhereHas('stateTranslations', function ($query) use ($search) {
+                    $query->where('name', 'like', "%{$search}%");
+                }); 
             });
         }
 
@@ -155,8 +172,8 @@ class CityController extends Controller
 
             $records['data'][] = [
                 'id' => $city->id,
-                'name' => $city->name,
-                'state_name' => $city->state->name,
+                'name' => $city->translate(config('utility.default_lang_code')) ? $city->translate(config('utility.default_lang_code'))->name : "",
+                'state_name' =>  $city->state->translate(config('utility.default_lang_code')) ? $city->state->translate(config('utility.default_lang_code'))->name : "",
                 'active' => view('admin.layouts.includes.switch', compact('params'))->render(),
                 'action' => view('admin.layouts.includes.actions')->with(['custom_title' => 'Cities', 'id' => $city->id], $city)->render(),
                 'checkbox' => view('admin.layouts.includes.checkbox')->with('id', $city->id)->render(),

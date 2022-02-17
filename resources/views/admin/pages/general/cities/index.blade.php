@@ -64,6 +64,9 @@
                     data: 'checkbox'
                 },
                 {
+                    data: 'id'
+                },
+                {
                     data: 'name'
                 },
                 {
@@ -86,11 +89,16 @@
                 },
                 {
                     targets: 1,
-                    title: 'Name',
+                    title: 'Id',
                     orderable: true
                 },
                 {
                     targets: 2,
+                    title: 'Name',
+                    orderable: false
+                },
+                {
+                    targets: 3,
                     title: 'State Name',
                     orderable: false
                 },
