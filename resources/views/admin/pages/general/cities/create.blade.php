@@ -18,53 +18,43 @@
         <!--begin::Form-->
         <form id="frmAddCity" method="POST" action="{{ route('admin.cities.store') }}">
             @csrf
+
+            @forelse($languages as $language)
             <div class="card-body">
+                <div class="card-title">
+                    <h3 class="card-label text-uppercase">{{ $language->hint }} ({{ $language->language }})</h3>
+                </div>
+
                 {{-- Name --}}
-                {{-- <div class="form-group">
-                    <label for="name">Name{!!$mend_sign!!}</label>
-                    <input type="text" class="form-control @error('name') is-invalid @enderror" id="name" name="name" value="{{ old('name') }}" placeholder="Enter name" autocomplete="name" spellcheck="false" autocapitalize="sentences" tabindex="0" autofocus />
-                    @if ($errors->has('name'))
+                <div class="form-group">
+                    <label for="{{ $language->getField($language->lang_code,'name') }}">@if($language->lang_code == $default_lang) {!!$mend_sign!!} @endif Name:</label>
+                    <input type="text" class="form-control @error('name') is-invalid @enderror" 
+                    id="{{ $language->getField($language->lang_code,'name') }}" 
+                    name="{{ $language->getField($language->lang_code,'name') }}" 
+                    value="{{ old($language->getField($language->lang_code,'name')) }}" 
+                    placeholder="Enter {{ $language->hint }} name" 
+                    autocomplete="{{ $language->getField($language->lang_code,'name') }}" 
+                    spellcheck="false" 
+                    autocapitalize="sentences" 
+                    tabindex="0" autofocus />
+                    @if ($errors->has($language->getField($language->lang_code,'name')))
                         <span class="help-block">
-                            <strong class="form-text">{{ $errors->first('name') }}</strong>
+                            <strong class="form-text">{{ $errors->first($language->getField($language->lang_code,'name')) }}</strong>
                         </span>
                     @endif
-                </div> --}}
-
-                @forelse($languages as $language)
-                <div class="card-body">
-                    <div class="card-title">
-                        <h3 class="card-label text-uppercase">{{ $language->hint }} ({{ $language->language }})</h3>
-                    </div>
-    
-                    {{-- Name --}}
-                    <div class="form-group">
-                        <label for="{{ $language->getField($language->lang_code,'name') }}">@if($language->lang_code == $default_lang) {!!$mend_sign!!} @endif Name:</label>
-                        <input type="text" class="form-control @error('name') is-invalid @enderror" 
-                        id="{{ $language->getField($language->lang_code,'name') }}" 
-                        name="{{ $language->getField($language->lang_code,'name') }}" 
-                        value="{{ old($language->getField($language->lang_code,'name')) }}" 
-                        placeholder="Enter {{ $language->hint }} name" 
-                        autocomplete="{{ $language->getField($language->lang_code,'name') }}" 
-                        spellcheck="false" 
-                        autocapitalize="sentences" 
-                        tabindex="0" autofocus />
-                        @if ($errors->has($language->getField($language->lang_code,'name')))
-                            <span class="help-block">
-                                <strong class="form-text">{{ $errors->first($language->getField($language->lang_code,'name')) }}</strong>
-                            </span>
-                        @endif
-                    </div>
-    
                 </div>
-                @endforeach
 
-                {{-- State --}}
+            </div>
+            @endforeach
+
+            {{-- State --}}
+            <div class="card-body">
                 <div class="form-group">
                     <label for="state_id">State Name{!!$mend_sign!!}</label>
                     <select id="state_id" class="form-control" name="state_id">
                         <option></option>
                         @foreach($states as $state)
-                        <option value="{{ $state->id }}"> {{ $state->name }} - {{ $state->country->name }}</option>
+                        <option value="{{ $state->id }}"> {{ $state->name }} @if($state->country) ({{ $state->country->name }}) @endif</option>
                         @endforeach
                     </select>
                     @if ($errors->has('state_id'))
@@ -73,9 +63,8 @@
                         </span>
                     @endif
                 </div>
-
-
             </div>
+
             <div class="card-footer">
                 <button type="submit" class="btn btn-primary mr-2"> Add {{ $custom_title }}</button>
                 <a href="{{ route('admin.cities.index') }}" class="btn btn-secondary">Cancel</a>

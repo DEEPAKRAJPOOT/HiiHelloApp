@@ -12,7 +12,7 @@ class Country extends Model implements TranslatableContract
 
     public function getRouteKeyName(){ return 'custom_id'; }
     
-    protected $fillable = ['custom_id', 'code', 'name', 'phonecode'];
+    protected $fillable = ['custom_id', 'code', 'phonecode'];
 
     protected $translatedAttributes = ['name'];
 

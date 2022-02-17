@@ -41,7 +41,6 @@ class CityController extends Controller
      */
     public function store(CityRequest $request)
     {
-        // $city = City::create($request->all());
         $data = $this->getLangStoreData($request);
         $data['custom_id'] = getUniqueString('cities');
         $data['state_id'] = $request->state_id;
@@ -89,7 +88,6 @@ class CityController extends Controller
             }
             return response()->json($content);
         } else {
-            // $city->fill($request->all());
             $data = $this->getLangStoreData($request);
             $data['state_id'] = $request->state_id;
             $city->update($data);
@@ -112,14 +110,14 @@ class CityController extends Controller
     {
         if (!empty($request->action) && $request->action == 'delete_all') {
             $content = ['status' => 204, 'message' => "something went wrong"];
-            $citys=City::whereIn('id', explode(',', $request->ids))->delete();
+            $citys=City::whereIn('custom_id', explode(',', $request->ids))->delete();
            
             $content['status'] = 200;
             $content['message'] = "state deleted successfully.";
             $content['count'] = City::all()->count();
             return response()->json($content);
         } else {
-            $city = City::where('id', $id)->firstOrFail();
+            $city = City::where('custom_id', $id)->firstOrFail();
             $city->cityTranslations()->delete();
             $city->delete();
             if (request()->ajax()) {
@@ -132,8 +130,6 @@ class CityController extends Controller
         }
     }
 
-
-
     public function listing(Request $request)
     {
         extract($this->DTFilters($request->all()));
@@ -142,13 +138,10 @@ class CityController extends Controller
 
         if ($search != '') {
             $cities->where(function ($query) use ($search) {
-                $query
-                // ->where('name', 'like', "%{$search}%")
-                ->orWhereHas('state',function($q) use ($search){
-                    $q->where('name', 'like', "%{$search}%");
-                })  ->orWhereHas('stateTranslations', function ($query) use ($search) {
-                    $query->where('name', 'like', "%{$search}%");
-                }); 
+                $query->where('custom_id', 'like', "%{$search}%")
+                    ->orWhereHas('cityTranslations', function ($query) use ($search) {
+                        $query->where('name', 'like', "%{$search}%");
+                    }); 
             });
         }
 
@@ -167,18 +160,17 @@ class CityController extends Controller
                 'checked' => ($city->is_active == 'y' ? 'checked' : ''),
                 'getaction' => $city->is_active,
                 'class' => '',
-                'id' => $city->id,
+                'id' => $city->custom_id,
             ];
 
             $records['data'][] = [
                 'id' => $city->id,
                 'name' => $city->translate(config('utility.default_lang_code')) ? $city->translate(config('utility.default_lang_code'))->name : "",
-                'state_name' =>  $city->state->translate(config('utility.default_lang_code')) ? $city->state->translate(config('utility.default_lang_code'))->name : "",
+                'state_name' =>  $city->state ? $city->state->translate(config('utility.default_lang_code')) ? $city->state->translate(config('utility.default_lang_code'))->name : "" : "",
                 'active' => view('admin.layouts.includes.switch', compact('params'))->render(),
-                'action' => view('admin.layouts.includes.actions')->with(['custom_title' => 'Cities', 'id' => $city->id], $city)->render(),
-                'checkbox' => view('admin.layouts.includes.checkbox')->with('id', $city->id)->render(),
+                'action' => view('admin.layouts.includes.actions')->with(['custom_title' => 'Cities', 'id' => $city->custom_id], $city)->render(),
+                'checkbox' => view('admin.layouts.includes.checkbox')->with('id', $city->custom_id)->render(),
             ];
-
         }
 
         return $records;
