@@ -3,24 +3,12 @@
 namespace App\Http\Controllers\api\v1;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use Illuminate\Http\Response;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
-use App\Http\Resources\v1\LanguageResource;
-use App\Http\Resources\v1\CmsResource;
-use App\Http\Resources\v1\CountryResource;
-use App\Http\Resources\v1\LocationResource;
-use App\Http\Resources\v1\InterestResource;
-use App\Http\Resources\v1\FaqResource;
-use App\Http\Requests\Api\General\PaginationRequest;
-use App\Http\Requests\Api\General\LocationRequest;
-use App\Models\Language;
-use App\Models\CmsPage;
-use App\Models\Country;
-use App\Models\Location;
-use App\Models\Interest;
-use App\Models\Faq;
+use Illuminate\Http\ { Request, Response };
+use Illuminate\Support\Facades\ { Storage };
+use Illuminate\Database\Eloquent\ { ModelNotFoundException };
+use App\Http\Resources\v1\ { LanguageResource, CmsResource, CountryResource, LocationResource, InterestResource, FaqResource };
+use App\Http\Requests\Api\General\ { PaginationRequest, LocationRequest };
+use App\Models\ { Language, CmsPage, Country, Location, Interest, Faq };
 
 class GeneralController extends Controller
 {
@@ -305,7 +293,6 @@ class GeneralController extends Controller
     public function checkImageModeration(Request $request)
     {
         $rules = [
-            // 'image'     =>  'required|mimes:jpg,jpeg,png',
             'image_path'     =>  'required|string',
         ];
         if( $this->apiValidator($request->all(), $rules) ) {
@@ -314,15 +301,7 @@ class GeneralController extends Controller
                 $api_user   =   config('utility.image_moderation.api_user');
                 $api_secret =   config('utility.image_moderation.api_secret');
                 $models     =   'nudity'; // We can also pass array if we have multiple models
-
-                // $image      =   $request->file('image')->store('moderation/images');
-                // $image_path =   generateURL($image);
-
-                // $image_path = 'http://127.0.0.1:8000/storage/moderation/images/yvCY3xx4bMcIw47MdF354GyoZmxlFpaqmhttO4Zq.jpg';
-
-                // $image_path = 'http://la.webdevprojects.cloud/hi-hello/storage/users/profile_photo/gXQrpAaROu893nzhuS6uI7JdRFcHcYq2musi2Y7r.jpg';
-
-                $image_path = $request->image_path;
+                $image_path =   $request->image_path;
 
                 $client     =   new \GuzzleHttp\Client();
                 $file       =   fopen($image_path, 'r');
@@ -342,26 +321,8 @@ class GeneralController extends Controller
                                 ]); 
 
                 $output = json_decode($response->getBody());
-                    
-                // Delete Image From Storage
-                // Storage::delete($image);
 
                 if($output->status == 'success'){
-                    // if($output->nudity){
-                        // $row            =   $output->nudity->raw;
-                        // $safe           =   $output->nudity->safe;
-                        // $partial        =   $output->nudity->partial;
-                        // $safe_image     =   true;
-
-                        // $row_condition      =   $row > $row_value;
-                        // $partial_condition  =   $partial > $partial_value;
-                        // $safe_condition     =   $safe < $safe_value;
-
-                        // if($row_condition || $partial_condition || $safe_condition){
-                        //     $safe_image = false;
-                        // }
-
-                    // }
                     return $output;
                 }else{
                     $this->response['meta']['message']  =   trans('api.not_found',['entity' => __('Image Moderation')]); 
@@ -370,7 +331,6 @@ class GeneralController extends Controller
             } catch (\Exception $e) {
                 $this->response['meta']['message'] = trans('api.went_wrong');
                 $this->status = Response::HTTP_NOT_FOUND;  
-
                 $this->storeErrorLog($e,'image_moderation');
             }
         }

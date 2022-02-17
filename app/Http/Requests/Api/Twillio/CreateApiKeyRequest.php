@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Http\Requests\api\general;
+namespace App\Http\Requests\Api\Twillio;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class LocationRequest extends FormRequest
+class CreateApiKeyRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -24,9 +24,7 @@ class LocationRequest extends FormRequest
     public function rules()
     {
         return [
-            'limit'         =>  'nullable|numeric',
-            'offset'        =>  'nullable|numeric',
-            'search'        =>  'nullable|max:150',
+            'name'     =>  'required|string',
         ];
     }
 }

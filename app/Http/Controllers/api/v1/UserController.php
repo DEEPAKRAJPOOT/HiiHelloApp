@@ -3,20 +3,12 @@
 namespace App\Http\Controllers\api\v1;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Auth;
-use App\Http\Resources\v1\UserProfile;
-use App\Http\Resources\v1\ProfileReportResource;
-use App\Http\Requests\Api\User\ProfileRequest;
-use App\Http\Requests\Api\User\UserListRequest;
-use App\Http\Requests\Api\User\ProfileReportRequest;
-use Illuminate\Http\Request;
-use Illuminate\Http\Response;
-use App\Models\User;
-use App\Models\Location;
-use App\Models\ProfileReport;
+use Illuminate\Http\ { Request, Response };
+use Illuminate\Database\Eloquent\ { ModelNotFoundException };
+use Illuminate\Support\Facades\ { Storage, DB, Auth };
+use App\Http\Resources\v1\ { UserProfile, ProfileReportResource };
+use App\Http\Requests\Api\User\ { ProfileRequest, UserListRequest, ProfileReportRequest };
+use App\Models\ { User, Location, ProfileReport };
 
 class UserController extends Controller
 {
@@ -143,6 +135,7 @@ class UserController extends Controller
                 ]);
 
                 if($profile_report->save()){
+                    $this->status = Response::HTTP_OK;     
                     return (new ProfileReportResource($profile_report))
                             ->additional([
                             'meta' => [

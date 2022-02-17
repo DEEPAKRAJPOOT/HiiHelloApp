@@ -3,22 +3,12 @@
 namespace App\Http\Controllers\api\v1;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use Illuminate\Http\Response;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
-use App\Http\Resources\v1\UserProfile;
-use App\Http\Requests\Api\Authentication\LoginRequest;
-use App\Http\Requests\Api\Authentication\RegisterRequest;
-use App\Models\User;
-use App\Models\Country;
-use App\Models\UserDetail;
-use App\Models\Location;
-use App\Models\Interest;
-use App\Models\UserInterest;
-use App\Models\Language;
+use Illuminate\Http\ { Request, Response };
+use App\Http\Resources\v1\ { UserProfile };
+use Illuminate\Database\Eloquent\ { ModelNotFoundException };
+use Illuminate\Support\Facades\ { Storage, Auth, Hash };
+use App\Http\Requests\Api\Authentication\ { LoginRequest, RegisterRequest };
+use App\Models\ { User, Country, UserDetail, Location, Interest, UserInterest, Language };
 
 class AuthenticationController extends Controller
 {
