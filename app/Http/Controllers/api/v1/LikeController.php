@@ -3,15 +3,13 @@
 namespace App\Http\Controllers\api\v1;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use Illuminate\Http\Response;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
-use Illuminate\Support\Facades\Auth;
-use App\Http\Requests\Api\User\AddLikeRequest;
-use App\Http\Requests\Api\General\PaginationRequest;
-use App\Http\Resources\v1\LikeResource;
-use App\Models\Like;
-use App\Models\User;
+use Illuminate\Http\ { Request, Response };
+use Illuminate\Database\Eloquent\ { ModelNotFoundException };
+use Illuminate\Support\Facades\ { Auth };
+use App\Http\Requests\Api\User\ { AddLikeRequest };
+use App\Http\Requests\Api\General\ { PaginationRequest };
+use App\Http\Resources\v1\ { LikeResource };
+use App\Models\ { Like, User };
 
 class LikeController extends Controller
 {

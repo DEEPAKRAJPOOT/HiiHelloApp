@@ -20,7 +20,8 @@
         "laravel/tinker": "^2.5",
         "laravel/ui": "^3.3",
         "league/flysystem-aws-s3-v3": "^1.0",
-        "predis/predis": "^1.1"
+        "predis/predis": "^1.1",
+        "twilio/sdk": "^6.34"
     },
     "require-dev": {
         "barryvdh/laravel-debugbar": "^3.3",

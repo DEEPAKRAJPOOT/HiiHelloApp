@@ -3,10 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Middleware\CheckApiLanguage;
-use App\Http\Controllers\api\v1\AuthenticationController;
-use App\Http\Controllers\api\v1\GeneralController;
-use App\Http\Controllers\api\v1\UserController;
-use App\Http\Controllers\api\v1\LikeController;
+use App\Http\Controllers\api\v1\ { AuthenticationController, GeneralController, UserController, LikeController, TwillioController };
 
 /*
 |--------------------------------------------------------------------------
@@ -53,4 +50,10 @@ Route::group(['namespace' => 'v1', 'prefix' => 'v1', 'middleware' => 'auth:sanct
     // Like
     Route::post('user/add-like', [LikeController::class,'addNewLike'])->name('api.user.add-like');
     Route::post('user/get-likes', [LikeController::class,'getLikes'])->name('api.user.get-likes');
+
+    // Twillio Api
+    Route::post('/twillio/create-api-key',[TwillioController::class,'createApiKey'])->name('api.twillio.create-api-key');
+    Route::post('/twillio/create-access-token',[TwillioController::class,'createAccessToken'])->name('api.twillio.create-access-token');
+    Route::post('/twillio/create-service-resource',[TwillioController::class,'createServiceResource'])->name('api.twillio.create-service-resource');
+    Route::post('/twillio/new-message-notification',[TwillioController::class,'newMessageNotification'])->name('api.twillio.new-message-notification');
 });

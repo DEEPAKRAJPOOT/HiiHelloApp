@@ -3,24 +3,12 @@
 namespace App\Http\Controllers\api\v1;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use Illuminate\Http\Response;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
-use App\Http\Resources\v1\LanguageResource;
-use App\Http\Resources\v1\CmsResource;
-use App\Http\Resources\v1\CountryResource;
-use App\Http\Resources\v1\LocationResource;
-use App\Http\Resources\v1\InterestResource;
-use App\Http\Resources\v1\FaqResource;
-use App\Http\Requests\Api\General\PaginationRequest;
-use App\Http\Requests\Api\General\LocationRequest;
-use App\Models\Language;
-use App\Models\CmsPage;
-use App\Models\Country;
-use App\Models\Location;
-use App\Models\Interest;
-use App\Models\Faq;
+use Illuminate\Http\ { Request, Response };
+use Illuminate\Support\Facades\ { Storage };
+use Illuminate\Database\Eloquent\ { ModelNotFoundException };
+use App\Http\Resources\v1\ { LanguageResource, CmsResource, CountryResource, LocationResource, InterestResource, FaqResource };
+use App\Http\Requests\Api\General\ { PaginationRequest, LocationRequest };
+use App\Models\ { Language, CmsPage, Country, Location, Interest, Faq };
 
 class GeneralController extends Controller
 {
