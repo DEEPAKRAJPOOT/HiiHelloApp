@@ -10,11 +10,14 @@ class State extends Model implements TranslatableContract
 {
     use Translatable;
 
-    // public function getRouteKeyName(){ return 'custom_id'; }
-    protected $fillable = ['custom_id', 'name', 'country_id'];
+    public function getRouteKeyName(){ return 'custom_id'; }
+
+    protected $fillable = ['custom_id', 'country_id'];
     protected $translatedAttributes = ['name'];
 
     public function stateTranslations(){ return $this->hasMany('App\Models\StateTranslation'); }
+    public function cities(){ return $this->hasMany('App\Models\City'); }
+    public function country(){ return $this->belongsTo('App\Models\Country'); }
 
     public function getName(){
         $lang_code = app()->getlocale();
@@ -29,16 +32,4 @@ class State extends Model implements TranslatableContract
         return $this->translate($lang_code) ? $this->translate($lang_code)->$field : "";
     }
 
-    
-    
-    public function cities()
-    {
-        return $this->hasMany('App\Models\City');
-    }
-
-
-    public function country()
-    {
-        return $this->belongsTo('App\Models\Country');
-    }
 }

@@ -113,7 +113,7 @@ class StateController extends Controller
     {
         if (!empty($request->action) && $request->action == 'delete_all') {
             $content = ['status' => 204, 'message' => "something went wrong"];
-            $states=State::whereIn('id', explode(',', $request->ids))->delete();
+            $states=State::whereIn('custom_id', explode(',', $request->ids))->delete();
             // foreach($states as $state){
             //     $state->stateTranslations()->delete();
             //     $state->delete();
@@ -123,7 +123,7 @@ class StateController extends Controller
             $content['count'] = State::all()->count();
             return response()->json($content);
         } else {
-            $state = State::where('id', $id)->firstOrFail();
+            $state = State::where('custom_id', $id)->firstOrFail();
             $state->stateTranslations()->delete();
             $state->delete();
             if (request()->ajax()) {
@@ -146,18 +146,12 @@ class StateController extends Controller
 
         if ($search != '') {
             $states->where(function ($query) use ($search) {
-                $query
-                ->orWhereHas('country',function($q) use ($search){
-                    $q->where('name', 'like', "%{$search}%");
-                })
+                $query->where('custom_id', 'like', "%{$search}%")
                 ->orWhereHas('stateTranslations', function ($query) use ($search) {
                     $query->where('name', 'like', "%{$search}%");
                 }); 
-                
             });
         }
-
-       
 
         $count = $states->count();
 
@@ -175,16 +169,16 @@ class StateController extends Controller
                 'checked' => ($state->is_active == 'y' ? 'checked' : ''),
                 'getaction' => $state->is_active,
                 'class' => '',
-                'id' => $state->id,
+                'id' => $state->custom_id,
             ];
 
             $records['data'][] = [
                 'id' => $state->id,
                 'name' => $state->translate(config('utility.default_lang_code')) ? $state->translate(config('utility.default_lang_code'))->name : "",
-                'country_name' => $state->country->translate(config('utility.default_lang_code')) ? $state->country->translate(config('utility.default_lang_code'))->name : "",
+                'country_name' => $state->country ? $state->country->translate(config('utility.default_lang_code')) ? $state->country->translate(config('utility.default_lang_code'))->name : "" : "",
                 'active' => view('admin.layouts.includes.switch', compact('params'))->render(),
-                'action' => view('admin.layouts.includes.actions')->with(['custom_title' => 'States', 'id' => $state->id], $state)->render(),
-                'checkbox' => view('admin.layouts.includes.checkbox')->with('id', $state->id)->render(),
+                'action' => view('admin.layouts.includes.actions')->with(['custom_title' => 'States', 'id' => $state->custom_id], $state)->render(),
+                'checkbox' => view('admin.layouts.includes.checkbox')->with('id', $state->custom_id)->render(),
             ];
 
         }
