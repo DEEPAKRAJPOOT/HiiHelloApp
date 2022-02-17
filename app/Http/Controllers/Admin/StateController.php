@@ -7,6 +7,8 @@ use App\Http\Requests\Admin\StateRequest;
 use App\Models\Country;
 use App\Models\State;
 use Illuminate\Http\Request;
+use App\Models\Language;
+
 
 class StateController extends Controller
 {
@@ -27,8 +29,9 @@ class StateController extends Controller
      */
     public function create()
     {
-        $countries = Country::all();
-        return view('admin.pages.general.states.create',compact('countries'))->with(['custom_title' => 'State']);
+        $languages = Language::whereIsActive('y')->select('hint','language','lang_code')->get();
+        $countries = Country::whereIsActive('y')->get();
+        return view('admin.pages.general.states.create',compact('countries','languages'))->with(['custom_title' => 'State', 'default_lang' => config('utility.default_lang_code')]);
     }
 
      /**
@@ -39,8 +42,13 @@ class StateController extends Controller
      */
     public function store(StateRequest $request)
     {
-        $state = State::create($request->all());
-        if ($state) {
+    
+        $data = $this->getLangStoreData($request);
+        $data['custom_id'] = getUniqueString('states');
+        $data['country_id'] = $request->country_id;
+      
+        $state = State::create($data);
+        if ($state->save()) {
             flash('state created successfully!')->success();
         } else {
             flash('Unable to save state. Please try again later.')->error();
@@ -54,10 +62,12 @@ class StateController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
+    
     public function edit(State $state)
     {
-        $countries = Country::all();
-        return view('admin.pages.general.states.edit', compact('state','countries'))->with(['custom_title' => 'state']);
+        $countries = Country::whereIsActive('y')->get();
+        $languages = Language::whereIsActive('y')->get();
+        return view('admin.pages.general.states.edit', compact('state','countries','languages'))->with(['custom_title' => 'state', 'default_lang' => config('utility.default_lang_code')]);
     }
 
     /**
@@ -80,7 +90,10 @@ class StateController extends Controller
             }
             return response()->json($content);
         } else {
-            $state->fill($request->all());
+            $data = $this->getLangStoreData($request);
+            $data['country_id'] = $request->country_id;
+
+            $state->update($data);
             if ($state->save()) {
                 flash('User details updated successfully!')->success();
             } else {
@@ -100,13 +113,18 @@ class StateController extends Controller
     {
         if (!empty($request->action) && $request->action == 'delete_all') {
             $content = ['status' => 204, 'message' => "something went wrong"];
-            State::whereIn('id', explode(',', $request->ids))->delete();
+            $states=State::whereIn('id', explode(',', $request->ids))->delete();
+            // foreach($states as $state){
+            //     $state->stateTranslations()->delete();
+            //     $state->delete();
+            // }
             $content['status'] = 200;
             $content['message'] = "state deleted successfully.";
             $content['count'] = State::all()->count();
             return response()->json($content);
         } else {
             $state = State::where('id', $id)->firstOrFail();
+            $state->stateTranslations()->delete();
             $state->delete();
             if (request()->ajax()) {
                 $content = array('status' => 200, 'message' => "state deleted successfully.", 'count' => State::all()->count());
@@ -128,22 +146,29 @@ class StateController extends Controller
 
         if ($search != '') {
             $states->where(function ($query) use ($search) {
-                $query->where('name', 'like', "%{$search}%")
+                $query
                 ->orWhereHas('country',function($q) use ($search){
                     $q->where('name', 'like', "%{$search}%");
-                });
+                })
+                ->orWhereHas('stateTranslations', function ($query) use ($search) {
+                    $query->where('name', 'like', "%{$search}%");
+                }); 
+                
             });
         }
+
+       
 
         $count = $states->count();
 
         $records['recordsTotal'] = $count;
         $records['recordsFiltered'] = $count;
         $records['data'] = [];
-
+        
         $states = $states->offset($offset)->limit($limit)->orderBy($sort_column, $sort_order);
 
         $states = $states->get();
+      
         foreach ($states as $state) {
 
             $params = [
@@ -155,15 +180,14 @@ class StateController extends Controller
 
             $records['data'][] = [
                 'id' => $state->id,
-                'name' => $state->name,
-                'country_name' => $state->country->name,
+                'name' => $state->translate(config('utility.default_lang_code')) ? $state->translate(config('utility.default_lang_code'))->name : "",
+                'country_name' => $state->country->translate(config('utility.default_lang_code')) ? $state->country->translate(config('utility.default_lang_code'))->name : "",
                 'active' => view('admin.layouts.includes.switch', compact('params'))->render(),
                 'action' => view('admin.layouts.includes.actions')->with(['custom_title' => 'States', 'id' => $state->id], $state)->render(),
                 'checkbox' => view('admin.layouts.includes.checkbox')->with('id', $state->id)->render(),
             ];
 
         }
-
         return $records;
     }
 
