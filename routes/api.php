@@ -3,7 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Middleware\CheckApiLanguage;
-use App\Http\Controllers\api\v1\ { AuthenticationController, GeneralController, UserController, LikeController, TwillioController };
+use App\Http\Controllers\api\v1\ { AuthenticationController, GeneralController, UserController, LikeController, TwillioController, ChatController };
 
 /*
 |--------------------------------------------------------------------------
@@ -56,4 +56,9 @@ Route::group(['namespace' => 'v1', 'prefix' => 'v1', 'middleware' => 'auth:sanct
     Route::post('/twillio/create-access-token',[TwillioController::class,'createAccessToken'])->name('api.twillio.create-access-token');
     Route::post('/twillio/create-service-resource',[TwillioController::class,'createServiceResource'])->name('api.twillio.create-service-resource');
     Route::post('/twillio/new-message-notification',[TwillioController::class,'newMessageNotification'])->name('api.twillio.new-message-notification');
+
+    // Chat
+    Route::post('chat/create-room', [ChatController::class,'createRoom'])->name('chat.create-room');
+    Route::post('chat/get-rooms', [ChatController::class,'getChatRooms'])->name('chat.get-rooms'); 
+    Route::post('chat/get-messages', [ChatController::class,'getChatMessages'])->name('chat.get-messages');
 });
