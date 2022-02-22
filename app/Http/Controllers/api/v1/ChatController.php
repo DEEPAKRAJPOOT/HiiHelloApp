@@ -26,7 +26,7 @@ class ChatController extends Controller
                 $user = $request->user();
                 $participant = User::whereIsActive('y')->whereCustomId($request->participant_id)->firstOrFail();
 
-                $room = ChatRoom::updateOrCreate([
+                $room = ChatRoom::firstOrCreate([
                     'creator_id'        =>  $user->id,
                     'participate_id'    =>  $participant->id,
                 ],[ 
