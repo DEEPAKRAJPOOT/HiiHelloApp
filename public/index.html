@@ -30,18 +30,22 @@
 		<button id="connectToRoom" class="mb-10 mt-10">Connect To Room</button>	
 		<button id="disconnectFromRoom" class="mb-10 mt-10">Disconnect From Chat Room</button>	
 		<textarea rows="5" id="messageArea"></textarea>
-		<span class="hide" id="showTyping">Typing...</span>
 		<br> <br>
 		<button id="sendMessage">Send Message</button>		
+		<button id="sendFile">Send File</button>		
+		<button id="shareLocation">Share Location</button>		
+		<button id="deliveredMessage">Delivered Message</button>		
+		<button id="readMessage">Read Message</button>		
 	</div>
-
 
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.1/socket.io.js"></script>
 	<script type="text/javascript">
 		$(document).ready(function() {
-			var socket = io.connect('http://127.0.0.1:8081');
-			// var socket = io.connect('http://hihello-chat.test:8081');
-			
+			// var socket = io.connect('http://127.0.0.1:8081');
+			var socket = io.connect('http://chat.hihelloapp.com:8080');
+			// var socket = io.connect('http://chat.hihelloapp.com');
+			console.log(socket);
+
 			/* Join The Socket Room */
 				$('#connectToRoom').on('click', function () {
 					socket.emit('join', {
@@ -55,14 +59,6 @@
 					socket.emit('disconnect', { room: $('#room').val() });
 				});
 
-			/* Manage Typing */
-				// $('#messageArea').on('keyup', function() {
-				// 	socket.emit('typing', {
-				// 		room: $('#room').val(),
-				// 		user: $('#username').val()
-				// 	});
-				// });
-
 			/* Send Message */
 				$('#sendMessage').on('click', function () {
 					var value = $("#messageArea").val();
@@ -72,15 +68,80 @@
 						// 'room' 	 : 	$('#room').val(),
 						'room' 	 : 	'pp7wrUU7cLiKkNJAaGOO',
 						'creator_id' 	 : 	1,
-						'participate_id' 	 : 	1,
-						'type' 	 : 	'text',
+						'participate_id' 	 : 	2,
 						// 'value'  : 	,
-						'value'  : 	'{ "type" : "text", "value" : '+value+' : , "other" : [] }',
+						'value'  : 	'{ "type" : "text", "value" : "'+value+'" , "other" : [] }',
 						'time'  : 	'2022-02-10',
 					};
 
 					socket.emit('message',{
 						message: message,
+						user: $('#username').val(),
+					});
+				});
+
+			/* Send Message */
+				$('#sendFile').on('click', function () {
+					var message = {
+						'id' 	 : 	'cc79cdcv9ve8ev',
+						'room' 	 : 	'pp7wrUU7cLiKkNJAaGOO',
+						'creator_id' 	 : 	1,
+						'participate_id' 	 : 	2,
+						'value'  : 	'{ "type" : "file", "value" : "File1.jpg", "other" : { "path" : "/file/path/file1.jpg", "type" : ".jpg" } }',
+						'time'  : 	'2022-02-10',
+					};
+
+					socket.emit('message',{
+						message: message,
+						user: $('#username').val(),
+					});
+				});
+
+			/* Share Location */
+				$('#shareLocation').on('click', function () {
+					var message = {
+						'id' 	 			: 	'cc79cdcv9ve8ev',
+						'room' 	 			: 	'pp7wrUU7cLiKkNJAaGOO',
+						'creator_id' 		: 	1,
+						'participate_id' 	: 	2,
+						'value'  			: 	'{ "type" : "location", "value" : "STRING", "other" : { "lat" : "LATITUDE", "lng" : "LONGITUDE" } }',
+						'time'  			: 	'2022-02-10',
+					};
+
+					socket.emit('message',{
+						message: message,
+						user: $('#username').val(),
+					});
+				});
+
+			/* Delivered Message */
+				$('#deliveredMessage').on('click', function () {
+					var message = {
+						'id' 	 : 	'cc7923434cdcv9ve8ev',
+						'room' 	 : 	'pp7wrUU7cLiKkNJAaGOO',
+						'sender_id' 	: 	1,
+						'receiver_id' 	: 	1,
+					};
+
+					socket.emit('message-delivered',{
+						message: message,
+						sender_id: 1,
+						user: $('#username').val(),
+					});
+				});
+
+			/* Read Message */
+				$('#readMessage').on('click', function () {
+					var message = {
+						'id' 	 : 	'cc7923434cdcv9ve8ev',
+						'room' 	 : 	'pp7wrUU7cLiKkNJAaGOO',
+						'sender_id' 	: 	1,
+						'receiver_id' 	: 	1,
+					};
+
+					socket.emit('read-message',{
+						message: message,
+						sender_id: 1,
 						user: $('#username').val(),
 					});
 				});
