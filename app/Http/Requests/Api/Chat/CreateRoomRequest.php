@@ -1,10 +1,12 @@
 <?php
 
-namespace App\Http\Requests\Api\General;
+namespace App\Http\Requests\Api\Chat;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\ { Auth };
+use App\Models\ { User };
 
-class PaginationRequest extends FormRequest
+class CreateRoomRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -23,9 +25,10 @@ class PaginationRequest extends FormRequest
      */
     public function rules()
     {
+        $participant_ids = User::where('id','!=',Auth::id())->whereIsActive('y')->pluck('custom_id')->toArray();
+
         return [
-            'limit'         =>  'nullable|numeric|min:5',
-            'offset'        =>  'nullable|numeric|min:0',
+            'participant_id'      =>  'required|in:'.implode(',',$participant_ids),
         ];
     }
 }

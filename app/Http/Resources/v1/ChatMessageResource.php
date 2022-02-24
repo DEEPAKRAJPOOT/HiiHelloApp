@@ -42,8 +42,9 @@ class ChatMessageResource extends JsonResource
     {
         return [
             'meta' => [
-                'api'   =>  'v.1.0',
-                'url'   =>  url()->current(),
+                'api'           =>  'v.1.0',
+                'url'           =>  url()->current(),
+                'language'      =>  app()->getLocale(),
             ],
         ];
     }
