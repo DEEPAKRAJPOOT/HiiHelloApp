@@ -7,31 +7,33 @@ use Illuminate\Http\ { Request, Response };
 use App\Http\Requests\Api\General\ { PaginationRequest };
 use App\Models\ { ChatRoom, ChatMessage, User };
 use App\Http\Resources\v1\ { ChatRoomResource, ChatMessageResource };
+use App\Http\Requests\Api\Chat\ { CreateRoomRequest, ChatMessagesRequest };
 
 class ChatController extends Controller
 {
     private $version = "v.1.0";
     public function getVersion(){ return $this->version; }
 
+    // Create New Chat Room 
     public function createRoom(Request $request)
     {
-        $user = $request->user();
-        $participant_ids = User::whereIsActive('y')->pluck('custom_id')->toArray();
-        $rules = [
-            'participant_id'      =>  'required|in:'.implode(',',$participant_ids),
-        ];
-
+        $rules = CreateRoomRequest::rules();
         if( $this->apiValidator($request->all(), $rules) ) {
             try{
                 $user = $request->user();
                 $participant = User::whereIsActive('y')->whereCustomId($request->participant_id)->firstOrFail();
-
-                $room = ChatRoom::firstOrCreate([
-                    'creator_id'        =>  $user->id,
-                    'participate_id'    =>  $participant->id,
-                ],[ 
-                    'custom_id'         =>  getUniqueString('chat_rooms'),
-                ]);
+                $room = ChatRoom::whereCreatorId($participant->id)->whereParticipateId($user->id)->first();
+                if(!$room){ 
+                    $room = ChatRoom::whereCreatorId($user->id)->whereParticipateId($participant->id)->first();
+                    if(!$room){
+                        $room = ChatRoom::firstOrCreate([
+                            'creator_id'        =>  $user->id,
+                            'participate_id'    =>  $participant->id,
+                        ],[ 
+                            'custom_id'         =>  getUniqueString('chat_rooms'),
+                        ]);
+                    }
+                };
 
                 $this->status = Response::HTTP_OK;     
                 return (new ChatRoomResource($room))->additional([
@@ -58,17 +60,17 @@ class ChatController extends Controller
         return $this->returnResponse();
     }
 
+    // Get Chat Rooms Details
     public function getChatRooms(Request $request)
     {
         $rules = PaginationRequest::rules();
         if( $this->apiValidator($request->all(), $rules) ) {
             try{
                 $user = $request->user();
-                $rooms = ChatRoom::has('chatMessages')->whereCreatorId($user->id);
+                $rooms = ChatRoom::whereCreatorId($user->id)->orWhere('participate_id',$user->id);
                 $count = $rooms->count();
                 $rooms = $rooms->limit($request->limit ?? config('utility.pagination.limit'))
                             ->offset($request->offset ?? config('utility.pagination.offset'))
-                            ->latest()
                             ->get();
                 if($rooms->isNotEmpty()){
                     return (ChatRoomResource::Collection($rooms))->additional([
@@ -105,24 +107,24 @@ class ChatController extends Controller
         return $this->returnResponse();
     }
 
+    // Get Chat Messages Of The Room
     public function getChatMessages(Request $request)
     {
-        $user = $request->user();
-        $chat_rooms_ids = ChatRoom::whereCreatorId($user->id)->pluck('custom_id')->toArray();
-        $rules = [
-            'room'      =>  'required|min:2|max:150|in:'.implode(',',$chat_rooms_ids),
-            'limit'     =>  'nullable|numeric|min:5',
-            'offset'    =>  'nullable|numeric|min:0',
-        ];
-
+        $rules = ChatMessagesRequest::rules();
         if( $this->apiValidator($request->all(), $rules) ) {
             try {
-                $room = ChatRoom::whereCreatorId($user->id)->whereCustomId($request->room)->firstOrFail();
-                $messages = ChatMessage::whereRoomId($room->id)->latest();
-                $count = $messages->count();
-                $messages = $messages->limit($request->limit ?? config('utility.pagination.limit'))
-                                ->offset($request->offset ?? config('utility.pagination.offset'))
-                                ->get();
+                $user = $request->user();
+                $room = ChatRoom::whereCustomId($request->room)
+                                ->whereCreatorId($user->id)
+                                ->orWhere('participate_id',$user->id)
+                                ->whereIsActive('y')
+                                ->firstOrFail();
+                $messages   =   ChatMessage::whereRoomId($room->id);
+                $count      =   $messages->count();
+                $messages   =   $messages->limit($request->limit ?? config('utility.pagination.limit'))
+                                    ->offset($request->offset ?? config('utility.pagination.offset'))
+                                    ->get();
+
                 if($messages->isNotEmpty()){
                     return (ChatMessageResource::Collection($messages))->additional([
                         'meta'  =>  [

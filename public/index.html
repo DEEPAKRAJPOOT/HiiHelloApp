@@ -41,8 +41,8 @@
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.1/socket.io.js"></script>
 	<script type="text/javascript">
 		$(document).ready(function() {
-			// var socket = io.connect('http://127.0.0.1:8081');
-			var socket = io.connect('http://chat.hihelloapp.com:8080');
+			var socket = io.connect('http://127.0.0.1:8080');
+			// var socket = io.connect('http://chat.hihelloapp.com:8080');
 			// var socket = io.connect('http://chat.hihelloapp.com');
 			console.log(socket);
 
@@ -63,86 +63,72 @@
 				$('#sendMessage').on('click', function () {
 					var value = $("#messageArea").val();
 
-					var message = {
-						'id' 	 : 	'cc79cdcv9ve8ev',
-						// 'room' 	 : 	$('#room').val(),
-						'room' 	 : 	'pp7wrUU7cLiKkNJAaGOO',
-						'creator_id' 	 : 	1,
-						'participate_id' 	 : 	2,
-						// 'value'  : 	,
-						'value'  : 	'{ "type" : "text", "value" : "'+value+'" , "other" : [] }',
-						'time'  : 	'2022-02-10',
-					};
+					// var message = {
+
+					// 	type	: 	'text',
+					// 	value  	: 	value,
+					// 	other 	:   [],
+					// 	// 'room' 	 : 	$('#room').val(),
+					// 	// 'room' 	 : 	'pp7wrUU7cLiKkNJAaGOO',
+					// 	// 'sender_id' 	 : 	'KeIM7uqbINRQY01sVQtm',
+					// 	// 'receiver_id' 	 : 	'827qH2Fosf1qZwVEuHVR',
+					// 	// 'value'  : 	,
+					// 	// 'value'  : 	'{ "type" : "text", "value" : "'+value+'" , "other" : [] }',
+					// 	// 'time'  : 	'2022-02-10 15:05',
+					// };
 
 					socket.emit('message',{
-						message: message,
-						user: $('#username').val(),
+						id 	 				: 	'cc79cdcv9ve8ev',
+						room_id 			: 	'pp7wrUU7cLiKkNJAaGOO',
+						sender_id 	 		: 	'KeIM7uqbINRQY01sVQtm',
+						receiver_id 	 	: 	'827qH2Fosf1qZwVEuHVR',
+						message				: 	'{ type: \'text\', value: \'Vishal\', other: [] }',
+						time  				: 	'2022-02-10 15:05',
 					});
 				});
 
 			/* Send Message */
 				$('#sendFile').on('click', function () {
-					var message = {
-						'id' 	 : 	'cc79cdcv9ve8ev',
-						'room' 	 : 	'pp7wrUU7cLiKkNJAaGOO',
-						'creator_id' 	 : 	1,
-						'participate_id' 	 : 	2,
-						'value'  : 	'{ "type" : "file", "value" : "File1.jpg", "other" : { "path" : "/file/path/file1.jpg", "type" : ".jpg" } }',
-						'time'  : 	'2022-02-10',
-					};
-
 					socket.emit('message',{
-						message: message,
-						user: $('#username').val(),
+						id 	 				: 	'cc79cdcv9ve8ev',
+						room_id 			: 	'pp7wrUU7cLiKkNJAaGOO',
+						sender_id 	 		: 	'827qH2Fosf1qZwVEuHVR',
+						receiver_id 	 	: 	'KeIM7uqbINRQY01sVQtm',
+						message				: 	'{ "type" : "file", "value" : "File1.jpg", "other" : { "path" : "/file/path/file1.jpg", "type" : ".jpg" } }',
+						time  				: 	'2022-02-10 15:05',
 					});
 				});
 
 			/* Share Location */
 				$('#shareLocation').on('click', function () {
-					var message = {
-						'id' 	 			: 	'cc79cdcv9ve8ev',
-						'room' 	 			: 	'pp7wrUU7cLiKkNJAaGOO',
-						'creator_id' 		: 	1,
-						'participate_id' 	: 	2,
-						'value'  			: 	'{ "type" : "location", "value" : "STRING", "other" : { "lat" : "LATITUDE", "lng" : "LONGITUDE" } }',
-						'time'  			: 	'2022-02-10',
-					};
-
 					socket.emit('message',{
-						message: message,
-						user: $('#username').val(),
+						id 	 				: 	'cc79cdcv9ve8ev',
+						room_id 			: 	'pp7wrUU7cLiKkNJAaGOO',
+						sender_id 	 		: 	'KeIM7uqbINRQY01sVQtm',
+						receiver_id 	 	: 	'827qH2Fosf1qZwVEuHVR',
+						message				: 	'{ "type" : "location", "value" : "STRING", "other" : { "lat" : "LATITUDE", "lng" : "LONGITUDE" } }',
+						time  				: 	'2022-02-10 15:05',
 					});
 				});
 
 			/* Delivered Message */
 				$('#deliveredMessage').on('click', function () {
-					var message = {
-						'id' 	 : 	'cc7923434cdcv9ve8ev',
-						'room' 	 : 	'pp7wrUU7cLiKkNJAaGOO',
-						'sender_id' 	: 	1,
-						'receiver_id' 	: 	1,
-					};
-
+					
 					socket.emit('message-delivered',{
-						message: message,
-						sender_id: 1,
-						user: $('#username').val(),
+						id 	 			: 	'sdfccdsf79cdc234v9ve8ev',
+						room_id 	 	: 	'pp7wrUU7cLiKkNJAaGOO',
+						sender_id 		: 	'KeIM7uqbINRQY01sVQtm',
+						receiver_id 	: 	'827qH2Fosf1qZwVEuHVR',
 					});
 				});
 
 			/* Read Message */
 				$('#readMessage').on('click', function () {
-					var message = {
-						'id' 	 : 	'cc7923434cdcv9ve8ev',
-						'room' 	 : 	'pp7wrUU7cLiKkNJAaGOO',
-						'sender_id' 	: 	1,
-						'receiver_id' 	: 	1,
-					};
-
 					socket.emit('read-message',{
-						message: message,
-						sender_id: 1,
-						user: $('#username').val(),
+						id 	 			: 	'sdfccdsf79cdc234v9ve8ev',
+						room_id 	 	: 	'pp7wrUU7cLiKkNJAaGOO',
+						sender_id 		: 	'KeIM7uqbINRQY01sVQtm',
+						receiver_id 	: 	'827qH2Fosf1qZwVEuHVR',
 					});
 				});
 
@@ -159,6 +145,7 @@
 				// });
 
 				socket.on('message', function(response) {
+					console.log(response);
 					// APPEND MESSAGE
 					// CLEAR TEXT AREA
 				});

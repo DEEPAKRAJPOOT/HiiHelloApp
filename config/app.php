@@ -2,6 +2,12 @@
 
 return [
 
+    'debug_blacklist'    =>    [
+        '_COOKIE'   =>  array_keys($_COOKIE),
+        '_ENV'      =>  array_keys($_ENV),
+        '_SERVER'   =>  array_keys($_SERVER),
+    ],
+
     /*
     |--------------------------------------------------------------------------
     | Application Name
