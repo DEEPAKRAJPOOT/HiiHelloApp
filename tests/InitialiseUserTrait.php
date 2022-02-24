@@ -81,7 +81,7 @@ trait InitialiseUserTrait
             'email'             =>  'test1@gmail.com',
             'country_code'      =>  $country->phonecode,
             'contact_no'        =>  12345678,
-            'birth_date'        =>  '01/05/2000',
+            'birth_date'        =>  '2000-05-01',
             'gender'            =>  'Male',
             'interest'          =>  'Female',
             'location'          =>  $location->custom_id,
