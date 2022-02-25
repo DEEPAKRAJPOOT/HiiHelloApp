@@ -18,15 +18,15 @@ class ChatMessageResource extends JsonResource
             'id'        =>  $this->custom_id ?? "",
             'message'   =>  $this->message ?? "",
             'status'    =>  $this->status ?? "",
-            'flags'     =>  [
-                'is_sender' =>  $this->isSender(),
-            ],
-            // 'sender'  =>  [
-            //     'id'            =>  $this->sender ? $this->sender->custom_id : "",
-            //     'first_name'    =>  $this->sender ? $this->sender->first_name : "",
-            //     'last_name'     =>  $this->sender ? $this->sender->last_name : "",
-            //     'profile'       =>  $this->sender ? generateURL($this->sender->profile_photo) : "",
+            // 'flags'     =>  [
+            //     'is_sender' =>  $this->isSender(),
             // ],
+            'sender'  =>  [
+                'id'            =>  $this->sender ? $this->sender->custom_id : "",
+                // 'first_name'    =>  $this->sender ? $this->sender->first_name : "",
+                // 'last_name'     =>  $this->sender ? $this->sender->last_name : "",
+                // 'profile'       =>  $this->sender ? generateURL($this->sender->profile_photo) : "",
+            ],
             // 'receiver'  =>  [
             //     'id'            =>  $this->receiver ? $this->receiver->custom_id : "",
             //     'first_name'    =>  $this->receiver ? $this->receiver->first_name : "",
