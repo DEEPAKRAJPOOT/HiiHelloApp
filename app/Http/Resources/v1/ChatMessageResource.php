@@ -33,7 +33,7 @@ class ChatMessageResource extends JsonResource
             //     'last_name'     =>  $this->receiver ? $this->receiver->last_name : "",
             //     'profile'       =>  $this->receiver ? generateURL($this->receiver->profile_photo) : "",
             // ],
-            'updated_at'  =>  $this->updated_at ?? "",
+            'updated_at'  =>  date('Y-m-d h:m:s', strtotime($this->updated_at)) ?? "",
         ];
         return parent::toArray($request);
     }
