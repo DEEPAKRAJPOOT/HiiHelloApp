@@ -113,12 +113,8 @@ class ChatController extends Controller
         $rules = ChatMessagesRequest::rules();
         if( $this->apiValidator($request->all(), $rules) ) {
             try {
-                $user = $request->user();
-                $room = ChatRoom::whereCustomId($request->room)
-                                ->whereCreatorId($user->id)
-                                ->orWhere('participate_id',$user->id)
-                                ->whereIsActive('y')
-                                ->firstOrFail();
+                $user       =   $request->user();
+                $room       =   ChatRoom::whereCustomId($request->room)->whereIsActive('y')->firstOrFail();
                 $messages   =   ChatMessage::whereRoomId($room->id)->latest();
                 $count      =   $messages->count();
                 $messages   =   $messages->limit($request->limit ?? config('utility.pagination.limit'))
