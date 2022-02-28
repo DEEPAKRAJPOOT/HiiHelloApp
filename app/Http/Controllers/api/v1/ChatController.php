@@ -67,7 +67,7 @@ class ChatController extends Controller
         if( $this->apiValidator($request->all(), $rules) ) {
             try{
                 $user = $request->user();
-                $rooms = ChatRoom::whereCreatorId($user->id)->orWhere('participate_id',$user->id)->latest();
+                $rooms = ChatRoom::whereCreatorId($user->id)->orWhere('participate_id',$user->id)->whereIsActive('y')->latest();
                 $count = $rooms->count();
                 $rooms = $rooms->limit($request->limit ?? config('utility.pagination.limit'))
                             ->offset($request->offset ?? config('utility.pagination.offset'))

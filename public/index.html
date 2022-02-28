@@ -36,6 +36,7 @@
 		<button id="shareLocation">Share Location</button>		
 		<button id="deliveredMessage">Delivered Message</button>		
 		<button id="readMessage">Read Message</button>		
+		<button id="getRooms">Get Rooms</button>		
 	</div>
 
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.1/socket.io.js"></script>
@@ -147,6 +148,15 @@
 					});
 				});
 
+			/* Get Chat Rooms */
+				$('#getRooms').on('click', function () {
+					socket.emit('get-rooms',{
+						user_id 	 	: 	'KeIM7uqbINRQY01sVQtm',
+						limit 			: 	10,
+						offset 			: 	0,
+					});
+				});
+				
 
 			/* Receive All Emits */
 				// socket.on('typing', function(response) {
