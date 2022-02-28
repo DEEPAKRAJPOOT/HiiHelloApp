@@ -154,28 +154,49 @@ io.on('connection', (socket)=>{
 							if( error ) throw error;	
 							
 				            // create return object
-							let returnObject = {
+				            let returnObject = {
 								id   		: 	chatRoom.custom_id,
 								message: {
-					                type 	: request.message_type,
-					                value  	: request.message_value,
-					                other 	:  {
-					                	path 	: 	request.message_file_path,
-					                	type 	: 	request.message_file_type,
-					                	lat 	: 	request.message_lng,
-					                	lng 	: 	request.message_lat,
-					                	url     :   'https://maps.googleapis.com/maps/api/staticmap?center='+request.message_lng+','+request.message_lat+'&zoom=14&size=400x400&markers='+request.message_lng+','+request.message_lat+'&markers=color:red&key=AIzaSyA2GIt7Ld9duVo85H4Mr15Y_v7Sc6pfzlQ',
-  					                },
+									type 		: 	request.message_type,
+				                	value  		: 	request.message_value,
+				                	other 		:  	{},
 					            },
 								status 		:   'send',
 								sender 		: 	{
 									id 		: 	sender.custom_id,
 								},
 								updated_at 	: 	request.time,
-							}
-							console.log("Return Object ::"+JSON.stringify(returnObject));
-							io.in(request.room_id).emit('message', returnObject);		
+							};
 
+							if(request.message_type == 'location'){
+								returnObject = {
+									... returnObject,
+									message: {
+										type 		: 	request.message_type,
+				                		value  		: 	request.message_value,
+										other 	:  {
+						                	lng 	: 	request.message_lng,
+						                	lat 	: 	request.message_lat,
+						                	url     :   'https://maps.googleapis.com/maps/api/staticmap?center='+request.message_lng+','+request.message_lat+'&zoom=14&size=400x400&markers='+request.message_lng+','+request.message_lat+'&markers=color:red&key=AIzaSyA2GIt7Ld9duVo85H4Mr15Y_v7Sc6pfzlQ',
+							            },
+							        },
+								};	
+							}else if(request.message_type == 'file'){
+								returnObject = {
+									... returnObject,
+									message: {
+										type 		: 	request.message_type,
+				                		value  		: 	request.message_value,
+										other 	:  {
+						                	path 	: 	request.message_file_path,
+						                	type 	: 	request.message_file_type,
+						            	},
+						            },
+								};	
+							}
+
+							io.in(request.room_id).emit('message', returnObject);	
+							console.log("Return Object ::"+JSON.stringify(returnObject));
 						});
 					});
 				});
@@ -286,8 +307,10 @@ io.on('connection', (socket)=>{
 	/* Get Chat Rooms */
 	// socket.on('get-rooms', (request) => {
 	// 	if(request.user_id){
+
 	// 		let selectUser = "SELECT * FROM users where custom_id = ? and is_active = 'y'";
 	// 		let sql1 = connection.query(selectUser, request.user_id, (error_user, user_result) => {
+
 	// 			if( error_user ) throw error_user;
 	// 			let user 	=	user_result[0];
 	// 			let limit 	= 	request.limit ?? 10;
@@ -305,9 +328,6 @@ io.on('connection', (socket)=>{
 	// 				if( error_rooms ) throw error_rooms;
 	// 				let chat_rooms = _room_result;
 
-	// 				var returnObject = [];
-
-					
 	// 				// create return object
 	// 				for ( let i = 0; i < chat_rooms.length; i++) {
 	// 					var chat_room = chat_rooms[i];
@@ -316,6 +336,11 @@ io.on('connection', (socket)=>{
 	// 					if(user.id == chat_room.participate_id){
 	// 						var participate_id = chat_room.creator_id;
 	// 					}
+
+	// 					chat_room = {
+	// 						... chat_room,
+	// 						creator: user,
+	// 					};
 
 	// 					let selectParticipant = "SELECT * FROM users where id = ? and is_active = 'y'";
 	// 					let sql3 = connection.query(selectParticipant, participate_id, (error_participant, _participant_result) => {
@@ -327,61 +352,25 @@ io.on('connection', (socket)=>{
 	// 								... chat_room,
 	// 								participant: participant,
 	// 							};	
+	// 						}
+	// 					});
 
-	// 							console.log(chat_room );
-	// 							return false;
+
+	// 					let latestMsg =  "select * from `chat_messages` where `room_id` = ? and `chat_messages`.`deleted_at` is null order by `created_at` desc limit ?";
+	// 					let sql4 = connection.query(latestMsg, [chat_room.id, 1], (error_latestMsg, _latest_msg_result) => {
+	// 			    		if( error_latestMsg ) throw error_participant;
+	// 						let latest_message = _latest_msg_result[0];
+
+	// 						if( latest_message != undefined ) {
+	// 							chat_room = {
+	// 								... chat_room,
+	// 								message: latest_message,
+	// 							};	
 	// 						}
 	// 					});
 	// 			    }	
 
-	// 				// for(i=0; i<chat_rooms; i++){
-	// 					// current_room = chat_rooms[i];
-
-	// 					// let returnObject = {
-
-	// 				// 	id   		: 	chatRoom.custom_id,
-	// 				// 	message: {
-	// 		  //               type 	: request.message_type,
-	// 		  //               value  	: request.message_value,
-	// 		  //               other 	:  {
-	// 		  //               	path 	: 	request.message_file_path,
-	// 		  //               	type 	: 	request.message_file_type,
-	// 		  //               	lat 	: 	request.message_lng,
-	// 		  //               	lng 	: 	request.message_lat,
-	// 			 //            },
-	// 		  //           },
-	// 				// 	status 		:   'send',
-	// 				// 	sender 		: 	{
-	// 				// 		id 		: 	sender.custom_id,
-	// 				// 	},
-	// 				// 	updated_at 	: 	request.time,
-
-
-
-	// 					// id            :  current_room.custom_id,
-	// 		            // is_active     :  current_room.is_active,
-	// 		            // 'creator'  =>  [
-	// 		            //     'id'            =>  $this->creator ? $this->creator->custom_id : "",
-	// 		            //     'first_name'    =>  $this->creator ? $this->creator->first_name : "",
-	// 		            //     'last_name'     =>  $this->creator ? $this->creator->last_name : "",
-	// 		            //     'profile'       =>  $this->creator ? generateURL($this->creator->profile_photo) : "",
-	// 		            // ],
-	// 		            // 'participator'  =>  [
-	// 		            //     'id'            =>  $this->participator ? $this->participator->custom_id : "",
-	// 		            //     'first_name'    =>  $this->participator ? $this->participator->first_name : "",
-	// 		            //     'last_name'     =>  $this->participator ? $this->participator->last_name : "",
-	// 		            //     'profile'       =>  $this->participator ? generateURL($this->participator->profile_photo) : "",
-	// 		            // ],
-	// 		            // 'message'   =>  [
-	// 		            //     'id'            =>  $this->latestMessage ? $this->latestMessage->custom_id : "",
-	// 		            //     'value'         =>  $this->latestMessage ? $this->latestMessage->message : "",
-	// 		            //     'status'        =>  $this->latestMessage ? $this->latestMessage->status : "",
-	// 		            //     'updated_at'    =>  $this->latestMessage ? $this->latestMessage->updated_at : "",
-	// 		            // ]
-	// 					// }
-	// 				// }
-
-	// 				console.log("Final :: ",returnObject);
+	// 				console.log("Final :: ",chat_rooms[1]);
 	// 				return false;
 
 	// 				console.log("Message Object ::"+JSON.stringify(returnObject));
@@ -389,7 +378,6 @@ io.on('connection', (socket)=>{
 	// 			});
 
 	// 		});
-
 	// 	}
 	// 	else{
 	// 		console.log("Precondition Failed !!!");
