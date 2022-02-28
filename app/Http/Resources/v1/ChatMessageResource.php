@@ -14,9 +14,10 @@ class ChatMessageResource extends JsonResource
      */
     public function toArray($request)
     {
+   
         return [
             'id'        =>  $this->custom_id ?? "",
-            'message'   =>  $this->message ?? "",
+            'message'   =>  $this->getMessage() ?? "",
             'status'    =>  $this->status ?? "",
             // 'flags'     =>  [
             //     'is_sender' =>  $this->isSender(),
