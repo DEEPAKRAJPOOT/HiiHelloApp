@@ -82,7 +82,14 @@
 						room_id 			: 	'pp7wrUU7cLiKkNJAaGOO',
 						sender_id 	 		: 	'KeIM7uqbINRQY01sVQtm',
 						receiver_id 	 	: 	'827qH2Fosf1qZwVEuHVR',
-						message				: 	'{ type: \'text\', value: \'Vishal\', other: [] }',
+						// message				: 	'{ type: \'text\', value: \'Vishal\', other: [] }',
+						// message				:	{
+						// 	'type' 	: 'text',
+						// 	'value' : 'Old Structure Testing',
+						// 	'other' : [],
+						// },
+						message_type 		: 	'text',
+						message_value 		: 	'New Structure Testing',
 						time  				: 	'2022-02-10 15:05',
 					});
 				});
@@ -94,7 +101,11 @@
 						room_id 			: 	'pp7wrUU7cLiKkNJAaGOO',
 						sender_id 	 		: 	'827qH2Fosf1qZwVEuHVR',
 						receiver_id 	 	: 	'KeIM7uqbINRQY01sVQtm',
-						message				: 	'{ "type" : "file", "value" : "File1.jpg", "other" : { "path" : "/file/path/file1.jpg", "type" : ".jpg" } }',
+						// message				: 	'{ "type" : "file", "value" : "File1.jpg", "other" : { "path" : "/file/path/file1.jpg", "type" : ".jpg" } }',
+						message_type 		: 	'file',
+						message_value 		: 	'New File',
+						message_file_path 	: 	'/file/path/file1.png',
+						message_file_type 	: 	'.png',
 						time  				: 	'2022-02-10 15:05',
 					});
 				});
@@ -106,7 +117,11 @@
 						room_id 			: 	'pp7wrUU7cLiKkNJAaGOO',
 						sender_id 	 		: 	'KeIM7uqbINRQY01sVQtm',
 						receiver_id 	 	: 	'827qH2Fosf1qZwVEuHVR',
-						message				: 	'{ "type" : "location", "value" : "STRING", "other" : { "lat" : "LATITUDE", "lng" : "LONGITUDE" } }',
+						// message				: 	'{ "type" : "location", "value" : "STRING", "other" : { "lat" : "LATITUDE", "lng" : "LONGITUDE" } }',
+						message_type 	: 	'location',
+						message_value 	: 	'New Location',
+						message_lng 	: 	'23.022505',
+						message_lat 	: 	'72.571365',
 						time  				: 	'2022-02-10 15:05',
 					});
 				});
