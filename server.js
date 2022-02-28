@@ -7,7 +7,10 @@ const cors 		= 	require('cors');
 const io 		= 	require('socket.io')(server, { pingInterval: 2000, pingTimeout: 10000, allowEIO3: true });
 const mysql 	= 	require('mysql');
 
+// io.origins('*:*');
+
 // require('dotenv').config();
+
 // const BASE_URL 			= 	process.env.CHAT_URL;
 // const port 				= 	process.env.CHAT_PORT;
 // const db_host 			= 	process.env.DB_HOST;
@@ -19,25 +22,33 @@ const mysql 	= 	require('mysql');
 const tech 		= 	io.of('/');
 const port 		= 	8080;
 
-// const BASE_URL 	= 	"http://chat.hihelloapp.com/";
-const BASE_URL 	= 	"http://127.0.0.1:8081/";
+// const BASE_URL = "https://hi-hello-app.s3.ap-south-1.amazonaws.com/";
+// const BASE_URL = "hihellapp.cx3wyfpc93bh.ap-south-1.rds.amazonaws.com";
+const BASE_URL 	= 	"http://chat.hihelloapp.com/";
+// const BASE_URL 	= 	"http://127.0.0.1:8081/";
 
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(cors());
 
 /* MySQL Connections */
 var connection = mysql.createConnection({
-	host     : "127.0.0.1",
-	port     : "8889",
-	user     : "root",
-	password : "root",
-	database : "la_hi_hello"
+	// host     : db_host,
+	// port     : db_port,
+	// user     : db_username,
+	// password : db_password,
+	// database : db_database
 
-	// host     : "hihellapp.cx3wyfpc93bh.ap-south-1.rds.amazonaws.com",
-	// port     : "3306",
-	// user     : "admin",
-	// password : "JINJN5A0cELWaT6xRJ1S",
-	// database : "hihelloapp"
+	// host     : "127.0.0.1",
+	// port     : "8889",
+	// user     : "root",
+	// password : "root",
+	// database : "la_hi_hello"
+
+	host     : "hihellapp.cx3wyfpc93bh.ap-south-1.rds.amazonaws.com",
+	port     : "3306",
+	user     : "admin",
+	password : "JINJN5A0cELWaT6xRJ1S",
+	database : "dev_hi_hello_app"
 });
 
 /* Listen On Respective Port */
@@ -83,7 +94,7 @@ io.on('connection', (socket)=>{
 
 	/* Send Message */
 	socket.on('message', (request) => {
-		if(request.id && request.room_id && request.sender_id && request.receiver_id && request.message && request.time){
+		if(request.id && request.room_id && request.sender_id && request.receiver_id && request.message_type && request.message_value && request.time){
 
 			let selectSender = "SELECT * FROM users where custom_id = ? and is_active = 'y'";
 			let sql1 = connection.query(selectSender, request.sender_id, (error, sender_result) => {
@@ -95,7 +106,7 @@ io.on('connection', (socket)=>{
 					console.log('Sender Not Found'); 
 					return false;
 				}
-				
+
 				let selectReceiver = "SELECT * FROM users where custom_id = ? and is_active = 'y'";
 				let sql1 = connection.query(selectReceiver, request.receiver_id, (error, receiver_result) => {
 					if( error ) throw error;
@@ -118,12 +129,22 @@ io.on('connection', (socket)=>{
 							return false;
 						}	
 
+						if(request.message_type == 'location' && request.message_lat && request.message_lng ){
+							json_message = '{ "type" : "'+request.message_type+'", "value" : "'+request.message_value+'", "other" : { "lat" : "'+request.message_lat+'", "lng" : "'+request.message_lng+'"} }';
+						}
+						else if(request.message_type == 'file' && request.message_file_path && request.message_file_type ){
+							json_message = '{ "type" : "'+request.message_type+'", "value" : "'+request.message_value+'", "other" : { "path" : "'+request.message_file_path+'", "type" : "'+request.message_file_type+'"} }';
+						}
+						else{
+							json_message = '{ "type" : "'+request.message_type+'", "value" : "'+request.message_value+'", "other" : "[]" }';
+						}
+
 						let addMessageData = {
 							custom_id	: 	request.id,
 							room_id		: 	chatRoom.id,
 							sender_id	: 	sender.id,
 							receiver_id	: 	receiver.id,
-							message 	: 	request.message,
+							message 	: 	json_message,
 							created_at 	: 	request.time,
 							updated_at 	: 	request.time,
 						};
@@ -134,23 +155,23 @@ io.on('connection', (socket)=>{
 							
 				            // create return object
 							let returnObject = {
-								room_id   		: 	chatRoom.id,
-								sender_id 		:  	sender.id,
-								receiver_id 	:  	receiver.id,
-								time 			: 	request.time,
-								message 		: 	request.message,
-								sender 	: {
-									id 			: 	sender.custom_id,
-									first_name 	: 	sender.first_name,
-									last_name 	: 	sender.last_name,
-									profile 	: 	BASE_URL+sender.profile_photo,
+								id   		: 	chatRoom.custom_id,
+								message: {
+					                type 	: request.message_type,
+					                value  	: request.message_value,
+					                other 	:  {
+					                	path 	: 	request.message_file_path,
+					                	type 	: 	request.message_file_type,
+					                	lat 	: 	request.message_lng,
+					                	lng 	: 	request.message_lat,
+					                	url     :   'https://maps.googleapis.com/maps/api/staticmap?center='+request.message_lng+','+request.message_lat+'&zoom=14&size=400x400&markers='+request.message_lng+','+request.message_lat+'&markers=color:red&key=AIzaSyA2GIt7Ld9duVo85H4Mr15Y_v7Sc6pfzlQ',
+  					                },
+					            },
+								status 		:   'send',
+								sender 		: 	{
+									id 		: 	sender.custom_id,
 								},
-								receiver 	: {
-									id 			: 	receiver.custom_id,
-									first_name 	: 	receiver.first_name,
-									last_name 	: 	receiver.last_name,
-									profile 	: 	BASE_URL+receiver.profile_photo,
-								}
+								updated_at 	: 	request.time,
 							}
 							console.log("Return Object ::"+JSON.stringify(returnObject));
 							io.in(request.room_id).emit('message', returnObject);		
@@ -205,17 +226,46 @@ io.on('connection', (socket)=>{
 				let updateMessage = "UPDATE chat_messages SET status = ? WHERE custom_id = ? ";
 				let sql = connection.query(updateMessage, [status, selectMessage.custom_id], (read_error, _message) => {
 					if( read_error ) throw read_error;
-
+					message_parse =  JSON.parse(selectMessage.message);
+					
 					// create return object
 					let returnObject = {
-						id   			: 	selectMessage.custom_id,
-						room_id   		: 	request.room_id,
-						sender_id 		:  	selectMessage.sender_id,
-						receiver_id 	:  	selectMessage.receiver_id,
-						message 		: 	selectMessage.message,
-						status 			: 	status,
-						time 			: 	selectMessage.updated_at,
+						id   		: 	selectMessage.custom_id,
+						message: {
+							type 		: 	message_parse.type,
+		                	value  		: 	message_parse.value,
+			            },
+						status 		:   status,
+						updated_at 	: 	selectMessage.updated_at,
+					};
+
+					if(message_parse.type == 'location'){
+						returnObject = {
+							... returnObject,
+							message: {
+								type 		: 	message_parse.type,
+			                	value  		: 	message_parse.value,
+								other 	:  {
+				                	lat 	: 	message_parse.other.lng,
+				                	lng 	: 	message_parse.other.lat,
+				                	url     :   'https://maps.googleapis.com/maps/api/staticmap?center='+message_parse.other.lng+','+message_parse.other.lat+'&zoom=14&size=400x400&markers='+message_parse.other.lng+','+message_parse.other.lat+'&markers=color:red&key=AIzaSyA2GIt7Ld9duVo85H4Mr15Y_v7Sc6pfzlQ',
+					            },
+					        },
+						};	
+					}else if(message_parse.type == 'file'){
+						returnObject = {
+							... returnObject,
+							message: {
+								type 		: 	message_parse.type,
+			                	value  		: 	message_parse.value,
+								other 	:  {
+				                	path 	: 	message_parse.other.path,
+				                	type 	: 	message_parse.other.type,
+				            	},
+				            },
+						};	
 					}
+
 					console.log("Message Object ::"+JSON.stringify(returnObject));
 					io.in(request.room_id).emit('message', returnObject);
 				});
