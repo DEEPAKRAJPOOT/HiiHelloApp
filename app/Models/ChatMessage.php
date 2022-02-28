@@ -19,4 +19,17 @@ class ChatMessage extends Model
     public function receiver(){ return $this->belongsTo('App\Models\User','receiver_id','id'); }
 
     public function isSender(){ return Auth::id() == $this->sender_id ? true : false; }
+
+    public function getMessage(){
+        $message = json_decode($this->message);
+
+        if(!empty($message) && !empty($message->type)){            
+            if($message->type == 'location'){
+                if(!empty($message->other) && !empty($message->other->lng) && !empty($message->other->lat) ){
+                    $message->other->url = 'https://maps.googleapis.com/maps/api/staticmap?center='.$message->other->lng.','.$message->other->lat.'&zoom=14&size=400x400&markers='.$message->other->lng.','.$message->other->lat.'&markers=color:red&key=AIzaSyA2GIt7Ld9duVo85H4Mr15Y_v7Sc6pfzlQ';
+                }
+            }
+        }
+        return $message;
+    }
 }
