@@ -177,7 +177,7 @@ io.on('connection', (socket)=>{
 										other 	:  {
 						                	lng 	: 	request.message_lng,
 						                	lat 	: 	request.message_lat,
-						                	url     :   'https://maps.googleapis.com/maps/api/staticmap?center='+request.message_lng+','+request.message_lat+'&zoom=14&size=400x400&markers='+request.message_lng+','+request.message_lat+'&markers=color:red&key=AIzaSyA2GIt7Ld9duVo85H4Mr15Y_v7Sc6pfzlQ',
+						                	url     :   'https://maps.googleapis.com/maps/api/staticmap?center='+request.message_lat+','+request.message_lng+'&zoom=14&size=400x400&markers='+request.message_lat+','+request.message_lng+'&markers=color:red&key=AIzaSyA2GIt7Ld9duVo85H4Mr15Y_v7Sc6pfzlQ',
 							            },
 							        },
 								};	
@@ -272,7 +272,7 @@ io.on('connection', (socket)=>{
 								other 	:  {
 				                	lat 	: 	message_parse.other.lng,
 				                	lng 	: 	message_parse.other.lat,
-				                	url     :   'https://maps.googleapis.com/maps/api/staticmap?center='+message_parse.other.lng+','+message_parse.other.lat+'&zoom=14&size=400x400&markers='+message_parse.other.lng+','+message_parse.other.lat+'&markers=color:red&key=AIzaSyA2GIt7Ld9duVo85H4Mr15Y_v7Sc6pfzlQ',
+				                	url     :   'https://maps.googleapis.com/maps/api/staticmap?center='+message_parse.other.lat+','+message_parse.other.lng+'&zoom=14&size=400x400&markers='+message_parse.other.lat+','+message_parse.other.lng+'&markers=color:red&key=AIzaSyA2GIt7Ld9duVo85H4Mr15Y_v7Sc6pfzlQ',
 					            },
 					        },
 						};	
@@ -308,7 +308,7 @@ io.on('connection', (socket)=>{
 	// socket.on('get-rooms', (request) => {
 	// 	if(request.user_id){
 
-	// 		let selectUser = "SELECT * FROM users where custom_id = ? and is_active = 'y'";
+	// 		let selectUser = "SELECT `id`,`custom_id`,`first_name`,`last_name`,`profile_photo` FROM users where custom_id = ? and is_active = 'y'";
 	// 		let sql1 = connection.query(selectUser, request.user_id, (error_user, user_result) => {
 
 	// 			if( error_user ) throw error_user;
@@ -322,39 +322,57 @@ io.on('connection', (socket)=>{
 	// 				return false;
 	// 			}
 
-	// 			let selectRooms = "select * from `chat_rooms` where (`creator_id` = ? or `participate_id` = ? and `is_active` = 'y') and `chat_rooms`.`deleted_at` is null order by `created_at` desc limit ? offset ?";
+	// 			let selectRooms = "select `id`,`custom_id`,`creator_id`,`participate_id`,`is_active` from `chat_rooms` where (`creator_id` = ? or `participate_id` = ? and `is_active` = 'y') and `chat_rooms`.`deleted_at` is null order by `created_at` desc limit ? offset ?";
 					
 	// 			let sql2 = connection.query(selectRooms, [user.id, user.id, limit, offset], (error_rooms, _room_result) => {
 	// 				if( error_rooms ) throw error_rooms;
 	// 				let chat_rooms = _room_result;
 
+	// 				flag = false;
+	// 				let returnObject = [];
+
 	// 				// create return object
 	// 				for ( let i = 0; i < chat_rooms.length; i++) {
+
 	// 					var chat_room = chat_rooms[i];
+	// 					var arr_participate = [];
+	// 					var arr_message = [];
+	// 					var is_creator = is_particapate = is_message = false;
+
+	// 					if( !returnObject[i] ) returnObject[i] = [];
+	// 					if( !returnObject[i]['creator'] ) returnObject[i]['creator'] = [];
+	// 					if( !returnObject[i]['participant'] ) returnObject[i]['participant'] = [];
+	// 					if( !returnObject[i]['message'] ) returnObject[i]['message'] = [];
+
+	// 					if (!returnObject[i].includes(chat_room)) returnObject[i].push(chat_room);
+
 	// 					var participate_id = chat_room.participate_id;
 
 	// 					if(user.id == chat_room.participate_id){
 	// 						var participate_id = chat_room.creator_id;
 	// 					}
 
-	// 					chat_room = {
-	// 						... chat_room,
-	// 						creator: user,
-	// 					};
+	// 					// chat_room = {
+	// 					// 	... chat_room,
+	// 					// 	creator: user,
+	// 					// };
+	// 					// is_creator = true;
 
-	// 					let selectParticipant = "SELECT * FROM users where id = ? and is_active = 'y'";
+	// 					let selectParticipant = "SELECT `id`,`custom_id`,`first_name`,`last_name`,`profile_photo` FROM users where id = ? and is_active = 'y'";
 	// 					let sql3 = connection.query(selectParticipant, participate_id, (error_participant, _participant_result) => {
 	// 						if( error_participant ) throw error_participant;
 	// 						let participant = _participant_result[0];
 
-	// 						if( participant != undefined ) {
-	// 							chat_room = {
-	// 								... chat_room,
-	// 								participant: participant,
-	// 							};	
+	// 						if( participant != undefined ) {	
+	// 							// is_particapate = true;
+	// 							// console.log("is_particapate" , is_particapate);
+
+	// 							// chat_room = {
+	// 							// 	... chat_room,
+	// 							// 	participant: participant,
+	// 							// };
 	// 						}
 	// 					});
-
 
 	// 					let latestMsg =  "select * from `chat_messages` where `room_id` = ? and `chat_messages`.`deleted_at` is null order by `created_at` desc limit ?";
 	// 					let sql4 = connection.query(latestMsg, [chat_room.id, 1], (error_latestMsg, _latest_msg_result) => {
@@ -362,15 +380,40 @@ io.on('connection', (socket)=>{
 	// 						let latest_message = _latest_msg_result[0];
 
 	// 						if( latest_message != undefined ) {
-	// 							chat_room = {
-	// 								... chat_room,
-	// 								message: latest_message,
-	// 							};	
+	// 							is_message = true;
+	// 							// console.log("is_message" , is_message);
+
+	// 							// returnObject[i]['message'].push(latest_message);
+	// 							returnObject.push(latest_message);
+
+	// 							// console.log("Message :: ",returnObject);
+	// 							// return false;
+
+	// 							// if( (i+1) == chat_rooms.length){
+	// 							// 	flag = true;
+	// 							// 	// console.log("ff",i, chat_rooms.length, flag,returnObject);
+	// 							// }
+								
+	// 							// return false;
 	// 						}
 	// 					});
+
+	// 					// if(is_creator == true){ 
+	// 					// 	returnObject[i]['creator'].push(user); 
+	// 					// 	console.log("user ::", user);
+	// 					// }
+	// 					// if(is_particapate == true){
+	// 					//  	returnObject[i]['participant'].push(participant); 
+	// 					// 	console.log("participant ::", participant);
+	// 					// }
+	// 					// if(is_message == true){ 
+	// 					//  	returnObject[i]['message'].push(latest_message); 
+	// 					// 	console.log("latest_message ::", latest_message);
+	// 					// }
+
 	// 			    }	
 
-	// 				console.log("Final :: ",chat_rooms[1]);
+	// 				console.log("Final :: ",returnObject);
 	// 				return false;
 
 	// 				console.log("Message Object ::"+JSON.stringify(returnObject));
