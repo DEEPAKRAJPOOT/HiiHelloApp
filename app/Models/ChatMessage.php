@@ -25,8 +25,8 @@ class ChatMessage extends Model
 
         if(!empty($message) && !empty($message->type)){            
             if($message->type == 'location'){
-                if(!empty($message->other) && !empty($message->other->lng) && !empty($message->other->lat) ){
-                    $message->other->url = 'https://maps.googleapis.com/maps/api/staticmap?center='.$message->other->lng.','.$message->other->lat.'&zoom=14&size=400x400&markers='.$message->other->lng.','.$message->other->lat.'&markers=color:red&key=AIzaSyA2GIt7Ld9duVo85H4Mr15Y_v7Sc6pfzlQ';
+                if(!empty($message->other) && !empty($message->other->lat && !empty($message->other->lng) ) ){
+                    $message->other->url = 'https://maps.googleapis.com/maps/api/staticmap?center='.$message->other->lat.','.$message->other->lng.'&zoom=14&size=400x400&markers='.$message->other->lat.','.$message->other->lng.'&markers=color:red&key=AIzaSyA2GIt7Ld9duVo85H4Mr15Y_v7Sc6pfzlQ';
                 }
             }
         }
