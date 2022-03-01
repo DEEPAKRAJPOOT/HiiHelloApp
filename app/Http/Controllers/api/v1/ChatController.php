@@ -119,13 +119,12 @@ class ChatController extends Controller
         $rules = ChatMessagesRequest::rules();
         if( $this->apiValidator($request->all(), $rules) ) {
             try {
-                $user       =   $request->user();
                 $messages   =   ChatMessage::select('id','custom_id','room_id','sender_id','message','status','updated_at')
-                                            ->with(['sender:id,custom_id'])
-                                            ->whereHas('room', function($q) use ($request){
-                                                $q->whereCustomId($request->room)->whereIsActive('y');
-                                            })
-                                            ->latest();
+                                    ->with(['sender:id,custom_id'])
+                                    ->whereHas('room', function($q) use ($request){
+                                        $q->whereCustomId($request->room)->whereIsActive('y');
+                                    })
+                                    ->latest();
                 $count      =   $messages->count();
                 $messages   =   $messages->limit($request->limit ?? config('utility.pagination.limit'))
                                     ->offset($request->offset ?? config('utility.pagination.offset'))
