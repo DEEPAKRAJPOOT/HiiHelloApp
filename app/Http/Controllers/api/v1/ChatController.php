@@ -67,7 +67,13 @@ class ChatController extends Controller
         if( $this->apiValidator($request->all(), $rules) ) {
             try{
                 $user = $request->user();
-                $rooms = ChatRoom::whereCreatorId($user->id)->orWhere('participate_id',$user->id)->whereIsActive('y')->latest();
+                $rooms = ChatRoom::with(['creator:id,custom_id,first_name,last_name,profile_photo',
+                                         'participator:id,custom_id,first_name,last_name,profile_photo',
+                                         'latestMessage:id,custom_id,room_id,message,status,updated_at'])
+                                    ->whereCreatorId($user->id)
+                                    ->orWhere('participate_id',$user->id)
+                                    ->whereIsActive('y')
+                                    ->latest();
                 $count = $rooms->count();
                 $rooms = $rooms->limit($request->limit ?? config('utility.pagination.limit'))
                             ->offset($request->offset ?? config('utility.pagination.offset'))
@@ -114,8 +120,12 @@ class ChatController extends Controller
         if( $this->apiValidator($request->all(), $rules) ) {
             try {
                 $user       =   $request->user();
-                $room       =   ChatRoom::whereCustomId($request->room)->whereIsActive('y')->firstOrFail();
-                $messages   =   ChatMessage::whereRoomId($room->id)->latest();
+                $messages   =   ChatMessage::select('id','custom_id','room_id','sender_id','message','status','updated_at')
+                                            ->with(['sender:id,custom_id'])
+                                            ->whereHas('room', function($q) use ($request){
+                                                $q->whereCustomId($request->room)->whereIsActive('y');
+                                            })
+                                            ->latest();
                 $count      =   $messages->count();
                 $messages   =   $messages->limit($request->limit ?? config('utility.pagination.limit'))
                                     ->offset($request->offset ?? config('utility.pagination.offset'))
