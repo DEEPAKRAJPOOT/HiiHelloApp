@@ -69,7 +69,7 @@ class ChatController extends Controller
                 $user = $request->user();
                 $rooms = ChatRoom::with(['creator:id,custom_id,first_name,last_name,profile_photo',
                                          'participator:id,custom_id,first_name,last_name,profile_photo',
-                                         'latestMessage:id,custom_id,room_id,message,status,updated_at'])
+                                         'latestMessage:id,custom_id,room_id,message,status,created_at,updated_at'])
                                     ->whereCreatorId($user->id)
                                     ->orWhere('participate_id',$user->id)
                                     ->whereIsActive('y')
@@ -119,7 +119,7 @@ class ChatController extends Controller
         $rules = ChatMessagesRequest::rules();
         if( $this->apiValidator($request->all(), $rules) ) {
             try {
-                $messages   =   ChatMessage::select('id','custom_id','room_id','sender_id','message','status','updated_at')
+                $messages   =   ChatMessage::select('id','custom_id','room_id','sender_id','message','status','created_at','updated_at')
                                     ->with(['sender:id,custom_id'])
                                     ->whereHas('room', function($q) use ($request){
                                         $q->whereCustomId($request->room)->whereIsActive('y');
