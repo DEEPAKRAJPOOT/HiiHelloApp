@@ -69,13 +69,21 @@ io.on('connection', (socket)=>{
 
 		// Ignore user if already added into the array
 			if (!users[request.room].includes(socket.id)) users[request.room].push(socket.id);
-			if (!overallUsers.includes(socket.id)) overallUsers.push(socket.id);
+			// if (!overallUsers.includes(socket.id)) overallUsers.push(socket.id);
+	});
+
+	/* User Joined The Chat */
+	socket.on('join-global',(request)=>{
+		socket.join(request.room);
+		console.log("********* OVERALL CHAT JOINED With Room :: "+request.room + " *********");
+
+		if (!overallUsers.includes(socket.id)) overallUsers.push(socket.id);
 	});
 
 	/* User Disconnected From Chat */
 	socket.on('disconnect', (request)=>{
-		socket.leave(request.room);
 		console.log('**** DISCONNECT CALLED ****');
+		socket.leave(request.room);
 		// Remove From Overall List
 			let user = overallUsers.indexOf(socket.id);
 			if (user > -1) overallUsers.splice(user, 1);
@@ -165,6 +173,7 @@ io.on('connection', (socket)=>{
 								sender 		: 	{
 									id 		: 	sender.custom_id,
 								},
+								created_at 	: 	request.time,
 								updated_at 	: 	request.time,
 							};
 
@@ -194,6 +203,26 @@ io.on('connection', (socket)=>{
 						            },
 								};	
 							}
+
+							// console.log("users :: ",users);
+							// console.log("overallUsers :: ", overallUsers);
+							// console.log("socket id :: ", socket.id);
+							// console.log("sender :: ",sender);
+							// console.log("receiver :: ",receiver);
+
+							// // Ignore user if already added into the array
+							// if (users[request.room_id] && users[request.room_id].includes(socket.id)) {
+							// 	console.log("User Include");
+							// }else{
+							// 	console.log("User Not Include");
+							// 	// io.in(request.room_id).emit('new-room', returnObject);	
+							// }
+
+							// // if (overallUsers.includes(socket.id)) {
+							// // 	console.log("Overall Include");
+							// // }else{
+							// // 	console.log("Overall Not Include");
+							// // }
 
 							io.in(request.room_id).emit('message', returnObject);	
 							console.log("Return Object ::"+JSON.stringify(returnObject));
@@ -231,7 +260,7 @@ io.on('connection', (socket)=>{
 
 	/* Update Message */
 	function updateMessageStatus(request, status){
-		if(request.id && request.room_id && request.sender_id && request.receiver_id){		
+		if(request.id && request.room_id && request.sender_id && request.receiver_id && request.time){		
 			let selectChatMessage = "SELECT * FROM chat_messages where custom_id = ?";
 
 			connection.query(selectChatMessage, [request.id], (error, _selectMessage) => {
@@ -240,12 +269,12 @@ io.on('connection', (socket)=>{
 				
 				if( selectMessage === undefined ) {
 					io.in(request.id).emit('went-wrong');
-					console.log('Message Not Found'); 
+					console.log('Message Not Found ::', selectMessage); 
 					return false;
 				}
 
-				let updateMessage = "UPDATE chat_messages SET status = ? WHERE custom_id = ? ";
-				let sql = connection.query(updateMessage, [status, selectMessage.custom_id], (read_error, _message) => {
+				let updateMessage = "UPDATE chat_messages SET status = ?, updated_at = ? WHERE custom_id = ? ";
+				let sql = connection.query(updateMessage, [status, request.time, selectMessage.custom_id], (read_error, _message) => {
 					if( read_error ) throw read_error;
 					message_parse =  JSON.parse(selectMessage.message);
 					
@@ -260,7 +289,8 @@ io.on('connection', (socket)=>{
 						sender 		: 	{
 							id 		: 	request.sender_id,
 						},
-						updated_at 	: 	selectMessage.updated_at,
+						created_at 	: 	request.time,
+						updated_at 	: 	request.time,
 					};
 
 					if(message_parse.type == 'location'){

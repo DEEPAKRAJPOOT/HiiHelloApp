@@ -27,6 +27,7 @@
 	<div>
 		<input type="text" id="room" placeholder="Enter Your Room Code" value="1">
 		<input type="text" id="username" placeholder="Enter Your Username" value="kmjadeja">
+		<button id="connectGlobalRoom" class="mb-10 mt-10">Connect Global Room</button>	
 		<button id="connectToRoom" class="mb-10 mt-10">Connect To Room</button>	
 		<button id="disconnectFromRoom" class="mb-10 mt-10">Disconnect From Chat Room</button>	
 		<textarea rows="5" id="messageArea"></textarea>
@@ -45,13 +46,23 @@
 			var socket = io.connect('http://127.0.0.1:8080');
 			// var socket = io.connect('http://chat.hihelloapp.com:8080');
 			// var socket = io.connect('http://chat.hihelloapp.com');
-			console.log(socket);
+			console.log("Socket ::",socket);
+
+			/* Join The Socket Room */
+				$('#connectGlobalRoom').on('click', function () {
+					socket.emit('join-global', {
+						// room: $('#room').val(),
+						room 	: 	'pp7wrUU7cLiKkNJAaGOO',
+						user 	: 	$('#username').val(),
+					})
+				});
 
 			/* Join The Socket Room */
 				$('#connectToRoom').on('click', function () {
 					socket.emit('join', {
-						room: $('#room').val(),
-						user: $('#username').val(),
+						// room: $('#room').val(),
+						room 	: 	'pp7wrUU7cLiKkNJAaGOO',
+						user 	: 	$('#username').val(),
 					})
 				});
 
@@ -169,8 +180,8 @@
 				// 	}
 				// });
 
-				socket.on('message', function(response) {
-					console.log(response);
+				socket.on('new-room', function(response) {
+					console.log("new-room ::", response);
 					// APPEND MESSAGE
 					// CLEAR TEXT AREA
 				});

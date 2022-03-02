@@ -33,7 +33,8 @@ class ChatRoomResource extends JsonResource
                 'id'            =>  $this->latestMessage ? $this->latestMessage->custom_id : "",
                 'value'         =>  $this->latestMessage ? $this->latestMessage->message : "",
                 'status'        =>  $this->latestMessage ? $this->latestMessage->status : "",
-                'updated_at'    =>  $this->latestMessage ? $this->latestMessage->updated_at->format('Y-m-d h:m:s') : "",
+                'created_at'    =>  $this->latestMessage ? $this->latestMessage->created_at->format('Y-m-d H:i:s') : "",
+                'updated_at'    =>  $this->latestMessage ? $this->latestMessage->updated_at->format('Y-m-d H:i:s') : "",
             ]
         ];
         return parent::toArray($request);

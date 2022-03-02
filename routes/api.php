@@ -61,4 +61,7 @@ Route::group(['namespace' => 'v1', 'prefix' => 'v1', 'middleware' => 'auth:sanct
     Route::post('chat/create-room', [ChatController::class,'createRoom'])->name('chat.create-room');
     Route::post('chat/get-rooms', [ChatController::class,'getChatRooms'])->name('chat.get-rooms'); 
     Route::post('chat/get-messages', [ChatController::class,'getChatMessages'])->name('chat.get-messages');
+
+    // AWS S3 STORAGE
+    Route::post('aws/store-media', [GeneralController::class,'storeAwsMedia'])->name('aws.store-media');
 });
