@@ -337,42 +337,47 @@ class GeneralController extends Controller
         return $this->returnResponse();
     }
 
-    // Store In AWS S3 Bucket
-    public function storeAwsMedia(Request $request)
+    // Generate AWS S3 Bucket Upload URL
+    public function generateAwsUrl(Request $request)
     {
-        $user = $request->user() ?? NULL;
-        $time = \Carbon\Carbon::now()->timestamp;
-        $fileName = 'message-media/'.$user->custom_id.'/'.$time.'-'.$user->custom_id.'.jpeg';
+        $rules = [
+            'extension'     =>  'required|string',
+            'contentType'   =>  'required',
+        ];
+        if( $this->apiValidator($request->all(), $rules) ) {
+            $user = $request->user() ?? NULL;
+            $time = \Carbon\Carbon::now()->timestamp;
+            $fileName = 'message-media/'.$user->custom_id.'/'.$time.'-'.$user->custom_id.'.'.$request->extension;
 
-        try {
-            $s3Client = new \Aws\S3\S3Client([
-                'region' => config('filesystems.disks.s3.region'),
-                'version' => '2006-03-01',
-            ]);        
+            try {
+                $s3Client = new \Aws\S3\S3Client([
+                    'region' => config('filesystems.disks.s3.region'),
+                    'version' => '2006-03-01',
+                ]);        
 
-            $cmd = $s3Client->getCommand(
-                'PutObject',
-                [
-                    'Bucket'        => config('filesystems.disks.s3.bucket'),
-                    'ContentType'   =>  'image/jpeg',
-                    'Key'           => $fileName,
-                    'Metadata'      => [
-                        'user-id'   => $user->custom_id,
-                    ],
-                ]
-            );
+                $cmd = $s3Client->getCommand(
+                    'PutObject',
+                    [
+                        'Bucket'        => config('filesystems.disks.s3.bucket'),
+                        'ContentType'   => $request->contentType,
+                        'Key'           => $fileName,
+                        'Metadata'      => [
+                            'user-id'   => $user->custom_id,
+                        ],
+                    ]
+                );
 
-            $url = $s3Client->createPresignedRequest($cmd, config('utility.expiry_time'));
-            $this->response['data']['url'] = (string) $url->getUri();
-            $this->response['data']['filename'] = (string) $fileName;
-            $this->response['data']['timestamp'] = $time;
-            $this->response['data']['exipry_time'] = config('utility.expiry_time');
-            $this->response['meta']['message'] = trans('api.dynamic-link.success');
-            $this->status = Response::HTTP_OK;
-        } catch (Exception $exception) {
-            $this->response['meta']['message'] = trans('api.went_wrong');
-        } finally {
-            return $this->returnResponse();
+                $url = $s3Client->createPresignedRequest($cmd, config('utility.s3.upload_expiry'));
+                $this->response['data']['url'] = (string) $url->getUri();
+                $this->response['data']['filename'] = (string) $fileName;
+                $this->response['data']['timestamp'] = $time;
+                $this->response['data']['exipry_time'] = config('utility.s3.upload_expiry');
+                $this->response['meta']['message'] = trans('api.dynamic-link.success');
+                $this->status = Response::HTTP_OK;
+            } catch (Exception $exception) {
+                $this->response['meta']['message'] = trans('api.went_wrong');
+            }
         }
+        return $this->returnResponse();
     }
 }
