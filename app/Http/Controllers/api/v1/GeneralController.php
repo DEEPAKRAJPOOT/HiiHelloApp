@@ -8,7 +8,8 @@ use Illuminate\Support\Facades\ { Storage };
 use Illuminate\Database\Eloquent\ { ModelNotFoundException };
 use App\Http\Resources\v1\ { LanguageResource, CmsResource, CountryResource, LocationResource, InterestResource, FaqResource };
 use App\Http\Requests\Api\General\ { PaginationRequest, LocationRequest };
-use App\Models\ { Language, CmsPage, Country, Location, Interest, Faq };
+use App\Http\Requests\Api\User\ { AddDeviceTokenRequest };
+use App\Models\ { Language, CmsPage, Country, Location, Interest, Faq, DeviceToken };
 
 class GeneralController extends Controller
 {
@@ -332,6 +333,34 @@ class GeneralController extends Controller
                 $this->response['meta']['message'] = trans('api.went_wrong');
                 $this->status = Response::HTTP_NOT_FOUND;  
                 $this->storeErrorLog($e,'image_moderation');
+            }
+        }
+        return $this->returnResponse();
+    }
+
+    // Store Device Token
+    public function storeDeviceToken(Request $request)
+    {
+        $rules = AddDeviceTokenRequest::rules();
+        if( $this->apiValidator($request->all(), $rules) ) {
+            try{
+                $user = $request->user();
+                DeviceToken::updateOrCreate([
+                    'token' =>  $request->token,
+                ],[
+                    'user_id'       =>  $user->id ?? NULL,
+                    'type'          =>  $request->type,
+                    'device_name'   =>  $request->device,
+                    'os_name'       =>  $request->os,
+                    'os_version'    =>  $request->version,
+                    'app_version'   =>  $request->app_version,
+                ]);
+                $this->response['meta']['message'] = trans('api.add', ['entity' => __('Device token')]);
+                $this->status = Response::HTTP_OK;
+            } catch (\Exception $e) {
+                $this->response['meta']['message'] = trans('api.went_wrong');
+                $this->status = Response::HTTP_NOT_FOUND;  
+                $this->storeErrorLog($e,'add_device_token');
             }
         }
         return $this->returnResponse();

@@ -6,24 +6,9 @@ const path 		= 	require('path');
 const cors 		= 	require('cors');
 const io 		= 	require('socket.io')(server, { pingInterval: 2000, pingTimeout: 10000, allowEIO3: true });
 const mysql 	= 	require('mysql');
-
-// io.origins('*:*');
-
-// require('dotenv').config();
-
-// const BASE_URL 			= 	process.env.CHAT_URL;
-// const port 				= 	process.env.CHAT_PORT;
-// const db_host 			= 	process.env.DB_HOST;
-// const db_port 			= 	process.env.DB_PORT;
-// const db_database 		= 	process.env.DB_DATABASE;
-// const db_username 		= 	process.env.DB_USERNAME;
-// const db_password 		= 	process.env.DB_PASSWORD;
-
 const tech 		= 	io.of('/');
 const port 		= 	8080;
 
-// const BASE_URL = "https://hi-hello-app.s3.ap-south-1.amazonaws.com/";
-// const BASE_URL = "hihellapp.cx3wyfpc93bh.ap-south-1.rds.amazonaws.com";
 // const BASE_URL 	= 	"http://chat.hihelloapp.com/";
 const BASE_URL 	= 	"http://127.0.0.1:8081/";
 
@@ -32,11 +17,6 @@ app.use(cors());
 
 /* MySQL Connections */
 var connection = mysql.createConnection({
-	// host     : db_host,
-	// port     : db_port,
-	// user     : db_username,
-	// password : db_password,
-	// database : db_database
 
 	host     : "127.0.0.1",
 	port     : "8889",
@@ -61,78 +41,98 @@ let overallUsers = [];
 
 io.on('connection', (socket)=>{
 	/* User Joined The Chat */
-	socket.on('join',(request)=>{
-		socket.join(request.room);
-		console.log("********* CHAT JOINED With Room :: "+request.room + " *********");
+	socket.on('join-global',(request)=>{
+		socket.join(request.user_id);
+		console.log("********* OVERALL JOINED With ID :: "+request.user_id + " *********");
 
-		if( !users[request.room] ) users[request.room] = [];
-
-		// Ignore user if already added into the array
-			if (!users[request.room].includes(socket.id)) users[request.room].push(socket.id);
-			// if (!overallUsers.includes(socket.id)) overallUsers.push(socket.id);
+		if (!overallUsers.includes(request.user_id)) overallUsers.push(request.user_id);
+		// console.log(overallUsers);
 	});
 
 	/* User Joined The Chat */
-	socket.on('join-global',(request)=>{
-		socket.join(request.room);
-		console.log("********* OVERALL CHAT JOINED With Room :: "+request.room + " *********");
+	socket.on('join-room',(request)=>{
+		socket.join(request.room_id);
+		console.log("********* CHAT JOINED With Room ID :: "+request.room_id + " *********");
 
-		if (!overallUsers.includes(socket.id)) overallUsers.push(socket.id);
+		if( !users[request.room_id] ) users[request.room_id] = [];
+
+		// Ignore user if already added into the array
+			if (!users[request.room_id].includes(request.user_id)) users[request.room_id].push(request.user_id);
+			// if (!overallUsers.includes(request.user_id)) overallUsers.push(request.user_id);
+		// console.log(users);
+	});
+
+
+	/* User Disconnected From Chat Room*/
+	socket.on('disconnect-room', (request)=>{
+		console.log('**** DISCONNECT ROOM ****');
+
+		// Remove From ChatRoom
+		for (const [key, value] of Object.entries(users)) {
+			if (value.includes(request.user_id)) {
+				value.splice( value.indexOf(request.user_id) ,1)
+
+				// Free Room Key If No Users Are There
+					if (value.length == 0) delete users[key]
+			}
+		}
+		// console.log(users);
 	});
 
 	/* User Disconnected From Chat */
-	socket.on('disconnect', (request)=>{
-		console.log('**** DISCONNECT CALLED ****');
-		socket.leave(request.room);
-		// Remove From Overall List
-			let user = overallUsers.indexOf(socket.id);
-			if (user > -1) overallUsers.splice(user, 1);
-			console.log(overallUsers);
+	socket.on('disconnect-global', (request)=>{
+		console.log('**** DISCONNECT GLOBAL ****');
 
 		// Remove From ChatRoom
-			for (const [key, value] of Object.entries(users)) {
-				if (value.includes(socket.id)) {
-					value.splice( value.indexOf(socket.id) ,1)
+		for (const [key, value] of Object.entries(users)) {
+			if (value.includes(request.user_id)) {
+				value.splice( value.indexOf(request.user_id) ,1)
 
-					// Free Room Key If No Users Are There
-						if (value.length == 0) delete users[key]
-				}
+				// Free Room Key If No Users Are There
+					if (value.length == 0) delete users[key]
 			}
+		}
+
+		// Remove From Overall List
+			let user = overallUsers.indexOf(request.user_id);
+			if (user > -1) overallUsers.splice(user, 1);
+			// console.log(overallUsers);
 	});
 
+
 	/* Send Message */
-	socket.on('message', (request) => {
+	socket.on('send-message', (request) => {
 		if(request.id && request.room_id && request.sender_id && request.receiver_id && request.message_type && request.message_value && request.time){
 
-			let selectSender = "SELECT * FROM users where custom_id = ? and is_active = 'y'";
+			let selectSender = "SELECT * FROM users where custom_id = ? and deleted_at is NULL and is_active = 'y'";
 			let sql1 = connection.query(selectSender, request.sender_id, (error, sender_result) => {
 				if( error ) throw error;
 				let sender = sender_result[0];
 
 				if( sender === undefined ) {
-					io.in(request.sender_id).emit('went-wrong');
+					io.in(request.sender_id).emit('went-wrong','Sender Not Found');
 					console.log('Sender Not Found'); 
 					return false;
 				}
 
-				let selectReceiver = "SELECT * FROM users where custom_id = ? and is_active = 'y'";
+				let selectReceiver = "SELECT * FROM users where custom_id = ? and deleted_at is NULL and is_active = 'y'";
 				let sql1 = connection.query(selectReceiver, request.receiver_id, (error, receiver_result) => {
 					if( error ) throw error;
 					let receiver = receiver_result[0];
 					
 					if( receiver === undefined ) {
-						io.in(request.receiver_id).emit('went-wrong');
+						io.in(request.receiver_id).emit('went-wrong','Receiver Not Found');
 						console.log('Receiver Not Found'); 
 						return false;
 					}
 
-					let selectChatRoom = "SELECT * FROM chat_rooms where custom_id = ? and is_active = 'y'";
+					let selectChatRoom = "SELECT * FROM chat_rooms where custom_id = ? and deleted_at is NULL and is_active = 'y'";
 					connection.query(selectChatRoom, [request.room_id],(error, _chatRoom) => {
 						if( error ) throw error;
 						let chatRoom = _chatRoom[0];
 
 						if( chatRoom === undefined ) {
-							io.in(request.room_id).emit('went-wrong');
+							io.in(request.room_id).emit('went-wrong','Chat Room Not Found');
 							console.log('Chat Room Not Found'); 
 							return false;
 						}	
@@ -162,7 +162,7 @@ io.on('connection', (socket)=>{
 							if( error ) throw error;	
 							
 				            // create return object
-				            let returnObject = {
+				            let returnSendMsg = {
 								id   		: 	chatRoom.custom_id,
 								message: {
 									type 		: 	request.message_type,
@@ -178,8 +178,8 @@ io.on('connection', (socket)=>{
 							};
 
 							if(request.message_type == 'location'){
-								returnObject = {
-									... returnObject,
+								returnSendMsg = {
+									... returnSendMsg,
 									message: {
 										type 		: 	request.message_type,
 				                		value  		: 	request.message_value,
@@ -191,8 +191,8 @@ io.on('connection', (socket)=>{
 							        },
 								};	
 							}else if(request.message_type == 'file'){
-								returnObject = {
-									... returnObject,
+								returnSendMsg = {
+									... returnSendMsg,
 									message: {
 										type 		: 	request.message_type,
 				                		value  		: 	request.message_value,
@@ -204,28 +204,45 @@ io.on('connection', (socket)=>{
 								};	
 							}
 
-							// console.log("users :: ",users);
-							// console.log("overallUsers :: ", overallUsers);
-							// console.log("socket id :: ", socket.id);
-							// console.log("sender :: ",sender);
-							// console.log("receiver :: ",receiver);
+							io.in(request.room_id).emit('receive-message', returnSendMsg);	
+							console.log("Send Message Object ::"+JSON.stringify(returnSendMsg));
 
-							// // Ignore user if already added into the array
-							// if (users[request.room_id] && users[request.room_id].includes(socket.id)) {
-							// 	console.log("User Include");
-							// }else{
-							// 	console.log("User Not Include");
-							// 	// io.in(request.room_id).emit('new-room', returnObject);	
-							// }
+							if(overallUsers.includes(request.receiver_id)){
 
-							// // if (overallUsers.includes(socket.id)) {
-							// // 	console.log("Overall Include");
-							// // }else{
-							// // 	console.log("Overall Not Include");
-							// // }
+								// When New User(Not From The Room) Send Message
+								if (users[request.room_id] && !users[request.room_id].includes(request.receiver_id)) {
+									let returnNewMsg = {
+										id   				: 	chatRoom.custom_id,
+										is_active   		:   chatRoom.is_active,
+										creator: {
+											id 				: 	sender.custom_id,
+											first_name 		: 	sender.first_name,
+											last_name 		: 	sender.last_name,
+											profile 		: 	sender.profile_photo,
+										},
+										participator: {
+											id 				: 	receiver.custom_id,
+											first_name 		: 	receiver.first_name,
+											last_name 		: 	receiver.last_name,
+											profile 		: 	receiver.profile_photo,
+										},
+										message: {
+											id 				: 	request.id,
+											type 			: 	request.message_type,
+						                	value  			: 	request.message_value,
+						                	status  		: 	'send',
+						                	created_at 		: 	request.time,
+											updated_at 		: 	request.time,
+							            }
+									};
 
-							io.in(request.room_id).emit('message', returnObject);	
-							console.log("Return Object ::"+JSON.stringify(returnObject));
+									io.in(request.room_id).emit('new-message', returnNewMsg);	
+									console.log("New Message Object ::"+JSON.stringify(returnNewMsg));
+								}
+							}else{
+								// Send Push Notification
+								console.log("Send Push Notification");
+							}
 						});
 					});
 				});
@@ -248,28 +265,27 @@ io.on('connection', (socket)=>{
 	});
 
 	/* Read Message */
-	socket.on('read-message', (request) => {
+	socket.on('message-read', (request) => {
 		updateMessageStatus(request,'read');
-	});
-
-	/* Error Things */
-	socket.on('went-wrong', (request)=>{
-		console.log("Error Message :: ",request);
-		return false; 
 	});
 
 	/* Update Message */
 	function updateMessageStatus(request, status){
 		if(request.id && request.room_id && request.sender_id && request.receiver_id && request.time){		
-			let selectChatMessage = "SELECT * FROM chat_messages where custom_id = ?";
+			// if(status == 'delivered'){
+			// 	var selectChatMessage = "SELECT * FROM chat_messages where custom_id = ? and status = 'send' and deleted_at is NULL";
+			// }else{
+			// 	var selectChatMessage = "SELECT * FROM chat_messages where custom_id = ? and status = 'delivered' and deleted_at is NULL";
+			// }
+			var selectChatMessage = "SELECT * FROM chat_messages where custom_id = ? and deleted_at is NULL";
 
 			connection.query(selectChatMessage, [request.id], (error, _selectMessage) => {
 				if( error ) throw error;
 				let selectMessage = _selectMessage[0];
 				
 				if( selectMessage === undefined ) {
-					io.in(request.id).emit('went-wrong');
-					console.log('Message Not Found ::', selectMessage); 
+					io.in(request.id).emit('went-wrong','Message Not Found');
+					console.log('Message Not Found'); 
 					return false;
 				}
 
@@ -279,7 +295,7 @@ io.on('connection', (socket)=>{
 					message_parse =  JSON.parse(selectMessage.message);
 					
 					// create return object
-					let returnObject = {
+					let returnUpdatedMsg = {
 						id   		: 	selectMessage.custom_id,
 						message: {
 							type 		: 	message_parse.type,
@@ -294,8 +310,8 @@ io.on('connection', (socket)=>{
 					};
 
 					if(message_parse.type == 'location'){
-						returnObject = {
-							... returnObject,
+						returnUpdatedMsg = {
+							... returnUpdatedMsg,
 							message: {
 								type 		: 	message_parse.type,
 			                	value  		: 	message_parse.value,
@@ -307,8 +323,8 @@ io.on('connection', (socket)=>{
 					        },
 						};	
 					}else if(message_parse.type == 'file'){
-						returnObject = {
-							... returnObject,
+						returnUpdatedMsg = {
+							... returnUpdatedMsg,
 							message: {
 								type 		: 	message_parse.type,
 			                	value  		: 	message_parse.value,
@@ -320,8 +336,8 @@ io.on('connection', (socket)=>{
 						};	
 					}
 
-					console.log("Message Object ::"+JSON.stringify(returnObject));
-					io.in(request.room_id).emit('message', returnObject);
+					console.log("Updated Message Object ::"+JSON.stringify(returnUpdatedMsg));
+					io.in(request.room_id).emit('updated-message', returnUpdatedMsg);
 				});
 			});
 		}else{
@@ -333,6 +349,13 @@ io.on('connection', (socket)=>{
 		// MARK AS DELIVERED OR READ
 		// EMIT BACK
 	}
+
+	/* Error Things */
+	// socket.on('went-wrong', (request)=>{
+	// 	console.log("Error Message :: ",request);
+	// 	return false; 
+	// });
+
 
 	/* Get Chat Rooms */
 	// socket.on('get-rooms', (request) => {

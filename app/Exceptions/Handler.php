@@ -10,6 +10,9 @@ use Throwable;
 
 class Handler extends ExceptionHandler
 {
+    private $version = "v.1.0";
+    public function getVersion(){ return $this->version; }
+
     /**
      * A list of the exception types that are not reported.
      *
@@ -90,7 +93,15 @@ class Handler extends ExceptionHandler
         }
 
         return $request->expectsJson()
-        ? response()->json(['message' => $exception->getMessage()], 401)
+        ? response()->json([
+            'data'  =>  [],
+            'meta' => [
+                'api'       =>  $this->version,
+                'url'       =>  url()->current(),
+                'message'   =>  $exception->getMessage(),
+            ]
+        ], 401)
+        // ? response()->json(['message' => $exception->getMessage()], 401)
         : redirect()->guest($route);
     }
 }

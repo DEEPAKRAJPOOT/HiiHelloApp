@@ -25,11 +25,12 @@
 	</div>
 
 	<div>
-		<input type="text" id="room" placeholder="Enter Your Room Code" value="1">
-		<input type="text" id="username" placeholder="Enter Your Username" value="kmjadeja">
+		<input type="text" id="room" placeholder="Enter Your Room Code" value="pp7wrUU7cLiKkNJAaGOO">
+		<input type="text" id="username" placeholder="Enter Your Username" value="KeIM7uqbINRQY01sVQtm">
 		<button id="connectGlobalRoom" class="mb-10 mt-10">Connect Global Room</button>	
 		<button id="connectToRoom" class="mb-10 mt-10">Connect To Room</button>	
 		<button id="disconnectFromRoom" class="mb-10 mt-10">Disconnect From Chat Room</button>	
+		<button id="disconnectGlobal" class="mb-10 mt-10">Disconnect Globally</button>	
 		<textarea rows="5" id="messageArea"></textarea>
 		<br> <br>
 		<button id="sendMessage">Send Message</button>		
@@ -37,7 +38,7 @@
 		<button id="shareLocation">Share Location</button>		
 		<button id="deliveredMessage">Delivered Message</button>		
 		<button id="readMessage">Read Message</button>		
-		<button id="getRooms">Get Rooms</button>		
+		<!-- <button id="getRooms">Get Rooms</button>		 -->
 	</div>
 
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.1/socket.io.js"></script>
@@ -51,69 +52,55 @@
 			/* Join The Socket Room */
 				$('#connectGlobalRoom').on('click', function () {
 					socket.emit('join-global', {
-						// room: $('#room').val(),
-						room 	: 	'pp7wrUU7cLiKkNJAaGOO',
-						user 	: 	$('#username').val(),
+						user_id 	: 	$('#username').val(),
 					})
 				});
 
 			/* Join The Socket Room */
 				$('#connectToRoom').on('click', function () {
-					socket.emit('join', {
-						// room: $('#room').val(),
-						room 	: 	'pp7wrUU7cLiKkNJAaGOO',
-						user 	: 	$('#username').val(),
+					socket.emit('join-room', {
+						room_id 	: 	$('#room').val(),
+						user_id 	: 	$('#username').val(),
 					})
 				});
 
-			/* Left the socket */
+			/* Left the socket room*/
 				$('#disconnectFromRoom').on('click', function () {
-					socket.emit('disconnect', { room: $('#room').val() });
+					socket.emit('disconnect-room', {
+					 	room_id 	: 	$('#room').val(),
+						user_id 	: 	$('#username').val(),
+					});
+				});
+
+			/* Left the socket globally*/
+				$('#disconnectGlobal').on('click', function () {
+					socket.emit('disconnect-global', {
+						user_id 	: 	$('#username').val(),
+					});
 				});
 
 			/* Send Message */
 				$('#sendMessage').on('click', function () {
 					var value = $("#messageArea").val();
 
-					// var message = {
-
-					// 	type	: 	'text',
-					// 	value  	: 	value,
-					// 	other 	:   [],
-					// 	// 'room' 	 : 	$('#room').val(),
-					// 	// 'room' 	 : 	'pp7wrUU7cLiKkNJAaGOO',
-					// 	// 'sender_id' 	 : 	'KeIM7uqbINRQY01sVQtm',
-					// 	// 'receiver_id' 	 : 	'827qH2Fosf1qZwVEuHVR',
-					// 	// 'value'  : 	,
-					// 	// 'value'  : 	'{ "type" : "text", "value" : "'+value+'" , "other" : [] }',
-					// 	// 'time'  : 	'2022-02-10 15:05',
-					// };
-
-					socket.emit('message',{
+					socket.emit('send-message',{
 						id 	 				: 	'cc79cdcv9ve8ev',
-						room_id 			: 	'pp7wrUU7cLiKkNJAaGOO',
-						sender_id 	 		: 	'KeIM7uqbINRQY01sVQtm',
+						room_id 			: 	$('#room').val(),
+						sender_id 	 		: 	$('#username').val(),
 						receiver_id 	 	: 	'827qH2Fosf1qZwVEuHVR',
-						// message				: 	'{ type: \'text\', value: \'Vishal\', other: [] }',
-						// message				:	{
-						// 	'type' 	: 'text',
-						// 	'value' : 'Old Structure Testing',
-						// 	'other' : [],
-						// },
 						message_type 		: 	'text',
-						message_value 		: 	'New Structure Testing',
+						message_value 		: 	value,
 						time  				: 	'2022-02-10 15:05',
 					});
 				});
 
 			/* Send Message */
 				$('#sendFile').on('click', function () {
-					socket.emit('message',{
+					socket.emit('send-message',{
 						id 	 				: 	'cc79cdcv9ve8ev',
-						room_id 			: 	'pp7wrUU7cLiKkNJAaGOO',
-						sender_id 	 		: 	'827qH2Fosf1qZwVEuHVR',
+						room_id 			: 	$('#room').val(),
+						sender_id 	 		: 	$('#username').val(),
 						receiver_id 	 	: 	'KeIM7uqbINRQY01sVQtm',
-						// message				: 	'{ "type" : "file", "value" : "File1.jpg", "other" : { "path" : "/file/path/file1.jpg", "type" : ".jpg" } }',
 						message_type 		: 	'file',
 						message_value 		: 	'New File',
 						message_file_path 	: 	'/file/path/file1.png',
@@ -124,49 +111,49 @@
 
 			/* Share Location */
 				$('#shareLocation').on('click', function () {
-					socket.emit('message',{
+					socket.emit('send-message',{
 						id 	 				: 	'cc79cdcv9ve8ev',
-						room_id 			: 	'pp7wrUU7cLiKkNJAaGOO',
-						sender_id 	 		: 	'KeIM7uqbINRQY01sVQtm',
+						room_id 			: 	$('#room').val(),
+						sender_id 	 		: 	$('#username').val(),
 						receiver_id 	 	: 	'827qH2Fosf1qZwVEuHVR',
-						// message				: 	'{ "type" : "location", "value" : "STRING", "other" : { "lat" : "LATITUDE", "lng" : "LONGITUDE" } }',
-						message_type 	: 	'location',
-						message_value 	: 	'New Location',
-						message_lng 	: 	'23.022505',
-						message_lat 	: 	'72.571365',
+						message_type 		: 	'location',
+						message_value 		: 	'New Location',
+						message_lng 		: 	'23.022505',
+						message_lat 		: 	'72.571365',
 						time  				: 	'2022-02-10 15:05',
 					});
 				});
 
 			/* Delivered Message */
 				$('#deliveredMessage').on('click', function () {
-					
 					socket.emit('message-delivered',{
 						id 	 			: 	'sdfccdsf79cdc234v9ve8ev',
-						room_id 	 	: 	'pp7wrUU7cLiKkNJAaGOO',
-						sender_id 		: 	'KeIM7uqbINRQY01sVQtm',
+						room_id 	 	: 	$('#room').val(),
+						sender_id 		: 	$('#username').val(),
 						receiver_id 	: 	'827qH2Fosf1qZwVEuHVR',
+						time  			: 	'2022-03-02 15:05',
 					});
 				});
 
 			/* Read Message */
 				$('#readMessage').on('click', function () {
-					socket.emit('read-message',{
+					socket.emit('message-read',{
 						id 	 			: 	'sdfccdsf79cdc234v9ve8ev',
-						room_id 	 	: 	'pp7wrUU7cLiKkNJAaGOO',
-						sender_id 		: 	'KeIM7uqbINRQY01sVQtm',
+						room_id 	 	: 	$('#room').val(),
+						sender_id 		: 	$('#username').val(),
 						receiver_id 	: 	'827qH2Fosf1qZwVEuHVR',
+						time  			: 	'2022-03-02 15:05',
 					});
 				});
 
 			/* Get Chat Rooms */
-				$('#getRooms').on('click', function () {
-					socket.emit('get-rooms',{
-						user_id 	 	: 	'KeIM7uqbINRQY01sVQtm',
-						limit 			: 	10,
-						offset 			: 	0,
-					});
-				});
+				// $('#getRooms').on('click', function () {
+				// 	socket.emit('get-rooms',{
+				// 		user_id 	 	: 	'KeIM7uqbINRQY01sVQtm',
+				// 		limit 			: 	10,
+				// 		offset 			: 	0,
+				// 	});
+				// });
 				
 
 			/* Receive All Emits */

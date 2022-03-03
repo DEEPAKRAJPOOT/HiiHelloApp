@@ -62,6 +62,9 @@ Route::group(['namespace' => 'v1', 'prefix' => 'v1', 'middleware' => 'auth:sanct
     Route::post('chat/get-rooms', [ChatController::class,'getChatRooms'])->name('chat.get-rooms'); 
     Route::post('chat/get-messages', [ChatController::class,'getChatMessages'])->name('chat.get-messages');
 
+    // Device Token
+    Route::post('user/add-device-token', [GeneralController::class,'storeDeviceToken'])->name('api.user.add-device-token');
+
     // AWS S3 STORAGE
     Route::post('aws/generate-url', [GeneralController::class,'generateAwsUrl'])->name('aws.generate-url');
 });
