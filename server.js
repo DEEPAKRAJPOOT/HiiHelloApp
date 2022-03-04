@@ -10,8 +10,9 @@ const tech 		= 	io.of('/');
 const port 		= 	8080;
 
 const BASE_URL 	= 	"http://chat.hihelloapp.com/";
-const APP_URL 	= 	"https://la.webdevprojects.cloud/hi-hello/";
-// const BASE_URL 	= 	"http://localhost:8000/";
+// const APP_URL 	= 	"https://la.webdevprojects.cloud/hi-hello/";
+const APP_URL 	= 	"https://hihelloapp.com/";
+// const APP_URL 	= 	"http://localhost:8000/";
 
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(cors());
@@ -164,7 +165,7 @@ io.on('connection', (socket)=>{
 							
 				            // create return object
 				            let returnSendMsg = {
-								id   		: 	chatRoom.custom_id,
+								id   		: 	request.id,
 								message: {
 									type 		: 	request.message_type,
 				                	value  		: 	request.message_value,
@@ -227,10 +228,13 @@ io.on('connection', (socket)=>{
 											last_name 		: 	receiver.last_name,
 											profile 		: 	receiver.profile_photo,
 										},
-										message: {
+										latest_message: {
 											id 				: 	request.id,
-											type 			: 	request.message_type,
-						                	value  			: 	request.message_value,
+											message : {
+												type 			: 	request.message_type,
+						                		value  			: 	request.message_value,
+						                		other  			: 	{},
+											}
 						                	status  		: 	'send',
 						                	created_at 		: 	request.time,
 											updated_at 		: 	request.time,
@@ -245,7 +249,7 @@ io.on('connection', (socket)=>{
 								push_message = 'You have a new message from '+sender.first_name+'';
 								if(request.message_type == 'text'){ push_message = request.message_value; }
 
-								sendNotification(request.room_id, request.id, push_message);
+								// sendNotification(request.room_id, request.id, push_message);
 								console.log("Log: Push Notification");
 							}
 						});
@@ -290,7 +294,7 @@ io.on('connection', (socket)=>{
 				
 				if( selectMessage === undefined ) {
 					io.in(request.id).emit('went-wrong','Message Not Found');
-					console.log('Message Not Found'); 
+					console.log('Message Not Found Of Id :: ',request.id); 
 					return false;
 				}
 
