@@ -9,8 +9,9 @@ const mysql 	= 	require('mysql');
 const tech 		= 	io.of('/');
 const port 		= 	8080;
 
-// const BASE_URL 	= 	"http://chat.hihelloapp.com/";
-const BASE_URL 	= 	"http://127.0.0.1:8081/";
+const BASE_URL 	= 	"http://chat.hihelloapp.com/";
+const APP_URL 	= 	"https://la.webdevprojects.cloud/hi-hello/";
+// const BASE_URL 	= 	"http://localhost:8000/";
 
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(cors());
@@ -18,17 +19,17 @@ app.use(cors());
 /* MySQL Connections */
 var connection = mysql.createConnection({
 
-	host     : "127.0.0.1",
-	port     : "8889",
-	user     : "root",
-	password : "root",
-	database : "la_hi_hello"
+	// host     : "127.0.0.1",
+	// port     : "8889",
+	// user     : "root",
+	// password : "root",
+	// database : "la_hi_hello"
 
-	// host     : "hihellapp.cx3wyfpc93bh.ap-south-1.rds.amazonaws.com",
-	// port     : "3306",
-	// user     : "admin",
-	// password : "JINJN5A0cELWaT6xRJ1S",
-	// database : "dev_hi_hello_app"
+	host     : "hihellapp.cx3wyfpc93bh.ap-south-1.rds.amazonaws.com",
+	port     : "3306",
+	user     : "admin",
+	password : "JINJN5A0cELWaT6xRJ1S",
+	database : "dev_hi_hello_app"
 });
 
 /* Listen On Respective Port */
@@ -236,12 +237,16 @@ io.on('connection', (socket)=>{
 							            }
 									};
 
-									io.in(request.room_id).emit('new-message', returnNewMsg);	
+									io.in(request.receiver_id).emit('new-message', returnNewMsg);	
 									console.log("New Message Object ::"+JSON.stringify(returnNewMsg));
 								}
 							}else{
 								// Send Push Notification
-								console.log("Send Push Notification");
+								push_message = 'You have a new message from '+sender.first_name+'';
+								if(request.message_type == 'text'){ push_message = request.message_value; }
+
+								sendNotification(request.room_id, request.id, push_message);
+								console.log("Log: Push Notification");
 							}
 						});
 					});
@@ -348,6 +353,28 @@ io.on('connection', (socket)=>{
 		// CHECK MESSAGE FROM DB
 		// MARK AS DELIVERED OR READ
 		// EMIT BACK
+	}
+
+	/*
+	* ROOM => For which room you want to send notification
+	* TYPE => User Type (User / Worker) to which user you want to send notification
+	*/
+	function sendNotification(room_id, chat_message, message) {
+		if( users[room_id] !== undefined && users[room_id].length < 2 )	{
+			message = message.replace(/(\r\n|\n|\r)/gm, "");
+
+			axios.post(APP_URL + 'api/v1/chat/send-push/'+chat_message+'/'+( encodeURIComponent(message) ) )
+			  	.then(response => {
+					console.log('NOTIFICATION SENT'); 
+				})
+			  	.catch(error => {
+			   		console.error(error); 
+				});
+		}else{
+			io.in(room_id).emit('went-wrong','Notification Details Not Found');
+			console.log('Notification Details Not Found'); 
+			return false;
+		}
 	}
 
 	/* Error Things */
