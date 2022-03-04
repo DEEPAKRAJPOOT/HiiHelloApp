@@ -21,17 +21,17 @@ class ChatRoomResource extends JsonResource
                 'id'            =>  $this->creator ? $this->creator->custom_id : "",
                 'first_name'    =>  $this->creator ? $this->creator->first_name : "",
                 'last_name'     =>  $this->creator ? $this->creator->last_name : "",
-                'profile'       =>  $this->creator ? generateURL($this->creator->profile_photo) : "",
+                'profile'       =>  $this->creator ? $this->creator->profile_photo : "",
             ],
             'participator'  =>  [
                 'id'            =>  $this->participator ? $this->participator->custom_id : "",
                 'first_name'    =>  $this->participator ? $this->participator->first_name : "",
                 'last_name'     =>  $this->participator ? $this->participator->last_name : "",
-                'profile'       =>  $this->participator ? generateURL($this->participator->profile_photo) : "",
+                'profile'       =>  $this->participator ? $this->participator->profile_photo : "",
             ],
-            'message'   =>  [
+            'latest_message'   =>  [
                 'id'            =>  $this->latestMessage ? $this->latestMessage->custom_id : "",
-                'value'         =>  $this->latestMessage ? $this->latestMessage->message : "",
+                'message'       =>  $this->latestMessage ? $this->latestMessage->getMessage() : "",
                 'status'        =>  $this->latestMessage ? $this->latestMessage->status : "",
                 'created_at'    =>  $this->latestMessage ? $this->latestMessage->created_at->format('Y-m-d H:i:s') : "",
                 'updated_at'    =>  $this->latestMessage ? $this->latestMessage->updated_at->format('Y-m-d H:i:s') : "",
