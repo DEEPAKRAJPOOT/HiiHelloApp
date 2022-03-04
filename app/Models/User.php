@@ -25,6 +25,7 @@ class User extends Authenticatable
         'custom_id', 'first_name', 'last_name', 'email', 'country_code', 'contact_no', 'birth_date', 'gender', 'interest', 'country_id', 'location_id', 'language_id', 'profile_photo', 'password',
     ];
 
+    public function deviceToken() { return $this->hasOne('App\Models\DeviceToken'); }
     public function country(){ return $this->belongsTo('App\Models\Country'); }
     public function location(){ return $this->belongsTo('App\Models\Location'); }
     public function language(){ return $this->belongsTo('App\Models\Language'); }

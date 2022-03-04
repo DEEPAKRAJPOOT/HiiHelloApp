@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
+use App\Notifications\ChatNotification;
 
 class ChatMessage extends Model
 {
@@ -20,6 +21,27 @@ class ChatMessage extends Model
     public function receiver(){ return $this->belongsTo('App\Models\User','receiver_id','id'); }
 
     public function isSender(){ return Auth::id() == $this->sender_id ? true : false; }
+
+    public function notifyChatMessageToUser($message) {
+        $this->receiver ? $this->receiver->notify(new ChatNotification($this->chatPushNFData($this->receiver, $this, $message))) : ""; 
+    }
+
+    protected function chatPushNFData($account, $chatMessage, $message = "")
+    {
+        $message = trim( preg_replace("/\r|\n/", " ", $message) );
+        if( $message == "" ) {
+            $message =  $account->first_name." ".$account->last_name." has sent you a image 📷.";
+        }
+        return [
+            'title'     =>  $account->first_name." ".$account->last_name,
+            'type'      =>  'chat-message',
+            'id'        =>  $chatMessage->custom_id,
+            'name'      =>  $account->first_name." ".$account->last_name,
+            'profile'   =>  generateURL($account->profile_photo),
+            'message'   =>  $message,
+        ];
+    }
+
 
     public function getMessage(){
         $message = json_decode($this->message);

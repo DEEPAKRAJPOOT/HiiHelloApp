@@ -28,5 +28,6 @@
 	"room_name" : "कमरे का नाम",
 	"identity" : "पहचान",
 	"time_line" : "समय रेखा",
-	"name" : "नाम"
+	"name" : "नाम",
+	"Device token" : "डिवाइस टोकन"
 }
