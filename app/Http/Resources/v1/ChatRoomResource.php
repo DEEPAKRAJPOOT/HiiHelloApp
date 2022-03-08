@@ -30,7 +30,17 @@ class ChatRoomResource extends JsonResource
                 'last_name'     =>  $this->participator ? $this->participator->last_name : "",
                 'profile'       =>  $this->participator ? $this->participator->profile_photo : "",
             ],
-            'latest_message'    =>  new ChatMessageResource($this->latestMessage),
+            'latest_message'    =>  [
+                'id'        =>  $this->latestMessage ? $this->latestMessage->custom_id ?? "" : "",
+                'message'   =>  $this->latestMessage ? $this->latestMessage->getMessage() ?? "" : "",
+                'status'    =>  $this->latestMessage ? $this->latestMessage->status ?? "" : "",
+                'sender'  =>  [
+                    'id'    =>  $this->latestMessage ? $this->latestMessage->sender ? $this->latestMessage->sender->custom_id : "" : "",
+                ],
+                'chat_messages_count'   =>  $this->chat_messages_count,
+                'created_at'  =>  $this->latestMessage ? $this->latestMessage->created_at ?? "" : "",
+                'updated_at'  =>  $this->latestMessage ? $this->latestMessage->updated_at ?? "" : "",
+            ],
         ];
         return parent::toArray($request);
     }
