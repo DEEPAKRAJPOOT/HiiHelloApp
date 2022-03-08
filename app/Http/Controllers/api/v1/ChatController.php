@@ -44,7 +44,7 @@ class ChatController extends Controller
             } catch(ModelNotFoundException $exception) {                
                 switch ($exception->getModel()) {
                     case 'App\Models\ChatRoom':
-                        $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("Chat rooms")]);
+                        $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("Chat room")]);
                         break;
                     case 'App\Models\User':
                         $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("User")]);
@@ -67,17 +67,22 @@ class ChatController extends Controller
         if( $this->apiValidator($request->all(), $rules) ) {
             try{
                 $user = $request->user();
-                $rooms = ChatRoom::with(['creator:id,custom_id,first_name,last_name,profile_photo',
-                                         'participator:id,custom_id,first_name,last_name,profile_photo',
-                                         'latestMessage:id,custom_id,room_id,message,status,created_at,updated_at'])
-                                    ->whereCreatorId($user->id)
-                                    ->orWhere('participate_id',$user->id)
-                                    ->whereIsActive('y')
-                                    ->latest();
+                $rooms = ChatRoom::with(['creator:id,first_name,last_name,profile_photo',
+                                        'participator:id,first_name,last_name,profile_photo',
+                                        'latestMessage'])
+                                ->selectRaw("chat_rooms.*, (SELECT MAX(created_at) from chat_messages WHERE chat_messages.room_id=chat_rooms.id) as latest_message_on")
+                                ->orderBy("latest_message_on", "DESC")
+                                ->withCount(['chatMessages' => function ($query) {
+                                    $query->where('status','!=' ,'read');
+                                }])
+                                ->whereIsActive('y')
+                                ->whereCreatorId($user->id)
+                                ->orWhere('participate_id',$user->id);
                 $count = $rooms->count();
                 $rooms = $rooms->limit($request->limit ?? config('utility.pagination.limit'))
                             ->offset($request->offset ?? config('utility.pagination.offset'))
                             ->get();
+
                 if($rooms->isNotEmpty()){
                     return (ChatRoomResource::Collection($rooms))->additional([
                         'meta'  =>  [
@@ -139,7 +144,7 @@ class ChatController extends Controller
                             'url'       =>  url()->current(),
                             'api'       =>  $this->getVersion(),
                             'language'  =>  app()->getLocale(),
-                            'message'   =>  trans('api.list', ['entity' => 'Chat history'])
+                            'message'   =>  trans('api.list', ['entity' => __('Chat history')])
                         ],
                     ]);
                 }else{

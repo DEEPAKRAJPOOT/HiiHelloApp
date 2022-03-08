@@ -233,7 +233,9 @@ return [
         "api_key"               =>  "एपीआई कुंजी",
         "api_secret"            =>  "एपीआई सीक्रेट",
         "room_name"             =>  "कमरे का नाम",
+        "room"                  =>  "कमरा",
         "identity"              =>  "पहचान",
-        "time_line"             =>  "समय रेखा"
+        "time_line"             =>  "समय रेखा",
+        "participant_id"        =>  "प्रतिभागी"
     ],
 ];

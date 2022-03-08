@@ -20,14 +20,14 @@ class ChatMessage extends Model
     public function sender(){ return $this->belongsTo('App\Models\User','sender_id','id'); }
     public function receiver(){ return $this->belongsTo('App\Models\User','receiver_id','id'); }
 
-    public function isSender(){ return Auth::id() == $this->sender_id ? true : false; }
+    public function getCreatedAtAttribute($created_at){ return date('Y-m-d H:i:s', strtotime($created_at)); }
+    public function getUpdatedAtAttribute($updated_at){ return date('Y-m-d H:i:s', strtotime($updated_at)); }
 
     public function notifyChatMessageToUser($message) {
         $this->receiver ? $this->receiver->notify(new ChatNotification($this->chatPushNFData($this->receiver, $this, $message))) : ""; 
     }
 
-    protected function chatPushNFData($account, $chatMessage, $message = "")
-    {
+    protected function chatPushNFData($account, $chatMessage, $message = ""){
         $message = trim( preg_replace("/\r|\n/", " ", $message) );
         if( $message == "" ) {
             $message =  $account->first_name." ".$account->last_name." has sent you a image 📷.";
@@ -42,10 +42,8 @@ class ChatMessage extends Model
         ];
     }
 
-
     public function getMessage(){
         $message = json_decode($this->message);
-
         if(!empty($message) && !empty($message->type)){            
             if($message->type == 'location'){
                 if(!empty($message->other) && !empty($message->other->lat && !empty($message->other->lng) ) ){

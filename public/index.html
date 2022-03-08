@@ -31,6 +31,8 @@
 		<button id="connectToRoom" class="mb-10 mt-10">Connect To Room</button>	
 		<button id="disconnectFromRoom" class="mb-10 mt-10">Disconnect From Chat Room</button>	
 		<button id="disconnectGlobal" class="mb-10 mt-10">Disconnect Globally</button>	
+		<br>
+		<label id="showOnline"></label>
 		<textarea rows="5" id="messageArea"></textarea>
 		<br> <br>
 		<button id="sendMessage">Send Message</button>		
@@ -38,6 +40,7 @@
 		<button id="shareLocation">Share Location</button>		
 		<button id="deliveredMessage">Delivered Message</button>		
 		<button id="readMessage">Read Message</button>		
+		<button id="getMessageStatus">Get Message Status</button>		
 		<!-- <button id="getRooms">Get Rooms</button>		 -->
 	</div>
 
@@ -62,6 +65,14 @@
 						room_id 	: 	$('#room').val(),
 						user_id 	: 	$('#username').val(),
 					})
+				});
+
+			/* Manage Online */
+				$('#messageArea').on('keyup', function() {
+					socket.emit('online', {
+						room_id 	: 	$('#room').val(),
+						user_id 	: 	$('#username').val(),
+					});
 				});
 
 			/* Left the socket room*/
@@ -127,10 +138,7 @@
 			/* Delivered Message */
 				$('#deliveredMessage').on('click', function () {
 					socket.emit('message-delivered',{
-						id 	 			: 	'sdfccdsf79cdc234v9ve8ev',
-						room_id 	 	: 	$('#room').val(),
-						sender_id 		: 	$('#username').val(),
-						receiver_id 	: 	'827qH2Fosf1qZwVEuHVR',
+						user_id 		: 	$('#username').val(),
 						time  			: 	'2022-03-02 15:05',
 					});
 				});
@@ -144,6 +152,24 @@
 						receiver_id 	: 	'827qH2Fosf1qZwVEuHVR',
 						time  			: 	'2022-03-02 15:05',
 					});
+				});
+
+			/* Get Message Status */
+				$('#getMessageStatus').on('click', function () {
+					socket.emit('message-status',{
+						id 	 			: 	'cc79cdcv9ve8evrewrewr',
+					});
+				});
+
+			/* Receive All Emits */
+				socket.on('online', function(response) {
+					if (response.user_id != $('#username').val()) {
+						$('#showOnline').html( response.user_id+" is online...");
+						$('#showOnline').removeClass('hide')
+						setTimeout(function () {
+							if ( !$('#showOnline').hasClass('hide') ) $('#showOnline').addClass('hide')
+						}, 2000)
+					}
 				});
 
 			/* Get Chat Rooms */
