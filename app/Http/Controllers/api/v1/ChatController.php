@@ -67,8 +67,8 @@ class ChatController extends Controller
         if( $this->apiValidator($request->all(), $rules) ) {
             try{
                 $user = $request->user();
-                $rooms = ChatRoom::with(['creator:id,first_name,last_name,profile_photo',
-                                        'participator:id,first_name,last_name,profile_photo',
+                $rooms = ChatRoom::with(['creator:id,custom_id,first_name,last_name,profile_photo',
+                                        'participator:id,custom_id,first_name,last_name,profile_photo',
                                         'latestMessage'])
                                 ->selectRaw("chat_rooms.*, (SELECT MAX(created_at) from chat_messages WHERE chat_messages.room_id=chat_rooms.id) as latest_message_on")
                                 ->orderBy("latest_message_on", "DESC")
