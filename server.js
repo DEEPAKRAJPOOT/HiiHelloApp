@@ -42,16 +42,24 @@ let users = [];
 let overallUsers = [];
 
 io.on('connection', (socket)=>{
-	/* User Joined The Chat */
+	/* User Joined The Global Chat When It's Online */
 	socket.on('join-global',(request)=>{
 		socket.join(request.user_id);
 		console.log("********* OVERALL JOINED With ID :: "+request.user_id + " *********");
 
 		if (!overallUsers.includes(request.user_id)) overallUsers.push(request.user_id);
-		// console.log(overallUsers);
+		
+		for (const[index, receiver_id] of Object.entries(overallUsers)) {
+			if(receiver_id != request.user_id){						
+		 		// Send Online Emit
+				let returnUpdatedMsg = { user_id : receiver_id, status : 'online' };
+				io.in(receiver_id).emit('online', returnUpdatedMsg);
+				console.log("Online Notifiy ::", returnUpdatedMsg);
+			}
+		}
 	});
 
-	/* User Joined The Chat */
+	/* User Joined The Room Chat When Enter In Any Room */
 	socket.on('join-room',(request)=>{
 		socket.join(request.room_id);
 		console.log("********* CHAT JOINED With Room ID :: "+request.room_id + " *********");
@@ -64,8 +72,18 @@ io.on('connection', (socket)=>{
 		// console.log(users);
 	});
 
+	/* Check Online Status Of User */
+	socket.on('online', (request) => {
+		let status = 'offline';
+		if (overallUsers.includes(request.user_id)){ status = 'online'; }
+		else if (users[request.room_id] && users[request.room_id].includes(request.user_id)) { status = 'online'; }
 
-	/* User Disconnected From Chat Room*/
+		let returnUpdatedMsg = { user_id : request.user_id, status : status };
+		io.in(request.room_id).emit('online', returnUpdatedMsg);
+		console.log("Online Status :: ",returnUpdatedMsg);
+	});
+
+	/* User Disconnected From Chat Room */
 	socket.on('disconnect-room', (request)=>{
 		console.log('**** DISCONNECT ROOM ****');
 
@@ -81,7 +99,7 @@ io.on('connection', (socket)=>{
 		// console.log(users);
 	});
 
-	/* User Disconnected From Chat */
+	/* User Disconnected From Global Chat (Offline) */
 	socket.on('disconnect-global', (request)=>{
 		console.log('**** DISCONNECT GLOBAL ****');
 
@@ -99,10 +117,21 @@ io.on('connection', (socket)=>{
 			let user = overallUsers.indexOf(request.user_id);
 			if (user > -1) overallUsers.splice(user, 1);
 			// console.log(overallUsers);
+
+			for (const[index, receiver_id] of Object.entries(overallUsers)) {
+				if(receiver_id != request.user_id){
+			 		// Send Online Emit
+					let returnUpdatedMsg = { user_id : receiver_id, status : 'offline' };
+					io.in(receiver_id).emit('online', returnUpdatedMsg);
+					console.log("Online Notifiy ::", returnUpdatedMsg);
+				}
+			}
+
+		// let returnUpdatedMsg = { user_id : 'AVIUOccgJn1Mg73UDMqf', status : 'offline' };
+		// io.in('AVIUOccgJn1Mg73UDMqf').emit('online', returnUpdatedMsg);
 	});
 
-
-	/* Send Message */
+	/* Send New Message */
 	socket.on('send-message', (request) => {
 		if(request.id && request.room_id && request.sender_id && request.receiver_id && request.message_type && request.message_value && request.time){
 
@@ -146,7 +175,13 @@ io.on('connection', (socket)=>{
 							json_message = '{ "type" : "'+request.message_type+'", "value" : "'+request.message_value+'", "other" : { "path" : "'+request.message_file_path+'", "type" : "'+request.message_file_type+'"} }';
 						}
 						else{
-							json_message = '{ "type" : "'+request.message_type+'", "value" : "'+request.message_value+'", "other" : "[]" }';
+							json_message = '{ "type" : "'+request.message_type+'", "value" : "'+request.message_value+'", "other" : {} }';
+						}
+
+						// If Both User In Same Room (Both Online)
+						let msg_status = 'send';
+						if (users[request.room_id].includes(request.sender_id) && users[request.room_id].includes(request.receiver_id)){
+							msg_status = 'read';
 						}
 
 						let addMessageData = {
@@ -155,6 +190,7 @@ io.on('connection', (socket)=>{
 							sender_id	: 	sender.id,
 							receiver_id	: 	receiver.id,
 							message 	: 	json_message,
+							status 		: 	msg_status,
 							created_at 	: 	request.time,
 							updated_at 	: 	request.time,
 						};
@@ -162,7 +198,7 @@ io.on('connection', (socket)=>{
 						let addRecord = "INSERT INTO `chat_messages` SET ?";
 						let sql = connection.query(addRecord, addMessageData, (error, _addMessage) => {
 							if( error ) throw error;	
-							
+								
 				            // create return object
 				            let returnSendMsg = {
 								id   		: 	request.id,
@@ -171,7 +207,7 @@ io.on('connection', (socket)=>{
 				                	value  		: 	request.message_value,
 				                	other 		:  	{},
 					            },
-								status 		:   'send',
+								status 		:   msg_status,
 								sender 		: 	{
 									id 		: 	sender.custom_id,
 								},
@@ -234,7 +270,7 @@ io.on('connection', (socket)=>{
 												type 			: 	request.message_type,
 						                		value  			: 	request.message_value,
 						                		other  			: 	{},
-											}
+											},
 						                	status  		: 	'send',
 						                	created_at 		: 	request.time,
 											updated_at 		: 	request.time,
@@ -268,26 +304,12 @@ io.on('connection', (socket)=>{
 		}
 	});
 
-	/* Mark As Delivered Message */
-	socket.on('message-delivered', (request) => {
-		updateMessageStatus(request,'delivered');
-	});
-
 	/* Read Message */
 	socket.on('message-read', (request) => {
-		updateMessageStatus(request,'read');
-	});
-
-	/* Update Message */
-	function updateMessageStatus(request, status){
 		if(request.id && request.room_id && request.sender_id && request.receiver_id && request.time){		
-			// if(status == 'delivered'){
-			// 	var selectChatMessage = "SELECT * FROM chat_messages where custom_id = ? and status = 'send' and deleted_at is NULL";
-			// }else{
-			// 	var selectChatMessage = "SELECT * FROM chat_messages where custom_id = ? and status = 'delivered' and deleted_at is NULL";
-			// }
-			var selectChatMessage = "SELECT * FROM chat_messages where custom_id = ? and deleted_at is NULL";
+			let status = 'read';
 
+			var selectChatMessage = "SELECT * FROM chat_messages where custom_id = ? and deleted_at is NULL";
 			connection.query(selectChatMessage, [request.id], (error, _selectMessage) => {
 				if( error ) throw error;
 				let selectMessage = _selectMessage[0];
@@ -298,8 +320,8 @@ io.on('connection', (socket)=>{
 					return false;
 				}
 
-				let updateMessage = "UPDATE chat_messages SET status = ?, updated_at = ? WHERE custom_id = ? ";
-				let sql = connection.query(updateMessage, [status, request.time, selectMessage.custom_id], (read_error, _message) => {
+				let updateMessage =  "UPDATE chat_messages SET status = ?, updated_at = ?, deleted_at = NULL WHERE room_id = ? AND created_at <= ? ";
+				let sql = connection.query(updateMessage, [status, request.time, selectMessage.room_id, selectMessage.created_at], (read_error, _message) => {
 					if( read_error ) throw read_error;
 					message_parse =  JSON.parse(selectMessage.message);
 					
@@ -357,11 +379,12 @@ io.on('connection', (socket)=>{
 		// CHECK MESSAGE FROM DB
 		// MARK AS DELIVERED OR READ
 		// EMIT BACK
-	}
+	});
 
 	/*
-	* ROOM => For which room you want to send notification
-	* TYPE => User Type (User / Worker) to which user you want to send notification
+	* room_id => For which room you want to send notification
+	* chat_message => For which message you want to send notification
+	* message => send message on notification
 	*/
 	function sendNotification(room_id, chat_message, message) {
 		if( users[room_id] !== undefined && users[room_id].length < 2 )	{
@@ -380,135 +403,210 @@ io.on('connection', (socket)=>{
 			return false;
 		}
 	}
-
-	/* Error Things */
-	// socket.on('went-wrong', (request)=>{
-	// 	console.log("Error Message :: ",request);
-	// 	return false; 
-	// });
-
-
-	/* Get Chat Rooms */
-	// socket.on('get-rooms', (request) => {
-	// 	if(request.user_id){
-
-	// 		let selectUser = "SELECT `id`,`custom_id`,`first_name`,`last_name`,`profile_photo` FROM users where custom_id = ? and is_active = 'y'";
-	// 		let sql1 = connection.query(selectUser, request.user_id, (error_user, user_result) => {
-
-	// 			if( error_user ) throw error_user;
-	// 			let user 	=	user_result[0];
-	// 			let limit 	= 	request.limit ?? 10;
-	// 			let offset 	= 	request.offset ?? 0;
-
-	// 			if( user === undefined ) {
-	// 				io.in(request.user_id).emit('went-wrong');
-	// 				console.log('User Not Found'); 
-	// 				return false;
-	// 			}
-
-	// 			let selectRooms = "select `id`,`custom_id`,`creator_id`,`participate_id`,`is_active` from `chat_rooms` where (`creator_id` = ? or `participate_id` = ? and `is_active` = 'y') and `chat_rooms`.`deleted_at` is null order by `created_at` desc limit ? offset ?";
-					
-	// 			let sql2 = connection.query(selectRooms, [user.id, user.id, limit, offset], (error_rooms, _room_result) => {
-	// 				if( error_rooms ) throw error_rooms;
-	// 				let chat_rooms = _room_result;
-
-	// 				flag = false;
-	// 				let returnObject = [];
-
-	// 				// create return object
-	// 				for ( let i = 0; i < chat_rooms.length; i++) {
-
-	// 					var chat_room = chat_rooms[i];
-	// 					var arr_participate = [];
-	// 					var arr_message = [];
-	// 					var is_creator = is_particapate = is_message = false;
-
-	// 					if( !returnObject[i] ) returnObject[i] = [];
-	// 					if( !returnObject[i]['creator'] ) returnObject[i]['creator'] = [];
-	// 					if( !returnObject[i]['participant'] ) returnObject[i]['participant'] = [];
-	// 					if( !returnObject[i]['message'] ) returnObject[i]['message'] = [];
-
-	// 					if (!returnObject[i].includes(chat_room)) returnObject[i].push(chat_room);
-
-	// 					var participate_id = chat_room.participate_id;
-
-	// 					if(user.id == chat_room.participate_id){
-	// 						var participate_id = chat_room.creator_id;
-	// 					}
-
-	// 					// chat_room = {
-	// 					// 	... chat_room,
-	// 					// 	creator: user,
-	// 					// };
-	// 					// is_creator = true;
-
-	// 					let selectParticipant = "SELECT `id`,`custom_id`,`first_name`,`last_name`,`profile_photo` FROM users where id = ? and is_active = 'y'";
-	// 					let sql3 = connection.query(selectParticipant, participate_id, (error_participant, _participant_result) => {
-	// 						if( error_participant ) throw error_participant;
-	// 						let participant = _participant_result[0];
-
-	// 						if( participant != undefined ) {	
-	// 							// is_particapate = true;
-	// 							// console.log("is_particapate" , is_particapate);
-
-	// 							// chat_room = {
-	// 							// 	... chat_room,
-	// 							// 	participant: participant,
-	// 							// };
-	// 						}
-	// 					});
-
-	// 					let latestMsg =  "select * from `chat_messages` where `room_id` = ? and `chat_messages`.`deleted_at` is null order by `created_at` desc limit ?";
-	// 					let sql4 = connection.query(latestMsg, [chat_room.id, 1], (error_latestMsg, _latest_msg_result) => {
-	// 			    		if( error_latestMsg ) throw error_participant;
-	// 						let latest_message = _latest_msg_result[0];
-
-	// 						if( latest_message != undefined ) {
-	// 							is_message = true;
-	// 							// console.log("is_message" , is_message);
-
-	// 							// returnObject[i]['message'].push(latest_message);
-	// 							returnObject.push(latest_message);
-
-	// 							// console.log("Message :: ",returnObject);
-	// 							// return false;
-
-	// 							// if( (i+1) == chat_rooms.length){
-	// 							// 	flag = true;
-	// 							// 	// console.log("ff",i, chat_rooms.length, flag,returnObject);
-	// 							// }
-								
-	// 							// return false;
-	// 						}
-	// 					});
-
-	// 					// if(is_creator == true){ 
-	// 					// 	returnObject[i]['creator'].push(user); 
-	// 					// 	console.log("user ::", user);
-	// 					// }
-	// 					// if(is_particapate == true){
-	// 					//  	returnObject[i]['participant'].push(participant); 
-	// 					// 	console.log("participant ::", participant);
-	// 					// }
-	// 					// if(is_message == true){ 
-	// 					//  	returnObject[i]['message'].push(latest_message); 
-	// 					// 	console.log("latest_message ::", latest_message);
-	// 					// }
-
-	// 			    }	
-
-	// 				console.log("Final :: ",returnObject);
-	// 				return false;
-
-	// 				console.log("Message Object ::"+JSON.stringify(returnObject));
-	// 				io.in(request.room_id).emit('message', returnObject);
-	// 			});
-
-	// 		});
-	// 	}
-	// 	else{
-	// 		console.log("Precondition Failed !!!");
-	// 		return false; 
-	// 	}
-	// });
 });
+
+/* ************************************************** Testing (Extra Method) ********************************************** */
+
+/* Error Things */
+// socket.on('went-wrong', (request)=>{
+// 	console.log("Error Message :: ",request);
+// 	return false; 
+// });
+
+/* Mark As Delivered Message */
+/* socket.on('message-delivered', (request) => {
+	if(request.user_id && request.time){	
+		let status = 'delivered';
+
+		let selectUser = "SELECT * FROM users where custom_id = ? and deleted_at is NULL and is_active = 'y'";
+		let sql1 = connection.query(selectUser, request.user_id, (error, _user_result) => {
+			if( error ) throw error;
+			let user = _user_result[0];
+
+			if( user === undefined ) {
+				io.in(request.user_id).emit('went-wrong','User Not Found');
+				console.log('User Not Found'); 
+				return false;
+			}	
+
+			let deliveredMessage = "UPDATE chat_messages SET status = ?, updated_at = ? WHERE receiver_id = ?";
+			let sql2 = connection.query(deliveredMessage, [status, request.time, user.id], (delivered_error, _message) => {
+				if( delivered_error ) throw delivered_error;
+			
+				// create return object
+				let returnUpdatedMsg = {
+					status : status,
+				};
+
+				io.in("CMH5cW78WAvPbECUMF4o").emit('updated-message', returnUpdatedMsg);
+				console.log("Delivered All Messages Of User Id :: ",request.user_id);
+			});
+
+		});
+	}else{
+		console.log("Precondition Failed !!!");
+		return false; 
+	}
+*/
+
+// 	// CHECK MESSAGE FROM DB
+// 	// MARK AS DELIVERED OR READ
+// 	// EMIT BACK
+// });
+
+/* Get Message Status */
+/* socket.on('message-status', (request) => {
+	if(request.id){	
+		let selectChatMessage = "SELECT * FROM chat_messages where custom_id = ?";
+		let sql1 = connection.query(selectChatMessage, request.id, (error, _selectMessage) => {
+			if( error ) throw error;
+			let selectMessage = _selectMessage[0];
+			message_parse =  JSON.parse(selectMessage.message);
+			
+			if( selectMessage === undefined ) {
+				io.in(request.id).emit('went-wrong','Message Not Found');
+				console.log('Message Not Found Of Id :: ',request.id); 
+				return false;
+			}
+
+			// create return object
+			let returnUpdatedMsg = {
+				id   		: 	selectMessage.custom_id,
+				status 		:   selectMessage.status,
+			};
+
+			console.log("Status Message Object ::"+JSON.stringify(returnUpdatedMsg));
+			io.in(request.room_id).emit('updated-message', returnUpdatedMsg);
+
+		});
+	}else{
+		console.log("Precondition Failed !!!");
+		return false; 
+	}
+});
+*/
+
+/* Get Chat Rooms */
+/* socket.on('get-rooms', (request) => {
+	if(request.user_id){
+
+		let selectUser = "SELECT `id`,`custom_id`,`first_name`,`last_name`,`profile_photo` FROM users where custom_id = ? and is_active = 'y'";
+		let sql1 = connection.query(selectUser, request.user_id, (error_user, user_result) => {
+
+			if( error_user ) throw error_user;
+			let user 	=	user_result[0];
+			let limit 	= 	request.limit ?? 10;
+			let offset 	= 	request.offset ?? 0;
+
+			if( user === undefined ) {
+				io.in(request.user_id).emit('went-wrong');
+				console.log('User Not Found'); 
+				return false;
+			}
+
+			let selectRooms = "select `id`,`custom_id`,`creator_id`,`participate_id`,`is_active` from `chat_rooms` where (`creator_id` = ? or `participate_id` = ? and `is_active` = 'y') and `chat_rooms`.`deleted_at` is null order by `created_at` desc limit ? offset ?";
+				
+			let sql2 = connection.query(selectRooms, [user.id, user.id, limit, offset], (error_rooms, _room_result) => {
+				if( error_rooms ) throw error_rooms;
+				let chat_rooms = _room_result;
+
+				flag = false;
+				let returnObject = [];
+
+				// create return object
+				for ( let i = 0; i < chat_rooms.length; i++) {
+
+					var chat_room = chat_rooms[i];
+					var arr_participate = [];
+					var arr_message = [];
+					var is_creator = is_particapate = is_message = false;
+
+					if( !returnObject[i] ) returnObject[i] = [];
+					if( !returnObject[i]['creator'] ) returnObject[i]['creator'] = [];
+					if( !returnObject[i]['participant'] ) returnObject[i]['participant'] = [];
+					if( !returnObject[i]['message'] ) returnObject[i]['message'] = [];
+
+					if (!returnObject[i].includes(chat_room)) returnObject[i].push(chat_room);
+
+					var participate_id = chat_room.participate_id;
+
+					if(user.id == chat_room.participate_id){
+						var participate_id = chat_room.creator_id;
+					}
+
+					// chat_room = {
+					// 	... chat_room,
+					// 	creator: user,
+					// };
+					// is_creator = true;
+
+					let selectParticipant = "SELECT `id`,`custom_id`,`first_name`,`last_name`,`profile_photo` FROM users where id = ? and is_active = 'y'";
+					let sql3 = connection.query(selectParticipant, participate_id, (error_participant, _participant_result) => {
+						if( error_participant ) throw error_participant;
+						let participant = _participant_result[0];
+
+						if( participant != undefined ) {	
+							// is_particapate = true;
+							// console.log("is_particapate" , is_particapate);
+
+							// chat_room = {
+							// 	... chat_room,
+							// 	participant: participant,
+							// };
+						}
+					});
+
+					let latestMsg =  "select * from `chat_messages` where `room_id` = ? and `chat_messages`.`deleted_at` is null order by `created_at` desc limit ?";
+					let sql4 = connection.query(latestMsg, [chat_room.id, 1], (error_latestMsg, _latest_msg_result) => {
+			    		if( error_latestMsg ) throw error_participant;
+						let latest_message = _latest_msg_result[0];
+
+						if( latest_message != undefined ) {
+							is_message = true;
+							// console.log("is_message" , is_message);
+
+							// returnObject[i]['message'].push(latest_message);
+							returnObject.push(latest_message);
+
+							// console.log("Message :: ",returnObject);
+							// return false;
+
+							// if( (i+1) == chat_rooms.length){
+							// 	flag = true;
+							// 	// console.log("ff",i, chat_rooms.length, flag,returnObject);
+							// }
+							
+							// return false;
+						}
+					});
+
+					// if(is_creator == true){ 
+					// 	returnObject[i]['creator'].push(user); 
+					// 	console.log("user ::", user);
+					// }
+					// if(is_particapate == true){
+					//  	returnObject[i]['participant'].push(participant); 
+					// 	console.log("participant ::", participant);
+					// }
+					// if(is_message == true){ 
+					//  	returnObject[i]['message'].push(latest_message); 
+					// 	console.log("latest_message ::", latest_message);
+					// }
+
+			    }	
+
+				console.log("Final :: ",returnObject);
+				return false;
+
+				console.log("Message Object ::"+JSON.stringify(returnObject));
+				io.in(request.room_id).emit('message', returnObject);
+			});
+
+		});
+	}
+	else{
+		console.log("Precondition Failed !!!");
+		return false; 
+	}
+});
+*/

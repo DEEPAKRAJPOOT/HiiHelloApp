@@ -29,5 +29,8 @@
 	"identity" : "पहचान",
 	"time_line" : "समय रेखा",
 	"name" : "नाम",
-	"Device token" : "डिवाइस टोकन"
+	"Device token" : "डिवाइस टोकन",
+	"Chat room" : "चैट करने का कमरा",
+	"Chat rooms" : "चैट करने के कमरे",
+	"Chat history" : "बातचीत का लेखा जोखा"
 }
