@@ -4,7 +4,7 @@ namespace App\Http\Requests\Api\Twillio;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class CreateAccessTokenRequest extends FormRequest
+class OutgoingAppSidRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -24,11 +24,7 @@ class CreateAccessTokenRequest extends FormRequest
     public function rules()
     {
         return [
-            'api_key'       =>  'required|string',
-            'api_secret'    =>  'required|string',
-            'sid'           =>  'required|string',
-            'identity'      =>  'required|string',
-            'time_line'     =>  'nullable|numeric'
+            'name'     =>  'required|string',
         ];
     }
 }
