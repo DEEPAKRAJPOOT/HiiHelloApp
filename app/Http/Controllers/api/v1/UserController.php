@@ -49,7 +49,9 @@ class UserController extends Controller
         $rules = UserListRequest::rules();
         if( $this->apiValidator($request->all(), $rules) ) {
             try{
-                $users = User::where('id','!=',Auth::id())->whereIsActive('y');
+                $users = User::with(['interests.interest.interestTranslations',
+                                    'location','country','language','userDetails'])
+                            ->where('id','!=',Auth::id())->whereIsActive('y');
 
                 if(!empty($request->start_age) && !empty($request->end_age)){
                     $from   =   \Carbon\Carbon::today()->subYears($request->start_age);
@@ -59,7 +61,7 @@ class UserController extends Controller
                 if(!empty($request->gender)){ $users = $users->whereGender($request->gender); }
                 if(!empty($request->interests)){
                     $interests = $request->interests;
-                    $users = $users->whereHas('interests.interest',function($q) use ($interests){
+                    $users = $users->whereHas('interests.interest.interestTranslations',function($q) use ($interests){
                                 $q->whereIn('custom_id',$interests);
                             });
                 }
