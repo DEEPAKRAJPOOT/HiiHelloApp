@@ -5,9 +5,10 @@
 *							            { margin: 0px; padding: 0px; box-sizing: border-box; }
 ul,ol						            { list-style: none; margin: 0px;}
 a							            { text-decoration: none; outline: none; transition-duration: 0.5s; }
+p                                       { margin-bottom: 0px; font-size: 16px; line-height: 20px; }
 h1,h2,h3,h4,h5,h6                       { font-family: 'Inter', sans-serif; }
 h1,h4                                   { color: #362063; }
-h1                                      { font-size: 94px; line-height: 100px; font-weight: 300;  }
+h1                                      { font-size: 94px; line-height: 94px; font-weight: 300;  }
 h4                                      { font-size: 24px; line-height: 38.4px; font-weight: 400; }
 /* banner section start */
 body                                    { height: 100vh; position: relative;}
@@ -32,17 +33,17 @@ body                                    { height: 100vh; position: relative;}
 .social-box a                           { font-size: 30px; line-height: 30px; }
 .main-image                             {  width: 50%; height: 100%; background: url('../images/banner-bg-right1.png') no-repeat top left / cover;}
 .gradient                               { background: radial-gradient(96.64% 86.79% at 3.36% 13.21%, #FFBD15 0%, #FF55C6 100%); border-radius: 64px 0px 0px 140px; width: 70%; height: 37vh;}
-
+.copyright-box                              { margin-top: -30px; }
 
 @media (min-width: 1600px) and (max-width: 1699px)
 {
-    h1                                      { font-size: 70px; line-height: 75px;  }
+    h1                                      { font-size: 70px; line-height: 70px;  }
     h4                                      { font-size: 18px; line-height: 30.4px; }
 }
 
 @media (min-width: 1400px) and (max-width: 1599px)
 {
-    h1                                      { font-size: 70px; line-height: 75px;  }
+    h1                                      { font-size: 70px; line-height: 70px;  }
     h4                                      { font-size: 18px; line-height: 30.4px; }
 }
 @media (min-width: 1200px) and (min-height: 600px) and (max-height: 750px){
@@ -51,7 +52,7 @@ body                                    { height: 100vh; position: relative;}
 
 @media (min-width: 1200px) and (max-width: 1399px)
 {
-    h1                                      { font-size: 55px; line-height: 60px;  }
+    h1                                      { font-size: 55px; line-height: 55px;  }
     h4                                      { font-size: 20px; line-height: 34.4px; }
     .banner-landing-page                    { padding: 0px 0px 48px; height: 100%; }
     .banner-wrapper                         { padding-top: 65px; position: relative; height: 100%; }
@@ -65,8 +66,9 @@ body                                    { height: 100vh; position: relative;}
 
 @media (min-width: 992px) and (max-width: 1199px)
 {
-    h1                                      { font-size: 52px; line-height: 57px;  }
+    h1                                      { font-size: 52px; line-height: 52px;  }
     h4                                      { font-size: 205x; line-height: 34.4px; }
+    p                                       { font-size: 15px; line-height: 18px; }    
     .banner-left-box img                    { max-width: 55%; }
     .mobile-slider-wrapper                  { margin-left: -20%; }
     .mobile-slider-wrapper .slick-slide img { height: 62vh;   }
@@ -81,8 +83,9 @@ body                                    { height: 100vh; position: relative;}
 
 @media (min-width: 768px) and (max-width: 991px) 
 {
-    h1                                      { font-size: 46px; line-height: 51px;  }
+    h1                                      { font-size: 46px; line-height: 46px;  }
     h4                                      { font-size: 22px; line-height: 32.4px; }
+    p                                       { font-size: 15px; line-height: 18px; }
     body                                    { height: auto;}
     .logo img                               { max-width: 250px;}
     .banner-left-box                        { padding-left: 0px; padding-right: 20px;}
@@ -103,8 +106,9 @@ body                                    { height: 100vh; position: relative;}
 
 @media (max-width: 767px)  
 {
-    h1                                      { font-size: 42px; line-height: 47px;  }
+    h1                                      { font-size: 42px; line-height: 42px;  }
     h4                                      { font-size: 20px; line-height: 30.4px; }
+    p                                       { font-size: 14px; line-height: 16px; }
     body                                    { height: auto;}
     .logo img                               { max-width: 200px;}
     .banner-wrapper                         { padding-top: 35px;}
@@ -119,4 +123,9 @@ body                                    { height: 100vh; position: relative;}
     .mobile-slider-wrapper .slick-slide img { height: auto; width: 100%; max-width: 85%; }
     .main-image                             { display: none;}
     .gradient                               { margin: auto 0 95px; width: 95%; border-radius: 64px 0px 0px 92px; height: 215px;}
+}
+
+@media (max-width: 576px)
+{
+    .copyright-box { margin-top: -35px; }
 }

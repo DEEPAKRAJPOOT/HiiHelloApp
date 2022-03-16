@@ -60,6 +60,11 @@ Route::group(['namespace' => 'v1', 'prefix' => 'v1', 'middleware' => 'auth:sanct
     Route::post('/twillio/create-access-token',[TwillioController::class,'createAccessToken'])->name('api.twillio.create-access-token');
     // Route::post('/twillio/create-service-resource',[TwillioController::class,'createServiceResource'])->name('api.twillio.create-service-resource');
     // Route::post('/twillio/new-message-notification',[TwillioController::class,'newMessageNotification'])->name('api.twillio.new-message-notification');
+    
+    /* Connect with Twilio*/
+    Route::post('twillio/connect', [TwillioController::class,'connectWithTwilio'])->name('api.twillio.connect');
+    Route::post('twillio/make-call', [TwillioController::class,'makeCall'])->name('api.twillio.make-call');
+    Route::post('twillio/receive-call', [TwillioController::class,'ReceiveCall'])->name('api.twillio.receive-call');
 
     // Chat
     Route::post('chat/create-room', [ChatController::class,'createRoom'])->name('chat.create-room');

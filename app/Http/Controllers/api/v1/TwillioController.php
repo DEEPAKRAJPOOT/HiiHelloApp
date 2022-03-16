@@ -9,6 +9,8 @@ use App\Http\Resources\v1\ { TwillioApiKey, TwillioAccessToken };
 use Twilio\Rest\ { Client };
 use Twilio\Jwt\ { AccessToken };
 use Twilio\Jwt\Grants\ { ChatGrant, VideoGrant, VoiceGrant };
+use Twilio\TwiML\ { VoiceResponse };
+use App\Models\ { User, UserCommunication };
 
 class TwillioController extends Controller
 {
@@ -113,6 +115,71 @@ class TwillioController extends Controller
             }
         }
         return $this->returnResponse();
+    }
+
+    public function connectWithTwilio(Request $request)
+    {    
+        $user_ids = User::whereIsActive('y')->pluck('custom_id')->toArray();
+        $rules = [
+            'user_id' =>'required|in:'.implode(',',$user_ids),
+        ];
+
+        if( $this->apiValidator($request->all(), $rules) ) {
+            try{
+                $this->response['meta']['message'] = trans('api.went_wrong');                
+                $status = UserCommunication::connectWithTwilio($request->user_id);
+                if($status == true){
+                    $this->response['meta']['message'] = trans('api.success',['entity' => 'Twillio connection']);
+                }
+            } catch (\Exception $e) {
+                $this->response['meta']['message'] = trans('api.went_wrong');
+                $this->status = Response::HTTP_NOT_FOUND;  
+                $this->storeErrorLog($e,'twilio_connect');
+            }
+        }
+        return $this->returnResponse();
+    }
+
+    public function makeCall(Request $request)
+    {
+        $sid        =   config('utility.twillio.account_sid');
+        $token      =   config('utility.twillio.account_token');
+
+        // $account_sid = 'ACXXXXXXXXXXXXXXXXXXXXXXXXXXXX';
+        // $auth_token = 'your_auth_token';
+        // In production, these should be environment variables. E.g.:
+        // $auth_token = $_ENV["TWILIO_ACCOUNT_SID"]
+
+        // A Twilio number you own with Voice capabilities
+        $twilio_number = "+919909977985";
+
+        // Where to make a voice call (your cell phone?)
+        $to_number = "+918866280954";
+
+        $client = new Client($sid, $token);
+        $client->account->calls->create(  
+            $to_number,
+            $twilio_number,
+            array(
+                "url" => "http://demo.twilio.com/docs/voice.xml"
+            )
+        );
+
+        dd($client);
+    }
+
+    public function ReceiveCall(Request $request)
+    {
+        // Start our TwiML response
+        $response = new VoiceResponse;
+
+        // Read a message aloud to the caller
+        $response->say(
+            "Thank you for calling! Have a great day.", 
+            array("voice" => "alice")
+        );
+
+        dd($response);
     }
 
     public function createServiceResource(Request $request)
