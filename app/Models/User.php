@@ -32,12 +32,16 @@ class User extends Authenticatable
 
     public function interests(){ return $this->hasMany('App\Models\UserInterest'); }
     public function userDetails(){ return $this->hasMany('App\Models\UserDetail'); }
+    public function subAccount(){ return $this->hasOne('App\Models\TwilioSubaccount','user_id','id'); }
+    public function userCommunication(){ return $this->hasOne('App\Models\UserCommunication', 'user_id'); }
 
     public function getAge(){ return \Carbon\Carbon::parse($this->birth_date)->diff(\Carbon\Carbon::now())->y; }
     public function getVerifiedStatus(){ return 'verified'; }
     public function countLikes(){ return Like::whereUserId($this->id)->count() ?? 0; }
     public function countMatches(){ return 0; }
     public function countChats(){ return 0; }
+    public function getFullName(){ return $this->first_name.' '.$this->last_name; }
+
     public function getProfileImages(){
         $imgs = [];
         if($this->userDetails){

@@ -111,6 +111,9 @@
                 
             </div>
         </section>
+        <div class="text-center copyright-box">
+            <p>{{ $footer_text }}</p>
+        </div>
 
         <!-- slick js included -->
         <script type="text/javascript" src="{{ asset('frontend/js/slick.min.js') }}"></script>
