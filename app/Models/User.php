@@ -74,12 +74,15 @@ class User extends Authenticatable
     public function isProfileSetuped(){
         return $this->userDetails->isNotEmpty() && $this->interests->isNotEmpty()
             && !empty($this->first_name) && !empty($this->last_name)
-            && !empty($this->country_code) && !empty($this->contact_no) && !empty($this->birth_date)
+            && !empty($this->birth_date)
             && !empty($this->gender) && !empty($this->interest)
             && !empty($this->country_id) && !empty($this->location_id) && !empty($this->language_id) 
             && !empty($this->profile_photo) ? true : false;
     }
 
+    public function isSocialUser(){
+        return $this->is_social_user == 'y' ? true : false;
+    }
 
     /**
      * The attributes that should be hidden for arrays.

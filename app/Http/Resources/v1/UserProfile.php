@@ -38,7 +38,7 @@ class UserProfile extends JsonResource
                 'profile_videos'    =>  $this->getProfileVideos(),
             ],
             'flags'             =>  [
-                'social_user'           =>  $this->is_social_user ?? "",
+                'social_user'           =>  $this->isSocialUser(),
                 'profile_setuped'       =>  $this->isProfileSetuped(),
                 'verified_staus'        =>  $this->getVerifiedStatus(),
                 'likes'                 =>  $this->countLikes(),
