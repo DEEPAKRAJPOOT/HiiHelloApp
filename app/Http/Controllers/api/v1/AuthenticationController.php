@@ -312,11 +312,6 @@ class AuthenticationController extends Controller
 
                 $user = User::where('email', $request->email)->orWhere($request->type.'_id', $request[$request->type.'_id'])->first();            
                 unset($request['type']);
-                $path = $user->profile_photo;
-                if( $request->has('profile_photo') ) {
-                    if( $user->profile_photo ) if( Storage::exists($user->profile_photo) ) Storage::delete($user->profile_photo);
-                    $path = $request->file('profile_photo')->store('users/profile_photo');
-                }
                 if( !empty($user) ) { # Update Profile Details
                     $user->fill($request->all());
                 } else { # Create new user
@@ -326,6 +321,12 @@ class AuthenticationController extends Controller
                     
                     $user = User::create($request->all());
                     $user->is_social_user = 'y'; 
+                }
+
+                $path = $user->profile_photo;
+                if( $request->has('profile_photo') ) {
+                    if( $user->profile_photo ) if( Storage::exists($user->profile_photo) ) Storage::delete($user->profile_photo);
+                    $path = $request->file('profile_photo')->store('users/profile_photo');
                 }
 
                 $user->profile_photo = $path;
