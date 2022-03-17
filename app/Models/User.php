@@ -22,7 +22,9 @@ class User extends Authenticatable
     public function getRouteKeyName(){ return 'custom_id'; }
 
     protected $fillable = [
-        'custom_id', 'first_name', 'last_name', 'email', 'country_code', 'contact_no', 'birth_date', 'gender', 'interest', 'country_id', 'location_id', 'language_id', 'profile_photo', 'password',
+        'custom_id', 'first_name', 'last_name', 'email', 'country_code', 'contact_no', 'birth_date', 'gender',
+        'interest', 'country_id', 'location_id', 'language_id', 'profile_photo', 'password',
+        'facebook_id', 'google_id', 'apple_id',
     ];
 
     public function deviceToken() { return $this->hasOne('App\Models\DeviceToken'); }

@@ -7,7 +7,7 @@ use Illuminate\Http\ { Request, Response };
 use App\Http\Resources\v1\ { UserProfile };
 use Illuminate\Database\Eloquent\ { ModelNotFoundException };
 use Illuminate\Support\Facades\ { Storage, Auth, Hash };
-use App\Http\Requests\Api\Authentication\ { LoginRequest, RegisterRequest };
+use App\Http\Requests\Api\Authentication\ { LoginRequest, RegisterRequest, SocialLoginRequest };
 use App\Models\ { User, Country, UserDetail, Location, Interest, UserInterest, Language };
 
 class AuthenticationController extends Controller
@@ -295,5 +295,61 @@ class AuthenticationController extends Controller
 
         return $this->returnResponse();
     }
-    
+
+    // Customer Social Login
+    public function socialLogin(Request $request)
+    {
+        $rules = SocialLoginRequest::rules($request);
+        if( $this->apiValidator($request->all(), $rules, $this->version) ) {
+            try {
+                // Check for deleted account details
+                $deleted = User::onlyTrashed()->pluck('email')->toArray();
+                if( in_array($request->email, $deleted) ) {
+                    $this->response['meta']['message']  =  trans('api.account_deleted');
+                    $this->status = Response::HTTP_FORBIDDEN;
+                    return $this->returnResponse();
+                }
+
+                $user = User::where('email', $request->email)->orWhere($request->type.'_id', $request[$request->type.'_id'])->firstOrFail();            
+                unset($request['type']);
+                $path = $user->profile_photo;
+                if( $request->has('profile_photo') ) {
+                    if( $user->profile_photo ) if( Storage::exists($user->profile_photo) ) Storage::delete($user->profile_photo);
+                    $path = $request->file('profile_photo')->store('users/profile_photo');
+                }
+                if( !empty($user) ) { # Update Profile Details
+                    $user->fill($request->all());
+                } else { # Create new user
+                    $request['custom_id'] = getUniqueString('users');
+                    $password = str_random(config('utility.password_length'));
+                    $request['password'] = Hash::make($password);
+                    
+                    $user = User::create($request->all());
+                    $user->is_social_user = 'y'; 
+                }
+
+                $user->profile_photo = $path;
+                $user->save();
+                $user = User::findOrFail($user->id);
+                return (new UserProfile($user))
+                    ->additional([
+                    'meta' => [
+                        'message'       =>  trans('api.login'), 
+                        'auth_token'    =>  $user->createToken(config('utility.token'))->plainTextToken,
+                    ] ]);
+            } catch(ModelNotFoundException $exception) {                
+                switch ($exception->getModel()) {
+                    case 'App\Models\User':
+                        $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("User")]);
+                        break;
+                    default:
+                        $this->response['meta']['message'] = trans('api.went_wrong');
+                        break;
+                };
+            } catch (\Exception $e) {
+                $this->storeErrorLog($e,'social_login');
+            }
+        }
+        return $this->returnResponse();
+    }
 }
