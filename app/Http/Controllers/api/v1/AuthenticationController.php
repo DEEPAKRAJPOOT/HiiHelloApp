@@ -310,7 +310,7 @@ class AuthenticationController extends Controller
                     return $this->returnResponse();
                 }
 
-                $user = User::where('email', $request->email)->orWhere($request->type.'_id', $request[$request->type.'_id'])->firstOrFail();            
+                $user = User::where('email', $request->email)->orWhere($request->type.'_id', $request[$request->type.'_id'])->first();            
                 unset($request['type']);
                 $path = $user->profile_photo;
                 if( $request->has('profile_photo') ) {
