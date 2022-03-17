@@ -23,9 +23,10 @@ use App\Http\Controllers\api\v1\ { AuthenticationController, GeneralController, 
 Route::group(['namespace' => 'v1', 'prefix' => 'v1'], function () {
     // Authentication
     Route::post('login', [AuthenticationController::class,'login'])->name('api.user.login');
+    Route::post('social/login', [AuthenticationController::class,'socialLogin'])->name('api.social-login');
     Route::any('generate-checksum', [AuthenticationController::class,'generateChecksum'])->name('api.generate-checksum');
     Route::post('user/set-profile', [AuthenticationController::class,'setProfile'])->name('api.user.set-profile');
-    
+
     // Listing
     Route::post('app-status', [GeneralController::class,'appStatus'])->name('api.app-status');
     Route::post('get/countries',[GeneralController::class,'getCountries'])->name('api.get-countries');
@@ -55,16 +56,16 @@ Route::group(['namespace' => 'v1', 'prefix' => 'v1', 'middleware' => 'auth:sanct
     Route::post('user/get-likes', [LikeController::class,'getLikes'])->name('api.user.get-likes');
 
     // Twillio Api
-    Route::post('/twillio/create-api-key',[TwillioController::class,'createApiKey'])->name('api.twillio.create-api-key');
-    Route::post('/twillio/outgoing-app-sid',[TwillioController::class,'getOutgoingAppSid'])->name('api.twillio.outgoing-app-sid');
+    // Route::post('/twillio/create-api-key',[TwillioController::class,'createApiKey'])->name('api.twillio.create-api-key');
+    // Route::post('/twillio/outgoing-app-sid',[TwillioController::class,'getOutgoingAppSid'])->name('api.twillio.outgoing-app-sid');
     Route::post('/twillio/create-access-token',[TwillioController::class,'createAccessToken'])->name('api.twillio.create-access-token');
     // Route::post('/twillio/create-service-resource',[TwillioController::class,'createServiceResource'])->name('api.twillio.create-service-resource');
     // Route::post('/twillio/new-message-notification',[TwillioController::class,'newMessageNotification'])->name('api.twillio.new-message-notification');
     
     /* Connect with Twilio*/
-    Route::post('twillio/connect', [TwillioController::class,'connectWithTwilio'])->name('api.twillio.connect');
-    Route::post('twillio/make-call', [TwillioController::class,'makeCall'])->name('api.twillio.make-call');
-    Route::post('twillio/receive-call', [TwillioController::class,'ReceiveCall'])->name('api.twillio.receive-call');
+    // Route::post('twillio/connect', [TwillioController::class,'connectWithTwilio'])->name('api.twillio.connect');
+    // Route::post('twillio/make-call', [TwillioController::class,'makeCall'])->name('api.twillio.make-call');
+    // Route::post('twillio/receive-call', [TwillioController::class,'ReceiveCall'])->name('api.twillio.receive-call');
 
     // Chat
     Route::post('chat/create-room', [ChatController::class,'createRoom'])->name('chat.create-room');
