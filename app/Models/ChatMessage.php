@@ -24,7 +24,7 @@ class ChatMessage extends Model
     public function getUpdatedAtAttribute($updated_at){ return date('Y-m-d H:i:s', strtotime($updated_at)); }
 
     public function notifyChatMessageToUser($message) {
-        $this->receiver ? $this->receiver->notify(new ChatNotification($this->chatPushNFData($this->receiver, $this, $message))) : ""; 
+        $this->receiver ? $this->receiver->notify(new ChatNotification($this->chatPushNFData($this->sender, $this, $message))) : ""; 
     }
 
     protected function chatPushNFData($account, $chatMessage, $message = ""){

@@ -9,8 +9,6 @@ const mysql 	= 	require('mysql');
 const tech 		= 	io.of('/');
 const port 		= 	8080;
 
-const BASE_URL 	= 	"http://chat.hihelloapp.com/";
-// const APP_URL 	= 	"https://la.webdevprojects.cloud/hi-hello/";
 const APP_URL 	= 	"https://hihelloapp.com/";
 // const APP_URL 	= 	"http://localhost:8000/";
 
@@ -282,10 +280,8 @@ io.on('connection', (socket)=>{
 								}
 							}else{
 								// Send Push Notification
-								push_message = 'You have a new message from '+sender.first_name+'';
-								if(request.message_type == 'text'){ push_message = request.message_value; }
-
-								// sendNotification(request.room_id, request.id, push_message);
+								push_message = request.message_value; 
+								sendNotification(request.room_id, request.id, push_message);
 								console.log("Log: Push Notification");
 							}
 						});
