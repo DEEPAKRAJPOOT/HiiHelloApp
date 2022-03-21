@@ -117,6 +117,25 @@ class TwillioController extends Controller
         return $this->returnResponse();
     }
 
+    public function voice(Request $request)
+    {
+        $data = $request->all();
+        $response = new VoiceResponse();
+
+        // make sure you passing caller id from client side. 
+        // Twilio.Device.connect(params); <----- in param object
+        $dial = $response->dial('', ['callerId' => $data["outgoing_caller_id"]]);
+        $client = $dial->client($request->To);
+
+        // Sending custom parameters, We will use in client side 
+        $client->parameter([
+            "name" => "outgoing_caller_id",
+            "value" => $data["outgoing_caller_id"],
+        ]);
+
+        return $response;
+    }
+
     public function connectWithTwilio(Request $request)
     {    
         $user_ids = User::whereIsActive('y')->pluck('custom_id')->toArray();
