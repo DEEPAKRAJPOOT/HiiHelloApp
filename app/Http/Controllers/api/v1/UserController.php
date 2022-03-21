@@ -7,7 +7,8 @@ use Illuminate\Http\ { Request, Response };
 use Illuminate\Database\Eloquent\ { ModelNotFoundException };
 use Illuminate\Support\Facades\ { Storage, DB, Auth };
 use App\Http\Resources\v1\ { UserProfile, ProfileReportResource };
-use App\Http\Requests\Api\User\ { ProfileRequest, UserListRequest, ProfileReportRequest };
+use App\Http\Requests\Api\User\ { ProfileRequest, ProfileFilterRequest, ProfileReportRequest };
+use App\Http\Requests\Api\General\ { PaginationRequest };
 use App\Models\ { User, Location, ProfileReport };
 
 class UserController extends Controller
@@ -46,7 +47,62 @@ class UserController extends Controller
     // Get All Users List With Filters
     public function getUsersList(Request $request)
     {
-        $rules = UserListRequest::rules();
+        $rules = PaginationRequest::rules();
+        if( $this->apiValidator($request->all(), $rules) ) {
+            try{
+                $user = $request->user();
+                $users = User::with(['interests.interest.interestTranslations',
+                                    'location','country','language','userDetails'])
+                            ->where('id','!=',Auth::id())->whereIsActive('y');
+
+                if(!empty($user->interest)){
+                    $user_interest = $user->interest;
+                    if($user_interest != 'Both'){ $users = $users->whereGender($user_interest); }
+                }
+
+                $users = $users->inRandomOrder();
+                $count = $users->count();
+                $users = $users->limit($request->limit ?? config('utility.pagination.limit'))
+                                ->offset($request->offset ?? config('utility.pagination.offset'))
+                                ->get();
+                if($users->isNotEmpty()){
+                    return (UserProfile::collection($users))->additional([
+                        'meta' => [
+                            'limit'     =>  $request->limit,
+                            'offset'    =>  $request->offset,
+                            'total'     =>  $count,
+                            'url'       =>  url()->current(),
+                            'api'       =>  $this->getVersion(),
+                            'language'  =>  app()->getLocale(),
+                            'message'   =>  trans('api.list', ['entity' => __('Users')]),
+                        ] ]);
+                }else{
+                    $this->response['meta']['message']  =   trans('api.not_found',['entity' => __('Users')]); 
+                    $this->status = Response::HTTP_NOT_FOUND;     
+                }
+            } catch(ModelNotFoundException $exception) {                
+                switch ($exception->getModel()) {
+                    case 'App\Models\User':
+                        $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("Users")]);
+                        break;
+                    case 'App\Models\Location':
+                        $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("Location")]);
+                        break;
+                    default:
+                        $this->response['meta']['message'] = trans('api.went_wrong');
+                        break;
+                };
+            } catch (\Exception $e) {
+                $this->storeErrorLog($e,'get_users_list');
+            }
+        }
+        return $this->returnResponse();
+    }
+
+    // Apply Filters On Users List
+    public function getUsersByFilter(Request $request)
+    {
+        $rules = ProfileFilterRequest::rules();
         if( $this->apiValidator($request->all(), $rules) ) {
             try{
                 $users = User::with(['interests.interest.interestTranslations',
@@ -109,7 +165,7 @@ class UserController extends Controller
                         break;
                 };
             } catch (\Exception $e) {
-                $this->storeErrorLog($e,'get_users_list');
+                $this->storeErrorLog($e,'get_users_filters');
             }
         }
         return $this->returnResponse();

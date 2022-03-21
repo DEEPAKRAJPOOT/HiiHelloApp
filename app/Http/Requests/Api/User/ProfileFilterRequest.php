@@ -7,7 +7,7 @@ use App\Models\Interest;
 use App\Models\Location;
 use App\Models\Language;
 
-class UserListRequest extends FormRequest
+class ProfileFilterRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
