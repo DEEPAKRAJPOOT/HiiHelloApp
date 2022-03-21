@@ -1,7 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-
+use App\Http\Controllers\api\v1\ { TwillioController };
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -16,6 +16,9 @@ use Illuminate\Support\Facades\Route;
 Route::get('/','FrontendPagesController@index')->name('home');
 
 Auth::routes(['register' => false, 'login' => false]);
+
+// Twilio Voice Response
+Route::post('/voice',[TwillioController::class,'voice'])->name('twillio.voice');
 
 Route::get('login', 'AdminAuth\LoginController@showLoginForm')->name('login');
 
