@@ -6,10 +6,10 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\ { Request, Response };
 use Illuminate\Support\Facades\ { Storage };
 use Illuminate\Database\Eloquent\ { ModelNotFoundException };
-use App\Http\Resources\v1\ { LanguageResource, CmsResource, CountryResource, LocationResource, InterestResource, FaqResource };
-use App\Http\Requests\Api\General\ { PaginationRequest, LocationRequest };
+use App\Http\Resources\v1\ { LanguageResource, CmsResource, CountryResource, LocationResource, InterestResource, FaqResource, ProfileDetailResource };
+use App\Http\Requests\Api\General\ { PaginationRequest, LocationRequest, ProfileDetailRequest };
 use App\Http\Requests\Api\User\ { AddDeviceTokenRequest };
-use App\Models\ { Language, CmsPage, Country, Location, Interest, Faq, DeviceToken };
+use App\Models\ { Language, CmsPage, Country, Location, Interest, Faq, DeviceToken, ProfileDetail };
 
 class GeneralController extends Controller
 {
@@ -19,9 +19,9 @@ class GeneralController extends Controller
     // Get App Status
     public function appStatus()
     {
-        $country    =   Country::orderBy('updated_at', 'DESC')->first();
-        $cms_page   =   CmsPage::orderBy('updated_at', 'DESC')->first();
-        $location   =   Location::orderBy('updated_at', 'DESC')->first();
+        $country    =   Country::select('updated_at')->orderBy('updated_at', 'DESC')->first();
+        $cms_page   =   CmsPage::select('updated_at')->orderBy('updated_at', 'DESC')->first();
+        $location   =   Location::select('updated_at')->orderBy('updated_at', 'DESC')->first();
 
         $this->response['data'] = [
             'version'   =>  [
@@ -38,6 +38,99 @@ class GeneralController extends Controller
                 'countries'     =>  $country ? $country->updated_at : "",
                 'cms_page'      =>  $cms_page ? $cms_page->updated_at : "",
                 'location'      =>  $location ? $location->updated_at : "",
+            ],
+            'profile_details'   =>  [
+                'api_url'       =>  route('api.profile.get-details'),
+                'details'    =>  [
+                    [
+                        'attribute'   =>  'relationship_status',
+                        'hint'   =>  'Relationship status',
+                    ],
+                    [
+                        'attribute'   =>  'you_are_here',
+                        'hint'   =>  'You are here for',
+                    ],
+                    [
+                        'attribute'   =>  'food_preference',
+                        'hint'   =>  'Food Preference',
+                    ],
+                    [
+                        'attribute'   =>  'drinking',
+                        'hint'   =>  'Drinking',
+                    ],
+                    [
+                        'attribute'   =>  'smoking',
+                        'hint'   =>  'Smoking',
+                    ],
+                    [
+                        'attribute'   =>  'star_sign',
+                        'hint'   =>  'Star Sign (should automatically comes as we know the bday)',
+                    ],
+                    [
+                        'attribute'   =>  'fav_festival',
+                        'hint'   =>  'Favourite Festival',
+                    ],
+                    [
+                        'attribute'   =>  'religion',
+                        'hint'   =>  'Religion',
+                    ],
+                    [
+                        'attribute'   =>  'pets',
+                        'hint'   =>  'Pets',
+                    ],
+                    [
+                        'attribute'   =>  'education',
+                        'hint'   =>  'Education',
+                    ],
+                    [
+                        'attribute'   =>  'occupation',
+                        'hint'   =>  'Occupation',
+                    ],
+                    [
+                        'attribute'   =>  'date_idea',
+                        'hint'   =>  'Your idea of a perfect date',
+                    ],
+                    [
+                        'attribute'   =>  'social_cause',
+                        'hint'   =>  'A social cause that I care about',
+                    ],
+                    [
+                        'attribute'   =>  'risk_taken',
+                        'hint'   =>  'Biggest risk I have taken',
+                    ],
+                    [
+                        'attribute'   =>  'perfect_relation_things',
+                        'hint'   =>  'The perfect relationship has 3 things',
+                    ],
+                    [
+                        'attribute'   =>  'my_mantra',
+                        'hint'   =>  'My mantra is',
+                    ],
+                    [
+                        'attribute'   =>  'thing_about_me',
+                        'hint'   =>  'One thing you should know about me',
+                    ],
+                    [
+                        'attribute'   =>  'worst_date',
+                        'hint'   =>  'My worst date was',
+                    ],
+                    [
+                        'attribute'   =>  'introduce_to_family',
+                        'hint'   =>  'I will introduce to my family when',
+                    ],
+                    [
+                        'attribute'   =>  'found_the_one',
+                        'hint'   =>  'I will know I have found the one when',
+                    ],
+                    [
+                        'attribute'   =>  'about_me_surprises',
+                        'hint'   =>  'Something about me that surprises people',
+                    ],
+                    [
+                        'attribute'   =>  'political_views',
+                        'hint'   =>  'My political views',
+                    ],
+                ],
             ],
             'links' =>  [
                 'storage'   =>  config("utility.s3.prefix_url"),
@@ -285,6 +378,55 @@ class GeneralController extends Controller
                 };
             } catch (\Exception $e) {
                 $this->storeErrorLog($e,'get_faqs');
+            }
+        }
+        return $this->returnResponse();
+    }
+
+    // Get Details For Setup Profile
+    public function getProfileDetails(Request $request)
+    {
+        $rules = ProfileDetailRequest::rules();
+        if( $this->apiValidator($request->all(), $rules) ) {
+            try{
+                $profile_details = ProfileDetail::with('profileDetailTranslation')->whereIsActive('y');
+
+                if(!empty($request->attribute)){
+                    $profile_details = $profile_details->whereAttribute($request->attribute); 
+                }
+                $count = $profile_details->count();
+                $profile_details = $profile_details->limit($request->limit ?? config('utility.pagination.limit'))
+                            ->offset($request->offset ?? config('utility.pagination.offset'))
+                            ->get();
+                            
+                if($profile_details->isNotEmpty()){
+                    return (ProfileDetailResource::collection($profile_details))
+                        ->additional([
+                            'meta' => [
+                                'limit'     =>  $request->limit,
+                                'offset'    =>  $request->offset,
+                                'total'     =>  $count,
+                                'url'       =>  url()->current(),
+                                'api'       =>  $this->getVersion(),
+                                'language'  =>  app()->getLocale(),
+                                'message'   =>  trans('api.list', ['entity' => __('Profile details')]),
+                            ] ]);
+                }else{
+                    $this->response['meta']['message']  =   trans('api.not_found',['entity' => __('Profile details')]); 
+                    $this->status = Response::HTTP_NOT_FOUND;     
+                }
+                return $this->returnResponse();
+            } catch(ModelNotFoundException $exception) {                
+                switch ($exception->getModel()) {
+                    case 'App\Models\ProfileDetail':
+                        $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("Profile details")]);
+                        break;
+                    default:
+                        $this->response['meta']['message'] = trans('api.went_wrong');
+                        break;
+                };
+            } catch (\Exception $e) {
+                $this->storeErrorLog($e,'get_profile_details');
             }
         }
         return $this->returnResponse();

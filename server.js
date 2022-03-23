@@ -47,14 +47,8 @@ io.on('connection', (socket)=>{
 
 		if (!overallUsers.includes(request.user_id)) overallUsers.push(request.user_id);
 		
-		for (const[index, receiver_id] of Object.entries(overallUsers)) {
-			if(receiver_id != request.user_id){						
-		 		// Send Online Emit
-				let returnUpdatedMsg = { user_id : receiver_id, status : 'online' };
-				io.in(receiver_id).emit('online', returnUpdatedMsg);
-				console.log("Online Notifiy ::", returnUpdatedMsg);
-			}
-		}
+		// Send Online Method
+		io.sockets.emit("online", overallUsers);
 	});
 
 	/* User Joined The Room Chat When Enter In Any Room */
@@ -65,20 +59,10 @@ io.on('connection', (socket)=>{
 		if( !users[request.room_id] ) users[request.room_id] = [];
 
 		// Ignore user if already added into the array
-			if (!users[request.room_id].includes(request.user_id)) users[request.room_id].push(request.user_id);
-			// if (!overallUsers.includes(request.user_id)) overallUsers.push(request.user_id);
-		// console.log(users);
-	});
+		if (!users[request.room_id].includes(request.user_id)) users[request.room_id].push(request.user_id);
 
-	/* Check Online Status Of User */
-	socket.on('online', (request) => {
-		let status = 'offline';
-		if (overallUsers.includes(request.user_id)){ status = 'online'; }
-		else if (users[request.room_id] && users[request.room_id].includes(request.user_id)) { status = 'online'; }
-
-		let returnUpdatedMsg = { user_id : request.user_id, status : status };
-		io.in(request.room_id).emit('online', returnUpdatedMsg);
-		console.log("Online Status :: ",returnUpdatedMsg);
+		// Send Online Method
+		io.sockets.emit("online", overallUsers);
 	});
 
 	/* User Disconnected From Chat Room */
@@ -94,7 +78,6 @@ io.on('connection', (socket)=>{
 					if (value.length == 0) delete users[key]
 			}
 		}
-		// console.log(users);
 	});
 
 	/* User Disconnected From Global Chat (Offline) */
@@ -107,26 +90,16 @@ io.on('connection', (socket)=>{
 				value.splice( value.indexOf(request.user_id) ,1)
 
 				// Free Room Key If No Users Are There
-					if (value.length == 0) delete users[key]
+				if (value.length == 0) delete users[key]
 			}
 		}
 
 		// Remove From Overall List
-			let user = overallUsers.indexOf(request.user_id);
-			if (user > -1) overallUsers.splice(user, 1);
-			// console.log(overallUsers);
+		let user = overallUsers.indexOf(request.user_id);
+		if (user > -1) overallUsers.splice(user, 1);
 
-			for (const[index, receiver_id] of Object.entries(overallUsers)) {
-				if(receiver_id != request.user_id){
-			 		// Send Online Emit
-					let returnUpdatedMsg = { user_id : receiver_id, status : 'offline' };
-					io.in(receiver_id).emit('online', returnUpdatedMsg);
-					console.log("Online Notifiy ::", returnUpdatedMsg);
-				}
-			}
-
-		// let returnUpdatedMsg = { user_id : 'AVIUOccgJn1Mg73UDMqf', status : 'offline' };
-		// io.in('AVIUOccgJn1Mg73UDMqf').emit('online', returnUpdatedMsg);
+		// Send Offline Method
+		io.sockets.emit("offline", overallUsers);
 	});
 
 	/* Send New Message */

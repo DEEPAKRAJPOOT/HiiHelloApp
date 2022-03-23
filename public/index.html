@@ -162,15 +162,31 @@
 				});
 
 			/* Receive All Emits */
-				socket.on('online', function(response) {
-					if (response.user_id != $('#username').val()) {
-						$('#showOnline').html( response.user_id+" is online...");
-						$('#showOnline').removeClass('hide')
-						setTimeout(function () {
-							if ( !$('#showOnline').hasClass('hide') ) $('#showOnline').addClass('hide')
-						}, 2000)
-					}
-				});
+				// socket.on('online', function(response) {
+				// 	if (response.user_id != $('#username').val()) {
+				// 		$('#showOnline').html( response.user_id+" is online...");
+				// 		$('#showOnline').removeClass('hide')
+				// 		setTimeout(function () {
+				// 			if ( !$('#showOnline').hasClass('hide') ) $('#showOnline').addClass('hide')
+				// 		}, 2000)
+				// 	}
+				// });
+
+				socket.on("online", (userId) => {
+			        console.log(userId, "Is Online!"); // update online status
+			        $('#showOnline').removeClass('hide')
+					setTimeout(function () {
+						if ( !$('#showOnline').hasClass('hide') ) $('#showOnline').addClass('hide')
+					}, 2000)
+			    });
+
+				socket.on("offline", (userId) => {
+			        console.log(userId, "Is Offline!"); // update offline status
+			        $('#showOnline').removeClass('hide')
+					setTimeout(function () {
+						if ( !$('#showOnline').hasClass('hide') ) $('#showOnline').addClass('hide')
+					}, 2000)
+			    });
 
 			/* Get Chat Rooms */
 				// $('#getRooms').on('click', function () {
