@@ -29,8 +29,7 @@ class UserRequest extends FormRequest
         $min_birth_date = now()->subYears(config('utility.minimum_age'))->format('m/d/Y');
 
         return [
-            'first_name'        =>  'required_unless:action,'.$unless.'|min:2|max:100',
-            'last_name'         =>  'required_unless:action,'.$unless.'|min:2|max:100',
+            'full_name'         =>  'required_unless:action,'.$unless.'|min:2|max:100',
             'email'             =>  'nullable|max:150|unique:users,email,'.$id.',id,deleted_at,NULL',
             'country_code'      =>  'required_unless:action,'.$unless.'|exists:countries,phonecode',
             'contact_no'        =>  'required_unless:action,'.$unless.'|digits_between:6,16|unique:users,contact_no,'.$id.',id,deleted_at,NULL',

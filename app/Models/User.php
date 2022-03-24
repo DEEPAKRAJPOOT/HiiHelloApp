@@ -22,7 +22,7 @@ class User extends Authenticatable
     public function getRouteKeyName(){ return 'custom_id'; }
 
     protected $fillable = [
-        'custom_id', 'first_name', 'last_name', 'email', 'country_code', 'contact_no', 'birth_date', 'gender',
+        'custom_id', 'full_name', 'email', 'country_code', 'contact_no', 'birth_date', 'gender',
         'interest', 'country_id', 'location_id', 'language_id', 'profile_photo', 'password',
         'facebook_id', 'google_id', 'apple_id',
     ];
@@ -42,7 +42,7 @@ class User extends Authenticatable
     public function countLikes(){ return Like::whereUserId($this->id)->count() ?? 0; }
     public function countMatches(){ return 0; }
     public function countChats(){ return 0; }
-    public function getFullName(){ return $this->first_name.' '.$this->last_name; }
+    public function getFullName(){ return $this->full_name; }
 
     public function getProfileImages(){
         $imgs = [];
@@ -73,7 +73,7 @@ class User extends Authenticatable
 
     public function isProfileSetuped(){
         return $this->userDetails->isNotEmpty() && $this->interests->isNotEmpty()
-            && !empty($this->first_name) && !empty($this->last_name)
+            && !empty($this->full_name)
             && !empty($this->birth_date)
             && !empty($this->gender) && !empty($this->interest)
             && !empty($this->country_id) && !empty($this->location_id) && !empty($this->language_id) 

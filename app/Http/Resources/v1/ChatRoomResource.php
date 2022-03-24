@@ -20,14 +20,12 @@ class ChatRoomResource extends JsonResource
             'is_active'     =>  $this->is_active,
             'creator'  =>  [
                 'id'            =>  $this->creator ? $this->creator->custom_id : "",
-                'first_name'    =>  $this->creator ? $this->creator->first_name : "",
-                'last_name'     =>  $this->creator ? $this->creator->last_name : "",
+                'full_name'     =>  $this->creator ? $this->creator->full_name : "",
                 'profile'       =>  $this->creator ? $this->creator->profile_photo : "",
             ],
             'participator'  =>  [
                 'id'            =>  $this->participator ? $this->participator->custom_id : "",
-                'first_name'    =>  $this->participator ? $this->participator->first_name : "",
-                'last_name'     =>  $this->participator ? $this->participator->last_name : "",
+                'full_name'     =>  $this->participator ? $this->participator->full_name : "",
                 'profile'       =>  $this->participator ? $this->participator->profile_photo : "",
             ],
             'latest_message'    =>  [

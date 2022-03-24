@@ -91,12 +91,10 @@ class ProfileReportController extends Controller
                     ->orWhere('message', 'like', "%{$search}%")
                     ->orWhere('status', 'like', "%{$search}%")
                     ->orWhereHas('user', function ($query) use ($search) {
-                        $query->where('first_name', 'like', "%{$search}%")
-                             ->orWhere('last_name', 'like', "%{$search}%");
+                        $query->where('full_name', 'like', "%{$search}%");
                     })
                     ->orWhereHas('reportedUser', function ($query) use ($search) {
-                        $query->where('first_name', 'like', "%{$search}%")
-                             ->orWhere('last_name', 'like', "%{$search}%");
+                        $query->where('full_name', 'like', "%{$search}%");
                     });
             });
         }
@@ -119,8 +117,8 @@ class ProfileReportController extends Controller
 
             $records['data'][] = [
                 'id'            =>  $profile_report->id,
-                'user_id'       =>  $profile_report->user ? $profile_report->user->first_name.' '.$profile_report->user->last_name : "",
-                'reported_user_id' =>  $profile_report->reportedUser ? $profile_report->reportedUser->first_name.' '.$profile_report->reportedUser->last_name : "",
+                'user_id'       =>  $profile_report->user ? $profile_report->user->full_name : "",
+                'reported_user_id' =>  $profile_report->reportedUser ? $profile_report->reportedUser->full_name : "",
                 'message'       =>  $profile_report->message,
                 'status'        =>  $profile_report->status,
                 'created_at'    =>  $profile_report->created_at,

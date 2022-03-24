@@ -182,8 +182,7 @@ class UsersController extends Controller
 
         if ($search != '') {
             $users->where(function ($query) use ($search) {
-                $query->where('first_name', 'like', "%{$search}%")
-                    ->orWhere('last_name', 'like', "%{$search}%")
+                $query->where('full_name', 'like', "%{$search}%")
                     ->orWhere('country_code', 'like', "%{$search}%")
                     ->orWhere('contact_no', 'like', "%{$search}%")
                     ->orWhere('gender', 'like', "%{$search}%")
@@ -212,8 +211,7 @@ class UsersController extends Controller
 
             $records['data'][] = [
                 'id' => $user->id,
-                'first_name' => $user->first_name,
-                'last_name' => $user->last_name,
+                'full_name' => $user->full_name,
                 'country_code' => $user->country_code,
                 'contact_no' => $user->contact_no ? '<a href="tel:' . $user->contact_no . '" >' . $user->contact_no . '</a>' : 'N/A',
                 'gender' => $user->gender,
@@ -240,8 +238,7 @@ class UsersController extends Controller
 
         if ($search != '') {
             $users->where(function ($query) use ($search) {
-                $querywhere('first_name', 'like', "%{$search}%")
-                    ->orWhere('last_name', 'like', "%{$search}%")
+                $querywhere('full_name', 'like', "%{$search}%")
                     ->orWhere('country_code', 'like', "%{$search}%")
                     ->orWhere('contact_no', 'like', "%{$search}%")
                     ->orWhere('gender', 'like', "%{$search}%")
@@ -270,8 +267,7 @@ class UsersController extends Controller
             ];
 
             $records['data'][] = [
-                'first_name' => $user->first_name,
-                'last_name' => $user->last_name,
+                'full_name' => $user->full_name,
                 'country_code' => $user->country_code,
                 'contact_no' => $user->contact_no ? '<a href="tel:' . $user->contact_no . '" >' . $user->contact_no . '</a>' : 'N/A',
                 'gender' => $user->gender,
