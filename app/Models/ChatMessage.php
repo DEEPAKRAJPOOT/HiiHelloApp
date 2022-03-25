@@ -43,7 +43,7 @@ class ChatMessage extends Model
     }
 
     public function getMessage(){
-        $message = json_decode($this->message);
+        $message = json_decode( preg_replace("/\r|\n/", " ", $this->message) );
         if(!empty($message) && !empty($message->type)){            
             if($message->type == 'location'){
                 if(!empty($message->other) && !empty($message->other->lat && !empty($message->other->lng) ) ){
