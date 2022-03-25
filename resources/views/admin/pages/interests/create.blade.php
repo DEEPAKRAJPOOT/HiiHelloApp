@@ -20,6 +20,46 @@
         <form id="frmAddInterest" method="POST" action="{{ route('admin.interests.store') }}" enctype="multipart/form-data">
             @csrf
 
+            <div class="card-body">
+                {{-- Parent Interest --}}
+                <div class="form-group {{ $errors->has('parent_id') ? 'has-error' : '' }}">
+                    <label for="parent_id">Parent Interest</label>
+                    <select class="form-control select2" id="parent_id" name="parent_id" data-error-container="#parent-id-error">
+                        <option value="" selected>Select Parent Interest</option>
+                        @if(!$parent_interests->isEmpty())
+                            @foreach($parent_interests as $parent_interest)
+                                <option value="{{ $parent_interest->id }}">{{ $parent_interest->title }}</option>
+                            @endforeach
+                        @endif
+                    </select>
+                    <span id="parent-id-error"></span>
+                    @if($errors->has('parent_id'))
+                        <span class="help-block">
+                            <strong class="form-text"> {{ $errors->first('parent_id') }}</strong>
+                        </span>
+                    @endif
+                </div>
+
+                {{-- Location --}}
+                <div class="form-group {{ $errors->has('location_id') ? 'has-error' : '' }}">
+                    <label for="location_id">Location</label>
+                    <select class="form-control select2" id="location_id" name="location_id" data-error-container="#location-id-error">
+                        <option value="" selected>Select Location</option>
+                        @if(!$locations->isEmpty())
+                            @foreach($locations as $location)
+                                <option value="{{ $location->id }}">{{ $location->name }}</option>
+                            @endforeach
+                        @endif
+                    </select>
+                    <span id="location-id-error"></span>
+                    @if($errors->has('location_id'))
+                        <span class="help-block">
+                            <strong class="form-text"> {{ $errors->first('location_id') }}</strong>
+                        </span>
+                    @endif
+                </div>
+            </div>
+
             @forelse($languages as $language)
             <div class="card-body">
                 <div class="card-title">
@@ -50,10 +90,26 @@
 @endsection
 
 @push('extra-js-scripts')
-<script>
+<script src="{{ asset('admin/plugins/select2/js/select2.full.js') }}" type="text/javascript"></script>
+<script type="text/javascript">
 $(document).ready(function () {
+    $('#parent_id').select2({
+        placeholder: 'Select Parent Interest',
+    });
+    $('#location_id').select2({
+        placeholder: 'Select Location',
+    });
+
     $("#frmAddInterest").validate({
         rules: {
+            parent_id: {
+                required: false,
+                not_empty: false,
+            },
+            location_id: {
+                required: true,
+                not_empty: true,
+            },
             '{{ $default_lang }}_title': {
                 required: true,
                 not_empty: true,
@@ -61,6 +117,14 @@ $(document).ready(function () {
             },
         },
         messages: {
+            parent_id:{
+                required:"@lang('validation.required',['attribute'=>'parent interest'])",
+                not_empty:"@lang('validation.not_empty',['attribute'=>'parent interest'])",
+            },
+            location_id:{
+                required:"@lang('validation.required',['attribute'=>'location'])",
+                not_empty:"@lang('validation.not_empty',['attribute'=>'location'])",
+            },
             '{{ $default_lang }}_title': {
                 required: "@lang('validation.required',['attribute'=>'title'])",
                 not_empty: "@lang('validation.not_empty',['attribute'=>'title'])",

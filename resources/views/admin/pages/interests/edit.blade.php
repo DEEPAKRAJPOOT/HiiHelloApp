@@ -21,6 +21,54 @@
             @csrf
             @method('put')
 
+            <div class="card-body">
+                {{-- Parent Interest --}}
+                <div class="form-group {{ $errors->has('parent_id') ? 'has-error' : '' }}">
+                    <label for="parent_id">Parent Interest</label>
+                    <select class="form-control select2" id="parent_id" name="parent_id" data-error-container="#parent-id-error">
+                        <option value="" selected>Select Parent Interest</option>
+                        @if(!$parent_interests->isEmpty())
+                            @foreach($parent_interests as $parent_interest)
+                                @if($parent_interest->id == $interest->parent_id)
+                                    <option value="{{ $parent_interest->id }}" selected>{{ $parent_interest->title }}</option>
+                                @else
+                                     <option value="{{ $parent_interest->id }}">{{ $parent_interest->title }}</option>
+                                @endif
+                            @endforeach
+                        @endif
+                    </select>
+                    <span id="parent-id-error"></span>
+                    @if($errors->has('parent_id'))
+                        <span class="help-block">
+                            {{ $errors->first('parent_id') }}
+                        </span>
+                    @endif
+                </div>  
+
+                {{-- Location --}}
+                <div class="form-group {{ $errors->has('location_id') ? 'has-error' : '' }}">
+                    <label for="location_id">Locationt</label>
+                    <select class="form-control select2" id="location_id" name="location_id" data-error-container="#location-id-error">
+                        <option value="" selected>Select Location</option>
+                        @if(!$locations->isEmpty())
+                            @foreach($locations as $location)
+                                @if($location->id == $interest->location_id)
+                                    <option value="{{ $location->id }}" selected>{{ $location->name }}</option>
+                                @else
+                                     <option value="{{ $location->id }}">{{ $location->name }}</option>
+                                @endif
+                            @endforeach
+                        @endif
+                    </select>
+                    <span id="location-id-error"></span>
+                    @if($errors->has('location_id'))
+                        <span class="help-block">
+                            {{ $errors->first('location_id') }}
+                        </span>
+                    @endif
+                </div>
+            </div>
+
             @forelse($languages as $language)
             <div class="card-body">
                 <div class="card-title">
@@ -58,10 +106,26 @@
 @endsection
 
 @push('extra-js-scripts')
-<script>
+<script src="{{ asset('admin/plugins/select2/js/select2.full.js') }}" type="text/javascript"></script>
+<script type="text/javascript">
 $(document).ready(function () {
+    $('#parent_id').select2({
+        placeholder: 'Select Parent Interest',
+    });
+    $('#location_id').select2({
+        placeholder: 'Select Location',
+    });
+
     $("#frmEditInterest").validate({
         rules: {
+            parent_id: {
+                required: false,
+                not_empty: false,
+            },
+            location_id: {
+                required: true,
+                not_empty: true,
+            },
             '{{ $default_lang }}_title': {
                 required: true,
                 not_empty: true,
@@ -69,6 +133,14 @@ $(document).ready(function () {
             },
         },
         messages: {
+            parent_id:{
+                required:"@lang('validation.required',['attribute'=>'parent interest'])",
+                not_empty:"@lang('validation.not_empty',['attribute'=>'parent interest'])",
+            },
+            location_id:{
+                required:"@lang('validation.required',['attribute'=>'location'])",
+                not_empty:"@lang('validation.not_empty',['attribute'=>'location'])",
+            },
             '{{ $default_lang }}_title': {
                 required: "@lang('validation.required',['attribute'=>'title'])",
                 not_empty: "@lang('validation.not_empty',['attribute'=>'title'])",
