@@ -36,6 +36,9 @@ Route::group(['namespace' => 'v1', 'prefix' => 'v1'], function () {
     Route::post('get/faqs',[GeneralController::class,'getFaqs'])->name('api.get-faqs');
     // Route::post('get/languages', [GeneralController::class,'getLanguages'])->name('api.get-languages');
 
+    // General Profile Listing
+    Route::post('profile/get-details', [GeneralController::class,'getProfileDetails'])->name('api.profile.get-details');
+
     // User
     Route::post('user/get-profile', [UserController::class,'getProfile'])->name('api.user.get-profile');
     Route::post('user/common-age',[UserController::class,'getCommonAge'])->name('api.user.common-age');
@@ -61,9 +64,6 @@ Route::group(['namespace' => 'v1', 'prefix' => 'v1', 'middleware' => 'auth:sanct
     // Route::post('/twillio/outgoing-app-sid',[TwillioController::class,'getOutgoingAppSid'])->name('api.twillio.outgoing-app-sid');
     
     Route::post('/twillio/create-access-token',[TwillioController::class,'createAccessToken'])->name('api.twillio.create-access-token');
-
-    // Route::post('/twillio/create-service-resource',[TwillioController::class,'createServiceResource'])->name('api.twillio.create-service-resource');
-    // Route::post('/twillio/new-message-notification',[TwillioController::class,'newMessageNotification'])->name('api.twillio.new-message-notification');
     
     /* Connect with Twilio*/
     // Route::post('twillio/connect', [TwillioController::class,'connectWithTwilio'])->name('api.twillio.connect');

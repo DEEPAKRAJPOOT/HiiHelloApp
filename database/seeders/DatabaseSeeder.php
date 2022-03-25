@@ -4,14 +4,6 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Schema;
-// use Database\Seeders\SectionsTableSeeder;
-// use Database\Seeders\RoleTableSeeder;
-// use Database\Seeders\AdminsTableSeeder;
-// use Database\Seeders\CountrySeeder;
-// use Database\Seeders\StatesSeeder;
-// use Database\Seeders\CitiesSeeder;
-// use Database\Seeders\CmsPageSeeder;
-// use Database\Seeders\SettingSeeder;
 
 class DatabaseSeeder extends Seeder
 {
@@ -33,5 +25,7 @@ class DatabaseSeeder extends Seeder
         $this->call(CmsPageTranslationSeeder::class);
         $this->call(SettingSeeder::class);
         $this->call(LanguageSeeder::class);
+        $this->call(ProfileDetailSeeder::class);
+        $this->call(ProfileDetailTranslationSeeder::class);
     }
 }

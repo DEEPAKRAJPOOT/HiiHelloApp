@@ -73,8 +73,7 @@ class AuthenticationController extends Controller
                     'contact_no'        =>  $request->contact_no ?? NULL,
                 ],[
                     'custom_id'         =>  getUniqueString('users'),
-                    'first_name'        =>  $request->first_name ?? NULL,
-                    'last_name'         =>  $request->last_name ?? NULL,
+                    'full_name'         =>  $request->full_name ?? NULL,
                     'email'             =>  $request->email ?? NULL,
                     'birth_date'        =>  $request->birth_date ?? NULL,
                     'gender'            =>  $request->gender ?? NULL,
@@ -94,78 +93,78 @@ class AuthenticationController extends Controller
                 }
 
                 if($user->save()){
-                    if(!empty($request->interests)){
-                        $not_delete_interests = [];
-                        $interest_ids = Interest::whereIn('custom_id',$request->interests)->whereIsActive('y')->pluck('id')->toArray();
-                        foreach($interest_ids as $interest_id){
-                            $custom_id = getUniqueString('user_interests');
+                    // if(!empty($request->interests)){
+                    //     $not_delete_interests = [];
+                    //     $interest_ids = Interest::whereIn('custom_id',$request->interests)->whereIsActive('y')->pluck('id')->toArray();
+                    //     foreach($interest_ids as $interest_id){
+                    //         $custom_id = getUniqueString('user_interests');
 
-                            UserInterest::updateOrCreate([
-                                'user_id'       =>  $user->id,
-                                'interest_id'   =>  $interest_id,
-                            ],[
-                                'custom_id'     =>  $custom_id,
-                            ]);
-                            $not_delete_interests[] = $custom_id;
-                        }
+                    //         UserInterest::updateOrCreate([
+                    //             'user_id'       =>  $user->id,
+                    //             'interest_id'   =>  $interest_id,
+                    //         ],[
+                    //             'custom_id'     =>  $custom_id,
+                    //         ]);
+                    //         $not_delete_interests[] = $custom_id;
+                    //     }
 
-                        // Delete Interests
-                        UserInterest::whereUserId($user->id)->whereNotIn('custom_id',$not_delete_interests)->delete();
-                    }
+                    //     // Delete Interests
+                    //     UserInterest::whereUserId($user->id)->whereNotIn('custom_id',$not_delete_interests)->delete();
+                    // }
 
                     //Store Images
-                    if($request->has('images')){
-                        if($user->userDetails->isNotEmpty()){
-                            foreach($user->userDetails as $userDetail){
-                                if(!empty($userDetail->image)){
-                                    if( Storage::exists($userDetail->image) ) { Storage::delete($userDetail->image); }
-                                    $userDetail->delete();
-                                }
-                            }
-                        }
+                    // if($request->has('images')){
+                    //     if($user->userDetails->isNotEmpty()){
+                    //         foreach($user->userDetails as $userDetail){
+                    //             if(!empty($userDetail->image)){
+                    //                 if( Storage::exists($userDetail->image) ) { Storage::delete($userDetail->image); }
+                    //                 $userDetail->delete();
+                    //             }
+                    //         }
+                    //     }
 
-                        $image_data = [];
-                        foreach ($request->images as $key => $image) {
-                            if($image){
-                                $image_path = $image->store('users/images');
-                                $image_data[] = [
-                                    'custom_id'         =>  getUniqueString('user_details'),
-                                    'user_id'           =>  $user->id,
-                                    'image'             =>  $image_path,
-                                    'created_at'        =>  \Carbon\Carbon::now(),
-                                    'updated_at'        =>  \Carbon\Carbon::now(),
-                                ];
-                            }
-                        }
-                        UserDetail::insert($image_data);
-                    }
+                    //     $image_data = [];
+                    //     foreach ($request->images as $key => $image) {
+                    //         if($image){
+                    //             $image_path = $image->store('users/images');
+                    //             $image_data[] = [
+                    //                 'custom_id'         =>  getUniqueString('user_details'),
+                    //                 'user_id'           =>  $user->id,
+                    //                 'image'             =>  $image_path,
+                    //                 'created_at'        =>  \Carbon\Carbon::now(),
+                    //                 'updated_at'        =>  \Carbon\Carbon::now(),
+                    //             ];
+                    //         }
+                    //     }
+                    //     UserDetail::insert($image_data);
+                    // }
                     
                     //Store Video
-                    if($request->hasFile('videos')){
-                        if($user->userDetails->isNotEmpty()){
-                            foreach($user->userDetails as $userDetail){
-                                if(!empty($userDetail->video)){
-                                    if( Storage::exists($userDetail->video) ) { Storage::delete($userDetail->video); }
-                                    $userDetail->delete();
-                                }
-                            }
-                        }
+                    // if($request->hasFile('videos')){
+                    //     if($user->userDetails->isNotEmpty()){
+                    //         foreach($user->userDetails as $userDetail){
+                    //             if(!empty($userDetail->video)){
+                    //                 if( Storage::exists($userDetail->video) ) { Storage::delete($userDetail->video); }
+                    //                 $userDetail->delete();
+                    //             }
+                    //         }
+                    //     }
 
-                        $video_data = [];
-                        foreach ($request->videos as $key => $video) {
-                            if($video){
-                                $video_path = $video->store('users/videos');
-                                $video_data[] = [
-                                    'custom_id'         =>  getUniqueString('user_details'),
-                                    'user_id'           =>  $user->id,
-                                    'video'             =>  $video_path,
-                                    'created_at'        =>  \Carbon\Carbon::now(),
-                                    'updated_at'        =>  \Carbon\Carbon::now(),
-                                ];
-                            }
-                        }
-                        UserDetail::insert($video_data);
-                    }   
+                    //     $video_data = [];
+                    //     foreach ($request->videos as $key => $video) {
+                    //         if($video){
+                    //             $video_path = $video->store('users/videos');
+                    //             $video_data[] = [
+                    //                 'custom_id'         =>  getUniqueString('user_details'),
+                    //                 'user_id'           =>  $user->id,
+                    //                 'video'             =>  $video_path,
+                    //                 'created_at'        =>  \Carbon\Carbon::now(),
+                    //                 'updated_at'        =>  \Carbon\Carbon::now(),
+                    //             ];
+                    //         }
+                    //     }
+                    //     UserDetail::insert($video_data);
+                    // }   
 
                     Auth::login($user);
                     return (new UserProfile($user))

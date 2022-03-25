@@ -22,24 +22,13 @@
             @method('put')
             <div class="card-body">
 
-                {{-- First Name --}}
+                {{-- Full Name --}}
                 <div class="form-group">
-                    <label for="first_name">{!!$mend_sign!!}First Name:</label>
-                    <input type="text" class="form-control @error('first_name') is-invalid @enderror" id="first_name" name="first_name" value="{{ old('first_name') != null ? old('first_name') : $user->first_name }}" placeholder="Enter first name" autocomplete="first_name" spellcheck="false" autocapitalize="sentences" tabindex="0" autofocus />
-                    @if ($errors->has('first_name'))
+                    <label for="full_name">{!!$mend_sign!!}Full Name:</label>
+                    <input type="text" class="form-control @error('full_name') is-invalid @enderror" id="full_name" name="full_name" value="{{ old('full_name') != null ? old('full_name') : $user->full_name }}" placeholder="Enter full name" autocomplete="full_name" spellcheck="false" autocapitalize="sentences" tabindex="0" autofocus />
+                    @if ($errors->has('full_name'))
                         <span class="help-block">
-                            <strong class="form-text">{{ $errors->first('first_name') }}</strong>
-                        </span>
-                    @endif
-                </div>
-
-                {{-- Last Name --}}
-                <div class="form-group">
-                    <label for="last_name">{!!$mend_sign!!}Last Name:</label>
-                    <input type="text" class="form-control @error('last_name') is-invalid @enderror" id="last_name" name="last_name" value="{{ old('last_name') != null ? old('last_name') : $user->last_name }}" placeholder="Enter last name" autocomplete="last_name" spellcheck="false" autocapitalize="sentences" tabindex="0" autofocus />
-                    @if ($errors->has('last_name'))
-                        <span class="help-block">
-                            <strong class="form-text">{{ $errors->first('last_name') }}</strong>
+                            <strong class="form-text">{{ $errors->first('full_name') }}</strong>
                         </span>
                     @endif
                 </div>
@@ -186,12 +175,7 @@
 $(document).ready(function () {
     $("#frmEditUser").validate({
         rules: {
-            first_name: {
-                required: true,
-                not_empty: true,
-                minlength: 2,
-            },
-            last_name: {
+            full_name: {
                 required: true,
                 not_empty: true,
                 minlength: 2,
@@ -231,15 +215,10 @@ $(document).ready(function () {
             },
         },
         messages: {
-            first_name: {
-                required: "@lang('validation.required',['attribute'=>'first name'])",
-                not_empty: "@lang('validation.not_empty',['attribute'=>'first name'])",
-                minlength:"@lang('validation.min.string',['attribute'=>'first name','min'=>2])",
-            },
-            last_name: {
-                required: "@lang('validation.required',['attribute'=>'last name'])",
-                not_empty: "@lang('validation.not_empty',['attribute'=>'last name'])",
-                minlength:"@lang('validation.min.string',['attribute'=>'last name','min'=>2])",
+            full_name: {
+                required: "@lang('validation.required',['attribute'=>'full name'])",
+                not_empty: "@lang('validation.not_empty',['attribute'=>'full name'])",
+                minlength:"@lang('validation.min.string',['attribute'=>'full name','min'=>2])",
             },
             email: {
                 required: "@lang('validation.required',['attribute'=>'email address'])",

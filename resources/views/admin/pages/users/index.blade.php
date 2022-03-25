@@ -56,13 +56,12 @@
             ajax: {
                 url: "{{ route('admin.users.listing') }}",
                 data: {
-                    columnsDef: ['checkbox','first_name', 'last_name', 'country_code', 'contact_no', 'gender', 'active', 'action'],
+                    columnsDef: ['checkbox','full_name', 'country_code', 'contact_no', 'gender', 'active', 'action'],
                 },
             },
             columns: [
                 { data: 'checkbox' },
-                { data: 'first_name' },
-                { data: 'last_name' },
+                { data: 'full_name' },
                 { data: 'country_code' },
                 { data: 'contact_no' },
                 { data: 'gender' },
@@ -72,12 +71,11 @@
             columnDefs: [
                 // Specify columns titles here...
                 { targets: 0, title: "<center><input type='checkbox' class='all_select'></center>", orderable: false },
-                { targets: 1, title: 'First Name', orderable: true },
-                { targets: 2, title: 'Last Name', orderable: true },
-                { targets: 3, title: 'Country Code', orderable: true },
-                { targets: 4, title: 'Contact Number', orderable: true },
-                { targets: 5, title: 'Gender', orderable: true },
-                { targets: 6, title: 'Active', orderable: false },
+                { targets: 1, title: 'Name', orderable: true },
+                { targets: 2, title: 'Country Code', orderable: true },
+                { targets: 3, title: 'Contact Number', orderable: true },
+                { targets: 4, title: 'Gender', orderable: true },
+                { targets: 5, title: 'Active', orderable: false },
                 // Action buttons
                 { targets: -1, title: 'Action',
                 orderable: false },

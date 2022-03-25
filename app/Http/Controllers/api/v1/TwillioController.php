@@ -83,6 +83,7 @@ class TwillioController extends Controller
         if( $this->apiValidator($request->all(), $rules) ) {
             try{
                 $twilioAccountSid   =   config('utility.twillio.account_sid');
+                $pushCredentialSid  =   config('utility.twillio.push_sid');
                 $outgoingAppSid     =   $request->sid ? $request->sid : config('utility.twillio.outgoing_app_sid');
                 $twilioApiKey       =   $request->api_key;
                 $twilioApiSecret    =   $request->api_secret;
@@ -98,6 +99,7 @@ class TwillioController extends Controller
 
                 // Optional: add to allow incoming calls
                 $voiceGrant->setIncomingAllow(true);
+                $voiceGrant->setpushCredentialSid($pushCredentialSid);
 
                 // Add grant to token
                 $token->addGrant($voiceGrant);
@@ -124,7 +126,10 @@ class TwillioController extends Controller
 
         // make sure you passing caller id from client side. 
         // Twilio.Device.connect(params); <----- in param object
-        $dial = $response->dial('', ['callerId' => $data["outgoing_caller_id"]]);
+        // $dial = $response->dial('', ['callerId' => $data["outgoing_caller_id"]]);
+
+        $dial = $response->dial('', array('callerId' => 'client:' . $data["outgoing_caller_id"]));
+
         $client = $dial->client($request->To);
 
         // Sending custom parameters, We will use in client side 
@@ -199,58 +204,5 @@ class TwillioController extends Controller
         );
 
         dd($response);
-    }
-
-    public function createServiceResource(Request $request)
-    {
-        dd("In Development");
-        // try{
-        //     $sid        =   config('utility.twillio.account_sid');
-        //     $token      =   config('utility.twillio.account_token');
-        //     $twilio     =   new Client($sid, $token);
-
-        //     $friendly_name  =  'TestIdentity8';
-
-        //     $service = $twilio->chat->v2->services->create($friendly_name);
-
-        //     dump($service);
-        //     dd($service->sid);
-        // } catch (\Exception $e) {
-        //     $this->response['meta']['message'] = trans('api.went_wrong');
-        //     $this->status = Response::HTTP_NOT_FOUND;  
-        //     $this->storeErrorLog($e,'twilio_create_service_resource');
-        // }
-        // return $this->returnResponse();
-    }
-
-    public function newMessageNotification(Request $request)
-    {
-        dd("In Development");
-        // try{
-        //     $sid        =   config('utility.twillio.account_sid');
-        //     $token      =   config('utility.twillio.account_token');
-        //     $twilio     =   new Client($sid, $token);
-
-        //     $channel        =   'Test Room';
-        //     $user           =   'TestIdentity8';
-        //     $message        =   'This is Test Notification Of Twilio';
-        //     $service_sid    =   'IS99e50ca615ed476a9c05cc7beaa8e534';  
-
-        //     $service = $twilio->chat->v2->services($service_sid)
-        //                     ->update(array(
-        //                                  "notificationsAddedToChannelEnabled" => True,
-        //                                  "notificationsAddedToChannelSound" => "default",
-        //                                  "notificationsAddedToChannelTemplate" => "A New message in ".$channel." from ".$user.": ".$message.""
-        //                              )
-        //                     );
-
-        //     dump($service);
-        //     dd($service->friendlyName);
-        // } catch (\Exception $e) {
-        //     $this->response['meta']['message'] = trans('api.went_wrong');
-        //     $this->status = Response::HTTP_NOT_FOUND;  
-        //     $this->storeErrorLog($e,'twilio_new_message_notification');
-        // }
-        // return $this->returnResponse();
     }
 }
