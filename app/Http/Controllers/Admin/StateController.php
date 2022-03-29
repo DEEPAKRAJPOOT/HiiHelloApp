@@ -142,7 +142,7 @@ class StateController extends Controller
     {
         extract($this->DTFilters($request->all()));
         $records = [];
-        $states = State::with('country')->orderBy($sort_column, $sort_order);
+        $states = State::with(['stateTransDefault','country.countryTransDefault'])->orderBy($sort_column, $sort_order);
 
         if ($search != '') {
             $states->where(function ($query) use ($search) {
@@ -174,8 +174,8 @@ class StateController extends Controller
 
             $records['data'][] = [
                 'id' => $state->id,
-                'name' => $state->translate(config('utility.default_lang_code')) ? $state->translate(config('utility.default_lang_code'))->name : "",
-                'country_name' => $state->country ? $state->country->translate(config('utility.default_lang_code')) ? $state->country->translate(config('utility.default_lang_code'))->name : "" : "",
+                'name' => $state->stateTransDefault ? $state->stateTransDefault->name : "",
+                'country_name' => $state->country ? $state->country->countryTransDefault ? $state->country->countryTransDefault->name : "" : "",
                 'active' => view('admin.layouts.includes.switch', compact('params'))->render(),
                 'action' => view('admin.layouts.includes.actions')->with(['custom_title' => 'States', 'id' => $state->custom_id], $state)->render(),
                 'checkbox' => view('admin.layouts.includes.checkbox')->with('id', $state->custom_id)->render(),

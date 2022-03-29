@@ -16,7 +16,8 @@ class LocationResource extends JsonResource
     {
         return [
             'id'            =>  $this->custom_id,
-            'name'          =>  $this->getName(),
+            // 'name'          =>  $this->getName(),
+            'name'          =>  $this->locationTranslation ? $this->locationTranslation->name : "",
         ];
         return parent::toArray($request);
     }

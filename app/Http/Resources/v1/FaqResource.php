@@ -16,8 +16,10 @@ class FaqResource extends JsonResource
     {
         return [
             'id'            =>  $this->custom_id,
-            'question'      =>  $this->getQuestion(),
-            'answer'        =>  $this->getAnswer(),
+            // 'question'      =>  $this->getQuestion(),
+            // 'answer'        =>  $this->getAnswer(),
+            'question'      =>  $this->faqTranslation ? $this->faqTranslation->question : "",
+            'answer'        =>  $this->faqTranslation ? $this->faqTranslation->answer : "",
         ];
         return parent::toArray($request);
     }

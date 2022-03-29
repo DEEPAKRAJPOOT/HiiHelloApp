@@ -7,7 +7,7 @@ use Illuminate\Http\ { Request, Response };
 use Illuminate\Support\Facades\ { Storage };
 use Illuminate\Database\Eloquent\ { ModelNotFoundException };
 use App\Http\Resources\v1\ { LanguageResource, CmsResource, CountryResource, LocationResource, InterestResource, FaqResource, ProfileDetailResource };
-use App\Http\Requests\Api\General\ { PaginationRequest, LocationRequest, ProfileDetailRequest };
+use App\Http\Requests\Api\General\ { PaginationRequest, LocationRequest, ProfileDetailRequest, InterestRequest };
 use App\Http\Requests\Api\User\ { AddDeviceTokenRequest };
 use App\Models\ { Language, CmsPage, Country, Location, Interest, Faq, DeviceToken, ProfileDetail };
 
@@ -187,7 +187,7 @@ class GeneralController extends Controller
     public function getCountries(Request $request)
     {
         try{
-            $countries = Country::whereIsActive('y')->get();
+            $countries = Country::with('countryTranslation')->whereIsActive('y')->get();
             if($countries->isNotEmpty()){
                 return (CountryResource::collection($countries))->additional([
                     'meta' => [
@@ -219,7 +219,7 @@ class GeneralController extends Controller
     public function getCmsPages(Request $request)
     {
         try{
-            $cms_pages = CmsPage::get();
+            $cms_pages = CmsPage::with('cmsPageTranslation')->get();
             if($cms_pages->isNotEmpty()){
                 return (CmsResource::collection($cms_pages))
                 ->additional([
@@ -255,10 +255,10 @@ class GeneralController extends Controller
         $rules = LocationRequest::rules();
         if( $this->apiValidator($request->all(), $rules) ) {
             try{
-                $locations = Location::whereIsActive('y');
+                $locations = Location::with('locationTranslation')->whereIsActive('y');
                 if(!empty($request->search)){
                     $search = $request->search;
-                    $locations = $locations->whereHas('locationTranslations', function ($query) use ($search) {
+                    $locations = $locations->whereHas('locationTranslation', function ($query) use ($search) {
                                     $query->where('name', 'like', "%{$search}%");
                                 });
                 }
@@ -300,14 +300,31 @@ class GeneralController extends Controller
     // Get Interests List
     public function getInterests(Request $request)
     {
-        $rules = PaginationRequest::rules();
+        $rules = InterestRequest::rules();
         if( $this->apiValidator($request->all(), $rules) ) {
             try{
-                $interests = Interest::whereIsActive('y');
+                $interests = Interest::with(['interestTranslation:id,interest_id,title'])
+                                ->whereHas('location',function($query) use ($request) {
+                                   $query->whereCustomId($request->location_id)->whereIsActive('y');
+                                });
+                if(!empty($request->parent_id)){
+                    $parent_interest = Interest::select('id')->whereCustomId($request->parent_id)->firstOrFail();
+                    $interests = $interests->whereNotNull('parent_id')->whereParentId($parent_interest->id);
+                }else{
+                    $interests = $interests->whereNull('parent_id');
+                }
+
+                $interests = $interests->whereIsActive('y')
+                                ->withCount(['subInterests' => function ($query) use ($request) {
+                                    $query->whereHas('location',function($q) use ($request) {
+                                       $q->whereCustomId($request->location_id)->whereIsActive('y');
+                                    });
+                                }]);
                 $count = $interests->count();
                 $interests = $interests->limit($request->limit ?? config('utility.pagination.limit'))
                             ->offset($request->offset ?? config('utility.pagination.offset'))
                             ->get();
+
                 if($interests->isNotEmpty()){
                     return (InterestResource::collection($interests))->additional([
                         'meta' => [
@@ -345,7 +362,7 @@ class GeneralController extends Controller
         $rules = PaginationRequest::rules();
         if( $this->apiValidator($request->all(), $rules) ) {
             try{
-                $faqs = Faq::whereIsActive('y');
+                $faqs = Faq::with('faqTranslation')->whereIsActive('y');
                 $count = $faqs->count();
                 $faqs = $faqs->limit($request->limit ?? config('utility.pagination.limit'))
                             ->offset($request->offset ?? config('utility.pagination.offset'))

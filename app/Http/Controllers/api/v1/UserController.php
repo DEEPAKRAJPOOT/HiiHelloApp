@@ -22,7 +22,10 @@ class UserController extends Controller
         $rules = ProfileRequest::rules();
         if( $this->apiValidator($request->all(), $rules) ) {
             try{
-                $user = User::whereCustomId($request->id)->whereIsActive('y')->firstOrFail();
+                $user = User::with(['interests.interest.interestTranslation',
+                                    'country.countryTranslation','location.locationTranslation'])
+                                    ->withCount('likes')
+                                    ->whereCustomId($request->id)->whereIsActive('y')->firstOrFail();
                 return (new UserProfile($user))
                             ->additional([
                             'meta' => [
@@ -51,9 +54,13 @@ class UserController extends Controller
         if( $this->apiValidator($request->all(), $rules) ) {
             try{
                 $user = $request->user();
-                $users = User::with(['interests.interest.interestTranslations',
-                                    'location','country','language','userDetails'])
-                            ->where('id','!=',Auth::id())->whereIsActive('y');
+                $users = User::with(['interests.interest.interestTranslation',
+                                    'location.locationTranslation',
+                                    'country.countryTranslation',
+                                    'language','userDetails'])
+                            ->where('id','!=',Auth::id())
+                            ->withCount('likes')
+                            ->whereIsActive('y');
 
                 if(!empty($user->interest)){
                     $user_interest = $user->interest;
@@ -65,6 +72,7 @@ class UserController extends Controller
                 $users = $users->limit($request->limit ?? config('utility.pagination.limit'))
                                 ->offset($request->offset ?? config('utility.pagination.offset'))
                                 ->get();
+
                 if($users->isNotEmpty()){
                     return (UserProfile::collection($users))->additional([
                         'meta' => [
@@ -102,11 +110,13 @@ class UserController extends Controller
     // Apply Filters On Users List
     public function getUsersByFilter(Request $request)
     {
-        $rules = ProfileFilterRequest::rules();
+        $rules = ProfileFilterRequest::rules($request);
         if( $this->apiValidator($request->all(), $rules) ) {
             try{
-                $users = User::with(['interests.interest.interestTranslations',
-                                    'location','country','language','userDetails'])
+                $users = User::with(['interests.interest.interestTranslation',
+                                    'location.locationTranslation','country.countryTranslation',
+                                    'language','userDetails'])
+                            ->withCount('likes')
                             ->where('id','!=',Auth::id())->whereIsActive('y');
 
                 if(!empty($request->start_age) && !empty($request->end_age)){

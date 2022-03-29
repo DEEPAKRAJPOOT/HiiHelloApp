@@ -16,8 +16,10 @@ class CmsResource extends JsonResource
     {
         return [ 
             'id'            =>  $this->custom_id ?? "",
-            'title'         =>  $this->getTitle() ?? "",
-            'description'   =>  $this->getDescription() ?? "",
+            // 'title'         =>  $this->getTitle() ?? "",
+            // 'description'   =>  $this->getDescription() ?? "",
+            'title'         =>  $this->cmsPageTranslation ? $this->cmsPageTranslation->title : "",
+            'description'   =>  $this->cmsPageTranslation ? $this->cmsPageTranslation->description : "",
             'hint'          =>  $this->hint ?? "",
             'image'         =>  generateURL($this->file) ?? "",
         ];

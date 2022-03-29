@@ -16,6 +16,12 @@ class CmsPage extends Model implements TranslatableContract
     public function getRouteKeyName(){ return 'custom_id'; }
 
     public function cmsPageTranslations(){ return $this->hasMany('App\Models\CmsPageTranslation'); }
+    public function cmsPageTranslation(){ 
+        return $this->hasOne('App\Models\CmsPageTranslation')->whereLocale(app()->getlocale());
+    }
+    public function cmsPageTransDefault(){ 
+        return $this->hasOne('App\Models\CmsPageTranslation')->whereLocale(config('utility.default_lang_code'));
+    }
 
     public function getDefaultValue($column){
         return $this->translate(config('utility.default_lang_code')) ? $this->translate(config('utility.default_lang_code'))->$column : "";

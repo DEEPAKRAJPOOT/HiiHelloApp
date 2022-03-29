@@ -137,7 +137,7 @@ class CountryController extends Controller
     {
         extract($this->DTFilters($request->all()));
         $records = [];
-        $countries = Country::with('countryTranslations')->orderBy($sort_column, $sort_order);
+        $countries = Country::with(['countryTransDefault'])->orderBy($sort_column, $sort_order);
 
         if ($search != '') {
             $countries->where(function ($query) use ($search) {
@@ -170,7 +170,7 @@ class CountryController extends Controller
 
             $records['data'][] = [
                 'id'            =>  $country->id,
-                'name'          =>  $country->translate(config('utility.default_lang_code')) ? $country->translate(config('utility.default_lang_code'))->name : "",
+                'name'          =>  $country->countryTransDefault ? $country->countryTransDefault->name : "",
                 'code'          =>  $country->code,
                 'phonecode'     =>  $country->phonecode,
                 'active'        =>  view('admin.layouts.includes.switch', compact('params'))->render(),

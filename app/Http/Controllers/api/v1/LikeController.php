@@ -66,7 +66,10 @@ class LikeController extends Controller
         $rules = PaginationRequest::rules();
         if( $this->apiValidator($request->all(), $rules) ) {
             try{
-                $likes = Like::whereHas('likerUser')->where('user_id',Auth::id())->latest();
+                $likes = Like::with(['likerUser.location.locationTranslation'])
+                                ->whereHas('likerUser')
+                                ->where('user_id',Auth::id())
+                                ->latest();
                 $count = $likes->count();
                 $likes = $likes->limit($request->limit ?? config('utility.pagination.limit'))
                             ->offset($request->offset ?? config('utility.pagination.offset'))

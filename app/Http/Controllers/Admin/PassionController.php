@@ -143,7 +143,7 @@ class PassionController extends Controller
     {
         extract($this->DTFilters($request->all()));
         $records = [];
-        $passions = Passion::with('passionTranslations')->orderBy($sort_column, $sort_order);
+        $passions = Passion::with('passionTransDefault')->orderBy($sort_column, $sort_order);
 
         if ($search != '') {
             $passions->where(function ($query) use ($search) {
@@ -173,8 +173,8 @@ class PassionController extends Controller
 
             $records['data'][] = [
                 'id'            =>  $passion->id,
-                'name'          =>  $passion->translate(config('utility.default_lang_code')) ? $passion->translate(config('utility.default_lang_code'))->name : "",
-                'type'          =>  $passion->translate(config('utility.default_lang_code')) ? $passion->translate(config('utility.default_lang_code'))->type : "",
+                'name'          =>  $passion->passionTransDefault ? $passion->passionTransDefault->name : "",
+                'type'          =>  $passion->passionTransDefault ? $passion->passionTransDefault->type : "",
                 'active'        =>  view('admin.layouts.includes.switch', compact('params'))->render(),
                 'action'        =>  view('admin.layouts.includes.actions')->with(['custom_title' => 'Passion', 'id' => $passion->custom_id], $passion)->render(),
                 'checkbox'      =>  view('admin.layouts.includes.checkbox')->with('id', $passion->custom_id)->render(),

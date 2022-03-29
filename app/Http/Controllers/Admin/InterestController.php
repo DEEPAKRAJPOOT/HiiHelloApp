@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Language;
 use App\Models\Interest;
+use App\Models\Location;
 use App\Http\Requests\Admin\InterestRequest;
 
 class InterestController extends Controller
@@ -28,7 +29,10 @@ class InterestController extends Controller
     public function create()
     {
         $languages = Language::whereIsActive('y')->get();
-        return view('admin.pages.interests.create',compact('languages'))->with(['custom_title' => 'Interest', 'default_lang' => config('utility.default_lang_code')]);
+        $parent_interests = Interest::with('interestTranslation')->whereIsActive('y')->get();
+        $locations = Location::with('locationTranslation')->whereIsActive('y')->get();
+
+        return view('admin.pages.interests.create',compact('languages','parent_interests','locations'))->with(['custom_title' => 'Interest', 'default_lang' => config('utility.default_lang_code')]);
     }
 
     /**
@@ -41,8 +45,10 @@ class InterestController extends Controller
     {
         $data = $this->getLangStoreData($request);
         $data['custom_id'] = getUniqueString('interests');
-        $interest = Interest::create($data);
+        $data['parent_id'] = $request->parent_id;
+        $data['location_id'] = $request->location_id;
 
+        $interest = Interest::create($data);
         if ($interest->save()) {
             flash('Interest created successfully!')->success();
         } else {
@@ -71,7 +77,10 @@ class InterestController extends Controller
     public function edit(Interest $interest)
     {
         $languages = Language::whereIsActive('y')->get();
-        return view('admin.pages.interests.edit', compact('interest','languages'))->with(['custom_title' => 'Interest', 'default_lang' => config('utility.default_lang_code')]);
+        $parent_interests = Interest::with('interestTranslation')->whereIsActive('y')->get();
+        $locations = Location::with('locationTranslation')->whereIsActive('y')->get();
+
+        return view('admin.pages.interests.edit', compact('interest','languages','parent_interests','locations'))->with(['custom_title' => 'Interest', 'default_lang' => config('utility.default_lang_code')]);
     }
 
     /**
@@ -95,6 +104,9 @@ class InterestController extends Controller
             return response()->json($content);
         } else {
             $data = $this->getLangStoreData($request);
+            $data['parent_id'] = $request->parent_id;
+            $data['location_id'] = $request->location_id;
+
             $interest->update($data);
             if( $interest->save() ) {
                 flash('Interest details updated successfully!')->success();
@@ -143,7 +155,7 @@ class InterestController extends Controller
     {
         extract($this->DTFilters($request->all()));
         $records = [];
-        $interests = Interest::with('interestTranslations')->orderBy($sort_column, $sort_order);
+        $interests = Interest::with('interestTransDefault')->orderBy($sort_column, $sort_order);
 
         if ($search != '') {
             $interests->where(function ($query) use ($search) {
@@ -172,7 +184,7 @@ class InterestController extends Controller
 
             $records['data'][] = [
                 'id'            =>  $interest->id,
-                'title'         =>  $interest->translate(config('utility.default_lang_code')) ? $interest->translate(config('utility.default_lang_code'))->title : "",
+                'title'         =>  $interest->interestTransDefault ? $interest->interestTransDefault->title : "",
                 'active'        =>  view('admin.layouts.includes.switch', compact('params'))->render(),
                 'action'        =>  view('admin.layouts.includes.actions')->with(['custom_title' => 'Interest', 'id' => $interest->custom_id], $interest)->render(),
                 'checkbox'      =>  view('admin.layouts.includes.checkbox')->with('id', $interest->custom_id)->render(),

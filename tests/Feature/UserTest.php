@@ -66,7 +66,7 @@ class UserTest extends TestCase
                 'api','url','message'
             ],
             'data'  =>  [
-                'id', 'first_name', 'last_name', 'email', 'contact' => ['code', 'number'], 'age', 'gender', 'interest', 'profile_photo', 'media' => ['profile_images', 'profile_videos'], 'flags' => [ 'profile_setuped', 'verified_staus', 'likes', 'matches', 'chats'],
+                'id', 'full_name', 'email', 'contact' => ['code', 'number'], 'age', 'gender', 'interest', 'profile_photo', 'media' => ['profile_images', 'profile_videos'], 'flags' => [ 'profile_setuped', 'verified_staus', 'likes', 'matches', 'chats'],
             ],
         ])->assertJson([
             'meta'  =>  [
@@ -77,8 +77,7 @@ class UserTest extends TestCase
             ],
             'data'  =>  [
                 'id'                =>  $user->custom_id ?? "",
-                'first_name'        =>  $user->first_name ?? "",
-                'last_name'         =>  $user->last_name ?? "",
+                'full_name'         =>  $user->full_name ?? "",
                 'email'             =>  $user->email ?? "",
                 'contact'       =>  [
                     'code'      =>  $user->country_code,
@@ -95,7 +94,7 @@ class UserTest extends TestCase
                 'flags'             =>  [
                     'profile_setuped'       =>  $user->isProfileSetuped(),
                     'verified_staus'        =>  $user->getVerifiedStatus(),
-                    'likes'                 =>  $user->countLikes(),
+                    'likes'                 =>  $user->likes_count,
                     'matches'               =>  $user->countMatches(),
                     'chats'                 =>  $user->countChats(),
                 ],

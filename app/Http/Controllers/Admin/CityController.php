@@ -134,7 +134,7 @@ class CityController extends Controller
     {
         extract($this->DTFilters($request->all()));
         $records = [];
-        $cities = City::with('state')->orderBy($sort_column, $sort_order);
+        $cities = City::with(['state.stateTransDefault','cityTransDefault'])->orderBy($sort_column, $sort_order);
 
         if ($search != '') {
             $cities->where(function ($query) use ($search) {
@@ -165,8 +165,8 @@ class CityController extends Controller
 
             $records['data'][] = [
                 'id' => $city->id,
-                'name' => $city->translate(config('utility.default_lang_code')) ? $city->translate(config('utility.default_lang_code'))->name : "",
-                'state_name' =>  $city->state ? $city->state->translate(config('utility.default_lang_code')) ? $city->state->translate(config('utility.default_lang_code'))->name : "" : "",
+                'name' =>  $city->cityTransDefault ? $city->cityTransDefault->name : "",
+                'state_name' =>  $city->state ? $city->state->stateTransDefault ? $city->state->stateTransDefault->name : "" : "",
                 'active' => view('admin.layouts.includes.switch', compact('params'))->render(),
                 'action' => view('admin.layouts.includes.actions')->with(['custom_title' => 'Cities', 'id' => $city->custom_id], $city)->render(),
                 'checkbox' => view('admin.layouts.includes.checkbox')->with('id', $city->custom_id)->render(),

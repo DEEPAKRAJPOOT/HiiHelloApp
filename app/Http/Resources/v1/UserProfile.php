@@ -40,7 +40,7 @@ class UserProfile extends JsonResource
                 'social_user'           =>  $this->isSocialUser(),
                 'profile_setuped'       =>  $this->isProfileSetuped(),
                 'verified_staus'        =>  $this->getVerifiedStatus(),
-                'likes'                 =>  $this->countLikes(),
+                'likes'                 =>  $this->likes_count ?? 0,
                 'matches'               =>  $this->countMatches(),
                 'chats'                 =>  $this->countChats(),
             ],

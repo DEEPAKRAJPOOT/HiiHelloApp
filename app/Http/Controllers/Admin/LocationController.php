@@ -143,7 +143,7 @@ class LocationController extends Controller
     {
         extract($this->DTFilters($request->all()));
         $records = [];
-        $locations = Location::with('locationTranslations')->orderBy($sort_column, $sort_order);
+        $locations = Location::with('locationTransDefault')->orderBy($sort_column, $sort_order);
 
         if ($search != '') {
             $locations->where(function ($query) use ($search) {
@@ -172,7 +172,7 @@ class LocationController extends Controller
 
             $records['data'][] = [
                 'id'            =>  $location->id,
-                'name'          =>  $location->translate(config('utility.default_lang_code')) ? $location->translate(config('utility.default_lang_code'))->name : "",
+                'name'          =>  $location->locationTransDefault ? $location->locationTransDefault->name : "",
                 'active'        =>  view('admin.layouts.includes.switch', compact('params'))->render(),
                 'action'        =>  view('admin.layouts.includes.actions')->with(['custom_title' => 'Location', 'id' => $location->custom_id], $location)->render(),
                 'checkbox'      =>  view('admin.layouts.includes.checkbox')->with('id', $location->custom_id)->render(),

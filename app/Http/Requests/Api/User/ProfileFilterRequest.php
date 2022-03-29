@@ -24,11 +24,18 @@ class ProfileFilterRequest extends FormRequest
      *
      * @return array
      */
-    public function rules()
+    public function rules($request)
     {
-        $interest_ids = Interest::whereIsActive('y')->pluck('custom_id')->toArray();
-        $location_ids = Location::whereIsActive('y')->pluck('custom_id')->toArray();
-        $language_ids = Language::whereIsActive('y')->pluck('lang_code')->toArray();
+        $interest_ids = $location_ids = $language_ids = array();
+        if(!empty($request->interests) || $request->has('interests')){ 
+            $interest_ids = Interest::whereIsActive('y')->pluck('custom_id')->toArray(); 
+        }
+        if(!empty($request->location) || $request->has('location)')){ 
+            $location_ids = Location::whereIsActive('y')->pluck('custom_id')->toArray(); 
+        }
+        if(!empty($request->languages) || $request->has('languages')){
+            $language_ids = Language::whereIsActive('y')->pluck('lang_code')->toArray(); 
+        }
 
         return [
             'limit'             =>  'nullable|numeric',

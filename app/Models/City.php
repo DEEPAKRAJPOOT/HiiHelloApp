@@ -15,6 +15,13 @@ class City extends Model implements TranslatableContract
     public function getRouteKeyName(){ return 'custom_id'; }
     
     public function cityTranslations(){ return $this->hasMany('App\Models\CityTranslation'); }
+    public function cityTranslation(){ 
+        return $this->hasOne('App\Models\CityTranslation')->whereLocale(app()->getlocale());
+    }
+    public function cityTransDefault(){ 
+        return $this->hasOne('App\Models\CityTranslation')->whereLocale(config('utility.default_lang_code'));
+    }
+
     public function state(){ return $this->belongsTo('App\Models\State'); }
     
     public function getDefaultValue($column){

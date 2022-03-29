@@ -17,6 +17,12 @@ class Country extends Model implements TranslatableContract
     protected $translatedAttributes = ['name'];
 
     public function countryTranslations(){ return $this->hasMany('App\Models\CountryTranslation'); }
+    public function countryTranslation(){ 
+        return $this->hasOne('App\Models\CountryTranslation')->whereLocale(app()->getlocale());
+    }
+    public function countryTransDefault(){ 
+        return $this->hasOne('App\Models\CountryTranslation')->whereLocale(config('utility.default_lang_code'));
+    }
     public function states(){ return $this->hasMany('App\Models\State'); }
 
     public function getDefaultValue($column){

@@ -55,11 +55,13 @@ trait InitialiseUserTrait
 
     protected function setInterest(){
         $faker = \Faker\Factory::create('en_UK');
+        $location = $this->setLocation();
         $data = [
             'en'    =>  [
-                'title'  =>  $faker->title,
+                'title'         =>  $faker->title,
             ],
-            'custom_id' => getUniqueString('interests'),
+            'custom_id'     =>  getUniqueString('interests'),
+            'location_id'   =>  $location->id,
         ];
         $interest = Interest::create($data);
         return $interest;
@@ -76,8 +78,7 @@ trait InitialiseUserTrait
         $user = [
             'custom_id'         =>  getUniqueString('users'),
             'x-language'        =>  config('utility.default_lang_code'),
-            'first_name'        =>  'Abc',
-            'last_name'         =>  'Xyz',
+            'full_name'         =>  'Abc Xyz',
             'email'             =>  'test1@gmail.com',
             'country_code'      =>  $country->phonecode,
             'contact_no'        =>  12345678,
@@ -125,5 +126,10 @@ trait InitialiseUserTrait
         $this->withHeader('Authorization', 'Bearer ' . $token);
         
         return $user;
+    }
+
+    protected function getLocation(){
+        $interest = Interest::whereNotNull('location_id')->latest()->firstOrFail();
+        return Location::whereId($interest->location_id)->firstOrFail();
     }
 }

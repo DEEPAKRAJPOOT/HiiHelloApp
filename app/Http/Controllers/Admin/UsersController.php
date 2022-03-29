@@ -153,7 +153,7 @@ class UsersController extends Controller
                   Storage::delete($image);
                 }
             }
-            User::whereIn('custom_id',explode(',',$request->ids))->delete();
+            User::whereIn('custom_id',explode(',',$request->ids))->forceDelete();
             $content['status']=200;
             $content['message'] = "User deleted successfully.";
             $content['count'] = User::all()->count();
@@ -163,7 +163,7 @@ class UsersController extends Controller
             if( $user->profile_photo ){
                 Storage::delete($user->profile_photo);
             }
-            $user->delete();
+            $user->forceDelete();
             if(request()->ajax()){
                 $content = array('status'=>200, 'message'=>"User deleted successfully.", 'count' => User::all()->count());
                 return response()->json($content);

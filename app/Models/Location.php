@@ -12,12 +12,18 @@ class Location extends Model implements TranslatableContract
     use HasFactory, Translatable;
 
     public function getRouteKeyName(){ return 'custom_id'; }
-    
+
     protected $fillable = ['custom_id'];
 
     protected $translatedAttributes = ['name'];
 
     public function locationTranslations(){ return $this->hasMany('App\Models\LocationTranslation'); }
+    public function locationTranslation(){ 
+        return $this->hasOne('App\Models\LocationTranslation')->whereLocale(app()->getlocale());
+    }
+    public function locationTransDefault(){ 
+        return $this->hasOne('App\Models\LocationTranslation')->whereLocale(config('utility.default_lang_code'));
+    }
 
     public function getDefaultValue($column){
         return $this->translate(config('utility.default_lang_code')) ? $this->translate(config('utility.default_lang_code'))->$column : "";
