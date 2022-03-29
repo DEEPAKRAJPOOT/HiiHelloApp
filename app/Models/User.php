@@ -25,6 +25,11 @@ class User extends Authenticatable
         'custom_id', 'full_name', 'email', 'country_code', 'contact_no', 'birth_date', 'gender',
         'interest', 'country_id', 'location_id', 'language_id', 'profile_photo', 'password',
         'facebook_id', 'google_id', 'apple_id',
+        'my_voice', 'about_me',
+        'relationship_status', 'you_are_here', 'food_preference', 'drinking', 'smoking', 'star_sign', 'fav_festival', 
+        'religion', 'community', 'pets', 'education', 'occupation',
+        'date_idea', 'social_cause', 'risk_taken', 'perfect_relation', 'my_mantra', 'one_thing_know', 'worst_date', 
+        'intro_family', 'found_one', 'about_surprising', 'political_views',
     ];
 
     public function deviceToken() { return $this->hasOne('App\Models\DeviceToken'); }
@@ -57,6 +62,7 @@ class User extends Authenticatable
         }
         return $imgs;
     }
+    
     public function getProfileVideos(){ 
         $videos = [];
         if($this->userDetails){
@@ -72,11 +78,11 @@ class User extends Authenticatable
     }
 
     public function isProfileSetuped(){
-        return $this->userDetails->isNotEmpty() && $this->interests->isNotEmpty()
-            && !empty($this->full_name)
+        return !empty($this->full_name)
             && !empty($this->birth_date)
+            && !empty($this->email)
             && !empty($this->gender) && !empty($this->interest)
-            && !empty($this->country_id) && !empty($this->location_id) && !empty($this->language_id) 
+            && !empty($this->location_id) && !empty($this->language_id) 
             && !empty($this->profile_photo) ? true : false;
     }
 
