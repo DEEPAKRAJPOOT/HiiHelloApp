@@ -103,7 +103,7 @@ class CmsPagesController extends Controller
     {
         extract($this->DTFilters($request->all()));
         $records = [];
-        $cms_pages = CmsPage::with('cmsPageTranslations')->orderBy($sort_column, $sort_order);
+        $cms_pages = CmsPage::with('cmsPageTransDefault')->orderBy($sort_column, $sort_order);
 
         if ($search != '') {
             $cms_pages->where(function ($query) use ($search) {
@@ -135,7 +135,7 @@ class CmsPagesController extends Controller
 
             $records['data'][] = [
                 'id' => $cms_page->id,
-                'title' =>  $cms_page->getDefaultValue('title'),
+                'title' => $cms_page->cmsPageTransDefault ? $cms_page->cmsPageTransDefault->title : "",
                 'active' => view('admin.layouts.includes.switch', compact('params'))->render(),
                 'action' => view('admin.layouts.includes.actions')->with(['custom_title' => 'User', 'id' => $cms_page->custom_id], $cms_page)->render(),
                 'checkbox' => view('admin.layouts.includes.checkbox')->with('id', $cms_page->custom_id)->render(),

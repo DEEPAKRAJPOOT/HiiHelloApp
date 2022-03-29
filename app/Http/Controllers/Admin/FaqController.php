@@ -143,7 +143,7 @@ class FaqController extends Controller
     {
         extract($this->DTFilters($request->all()));
         $records = [];
-        $faqs = Faq::with('faqTranslations')->orderBy($sort_column, $sort_order);
+        $faqs = Faq::with('faqTransDefault')->orderBy($sort_column, $sort_order);
 
         if ($search != '') {
             $faqs->where(function ($query) use ($search) {
@@ -173,7 +173,7 @@ class FaqController extends Controller
 
             $records['data'][] = [
                 'id'            =>  $faq->id,
-                'question'      =>  $faq->translate(config('utility.default_lang_code')) ? $faq->translate(config('utility.default_lang_code'))->question : "",
+                'question'      =>  $faq->faqTransDefault ? $faq->faqTransDefault->question : "",
                 'active'        =>  view('admin.layouts.includes.switch', compact('params'))->render(),
                 'action'        =>  view('admin.layouts.includes.actions')->with(['custom_title' => 'Faq', 'id' => $faq->custom_id], $faq)->render(),
                 'checkbox'      =>  view('admin.layouts.includes.checkbox')->with('id', $faq->custom_id)->render(),

@@ -155,7 +155,7 @@ class InterestController extends Controller
     {
         extract($this->DTFilters($request->all()));
         $records = [];
-        $interests = Interest::with('interestTranslations')->orderBy($sort_column, $sort_order);
+        $interests = Interest::with('interestTransDefault')->orderBy($sort_column, $sort_order);
 
         if ($search != '') {
             $interests->where(function ($query) use ($search) {
@@ -184,7 +184,7 @@ class InterestController extends Controller
 
             $records['data'][] = [
                 'id'            =>  $interest->id,
-                'title'         =>  $interest->translate(config('utility.default_lang_code')) ? $interest->translate(config('utility.default_lang_code'))->title : "",
+                'title'         =>  $interest->interestTransDefault ? $interest->interestTransDefault->title : "",
                 'active'        =>  view('admin.layouts.includes.switch', compact('params'))->render(),
                 'action'        =>  view('admin.layouts.includes.actions')->with(['custom_title' => 'Interest', 'id' => $interest->custom_id], $interest)->render(),
                 'checkbox'      =>  view('admin.layouts.includes.checkbox')->with('id', $interest->custom_id)->render(),

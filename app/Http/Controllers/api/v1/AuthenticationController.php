@@ -26,7 +26,7 @@ class AuthenticationController extends Controller
             $checksumDetails = $this->validateCheckSum($request->security_token, $request->contact_no);
             if( $checksumDetails->validate ) {
                 try {
-                    $user = User::whereContactNo($request->contact_no)->firstOrFail();
+                    $user = User::whereContactNo($request->contact_no)->withCount('likes')->firstOrFail();
                     if($user->is_active == 'y'){
                         Auth::login($user);
                         return (new UserProfile($user))

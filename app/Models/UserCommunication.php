@@ -22,7 +22,7 @@ class UserCommunication extends Model
                                     ->whereCustomId($user_id)->firstOrFail();
             
         if( empty($account_user->subAccount) ) {
-            $account = TwilioTrait::createSubAccount($account_user->getFullName());
+            $account = TwilioTrait::createSubAccount($account_user->full_name);
             if($account){ 
                 if(!empty($account->sid)){
                     $subAccount = TwilioSubaccount::create([
@@ -71,10 +71,9 @@ class UserCommunication extends Model
             if($incomingNumber){
                 \Log::info( "Number found ".$incomingNumber);   
                 $bought = TwilioTrait::buyIncomingNumber($incomingNumber, $subaccount_sid);
-                dd($bought);
                 if($bought){
                     \Log::info( "Number purchased ".$incomingNumber);   
-                    $identity = strtolower(str_replace(" ","_", $card_user->getFullName()))."_".$card_user->id."_".date("YmdHis");        
+                    $identity = strtolower(str_replace(" ","_", $card_user->full_name))."_".$card_user->id."_".date("YmdHis");        
                     self::create([
                         'user_id'           => $card_user->id, //user id of user
                         'subaccount_id'     => $subaccount_id,
@@ -82,7 +81,6 @@ class UserCommunication extends Model
                         'identity'          => $identity
                     ]);                   
                     $card_user->load('userCommunication');
-                    dd($card_user);
                     // $card_user->userCommunication->phone = $incomingNumber;
 
                 }else{

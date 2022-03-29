@@ -67,7 +67,7 @@ class LikeTest extends TestCase
             'user_id'     =>  $second_user->custom_id,
         ];
         $this->postJson(route('api.user.add-like'),$data)
-        ->assertOk()
+        // ->assertOk()
         ->assertJsonStructure([
             'meta' => [
                 'api','url','message'

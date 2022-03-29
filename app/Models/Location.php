@@ -21,6 +21,9 @@ class Location extends Model implements TranslatableContract
     public function locationTranslation(){ 
         return $this->hasOne('App\Models\LocationTranslation')->whereLocale(app()->getlocale());
     }
+    public function locationTransDefault(){ 
+        return $this->hasOne('App\Models\LocationTranslation')->whereLocale(config('utility.default_lang_code'));
+    }
 
     public function getDefaultValue($column){
         return $this->translate(config('utility.default_lang_code')) ? $this->translate(config('utility.default_lang_code'))->$column : "";

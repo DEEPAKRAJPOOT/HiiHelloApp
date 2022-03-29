@@ -16,6 +16,12 @@ class State extends Model implements TranslatableContract
     protected $translatedAttributes = ['name'];
 
     public function stateTranslations(){ return $this->hasMany('App\Models\StateTranslation'); }
+        public function stateTranslation(){ 
+        return $this->hasOne('App\Models\StateTranslation')->whereLocale(app()->getlocale());
+    }
+    public function stateTransDefault(){ 
+        return $this->hasOne('App\Models\StateTranslation')->whereLocale(config('utility.default_lang_code'));
+    }
     public function cities(){ return $this->hasMany('App\Models\City'); }
     public function country(){ return $this->belongsTo('App\Models\Country'); }
 

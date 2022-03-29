@@ -23,6 +23,9 @@ class Interest extends Model implements TranslatableContract
     public function interestTranslation(){ 
         return $this->hasOne('App\Models\InterestTranslation')->whereLocale(app()->getlocale());
     }
+    public function interestTransDefault(){ 
+        return $this->hasOne('App\Models\InterestTranslation')->whereLocale(config('utility.default_lang_code'));
+    }
 
     public function getDefaultValue($column){
         return $this->translate(config('utility.default_lang_code')) ? $this->translate(config('utility.default_lang_code'))->$column : "";

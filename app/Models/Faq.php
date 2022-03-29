@@ -17,6 +17,12 @@ class Faq extends Model implements TranslatableContract
     public function getRouteKeyName(){ return 'custom_id'; }
 
     public function faqTranslations(){ return $this->hasMany('App\Models\FaqTranslation'); }
+    public function faqTranslation(){ 
+        return $this->hasOne('App\Models\FaqTranslation')->whereLocale(app()->getlocale());
+    }
+    public function faqTransDefault(){ 
+        return $this->hasOne('App\Models\FaqTranslation')->whereLocale(config('utility.default_lang_code'));
+    }
 
     public function getDefaultValue($column){
         return $this->translate(config('utility.default_lang_code')) ? $this->translate(config('utility.default_lang_code'))->$column : "";

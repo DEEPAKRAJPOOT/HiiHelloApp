@@ -186,7 +186,11 @@ class GeneralTest extends TestCase
 
     public function test_get_interests_successfully()
     {
-        $this->postJson(route('api.get-interests'),[])
+        $location = $this->getLocation();
+        $data = [
+            'location_id'   =>  $location->custom_id,
+        ];
+        $this->postJson(route('api.get-interests'),$data)
         ->assertOk()
         ->assertJsonStructure([
             'meta' => [

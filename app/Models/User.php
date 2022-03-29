@@ -32,6 +32,7 @@ class User extends Authenticatable
     public function location(){ return $this->belongsTo('App\Models\Location'); }
     public function language(){ return $this->belongsTo('App\Models\Language'); }
 
+    public function likes(){ return $this->hasMany('App\Models\Like','liker_id','id'); }
     public function interests(){ return $this->hasMany('App\Models\UserInterest'); }
     public function userDetails(){ return $this->hasMany('App\Models\UserDetail'); }
     public function subAccount(){ return $this->hasOne('App\Models\TwilioSubaccount','user_id','id'); }
@@ -42,7 +43,6 @@ class User extends Authenticatable
     public function countLikes(){ return Like::whereUserId($this->id)->count() ?? 0; }
     public function countMatches(){ return 0; }
     public function countChats(){ return 0; }
-    public function getFullName(){ return $this->full_name; }
 
     public function getProfileImages(){
         $imgs = [];
