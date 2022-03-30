@@ -14,59 +14,58 @@ class AddFullProfileSetupThingsToUsersTable extends Migration
     public function up()
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->string('my_voice')->nullable()->after('apple_id');
-            $table->text('about_me')->nullable()->after('my_voice');
+            $table->text('about_me')->nullable()->after('apple_id');
 
             //Profile Details
-            $table->bigInteger('relationship_status')->unsigned()->nullable()->after('about_me');
-            $table->bigInteger('you_are_here')->unsigned()->nullable()->after('relationship_status');
-            $table->bigInteger('food_preference')->unsigned()->nullable()->after('you_are_here');
-            $table->bigInteger('drinking')->unsigned()->nullable()->after('food_preference');
-            $table->bigInteger('smoking')->unsigned()->nullable()->after('drinking');
-            $table->bigInteger('star_sign')->unsigned()->nullable()->after('smoking');
-            $table->bigInteger('fav_festival')->unsigned()->nullable()->after('star_sign');
-            $table->bigInteger('religion')->unsigned()->nullable()->after('fav_festival');
-            $table->bigInteger('community')->unsigned()->nullable()->after('religion');
-            $table->bigInteger('pets')->unsigned()->nullable()->after('community');
-            $table->bigInteger('education')->unsigned()->nullable()->after('pets');
-            $table->bigInteger('occupation')->unsigned()->nullable()->after('education');
+            $table->bigInteger('relationship_status_id')->unsigned()->nullable()->after('about_me');
+            $table->bigInteger('you_are_here_id')->unsigned()->nullable()->after('relationship_status_id');
+            $table->bigInteger('food_preference_id')->unsigned()->nullable()->after('you_are_here_id');
+            $table->bigInteger('drinking_id')->unsigned()->nullable()->after('food_preference_id');
+            $table->bigInteger('smoking_id')->unsigned()->nullable()->after('drinking_id');
+            $table->bigInteger('star_sign_id')->unsigned()->nullable()->after('smoking_id');
+            $table->bigInteger('fav_festival_id')->unsigned()->nullable()->after('star_sign_id');
+            $table->bigInteger('religion_id')->unsigned()->nullable()->after('fav_festival_id');
+            $table->bigInteger('community_id')->unsigned()->nullable()->after('religion_id');
+            $table->bigInteger('pet_id')->unsigned()->nullable()->after('community_id');
+            $table->bigInteger('education_id')->unsigned()->nullable()->after('pet_id');
+            $table->bigInteger('occupation_id')->unsigned()->nullable()->after('education_id');
 
-            $table->bigInteger('date_idea')->unsigned()->nullable()->after('occupation');
-            $table->bigInteger('social_cause')->unsigned()->nullable()->after('date_idea');
-            $table->bigInteger('risk_taken')->unsigned()->nullable()->after('social_cause');
-            $table->bigInteger('perfect_relation')->unsigned()->nullable()->after('risk_taken');
-            $table->bigInteger('my_mantra')->unsigned()->nullable()->after('perfect_relation');
-            $table->bigInteger('one_thing_know')->unsigned()->nullable()->after('my_mantra');
-            $table->bigInteger('worst_date')->unsigned()->nullable()->after('one_thing_know');
-            $table->bigInteger('intro_family')->unsigned()->nullable()->after('worst_date');
-            $table->bigInteger('found_one')->unsigned()->nullable()->after('intro_family');
-            $table->bigInteger('about_surprising')->unsigned()->nullable()->after('found_one');
-            $table->bigInteger('political_views')->unsigned()->nullable()->after('about_surprising');
+            $table->bigInteger('date_idea_id')->unsigned()->nullable()->after('occupation_id');
+            $table->bigInteger('social_cause_id')->unsigned()->nullable()->after('date_idea_id');
+            $table->bigInteger('risk_taken_id')->unsigned()->nullable()->after('social_cause_id');
+            $table->bigInteger('perfect_relation_id')->unsigned()->nullable()->after('risk_taken_id');
+            $table->bigInteger('my_mantra_id')->unsigned()->nullable()->after('perfect_relation_id');
+            $table->bigInteger('one_thing_know_id')->unsigned()->nullable()->after('my_mantra_id');
+            $table->bigInteger('worst_date_id')->unsigned()->nullable()->after('one_thing_know_id');
+            $table->bigInteger('intro_family_id')->unsigned()->nullable()->after('worst_date_id');
+            $table->bigInteger('found_one_id')->unsigned()->nullable()->after('intro_family_id');
+            $table->bigInteger('about_surprising_id')->unsigned()->nullable()->after('found_one_id');
+            $table->bigInteger('political_view_id')->unsigned()->nullable()->after('about_surprising_id');
 
             // Foreign Keys
-            $table->foreign('relationship_status')->references('id')->on('profile_details')->onDelete('cascade')->onUpdate('cascade');
-            $table->foreign('you_are_here')->references('id')->on('profile_details')->onDelete('cascade')->onUpdate('cascade');
-            $table->foreign('food_preference')->references('id')->on('profile_details')->onDelete('cascade')->onUpdate('cascade');
-            $table->foreign('drinking')->references('id')->on('profile_details')->onDelete('cascade')->onUpdate('cascade');
-            $table->foreign('smoking')->references('id')->on('profile_details')->onDelete('cascade')->onUpdate('cascade');
-            $table->foreign('star_sign')->references('id')->on('profile_details')->onDelete('cascade')->onUpdate('cascade');
-            $table->foreign('fav_festival')->references('id')->on('profile_details')->onDelete('cascade')->onUpdate('cascade');
-            $table->foreign('religion')->references('id')->on('profile_details')->onDelete('cascade')->onUpdate('cascade');
-            $table->foreign('community')->references('id')->on('profile_details')->onDelete('cascade')->onUpdate('cascade');
-            $table->foreign('pets')->references('id')->on('profile_details')->onDelete('cascade')->onUpdate('cascade');
-            $table->foreign('education')->references('id')->on('profile_details')->onDelete('cascade')->onUpdate('cascade');
-            $table->foreign('occupation')->references('id')->on('profile_details')->onDelete('cascade')->onUpdate('cascade');
-            $table->foreign('date_idea')->references('id')->on('profile_details')->onDelete('cascade')->onUpdate('cascade');
-            $table->foreign('social_cause')->references('id')->on('profile_details')->onDelete('cascade')->onUpdate('cascade');
-            $table->foreign('risk_taken')->references('id')->on('profile_details')->onDelete('cascade')->onUpdate('cascade');
-            $table->foreign('perfect_relation')->references('id')->on('profile_details')->onDelete('cascade')->onUpdate('cascade');
-            $table->foreign('my_mantra')->references('id')->on('profile_details')->onDelete('cascade')->onUpdate('cascade');
-            $table->foreign('one_thing_know')->references('id')->on('profile_details')->onDelete('cascade')->onUpdate('cascade');
-            $table->foreign('worst_date')->references('id')->on('profile_details')->onDelete('cascade')->onUpdate('cascade');
-            $table->foreign('intro_family')->references('id')->on('profile_details')->onDelete('cascade')->onUpdate('cascade');
-            $table->foreign('found_one')->references('id')->on('profile_details')->onDelete('cascade')->onUpdate('cascade');
-            $table->foreign('about_surprising')->references('id')->on('profile_details')->onDelete('cascade')->onUpdate('cascade');
-            $table->foreign('political_views')->references('id')->on('profile_details')->onDelete('cascade')->onUpdate('cascade');
+            $table->foreign('relationship_status_id')->references('id')->on('profile_details')->onDelete('cascade')->onUpdate('cascade');
+            $table->foreign('you_are_here_id')->references('id')->on('profile_details')->onDelete('cascade')->onUpdate('cascade');
+            $table->foreign('food_preference_id')->references('id')->on('profile_details')->onDelete('cascade')->onUpdate('cascade');
+            $table->foreign('drinking_id')->references('id')->on('profile_details')->onDelete('cascade')->onUpdate('cascade');
+            $table->foreign('smoking_id')->references('id')->on('profile_details')->onDelete('cascade')->onUpdate('cascade');
+            $table->foreign('star_sign_id')->references('id')->on('profile_details')->onDelete('cascade')->onUpdate('cascade');
+            $table->foreign('fav_festival_id')->references('id')->on('profile_details')->onDelete('cascade')->onUpdate('cascade');
+            $table->foreign('religion_id')->references('id')->on('profile_details')->onDelete('cascade')->onUpdate('cascade');
+            $table->foreign('community_id')->references('id')->on('profile_details')->onDelete('cascade')->onUpdate('cascade');
+            $table->foreign('pet_id')->references('id')->on('profile_details')->onDelete('cascade')->onUpdate('cascade');
+            $table->foreign('education_id')->references('id')->on('profile_details')->onDelete('cascade')->onUpdate('cascade');
+            $table->foreign('occupation_id')->references('id')->on('profile_details')->onDelete('cascade')->onUpdate('cascade');
+            $table->foreign('date_idea_id')->references('id')->on('profile_details')->onDelete('cascade')->onUpdate('cascade');
+            $table->foreign('social_cause_id')->references('id')->on('profile_details')->onDelete('cascade')->onUpdate('cascade');
+            $table->foreign('risk_taken_id')->references('id')->on('profile_details')->onDelete('cascade')->onUpdate('cascade');
+            $table->foreign('perfect_relation_id')->references('id')->on('profile_details')->onDelete('cascade')->onUpdate('cascade');
+            $table->foreign('my_mantra_id')->references('id')->on('profile_details')->onDelete('cascade')->onUpdate('cascade');
+            $table->foreign('one_thing_know_id')->references('id')->on('profile_details')->onDelete('cascade')->onUpdate('cascade');
+            $table->foreign('worst_date_id')->references('id')->on('profile_details')->onDelete('cascade')->onUpdate('cascade');
+            $table->foreign('intro_family_id')->references('id')->on('profile_details')->onDelete('cascade')->onUpdate('cascade');
+            $table->foreign('found_one_id')->references('id')->on('profile_details')->onDelete('cascade')->onUpdate('cascade');
+            $table->foreign('about_surprising_id')->references('id')->on('profile_details')->onDelete('cascade')->onUpdate('cascade');
+            $table->foreign('political_view_id')->references('id')->on('profile_details')->onDelete('cascade')->onUpdate('cascade');
         });
     }
 
@@ -78,34 +77,34 @@ class AddFullProfileSetupThingsToUsersTable extends Migration
     public function down()
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->dropForeign('users_relationship_status_foreign');
-            $table->dropForeign('users_you_are_here_foreign');
-            $table->dropForeign('users_food_preference_foreign');
-            $table->dropForeign('users_drinking_foreign');
-            $table->dropForeign('users_smoking_foreign');
-            $table->dropForeign('users_star_sign_foreign');
-            $table->dropForeign('users_fav_festival_foreign');
-            $table->dropForeign('users_religion_foreign');
-            $table->dropForeign('users_community_foreign');
-            $table->dropForeign('users_pets_foreign');
-            $table->dropForeign('users_education_foreign');
-            $table->dropForeign('users_occupation_foreign');
-            $table->dropForeign('users_date_idea_foreign');
-            $table->dropForeign('users_social_cause_foreign');
-            $table->dropForeign('users_risk_taken_foreign');
-            $table->dropForeign('users_perfect_relation_foreign');
-            $table->dropForeign('users_my_mantra_foreign');
-            $table->dropForeign('users_one_thing_know_foreign');
-            $table->dropForeign('users_worst_date_foreign');
-            $table->dropForeign('users_intro_family_foreign');
-            $table->dropForeign('users_found_one_foreign');
-            $table->dropForeign('users_about_surprising_foreign');
-            $table->dropForeign('users_political_views_foreign');
+            $table->dropForeign('users_relationship_status_id_foreign');
+            $table->dropForeign('users_you_are_here_id_foreign');
+            $table->dropForeign('users_food_preference_id_foreign');
+            $table->dropForeign('users_drinking_id_foreign');
+            $table->dropForeign('users_smoking_id_foreign');
+            $table->dropForeign('users_star_sign_id_foreign');
+            $table->dropForeign('users_fav_festival_id_foreign');
+            $table->dropForeign('users_religion_id_foreign');
+            $table->dropForeign('users_community_id_foreign');
+            $table->dropForeign('users_pet_id_foreign');
+            $table->dropForeign('users_education_id_foreign');
+            $table->dropForeign('users_occupation_id_foreign');
+            $table->dropForeign('users_date_idea_id_foreign');
+            $table->dropForeign('users_social_cause_id_foreign');
+            $table->dropForeign('users_risk_taken_id_foreign');
+            $table->dropForeign('users_perfect_relation_id_foreign');
+            $table->dropForeign('users_my_mantra_id_foreign');
+            $table->dropForeign('users_one_thing_know_id_foreign');
+            $table->dropForeign('users_worst_date_id_foreign');
+            $table->dropForeign('users_intro_family_id_foreign');
+            $table->dropForeign('users_found_one_id_foreign');
+            $table->dropForeign('users_about_surprising_id_foreign');
+            $table->dropForeign('users_political_view_id_foreign');
 
-            $table->dropColumn(['my_voice','about_me','relationship_status','you_are_here','food_preference','drinking',
-                'smoking','star_sign','fav_festival','religion','community','pets','education','occupation','date_idea',
-                'social_cause','risk_taken','perfect_relation','my_mantra','one_thing_know','worst_date',
-                'intro_family','found_one','about_surprising','political_views']);
+            $table->dropColumn(['about_me','relationship_status_id','you_are_here_id','food_preference_id','drinking_id',
+                'smoking_id','star_sign_id','fav_festival_id','religion_id','community_id','pet_id','education_id','occupation_id','date_idea_id',
+                'social_cause_id','risk_taken_id','perfect_relation_id','my_mantra_id','one_thing_know_id','worst_date_id',
+                'intro_family_id','found_one_id','about_surprising_id','political_view_id']);
         });
     }
 }

@@ -77,7 +77,7 @@ class InterestController extends Controller
     public function edit(Interest $interest)
     {
         $languages = Language::whereIsActive('y')->get();
-        $parent_interests = Interest::with('interestTranslation')->whereIsActive('y')->get();
+        $parent_interests = Interest::with('interestTranslation')->where('id','!=',$interest->id)->whereIsActive('y')->get();
         $locations = Location::with('locationTranslation')->whereIsActive('y')->get();
 
         return view('admin.pages.interests.edit', compact('interest','languages','parent_interests','locations'))->with(['custom_title' => 'Interest', 'default_lang' => config('utility.default_lang_code')]);

@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\ { Request, Response };
 use Illuminate\Database\Eloquent\ { ModelNotFoundException };
 use Illuminate\Support\Facades\ { Storage, DB, Auth };
-use App\Http\Resources\v1\ { UserProfile, ProfileReportResource };
+use App\Http\Resources\v1\ { UserProfile, UserFullProfile, ProfileReportResource };
 use App\Http\Requests\Api\User\ { ProfileRequest, ProfileFilterRequest, ProfileReportRequest };
 use App\Http\Requests\Api\General\ { PaginationRequest };
 use App\Models\ { User, Location, ProfileReport };
@@ -22,11 +22,22 @@ class UserController extends Controller
         $rules = ProfileRequest::rules();
         if( $this->apiValidator($request->all(), $rules) ) {
             try{
-                $user = User::with(['interests.interest.interestTranslation',
-                                    'country.countryTranslation','location.locationTranslation'])
-                                    ->withCount('likes')
-                                    ->whereCustomId($request->id)->whereIsActive('y')->firstOrFail();
-                return (new UserProfile($user))
+                $user = User::with(['relationshipStatus.profileDetailTranslation','youAreHere.profileDetailTranslation',
+                    'foodPreference.profileDetailTranslation','drinking.profileDetailTranslation',
+                    'smoking.profileDetailTranslation','starSign.profileDetailTranslation',
+                    'favFestival.profileDetailTranslation','religion.profileDetailTranslation',
+                    'community.profileDetailTranslation','pet.profileDetailTranslation',
+                    'education.profileDetailTranslation','occupation.profileDetailTranslation',
+                    'dateIdea.profileDetailTranslation','socialCause.profileDetailTranslation',
+                    'riskTaken.profileDetailTranslation','perfectRelation.profileDetailTranslation',
+                    'myMantra.profileDetailTranslation','oneThingKnow.profileDetailTranslation',
+                    'worstDate.profileDetailTranslation','introFamily.profileDetailTranslation',
+                    'foundOne.profileDetailTranslation','aboutSurprising.profileDetailTranslation',
+                    'politicalView.profileDetailTranslation','interests.interest.interestTranslation',
+                    'country.countryTranslation','location.locationTranslation'])
+                    ->withCount('likes')
+                    ->whereCustomId($request->id)->whereIsActive('y')->firstOrFail();
+                return (new UserFullProfile($user))
                             ->additional([
                             'meta' => [
                                 'message'  =>  trans('api.success', ['entity' => __("User")]),
