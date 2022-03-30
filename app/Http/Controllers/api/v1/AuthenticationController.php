@@ -8,7 +8,8 @@ use App\Http\Resources\v1\ { UserProfile };
 use Illuminate\Database\Eloquent\ { ModelNotFoundException };
 use Illuminate\Support\Facades\ { Storage, Auth, Hash };
 use App\Http\Requests\Api\Authentication\ { LoginRequest, RegisterRequest, SocialLoginRequest };
-use App\Models\ { User, Country, UserDetail, Location, Interest, UserInterest, Language };
+use App\Http\Requests\Api\User\ { FullProfileRequest };
+use App\Models\ { User, Country, UserDetail, Location, Interest, UserInterest, Language, ProfileDetail };
 
 class AuthenticationController extends Controller
 {
@@ -74,7 +75,6 @@ class AuthenticationController extends Controller
                 ],[
                     'custom_id'         =>  getUniqueString('users'),
                     'full_name'         =>  $request->full_name ?? NULL,
-                    'email'             =>  $request->email ?? NULL,
                     'birth_date'        =>  $request->birth_date ?? NULL,
                     'gender'            =>  $request->gender ?? NULL,
                     'interest'          =>  $request->interest ?? NULL,
@@ -93,79 +93,6 @@ class AuthenticationController extends Controller
                 }
 
                 if($user->save()){
-                    // if(!empty($request->interests)){
-                    //     $not_delete_interests = [];
-                    //     $interest_ids = Interest::whereIn('custom_id',$request->interests)->whereIsActive('y')->pluck('id')->toArray();
-                    //     foreach($interest_ids as $interest_id){
-                    //         $custom_id = getUniqueString('user_interests');
-
-                    //         UserInterest::updateOrCreate([
-                    //             'user_id'       =>  $user->id,
-                    //             'interest_id'   =>  $interest_id,
-                    //         ],[
-                    //             'custom_id'     =>  $custom_id,
-                    //         ]);
-                    //         $not_delete_interests[] = $custom_id;
-                    //     }
-
-                    //     // Delete Interests
-                    //     UserInterest::whereUserId($user->id)->whereNotIn('custom_id',$not_delete_interests)->delete();
-                    // }
-
-                    //Store Images
-                    // if($request->has('images')){
-                    //     if($user->userDetails->isNotEmpty()){
-                    //         foreach($user->userDetails as $userDetail){
-                    //             if(!empty($userDetail->image)){
-                    //                 if( Storage::exists($userDetail->image) ) { Storage::delete($userDetail->image); }
-                    //                 $userDetail->delete();
-                    //             }
-                    //         }
-                    //     }
-
-                    //     $image_data = [];
-                    //     foreach ($request->images as $key => $image) {
-                    //         if($image){
-                    //             $image_path = $image->store('users/images');
-                    //             $image_data[] = [
-                    //                 'custom_id'         =>  getUniqueString('user_details'),
-                    //                 'user_id'           =>  $user->id,
-                    //                 'image'             =>  $image_path,
-                    //                 'created_at'        =>  \Carbon\Carbon::now(),
-                    //                 'updated_at'        =>  \Carbon\Carbon::now(),
-                    //             ];
-                    //         }
-                    //     }
-                    //     UserDetail::insert($image_data);
-                    // }
-                    
-                    //Store Video
-                    // if($request->hasFile('videos')){
-                    //     if($user->userDetails->isNotEmpty()){
-                    //         foreach($user->userDetails as $userDetail){
-                    //             if(!empty($userDetail->video)){
-                    //                 if( Storage::exists($userDetail->video) ) { Storage::delete($userDetail->video); }
-                    //                 $userDetail->delete();
-                    //             }
-                    //         }
-                    //     }
-
-                    //     $video_data = [];
-                    //     foreach ($request->videos as $key => $video) {
-                    //         if($video){
-                    //             $video_path = $video->store('users/videos');
-                    //             $video_data[] = [
-                    //                 'custom_id'         =>  getUniqueString('user_details'),
-                    //                 'user_id'           =>  $user->id,
-                    //                 'video'             =>  $video_path,
-                    //                 'created_at'        =>  \Carbon\Carbon::now(),
-                    //                 'updated_at'        =>  \Carbon\Carbon::now(),
-                    //             ];
-                    //         }
-                    //     }
-                    //     UserDetail::insert($video_data);
-                    // }   
-
                     Auth::login($user);
                     return (new UserProfile($user))
                         ->additional([
@@ -201,6 +128,197 @@ class AuthenticationController extends Controller
         }
 
         return $this->returnResponse();
+    }
+
+    public function setFullProfile(Request $request){
+        $rules = FullProfileRequest::rules($request);
+        if( $this->apiValidator($request->all(), $rules) ) {
+            try{
+                $user = Auth::user();
+                $relationship_status = ProfileDetail::select('id')->whereSlug($request->relationship_status)->whereIsActive('y')->firstOrFail();
+                $you_are_here = ProfileDetail::select('id')->whereSlug($request->you_are_here)->whereIsActive('y')->firstOrFail();
+                $food_preference = ProfileDetail::select('id')->whereSlug($request->food_preference)->whereIsActive('y')->firstOrFail();
+                $drinking = ProfileDetail::select('id')->whereSlug($request->drinking)->whereIsActive('y')->firstOrFail();
+                $smoking = ProfileDetail::select('id')->whereSlug($request->smoking)->whereIsActive('y')->firstOrFail();
+                $star_sign = ProfileDetail::select('id')->whereSlug($request->star_sign)->whereIsActive('y')->firstOrFail();
+
+                $fav_festival = ProfileDetail::select('id')->whereSlug($request->fav_festival)->whereIsActive('y')->first();
+                $religion = ProfileDetail::select('id')->whereSlug($request->religion)->whereIsActive('y')->first();
+                $pets = ProfileDetail::select('id')->whereSlug($request->pets)->whereIsActive('y')->first();
+                $education = ProfileDetail::select('id')->whereSlug($request->education)->whereIsActive('y')->first();
+                $occupation = ProfileDetail::select('id')->whereSlug($request->occupation)->whereIsActive('y')->first();
+                $date_idea = ProfileDetail::select('id')->whereSlug($request->date_idea)->whereIsActive('y')->first();
+                $social_cause = ProfileDetail::select('id')->whereSlug($request->social_cause)->whereIsActive('y')->first();
+                $risk_taken = ProfileDetail::select('id')->whereSlug($request->risk_taken)->whereIsActive('y')->first();
+                $perfect_relation = ProfileDetail::select('id')->whereSlug($request->perfect_relation)->whereIsActive('y')->first();
+                $my_mantra = ProfileDetail::select('id')->whereSlug($request->my_mantra)->whereIsActive('y')->first();
+                $one_thing_know = ProfileDetail::select('id')->whereSlug($request->one_thing_know)->whereIsActive('y')->first();
+                $worst_date = ProfileDetail::select('id')->whereSlug($request->worst_date)->whereIsActive('y')->first();
+                $intro_family = ProfileDetail::select('id')->whereSlug($request->intro_family)->whereIsActive('y')->first();
+                $found_one = ProfileDetail::select('id')->whereSlug($request->found_one)->whereIsActive('y')->first();
+                $about_surprising = ProfileDetail::select('id')->whereSlug($request->about_surprising)->whereIsActive('y')->first();
+                $political_views = ProfileDetail::select('id')->whereSlug($request->political_views)->whereIsActive('y')->first();
+
+                $user = $user->fill([
+                    'email'                 =>  $request->email ? $request->email : $user->email,
+                    'about_me'              =>  $request->about_me ? $request->about_me : $user->about_me,
+                    'relationship_status'   =>  $relationship_status ? $relationship_status->id : NULL,
+                    'you_are_here'          =>  $you_are_here ? $you_are_here->id : NULL,
+                    'food_preference'       =>  $food_preference ? $food_preference->id : NULL,
+                    'drinking'              =>  $drinking ? $drinking->id : NULL,
+                    'smoking'               =>  $smoking ? $smoking->id : NULL,
+                    'star_sign'             =>  $star_sign ? $star_sign->id : NULL,
+                    'fav_festival'          =>  $fav_festival ? $fav_festival->id : NULL,
+                    'religion'              =>  $religion ? $religion->id : NULL,
+                    // 'community'          =>  $community ? $community->id : NULL,
+                    'pets'                  =>  $pets ? $pets->id : NULL,
+                    'education'             =>  $education ? $education->id : NULL,
+                    'occupation'            =>  $occupation ? $occupation->id : NULL,
+                    'date_idea'             =>  $date_idea ? $date_idea->id : NULL,
+                    'social_cause'          =>  $social_cause ? $social_cause->id : NULL,
+                    'risk_taken'            =>  $risk_taken ? $risk_taken->id : NULL,
+                    'perfect_relation'      =>  $perfect_relation ? $perfect_relation->id : NULL,
+                    'my_mantra'             =>  $my_mantra ? $my_mantra->id : NULL,
+                    'one_thing_know'        =>  $one_thing_know ? $one_thing_know->id : NULL,
+                    'worst_date'            =>  $worst_date ? $worst_date->id : NULL,
+                    'intro_family'          =>  $intro_family ? $intro_family->id : NULL,
+                    'found_one'             =>  $found_one ? $found_one->id : NULL,
+                    'about_surprising'      =>  $about_surprising ? $about_surprising->id : NULL,
+                    'political_views'       =>  $political_views ? $political_views->id : NULL,
+                ]);
+                if($user->save()){
+                    if(!empty($request->interests)){
+                        $not_delete_interests = [];
+                        $interest_ids = Interest::whereIn('custom_id',$request->interests)->whereIsActive('y')->pluck('id')->toArray();
+                        foreach($interest_ids as $interest_id){
+                            $custom_id = getUniqueString('user_interests');
+
+                            UserInterest::updateOrCreate([
+                                'user_id'       =>  $user->id,
+                                'interest_id'   =>  $interest_id,
+                            ],[
+                                'custom_id'     =>  $custom_id,
+                            ]);
+                            $not_delete_interests[] = $custom_id;
+                        }
+
+                        // Delete Interests
+                        UserInterest::whereUserId($user->id)->whereNotIn('custom_id',$not_delete_interests)->delete();
+                    }
+
+                    // Store Images
+                    if($request->has('images')){
+                        if($user->userDetails->isNotEmpty()){
+                            foreach($user->userDetails as $userDetail){
+                                if(!empty($userDetail->image)){
+                                    if( Storage::exists($userDetail->image) ) { Storage::delete($userDetail->image); }
+                                    $userDetail->delete();
+                                }
+                            }
+                        }
+
+                        $image_data = [];
+                        foreach ($request->images as $key => $image) {
+                            if($image){
+                                $image_path = $image->store('users/images');
+                                $image_data[] = [
+                                    'custom_id'         =>  getUniqueString('user_details'),
+                                    'user_id'           =>  $user->id,
+                                    'image'             =>  $image_path,
+                                    'created_at'        =>  \Carbon\Carbon::now(),
+                                    'updated_at'        =>  \Carbon\Carbon::now(),
+                                ];
+                            }
+                        }
+                        UserDetail::insert($image_data);
+                    }
+                    
+                    // Store Video
+                    if($request->hasFile('videos')){
+                        if($user->userDetails->isNotEmpty()){
+                            foreach($user->userDetails as $userDetail){
+                                if(!empty($userDetail->video)){
+                                    if( Storage::exists($userDetail->video) ) { Storage::delete($userDetail->video); }
+                                    $userDetail->delete();
+                                }
+                            }
+                        }
+
+                        $video_data = [];
+                        foreach ($request->videos as $key => $video) {
+                            if($video){
+                                $video_path = $video->store('users/videos');
+                                $video_data[] = [
+                                    'custom_id'         =>  getUniqueString('user_details'),
+                                    'user_id'           =>  $user->id,
+                                    'video'             =>  $video_path,
+                                    'created_at'        =>  \Carbon\Carbon::now(),
+                                    'updated_at'        =>  \Carbon\Carbon::now(),
+                                ];
+                            }
+                        }
+                        UserDetail::insert($video_data);
+                    }   
+
+                    // Store Audio
+                    if(!empty($request->voices)){
+                        if($user->userDetails->isNotEmpty()){
+                            foreach($user->userDetails as $userDetail){
+                                if(!empty($userDetail->voice)){
+                                    if( Storage::exists($userDetail->voice) ) { Storage::delete($userDetail->voice); }
+                                    $userDetail->delete();
+                                }
+                            }
+                        }
+
+                        $video_data = [];
+                        foreach ($request->voices as $key => $voice) {
+                            if($voice){
+                                $voice_path = $voice->store('users/voice');
+                                $video_data[] = [
+                                    'custom_id'         =>  getUniqueString('user_details'),
+                                    'user_id'           =>  $user->id,
+                                    'voice'             =>  $voice_path,
+                                    'created_at'        =>  \Carbon\Carbon::now(),
+                                    'updated_at'        =>  \Carbon\Carbon::now(),
+                                ];
+                            }
+                        }
+                        UserDetail::insert($video_data);
+                    }
+                }
+                $user = User::with('userDetails')->whereId($user->id)->firstOrFail();
+                return (new UserProfile($user))
+                        ->additional([
+                            'meta' => [
+                                'message'       =>  trans('api.profile_setuped'), 
+                                'auth_token'    =>  $user->createToken(config('utility.token'))->plainTextToken,
+                            ]
+                        ]);
+            } catch(ModelNotFoundException $exception) {                
+                switch ($exception->getModel()) {
+                    case 'App\Models\ProfileDetail':
+                        $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("Profile details")]);
+                        break;
+                    case 'App\Models\UserInterest':
+                        $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("User interest")]);
+                        break;
+                    case 'App\Models\UserDetail':
+                        $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("User details")]);
+                        break;
+                    case 'App\Models\User':
+                        $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("User")]);
+                        break;
+                    default:
+                        $this->response['meta']['message'] = trans('api.went_wrong');
+                        break;
+                };
+            } catch (\Exception $e) {
+                $this->storeErrorLog($e,'set_full_profile');
+            }
+        }
+
+        return $this->returnResponse();  
     }
 
     public function generateChecksum(Request $request)
@@ -312,6 +430,7 @@ class AuthenticationController extends Controller
                 $user = User::where('email', $request->email)->orWhere($request->type.'_id', $request[$request->type.'_id'])->first();            
                 unset($request['type']);
                 if( !empty($user) ) { # Update Profile Details
+                    $request['full_name'] = $user->full_name ? $user->full_name : $request->full_name;
                     $user->fill($request->all());
                 } else { # Create new user
                     $request['custom_id'] = getUniqueString('users');
