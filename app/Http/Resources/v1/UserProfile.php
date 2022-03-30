@@ -39,6 +39,7 @@ class UserProfile extends JsonResource
             'flags'             =>  [
                 'social_user'           =>  $this->isSocialUser(),
                 'profile_setuped'       =>  $this->isProfileSetuped(),
+                'profile_percentage'    =>  $this->calculateProfilePercent(),
                 'verified_staus'        =>  $this->getVerifiedStatus(),
                 'likes'                 =>  $this->likes_count ?? 0,
                 'matches'               =>  $this->countMatches(),

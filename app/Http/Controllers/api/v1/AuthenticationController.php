@@ -75,7 +75,6 @@ class AuthenticationController extends Controller
                 ],[
                     'custom_id'         =>  getUniqueString('users'),
                     'full_name'         =>  $request->full_name ?? NULL,
-                    'email'             =>  $request->email ?? NULL,
                     'birth_date'        =>  $request->birth_date ?? NULL,
                     'gender'            =>  $request->gender ?? NULL,
                     'interest'          =>  $request->interest ?? NULL,

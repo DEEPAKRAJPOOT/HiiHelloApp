@@ -91,6 +91,56 @@ class User extends Authenticatable
     }
 
     /**
+     * Calculation Profile Completion In Percentage
+     * return $percentage
+     */
+    public function calculateProfilePercent(){
+        // Max Ponits
+        $maximum_points        =  config('utility.profile.percent.maximum_points');
+
+        // Improtant Details
+        $full_name             =  !empty($this->full_name) ? config('utility.profile.percent.full_name') : 0;
+        $photo_verified        =  config('utility.profile.percent.photo_verified');
+        $email_verified        =  !empty($this->email_verified_at) ? config('utility.profile.percent.email_verified') : 0;
+        $id_verified           =  config('utility.profile.percent.id_verified');
+        $all_photos_verified   =  config('utility.profile.percent.all_photos_verified');
+        $video_verified        =  config('utility.profile.percent.video_verified');
+        $interest              =  !empty($this->interest) ? config('utility.profile.percent.interest') : 0;
+        $voice_prompt          =  !empty($this->my_voice) ? config('utility.profile.percent.voice_prompt') : 0;
+        $about_me              =  !empty($this->about_me) ? config('utility.profile.percent.about_me') : 0;
+
+        // Basic Details
+        $relationship_status   =  !empty($this->relationship_status) ? config('utility.profile.percent.relationship_status') : 0;
+        $you_are_here          =  !empty($this->you_are_here) ? config('utility.profile.percent.you_are_here') : 0;
+        $food_preference       =  !empty($this->food_preference) ? config('utility.profile.percent.food_preference') : 0;
+        $drinking              =  !empty($this->drinking) ? config('utility.profile.percent.drinking') : 0;
+        $smoking               =  !empty($this->smoking) ? config('utility.profile.percent.smoking') : 0;
+        $star_sign             =  !empty($this->star_sign) ? config('utility.profile.percent.star_sign') : 0;
+        $religion              =  !empty($this->religion) ? config('utility.profile.percent.religion') : 0;
+        $community             =  !empty($this->community) ? config('utility.profile.percent.community') : 0;
+        $pets                  =  !empty($this->pets) ? config('utility.profile.percent.pets') : 0;
+        $education             =  !empty($this->education) ? config('utility.profile.percent.education') : 0;
+        $occupation            =  !empty($this->occupation) ? config('utility.profile.percent.occupation') : 0;
+
+        // Extra Details
+        $date_idea          =  !empty($this->date_idea) ? config('utility.profile.percent.date_idea') : 0;
+        $social_cause       =  !empty($this->social_cause) ? config('utility.profile.percent.social_cause') : 0;
+        $risk_taken         =  !empty($this->risk_taken) ? config('utility.profile.percent.risk_taken') : 0;
+        $perfect_relation   =  !empty($this->perfect_relation) ? config('utility.profile.percent.perfect_relation') : 0;
+        $my_mantra          =  !empty($this->my_mantra) ? config('utility.profile.percent.my_mantra') : 0;
+        $one_thing_know     =  !empty($this->one_thing_know) ? config('utility.profile.percent.one_thing_know') : 0;
+        $worst_date         =  !empty($this->worst_date) ? config('utility.profile.percent.worst_date') : 0;
+        $intro_family       =  !empty($this->intro_family) ? config('utility.profile.percent.intro_family') : 0;
+        $found_one          =  !empty($this->found_one) ? config('utility.profile.percent.found_one') : 0;
+        $about_surprising   =  !empty($this->about_surprising) ? config('utility.profile.percent.about_surprising') : 0;
+        $political_views    =  !empty($this->political_views) ? config('utility.profile.percent.political_views') : 0;
+
+        $percentage = intval(($full_name+$photo_verified+$email_verified+$id_verified+$all_photos_verified+$video_verified+$interest+$voice_prompt+$about_me+$relationship_status+$you_are_here+$food_preference+$drinking+$smoking+$star_sign+$religion+$community+$pets+$education+$occupation+$date_idea+$social_cause+$risk_taken+$perfect_relation+$my_mantra+$one_thing_know+$worst_date+$intro_family+$found_one+$about_surprising+$political_views)*$maximum_points/100);
+        
+        return $percentage;
+    }
+
+    /**
      * The attributes that should be hidden for arrays.
      *
      * @var array

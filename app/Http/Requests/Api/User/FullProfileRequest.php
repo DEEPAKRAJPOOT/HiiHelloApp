@@ -26,9 +26,9 @@ class FullProfileRequest extends FormRequest
      */
     public function rules($request)
     {
+        $interest_ids = array();
         $profile_details = ProfileDetail::whereIsActive('y')->pluck('slug')->toArray();
-
-        $interest_ids = $location_ids = $language_ids = array();
+        
         if(!empty($request->interests) || $request->has('interests')){ 
             $interest_ids = Interest::whereIsActive('y')->pluck('custom_id')->toArray(); 
         }

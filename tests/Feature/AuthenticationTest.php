@@ -102,7 +102,7 @@ class AuthenticationTest extends TestCase
                 'message', 'auth_token'
             ],
             'data' =>   [
-                'full_name', 'email', 'contact', 'gender', 'interest', 'flags'
+                'full_name', 'contact', 'gender', 'interest', 'flags'
             ],
         ])->assertJson([
             'meta'  =>  [
@@ -112,7 +112,6 @@ class AuthenticationTest extends TestCase
             ],
             'data'  =>  [
                 'full_name'     =>  $user['full_name'],
-                'email'         =>  $user['email'],
                 'contact'       =>  [
                     'code'      =>  $user['country_code'],
                     'number'    =>  $user['contact_no'],

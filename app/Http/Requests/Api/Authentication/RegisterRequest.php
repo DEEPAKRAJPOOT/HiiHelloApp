@@ -27,12 +27,10 @@ class RegisterRequest extends FormRequest
      */
     public function rules()
     {
+        $min_birth_date =   now()->subYears(config('utility.minimum_age'))->format('m/d/Y');
         $location_ids   =   Location::whereIsActive('y')->pluck('custom_id')->toArray();
         $language_ids   =   Language::whereIsActive('y')->pluck('lang_code')->toArray();
-        $min_birth_date =   now()->subYears(config('utility.minimum_age'))->format('m/d/Y');
         $phone_codes    =   Country::whereIsActive('y')->pluck('phonecode')->toArray();
-        
-        // $interest_ids   =   Interest::whereIsActive('y')->pluck('custom_id')->toArray();
 
         return [
             'full_name'         =>  'required|min:2|max:100',
@@ -42,18 +40,8 @@ class RegisterRequest extends FormRequest
             'location'          =>  'required|in:'.implode(',', $location_ids),
             'language'          =>  'required|in:'.implode(',', $language_ids),
             'profile_photo'     =>  'required|mimes:jpg,jpeg,png',
-                     
-            // 'first_name'        =>  'required|min:2|max:100',
-            // 'last_name'         =>  'required|min:2|max:100',
-            // 'email'             =>  'nullable|email|max:150',
             'country_code'      =>  'nullable|in:'.implode(',', $phone_codes),
             'contact_no'        =>  'nullable|digits_between:6,16',
-            // 'interests'         =>  'required|array',
-            // 'interests.*'       =>  'required|in:'.implode(',', $interest_ids),
-            // 'images'            =>  'required|array|max:4',
-            // 'images.*'          =>  'required|mimes:jpg,jpeg,png',
-            // 'videos'            =>  'nullable|array|max:1',
-            // 'videos.*'          =>  'nullable|mimes:mp4,ogx,oga,ogv,ogg,webm,flv,m3u8,ts,3gp,mov,avi,wmv,m4v',
         ];
     }
 }

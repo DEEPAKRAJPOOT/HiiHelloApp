@@ -45,7 +45,7 @@ Route::group(['namespace' => 'v1', 'prefix' => 'v1'], function () {
 
     // Third Party Api
     Route::post('image/moderation', [GeneralController::class,'checkImageModeration'])->name('api.image.moderation');
-
+    
     // Send Chat Notification
     Route::post('chat/send-push/{chatmessage}/{message?}', [ChatController::class,'sendChatPush'])->name('chat.send-push');
 });
