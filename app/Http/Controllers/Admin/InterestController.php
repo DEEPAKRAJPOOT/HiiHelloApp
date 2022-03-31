@@ -47,6 +47,7 @@ class InterestController extends Controller
         $data['custom_id'] = getUniqueString('interests');
         $data['parent_id'] = $request->parent_id;
         $data['location_id'] = $request->location_id;
+        $data['level'] = $request->level;
 
         $interest = Interest::create($data);
         if ($interest->save()) {
@@ -106,6 +107,7 @@ class InterestController extends Controller
             $data = $this->getLangStoreData($request);
             $data['parent_id'] = $request->parent_id;
             $data['location_id'] = $request->location_id;
+            $data['level'] = $request->level;
 
             $interest->update($data);
             if( $interest->save() ) {

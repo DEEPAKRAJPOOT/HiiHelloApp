@@ -25,7 +25,7 @@ class InterestRequest extends FormRequest
      */
     public function rules()
     {
-        $parent_ids = Interest::select('custom_id')->whereNull('parent_id')->whereIsActive('y')->pluck('custom_id')->toArray();
+        $parent_ids = Interest::select('custom_id')->whereIsActive('y')->pluck('custom_id')->toArray();
         $location_ids = Location::select('custom_id')->whereIsActive('y')->pluck('custom_id')->toArray();
 
         return [
@@ -33,6 +33,7 @@ class InterestRequest extends FormRequest
             'offset'        =>  'nullable|numeric|min:0',
             'parent_id'     =>  'nullable|in:'.implode(',', $parent_ids),
             'location_id'   =>  'required|in:'.implode(',', $location_ids),
+            'level'         =>  'required|in:2,3',
         ];
     }
 }

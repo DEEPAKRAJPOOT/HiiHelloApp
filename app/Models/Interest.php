@@ -13,7 +13,7 @@ class Interest extends Model implements TranslatableContract
 
     public function getRouteKeyName(){ return 'custom_id'; }
     
-    protected $fillable = ['custom_id', 'parent_id', 'location_id'];
+    protected $fillable = ['custom_id', 'parent_id', 'location_id', 'level'];
 
     protected $translatedAttributes = ['title'];
 
@@ -34,6 +34,21 @@ class Interest extends Model implements TranslatableContract
     public function getValue($lang_code,$field){
         return $this->translate($lang_code) ? $this->translate($lang_code)->$field : "";
     }
+
+    // public function checkLevel(){
+    //     $level = 0;
+    //     if($this->subInterests->isNotEmpty()){
+    //         $level = 1;
+    //         foreach($this->subInterests as $subInterest){
+    //             if($subInterest){
+    //                 if($subInterest->subInterests->isNotEmpty()){
+    //                     $level = 2;
+    //                 }
+    //             }
+    //         }
+    //     }
+    //     return $level;
+    // }
 
     public function getTitle(){
         $lang_code = app()->getlocale();

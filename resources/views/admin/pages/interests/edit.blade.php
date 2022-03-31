@@ -67,6 +67,17 @@
                         </span>
                     @endif
                 </div>
+
+                {{-- Sub Level --}}
+                <div class="form-group {{ $errors->has('level') ? 'has-error' : '' }}">
+                    <label for="level">Sub Level</label>
+                    <input type="text" class="form-control" id="level" name="level" value="{{ $interest->level ?? '' }}" placeholder="Enter Sub Level" spellcheck="false" autocapitalize="sentences" tabindex="0" autofocus />
+                    @if ($errors->has('level')))
+                        <span class="help-block">
+                            <strong class="form-text">{{ $errors->first('level') }}</strong>
+                        </span>
+                    @endif
+                </div>
             </div>
 
             @forelse($languages as $language)
@@ -126,6 +137,11 @@ $(document).ready(function () {
                 required: true,
                 not_empty: true,
             },
+            level: {
+                required: false,
+                number: true,
+                not_empty: false,
+            },
             '{{ $default_lang }}_title': {
                 required: true,
                 not_empty: true,
@@ -140,6 +156,11 @@ $(document).ready(function () {
             location_id:{
                 required:"@lang('validation.required',['attribute'=>'location'])",
                 not_empty:"@lang('validation.not_empty',['attribute'=>'location'])",
+            },
+            level:{
+                required:"@lang('validation.required',['attribute'=>'sub level'])",
+                number:"@lang('validation.numeric',['attribute'=>'sub level'])",
+                not_empty:"@lang('validation.not_empty',['attribute'=>'sub level'])",
             },
             '{{ $default_lang }}_title': {
                 required: "@lang('validation.required',['attribute'=>'title'])",

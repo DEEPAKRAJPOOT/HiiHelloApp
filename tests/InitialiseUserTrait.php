@@ -62,6 +62,7 @@ trait InitialiseUserTrait
             ],
             'custom_id'     =>  getUniqueString('interests'),
             'location_id'   =>  $location->id,
+            'level'         =>  2,
         ];
         $interest = Interest::create($data);
         return $interest;
