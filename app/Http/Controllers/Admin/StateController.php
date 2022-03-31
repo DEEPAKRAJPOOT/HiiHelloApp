@@ -30,7 +30,7 @@ class StateController extends Controller
     public function create()
     {
         $languages = Language::whereIsActive('y')->select('hint','language','lang_code')->get();
-        $countries = Country::whereIsActive('y')->get();
+        $countries = Country::with('countryTransDefault')->whereIsActive('y')->get();
         return view('admin.pages.general.states.create',compact('countries','languages'))->with(['custom_title' => 'State', 'default_lang' => config('utility.default_lang_code')]);
     }
 
@@ -65,7 +65,7 @@ class StateController extends Controller
     
     public function edit(State $state)
     {
-        $countries = Country::whereIsActive('y')->get();
+        $countries = Country::with('countryTransDefault')->whereIsActive('y')->get();
         $languages = Language::whereIsActive('y')->get();
         return view('admin.pages.general.states.edit', compact('state','countries','languages'))->with(['custom_title' => 'state', 'default_lang' => config('utility.default_lang_code')]);
     }

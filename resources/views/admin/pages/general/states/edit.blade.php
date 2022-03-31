@@ -51,7 +51,9 @@
                     <label for="country_id">Country Name{!!$mend_sign!!}</label>
                     <select id="country_id" class="form-control" name="country_id">
                         @foreach($countries as $country)
-                        <option value="{{ $country->id }}" {{ $country->id == $state->country_id ? 'selected' : '' }}> {{ $country->name }}</option>
+                            @if($country->countryTransDefault)
+                                <option value="{{ $country->id }}" {{ $country->id == $state->country_id ? 'selected' : '' }}> {{ $country->countryTransDefault->name }}</option>
+                            @endif
                         @endforeach
                     </select>
                     @if ($errors->has('country_id'))

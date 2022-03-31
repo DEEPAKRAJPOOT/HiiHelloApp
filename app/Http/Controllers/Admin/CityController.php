@@ -29,7 +29,7 @@ class CityController extends Controller
     public function create()
     {
         $languages = Language::whereIsActive('y')->select('hint','language','lang_code')->get();
-        $states = State::with('country')->get();
+        $states = State::with('stateTransDefault','country.countryTransDefault')->get();
         return view('admin.pages.general.cities.create',compact('states','languages'))->with(['custom_title' => 'City','default_lang' => config('utility.default_lang_code')]);
     }
 
@@ -62,7 +62,7 @@ class CityController extends Controller
      */
     public function edit(City $city)
     {
-        $states = State::with('country')->get();
+        $states = State::with('stateTransDefault','country.countryTransDefault')->get();
         $languages = Language::whereIsActive('y')->get();
 
         return view('admin.pages.general.cities.edit', compact('city','states','languages'))->with(['custom_title' => 'city' , 'default_lang' => config('utility.default_lang_code')]);
