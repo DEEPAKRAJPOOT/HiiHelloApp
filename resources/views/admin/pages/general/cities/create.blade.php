@@ -54,7 +54,9 @@
                     <select id="state_id" class="form-control" name="state_id">
                         <option></option>
                         @foreach($states as $state)
-                        <option value="{{ $state->id }}"> {{ $state->name }} @if($state->country) ({{ $state->country->name }}) @endif</option>
+                            @if($state->stateTransDefault)
+                                <option value="{{ $state->id }}"> {{ $state->stateTransDefault->name }} @if($state->country && $state->country->countryTransDefault) ({{ $state->country->countryTransDefault->name }}) @endif</option>
+                            @endif    
                         @endforeach
                     </select>
                     @if ($errors->has('state_id'))

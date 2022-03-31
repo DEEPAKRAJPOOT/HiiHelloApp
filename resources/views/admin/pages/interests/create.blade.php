@@ -28,7 +28,9 @@
                         <option value="" selected>Select Parent Interest</option>
                         @if(!$parent_interests->isEmpty())
                             @foreach($parent_interests as $parent_interest)
-                                <option value="{{ $parent_interest->id }}">{{ $parent_interest->title }}</option>
+                                @if($parent_interest->interestTransDefault)
+                                <option value="{{ $parent_interest->id }}">{{ $parent_interest->interestTransDefault->title }}</option>
+                                @endif
                             @endforeach
                         @endif
                     </select>
@@ -47,7 +49,9 @@
                         <option value="" selected>Select Location</option>
                         @if(!$locations->isEmpty())
                             @foreach($locations as $location)
-                                <option value="{{ $location->id }}">{{ $location->name }}</option>
+                                @if($location->locationTransDefault)
+                                    <option value="{{ $location->id }}">{{ $location->locationTransDefault->name }}</option>
+                                @endif
                             @endforeach
                         @endif
                     </select>

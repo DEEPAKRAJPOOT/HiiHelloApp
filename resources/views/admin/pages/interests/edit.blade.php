@@ -29,10 +29,12 @@
                         <option value="" selected>Select Parent Interest</option>
                         @if(!$parent_interests->isEmpty())
                             @foreach($parent_interests as $parent_interest)
-                                @if($parent_interest->id == $interest->parent_id)
-                                    <option value="{{ $parent_interest->id }}" selected>{{ $parent_interest->title }}</option>
-                                @else
-                                     <option value="{{ $parent_interest->id }}">{{ $parent_interest->title }}</option>
+                                @if($parent_interest->interestTransDefault)
+                                    @if($parent_interest->id == $interest->parent_id)
+                                        <option value="{{ $parent_interest->id }}" selected>{{ $parent_interest->interestTransDefault->title }}</option>
+                                    @else
+                                         <option value="{{ $parent_interest->id }}">{{ $parent_interest->interestTransDefault->title }}</option>
+                                    @endif
                                 @endif
                             @endforeach
                         @endif
@@ -52,10 +54,12 @@
                         <option value="" selected>Select Location</option>
                         @if(!$locations->isEmpty())
                             @foreach($locations as $location)
-                                @if($location->id == $interest->location_id)
-                                    <option value="{{ $location->id }}" selected>{{ $location->name }}</option>
-                                @else
-                                     <option value="{{ $location->id }}">{{ $location->name }}</option>
+                                @if($location->locationTransDefault)
+                                    @if($location->id == $interest->location_id)
+                                        <option value="{{ $location->id }}" selected>{{ $location->locationTransDefault->name }}</option>
+                                    @else
+                                         <option value="{{ $location->id }}">{{ $location->locationTransDefault->name }}</option>
+                                    @endif
                                 @endif
                             @endforeach
                         @endif
