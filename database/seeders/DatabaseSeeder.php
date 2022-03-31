@@ -27,5 +27,7 @@ class DatabaseSeeder extends Seeder
         $this->call(LanguageSeeder::class);
         $this->call(ProfileDetailSeeder::class);
         $this->call(ProfileDetailTranslationSeeder::class);
+        $this->call(InterestSeeder::class);
+        $this->call(InterestTranslationSeeder::class);
     }
 }

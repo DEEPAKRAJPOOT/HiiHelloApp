@@ -312,6 +312,7 @@ class GeneralController extends Controller
                     $interests = $interests->whereNotNull('parent_id')->whereParentId($parent_interest->id);
                 }else{
                     $interests = $interests->whereNull('parent_id');
+                    if(!empty($request->level)){ $interests->whereLevel($request->level); }
                 }
 
                 $interests = $interests->whereIsActive('y')
@@ -320,6 +321,7 @@ class GeneralController extends Controller
                                        $q->whereCustomId($request->location_id)->whereIsActive('y');
                                     });
                                 }]);
+
                 $count = $interests->count();
                 $interests = $interests->limit($request->limit ?? config('utility.pagination.limit'))
                             ->offset($request->offset ?? config('utility.pagination.offset'))

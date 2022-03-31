@@ -189,6 +189,7 @@ class GeneralTest extends TestCase
         $location = $this->getLocation();
         $data = [
             'location_id'   =>  $location->custom_id,
+            'level'         =>  2,
         ];
         $this->postJson(route('api.get-interests'),$data)
         ->assertOk()
