@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\ { ModelNotFoundException };
 use Illuminate\Support\Facades\ { Storage, Auth, Hash };
 use App\Http\Requests\Api\Authentication\ { LoginRequest, RegisterRequest, SocialLoginRequest };
 use App\Http\Requests\Api\User\ { FullProfileRequest };
-use App\Models\ { User, Country, UserDetail, Location, Interest, UserInterest, Language, ProfileDetail };
+use App\Models\ { User, Country, UserDetail, Location, Interest, UserInterest, Language, ProfileDetail, UserFestival, UserPet };
 
 class AuthenticationController extends Controller
 {
@@ -142,21 +142,19 @@ class AuthenticationController extends Controller
                 $smoking = ProfileDetail::select('id')->whereSlug($request->smoking)->whereIsActive('y')->firstOrFail();
                 $star_sign = ProfileDetail::select('id')->whereSlug($request->star_sign)->whereIsActive('y')->firstOrFail();
 
-                $fav_festival = ProfileDetail::select('id')->whereSlug($request->fav_festival)->whereIsActive('y')->first();
                 $religion = ProfileDetail::select('id')->whereSlug($request->religion)->whereIsActive('y')->first();
-                $pets = ProfileDetail::select('id')->whereSlug($request->pets)->whereIsActive('y')->first();
                 $education = ProfileDetail::select('id')->whereSlug($request->education)->whereIsActive('y')->first();
                 $occupation = ProfileDetail::select('id')->whereSlug($request->occupation)->whereIsActive('y')->first();
                 $date_idea = ProfileDetail::select('id')->whereSlug($request->date_idea)->whereIsActive('y')->first();
                 $social_cause = ProfileDetail::select('id')->whereSlug($request->social_cause)->whereIsActive('y')->first();
                 $risk_taken = ProfileDetail::select('id')->whereSlug($request->risk_taken)->whereIsActive('y')->first();
-                $perfect_relation = ProfileDetail::select('id')->whereSlug($request->perfect_relation)->whereIsActive('y')->first();
+                $perfect_relation_things = ProfileDetail::select('id')->whereSlug($request->perfect_relation_things)->whereIsActive('y')->first();
                 $my_mantra = ProfileDetail::select('id')->whereSlug($request->my_mantra)->whereIsActive('y')->first();
                 $one_thing_know = ProfileDetail::select('id')->whereSlug($request->one_thing_know)->whereIsActive('y')->first();
                 $worst_date = ProfileDetail::select('id')->whereSlug($request->worst_date)->whereIsActive('y')->first();
-                $intro_family = ProfileDetail::select('id')->whereSlug($request->intro_family)->whereIsActive('y')->first();
-                $found_one = ProfileDetail::select('id')->whereSlug($request->found_one)->whereIsActive('y')->first();
-                $about_surprising = ProfileDetail::select('id')->whereSlug($request->about_surprising)->whereIsActive('y')->first();
+                $introduce_to_family = ProfileDetail::select('id')->whereSlug($request->introduce_to_family)->whereIsActive('y')->first();
+                $found_the_one = ProfileDetail::select('id')->whereSlug($request->found_the_one)->whereIsActive('y')->first();
+                $about_me_surprises = ProfileDetail::select('id')->whereSlug($request->about_me_surprises)->whereIsActive('y')->first();
                 $political_views = ProfileDetail::select('id')->whereSlug($request->political_views)->whereIsActive('y')->first();
 
                 $user = $user->fill([
@@ -168,22 +166,20 @@ class AuthenticationController extends Controller
                     'drinking_id'               =>  $drinking ? $drinking->id : NULL,
                     'smoking_id'                =>  $smoking ? $smoking->id : NULL,
                     'star_sign_id'              =>  $star_sign ? $star_sign->id : NULL,
-                    'fav_festival_id'           =>  $fav_festival ? $fav_festival->id : NULL,
                     'religion_id'               =>  $religion ? $religion->id : NULL,
                     // 'community_id'           =>  $community ? $community->id : NULL,
-                    'pet_id'                    =>  $pets ? $pets->id : NULL,
                     'education_id'              =>  $education ? $education->id : NULL,
                     'occupation_id'             =>  $occupation ? $occupation->id : NULL,
                     'date_idea_id'              =>  $date_idea ? $date_idea->id : NULL,
                     'social_cause_id'           =>  $social_cause ? $social_cause->id : NULL,
                     'risk_taken_id'             =>  $risk_taken ? $risk_taken->id : NULL,
-                    'perfect_relation_id'       =>  $perfect_relation ? $perfect_relation->id : NULL,
+                    'perfect_relation_id'       =>  $perfect_relation_things ? $perfect_relation_things->id : NULL,
                     'my_mantra_id'              =>  $my_mantra ? $my_mantra->id : NULL,
                     'one_thing_know_id'         =>  $one_thing_know ? $one_thing_know->id : NULL,
                     'worst_date_id'             =>  $worst_date ? $worst_date->id : NULL,
-                    'intro_family_id'           =>  $intro_family ? $intro_family->id : NULL,
-                    'found_one_id'              =>  $found_one ? $found_one->id : NULL,
-                    'about_surprising_id'       =>  $about_surprising ? $about_surprising->id : NULL,
+                    'intro_family_id'           =>  $introduce_to_family ? $introduce_to_family->id : NULL,
+                    'found_one_id'              =>  $found_the_one ? $found_the_one->id : NULL,
+                    'about_surprising_id'       =>  $about_me_surprises ? $about_me_surprises->id : NULL,
                     'political_view_id'         =>  $political_views ? $political_views->id : NULL,
                 ]);
                 if($user->save()){
@@ -204,6 +200,46 @@ class AuthenticationController extends Controller
 
                         // Delete Interests
                         UserInterest::whereUserId($user->id)->whereNotIn('custom_id',$not_delete_interests)->delete();
+                    }
+
+                    if(!empty($request->fav_festivals)){
+                        $not_delete_festivals = [];
+                        $festival_ids = ProfileDetail::whereIn('slug',$request->fav_festivals)->whereIsActive('y')->pluck('id')->toArray();
+                        foreach($festival_ids as $festival_id){
+                            $custom_id = getUniqueString('user_festivals');
+
+                            UserFestival::updateOrCreate([
+                                'user_id'       =>  $user->id,
+                                'festival_id'   =>  $festival_id,
+                            ],[
+                                'custom_id'     =>  $custom_id,
+                            ]);
+
+                            $not_delete_festivals[] = $custom_id;
+                        }
+
+                        // Delete Festivals
+                        UserFestival::whereUserId($user->id)->whereNotIn('custom_id',$not_delete_festivals)->delete();
+                    }
+
+                    if(!empty($request->pets)){
+                        $not_delete_pets = [];
+                        $pet_ids = ProfileDetail::whereIn('slug',$request->pets)->whereIsActive('y')->pluck('id')->toArray();
+                        foreach($pet_ids as $pet_id){
+                            $custom_id = getUniqueString('user_pets');
+
+                            UserPet::updateOrCreate([
+                                'user_id'       =>  $user->id,
+                                'pet_id'        =>  $pet_id,
+                            ],[
+                                'custom_id'     =>  $custom_id,
+                            ]);
+
+                            $not_delete_pets[] = $custom_id;
+                        }
+
+                        // Delete Pets
+                        UserPet::whereUserId($user->id)->whereNotIn('custom_id',$not_delete_pets)->delete();
                     }
 
                     // Store Images
@@ -233,7 +269,7 @@ class AuthenticationController extends Controller
                         UserDetail::insert($image_data);
                     }
                     
-                    // Store Video
+                    // Store Videos
                     if($request->hasFile('videos')){
                         if($user->userDetails->isNotEmpty()){
                             foreach($user->userDetails as $userDetail){
@@ -260,7 +296,7 @@ class AuthenticationController extends Controller
                         UserDetail::insert($video_data);
                     }   
 
-                    // Store Audio
+                    // Store Audios
                     if(!empty($request->voices)){
                         if($user->userDetails->isNotEmpty()){
                             foreach($user->userDetails as $userDetail){

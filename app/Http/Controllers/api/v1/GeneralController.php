@@ -308,8 +308,10 @@ class GeneralController extends Controller
                                    $query->whereCustomId($request->location_id)->whereIsActive('y');
                                 });
                 if(!empty($request->parent_id)){
-                    $parent_interest = Interest::select('id')->whereCustomId($request->parent_id)->firstOrFail();
-                    $interests = $interests->whereNotNull('parent_id')->whereParentId($parent_interest->id);
+                    $interests = $interests->whereNotNull('parent_id')
+                                    ->whereHas('parentInterest', function($query) use ($request){
+                                        $query->whereCustomId($request->parent_id);
+                                    });
                 }else{
                     $interests = $interests->whereNull('parent_id');
                     if(!empty($request->level)){ $interests->whereLevel($request->level); }
