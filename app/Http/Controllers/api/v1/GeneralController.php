@@ -308,8 +308,10 @@ class GeneralController extends Controller
                                    $query->whereCustomId($request->location_id)->whereIsActive('y');
                                 });
                 if(!empty($request->parent_id)){
-                    $parent_interest = Interest::select('id')->whereCustomId($request->parent_id)->firstOrFail();
-                    $interests = $interests->whereNotNull('parent_id')->whereParentId($parent_interest->id);
+                    $interests = $interests->whereNotNull('parent_id')
+                                    ->whereHas('parentInterest', function($query) use ($request){
+                                        $query->whereCustomId($request->parent_id);
+                                    });
                 }else{
                     $interests = $interests->whereNull('parent_id');
                     if(!empty($request->level)){ $interests->whereLevel($request->level); }
@@ -320,19 +322,11 @@ class GeneralController extends Controller
                                     $query->whereHas('location',function($q) use ($request) {
                                        $q->whereCustomId($request->location_id)->whereIsActive('y');
                                     });
-                                }]);
-
-                $count = $interests->count();
-                $interests = $interests->limit($request->limit ?? config('utility.pagination.limit'))
-                            ->offset($request->offset ?? config('utility.pagination.offset'))
-                            ->get();
+                                }])->get();
 
                 if($interests->isNotEmpty()){
                     return (InterestResource::collection($interests))->additional([
                         'meta' => [
-                            'limit'     =>  $request->limit,
-                            'offset'    =>  $request->offset,
-                            'total'     =>  $count,
                             'url'       =>  url()->current(),
                             'api'       =>  $this->getVersion(),
                             'language'  =>  app()->getLocale(),

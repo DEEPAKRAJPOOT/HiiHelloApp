@@ -18,6 +18,7 @@ class Interest extends Model implements TranslatableContract
     protected $translatedAttributes = ['title'];
 
     public function location(){ return $this->belongsTo('App\Models\Location'); }
+    public function parentInterest(){ return $this->hasOne('App\Models\Interest','id','parent_id'); }
     public function subInterests(){ return $this->hasMany('App\Models\Interest','parent_id','id'); }
     public function interestTranslations(){ return $this->hasMany('App\Models\InterestTranslation'); }
     public function interestTranslation(){ 
@@ -34,21 +35,6 @@ class Interest extends Model implements TranslatableContract
     public function getValue($lang_code,$field){
         return $this->translate($lang_code) ? $this->translate($lang_code)->$field : "";
     }
-
-    // public function checkLevel(){
-    //     $level = 0;
-    //     if($this->subInterests->isNotEmpty()){
-    //         $level = 1;
-    //         foreach($this->subInterests as $subInterest){
-    //             if($subInterest){
-    //                 if($subInterest->subInterests->isNotEmpty()){
-    //                     $level = 2;
-    //                 }
-    //             }
-    //         }
-    //     }
-    //     return $level;
-    // }
 
     public function getTitle(){
         $lang_code = app()->getlocale();

@@ -163,8 +163,7 @@ class GeneralTest extends TestCase
     public function test_get_interests_validation()
     {
         $data = [
-            'limit'      =>  'Abc',
-            'offset'     =>  0,
+            'location_id'      =>  'Abc',
         ];
         $this->postJson(route('api.get-interests'),$data)
         ->assertStatus(412)
@@ -178,7 +177,7 @@ class GeneralTest extends TestCase
                 'api'       =>  $this->getVersion(),
                 'url'       =>  url()->current(),
                 'language'  =>  config('utility.default_lang_code'),
-                'message'   =>  trans('validation.numeric', ['attribute' => __('limit') ])
+                'message'   =>  trans('validation.in', ['attribute' => __('location id') ])
             ],
             'data' => NULL
         ]);
@@ -195,7 +194,7 @@ class GeneralTest extends TestCase
         ->assertOk()
         ->assertJsonStructure([
             'meta' => [
-                'api','url','message', 'total'
+                'api','url','message'
             ],
         ])->assertJson([
             'meta'  =>  [

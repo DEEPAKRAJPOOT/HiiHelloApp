@@ -26,8 +26,8 @@ class User extends Authenticatable
         'interest', 'country_id', 'location_id', 'language_id', 'profile_photo', 'password',
         'facebook_id', 'google_id', 'apple_id',
         'about_me',
-        'relationship_status_id', 'you_are_here_id', 'food_preference_id', 'drinking_id', 'smoking_id', 'star_sign_id', 'fav_festival_id', 
-        'religion_id', 'community_id', 'pet_id', 'education_id', 'occupation_id',
+        'relationship_status_id', 'you_are_here_id', 'food_preference_id', 'drinking_id', 'smoking_id', 'star_sign_id', 
+        'religion_id', 'community_id', 'education_id', 'occupation_id',
         'date_idea_id', 'social_cause_id', 'risk_taken_id', 'perfect_relation_id', 'my_mantra_id', 'one_thing_know_id', 'worst_date_id', 
         'intro_family_id', 'found_one_id', 'about_surprising_id', 'political_view_id',
     ];
@@ -39,6 +39,8 @@ class User extends Authenticatable
 
     public function likes(){ return $this->hasMany('App\Models\Like','liker_id','id'); }
     public function interests(){ return $this->hasMany('App\Models\UserInterest'); }
+    public function favFestivals(){ return $this->hasMany('App\Models\UserFestival'); }
+    public function pets(){ return $this->hasMany('App\Models\UserPet'); }
     public function userDetails(){ return $this->hasMany('App\Models\UserDetail'); }
     public function subAccount(){ return $this->hasOne('App\Models\TwilioSubaccount','user_id','id'); }
     public function userCommunication(){ return $this->hasOne('App\Models\UserCommunication', 'user_id'); }
@@ -49,10 +51,8 @@ class User extends Authenticatable
     public function drinking(){ return $this->hasOne('App\Models\ProfileDetail','id','drinking_id'); }
     public function smoking(){ return $this->hasOne('App\Models\ProfileDetail','id','smoking_id'); }
     public function starSign(){ return $this->hasOne('App\Models\ProfileDetail','id','star_sign_id'); }
-    public function favFestival(){ return $this->hasOne('App\Models\ProfileDetail','id','fav_festival_id'); }
     public function religion(){ return $this->hasOne('App\Models\ProfileDetail','id','religion_id'); }
     public function community(){ return $this->hasOne('App\Models\ProfileDetail','id','community_id'); }
-    public function pet(){ return $this->hasOne('App\Models\ProfileDetail','id','pet_id'); }
     public function education(){ return $this->hasOne('App\Models\ProfileDetail','id','education_id'); }
     public function occupation(){ return $this->hasOne('App\Models\ProfileDetail','id','occupation_id'); }
     public function dateIdea(){ return $this->hasOne('App\Models\ProfileDetail','id','date_idea_id'); }

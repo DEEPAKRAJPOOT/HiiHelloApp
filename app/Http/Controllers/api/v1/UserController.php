@@ -22,11 +22,14 @@ class UserController extends Controller
         $rules = ProfileRequest::rules();
         if( $this->apiValidator($request->all(), $rules) ) {
             try{
-                $user = User::with(['relationshipStatus.profileDetailTranslation','youAreHere.profileDetailTranslation',
+                $user = User::with([
+                    'favFestivals.festival.profileDetailTranslation',
+                    'pets.pet.profileDetailTranslation',
+                    'relationshipStatus.profileDetailTranslation','youAreHere.profileDetailTranslation',
                     'foodPreference.profileDetailTranslation','drinking.profileDetailTranslation',
                     'smoking.profileDetailTranslation','starSign.profileDetailTranslation',
-                    'favFestival.profileDetailTranslation','religion.profileDetailTranslation',
-                    'community.profileDetailTranslation','pet.profileDetailTranslation',
+                    'religion.profileDetailTranslation',
+                    'community.profileDetailTranslation',
                     'education.profileDetailTranslation','occupation.profileDetailTranslation',
                     'dateIdea.profileDetailTranslation','socialCause.profileDetailTranslation',
                     'riskTaken.profileDetailTranslation','perfectRelation.profileDetailTranslation',
@@ -37,6 +40,7 @@ class UserController extends Controller
                     'country.countryTranslation','location.locationTranslation'])
                     ->withCount('likes')
                     ->whereCustomId($request->id)->whereIsActive('y')->firstOrFail();
+
                 return (new UserFullProfile($user))
                             ->additional([
                             'meta' => [
