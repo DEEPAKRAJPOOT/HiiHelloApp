@@ -184,18 +184,26 @@ class AuthenticationController extends Controller
                 ]);
                 if($user->save()){
                     if(!empty($request->interests)){
-                        $not_delete_interests = [];
-                        $interest_ids = Interest::whereIn('custom_id',$request->interests)->whereIsActive('y')->pluck('id')->toArray();
-                        foreach($interest_ids as $interest_id){
-                            $custom_id = getUniqueString('user_interests');
+                        $selected_inerests = []; $not_delete_interests = [];
+                        foreach($request->interests as $key => $interest_levels){
+                            foreach($interest_levels as $key => $req_interest){
+                                $selected_inerests[] = $req_interest;
+                            }
+                        }
 
-                            UserInterest::updateOrCreate([
-                                'user_id'       =>  $user->id,
-                                'interest_id'   =>  $interest_id,
-                            ],[
-                                'custom_id'     =>  $custom_id,
-                            ]);
-                            $not_delete_interests[] = $custom_id;
+                        if(count($selected_inerests) > 0){
+                            $interest_ids = Interest::whereIn('custom_id',$selected_inerests)->whereIsActive('y')->pluck('id')->toArray();
+                            foreach($interest_ids as $interest_id){
+                                $custom_id = getUniqueString('user_interests');
+
+                                UserInterest::updateOrCreate([
+                                    'user_id'       =>  $user->id,
+                                    'interest_id'   =>  $interest_id,
+                                ],[
+                                    'custom_id'     =>  $custom_id,
+                                ]);
+                                $not_delete_interests[] = $custom_id;
+                            }
                         }
 
                         // Delete Interests
@@ -324,13 +332,12 @@ class AuthenticationController extends Controller
                     }
                 }
                 $user = User::with('userDetails')->whereId($user->id)->firstOrFail();
-                return (new UserProfile($user))
-                        ->additional([
-                            'meta' => [
-                                'message'       =>  trans('api.profile_setuped'), 
-                                'auth_token'    =>  $user->createToken(config('utility.token'))->plainTextToken,
-                            ]
-                        ]);
+
+                return [ 'data' => [ 'flags' =>  [ 'profile_percentage'    =>  $user->calculateProfilePercent(),],],
+                        'meta'  => [
+                            'message'       =>  trans('api.profile_setuped'), 
+                            'auth_token'    =>  $user->createToken(config('utility.token'))->plainTextToken,
+                        ]];
             } catch(ModelNotFoundException $exception) {                
                 switch ($exception->getModel()) {
                     case 'App\Models\ProfileDetail':
