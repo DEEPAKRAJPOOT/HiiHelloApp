@@ -58,7 +58,7 @@ class FullProfileRequest extends FormRequest
             'political_views'           =>  'nullable|in:'.implode(',', $profile_details),
 
             'interests'         =>  'required|array',
-            'interests.*'       =>  'required|in:'.implode(',', $interest_ids),
+            'interests.*.*'     =>  'required|in:'.implode(',', $interest_ids),
             'fav_festivals'     =>  'required|array',
             'fav_festivals.*'   =>  'required|in:'.implode(',', $profile_details),
             'pets'              =>  'required|array',
