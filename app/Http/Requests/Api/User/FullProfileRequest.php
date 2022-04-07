@@ -34,7 +34,7 @@ class FullProfileRequest extends FormRequest
         }
 
         return [
-            'email'                 =>  'required|email|max:150|unique:users,email,'.Auth::id(),
+            'email'                 =>  'nullable|email|max:150|unique:users,email,'.Auth::id(),
             'relationship_status'   =>  'required|in:'.implode(',', $profile_details),
             'you_are_here'          =>  'required|in:'.implode(',', $profile_details),
             'food_preference'       =>  'required|in:'.implode(',', $profile_details),
