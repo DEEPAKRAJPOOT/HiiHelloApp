@@ -63,8 +63,8 @@ class FullProfileRequest extends FormRequest
             'fav_festivals.*'   =>  'required|in:'.implode(',', $profile_details),
             'pets'              =>  'required|array',
             'pets.*'            =>  'required|in:'.implode(',', $profile_details),
-            'images'            =>  'required|array|max:4',
-            'images.*'          =>  'required|mimes:jpg,jpeg,png',
+            'images'            =>  'nullable|array|max:4',
+            'images.*'          =>  'nullable|mimes:jpg,jpeg,png',
             'videos'            =>  'nullable|array|max:1',
             'videos.*'          =>  'nullable|mimes:mp4,ogx,oga,ogv,ogg,webm,flv,m3u8,ts,3gp,mov,avi,wmv,m4v',
 
