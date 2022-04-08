@@ -34,6 +34,7 @@ class RegisterRequest extends FormRequest
 
         return [
             'full_name'         =>  'required|min:2|max:100',
+            'email'             =>  'nullable|email|max:150',
             'birth_date'        =>  'required|date|before:'.$min_birth_date,
             'gender'            =>  'required|in:Male,Female',
             'interest'          =>  'required|in:Male,Female,Both',

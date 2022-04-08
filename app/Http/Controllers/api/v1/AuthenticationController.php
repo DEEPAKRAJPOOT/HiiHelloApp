@@ -68,21 +68,28 @@ class AuthenticationController extends Controller
                     $language = Language::whereLangCode($request->language)->whereIsActive('y')->firstOrFail();
                     $language_id = $language->id;
                 }
-
-                $user = User::updateOrCreate([
-                    'country_code'      =>  $request->country_code ?? NULL,
-                    'contact_no'        =>  $request->contact_no ?? NULL,
-                ],[
-                    'custom_id'         =>  getUniqueString('users'),
-                    'full_name'         =>  $request->full_name ?? NULL,
-                    'birth_date'        =>  $request->birth_date ?? NULL,
-                    'gender'            =>  $request->gender ?? NULL,
-                    'interest'          =>  $request->interest ?? NULL,
-                    'country_id'        =>  $country_id ?? NULL,
-                    'location_id'       =>  $location_id ?? NULL,
-                    'language_id'       =>  $language_id ?? NULL,
-                    'password'          =>  Hash::make(config('utility.default_password')),
-                ]);
+                if(!empty($request->email)){
+                    $user = User::whereEmail($request->email)->first();
+                }
+                
+                if(!empty($user)){
+                    $user->fill($request->all());
+                }else{
+                    $user = User::updateOrCreate([
+                        'country_code'      =>  $request->country_code ?? NULL,
+                        'contact_no'        =>  $request->contact_no ?? NULL,
+                    ],[
+                        'custom_id'         =>  getUniqueString('users'),
+                        'full_name'         =>  $request->full_name ?? NULL,
+                        'birth_date'        =>  $request->birth_date ?? NULL,
+                        'gender'            =>  $request->gender ?? NULL,
+                        'interest'          =>  $request->interest ?? NULL,
+                        'country_id'        =>  $country_id ?? NULL,
+                        'location_id'       =>  $location_id ?? NULL,
+                        'language_id'       =>  $language_id ?? NULL,
+                        'password'          =>  Hash::make(config('utility.default_password')),
+                    ]);
+                }
 
                 if( !empty($request->profile_photo) ) {
                     if(!empty($user->profile_photo)){
