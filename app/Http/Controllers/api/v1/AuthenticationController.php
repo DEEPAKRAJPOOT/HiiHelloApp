@@ -343,7 +343,6 @@ class AuthenticationController extends Controller
                 return [ 'data' => [ 'flags' =>  [ 'profile_percentage'    =>  $user->calculateProfilePercent(),],],
                         'meta'  => [
                             'message'       =>  trans('api.profile_setuped'), 
-                            'auth_token'    =>  $user->createToken(config('utility.token'))->plainTextToken,
                         ]];
             } catch(ModelNotFoundException $exception) {                
                 switch ($exception->getModel()) {
