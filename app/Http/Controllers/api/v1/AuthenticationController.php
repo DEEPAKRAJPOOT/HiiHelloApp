@@ -74,6 +74,9 @@ class AuthenticationController extends Controller
                 
                 if(!empty($user)){
                     $user->fill($request->all());
+                    $user->country_id = $country_id;
+                    $user->location_id = $location_id;
+                    $user->language_id = $language_id;
                 }else{
                     $user = User::updateOrCreate([
                         'country_code'      =>  $request->country_code ?? NULL,
