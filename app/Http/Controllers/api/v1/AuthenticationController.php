@@ -535,6 +535,8 @@ class AuthenticationController extends Controller
 
             // Auth Token Revoke
             auth()->user()->tokens()->delete();
+            
+            $this->status = Response::HTTP_OK;
             $this->response['meta']['message'] = trans('api.logout');
         } catch(ModelNotFoundException $exception) {
             switch ($exception->getModel()) {
