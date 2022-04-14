@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\ { ModelNotFoundException };
 use Illuminate\Support\Facades\ { Storage, Auth, Hash };
 use App\Http\Requests\Api\Authentication\ { LoginRequest, RegisterRequest, SocialLoginRequest };
 use App\Http\Requests\Api\User\ { FullProfileRequest };
-use App\Models\ { User, Country, UserDetail, Location, Interest, UserInterest, Language, ProfileDetail, UserFestival, UserPet };
+use App\Models\ { User, Country, UserDetail, Location, Interest, UserInterest, Language, ProfileDetail, UserFestival, UserPet, DeviceToken };
 
 class AuthenticationController extends Controller
 {
@@ -30,6 +30,7 @@ class AuthenticationController extends Controller
                     $user = User::whereContactNo($request->contact_no)->withCount('likes')->firstOrFail();
                     if($user->is_active == 'y'){
                         Auth::login($user);
+
                         return (new UserProfile($user))
                             ->additional([
                                 'meta' => [
@@ -520,6 +521,32 @@ class AuthenticationController extends Controller
             } catch (\Exception $e) {
                 $this->storeErrorLog($e,'social_login');
             }
+        }
+        return $this->returnResponse();
+    }
+
+    // User Logout
+    public function logout()
+    {
+        try {
+            $user = User::whereId(Auth::id())->firstOrFail();
+            // Device Token Delets
+            DeviceToken::whereUserId($user->id)->delete();
+
+            // Auth Token Revoke
+            auth()->user()->tokens()->delete();
+            $this->response['meta']['message'] = trans('api.logout');
+        } catch(ModelNotFoundException $exception) {
+            switch ($exception->getModel()) {
+                case 'App\User':
+                    $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("User")]);
+                    break;
+                default:
+                    $this->response['meta']['message'] = trans('api.went_wrong');
+                    break;
+            };
+        } catch (\Exception $e) {
+            $this->storeErrorLog($e,'logout');
         }
         return $this->returnResponse();
     }
