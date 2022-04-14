@@ -501,9 +501,9 @@ class GeneralController extends Controller
             try{
                 $user = $request->user();
                 DeviceToken::updateOrCreate([
-                    'token' =>  $request->token,
-                ],[
                     'user_id'       =>  $user->id ?? NULL,
+                ],[
+                    'token'         =>  $request->token,
                     'type'          =>  $request->type,
                     'device_name'   =>  $request->device,
                     'os_name'       =>  $request->os,

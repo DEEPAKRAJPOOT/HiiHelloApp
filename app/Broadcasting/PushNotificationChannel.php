@@ -45,8 +45,7 @@ class PushNotificationChannel extends Controller
             $send_notification['notification'] = $n_data;
             $send_notification['data'] = $data;
         }
-        dd($send_notification);
-                $data = json_encode($send_notification);
+        $data = json_encode($send_notification);
         $result = $this->sendPushNotification($data);
     }
 }
