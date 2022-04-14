@@ -151,7 +151,7 @@ io.on('connection', (socket)=>{
 
 						// If Both User In Same Room (Both Online)
 						let msg_status = 'send';
-						if (users[request.room_id].includes(request.sender_id) && users[request.room_id].includes(request.receiver_id)){
+						if ( users[request.room_id] && users[request.room_id].includes(request.sender_id) && users[request.room_id].includes(request.receiver_id)){
 							msg_status = 'read';
 						}
 
