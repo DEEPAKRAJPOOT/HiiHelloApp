@@ -22,28 +22,31 @@ function getPermissions($user_type = 'normal')
             5 =>[ //Country
                 'permissions' => 'access,add,edit,delete'
             ],
-            6 =>[ //Interests
+            6 =>[ //Profile Details
                 'permissions' => 'access,add,edit,delete'
             ],
-            7 =>[ //Locations
+            7 =>[ //Interests
                 'permissions' => 'access,add,edit,delete'
             ],
-            8 =>[ //Profile Reports
+            8 =>[ //Locations
+                'permissions' => 'access,add,edit,delete'
+            ],
+            9 =>[ //Profile Reports
                 'permissions' => 'access,view,edit'
             ],
-            9 =>[ //Faqs
+            10 =>[ //Faqs
                 'permissions' => 'access,add,edit,delete'
             ],
-            10 =>[ //State
+            11 =>[ //State
                 'permissions' => 'access,add,edit,delete'
             ],
-            11 =>[ //City
+            12 =>[ //City
                 'permissions' => 'access,add,edit,delete'
             ],
-            12 =>[ //CMS Pages
+            13 =>[ //CMS Pages
                 'permissions' => 'access,edit'
             ],
-            13 =>[ //Site Configurations
+            14 =>[ //Site Configurations
                 'permissions' => 'access'
             ],
         ];
