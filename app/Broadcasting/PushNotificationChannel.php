@@ -13,6 +13,7 @@ class PushNotificationChannel extends Controller
     public function send($notifiable, Notification $notification)
     {
         $deviceToken = $notifiable->deviceToken;
+
         if( empty($deviceToken) ) return "No device token found!";
         $message = $notification->data;
         $unReadNotifications = 0;
@@ -22,9 +23,12 @@ class PushNotificationChannel extends Controller
             'body'      =>  $message->message,
             'badge'     =>  $unReadNotifications,
         ];
+        
         $data = [
             'id'    =>  $message->id ?? NULL,
             'type'  =>  $message->type ?? "general-notification",
+            // 'image' =>  'https://dwisi.s3.me-south-1.amazonaws.com/product/images/WOjOEV5wS17qzYnkKcJKlpDV6xdsianMBONJM0V8.jpg',
+            'image' =>  $notifiable->profile_photo ? generateURL($notifiable->profile_photo) : "",
         ];
 
         if ($message->type == 'chat-message') {
@@ -45,6 +49,7 @@ class PushNotificationChannel extends Controller
             $send_notification['notification'] = $n_data;
             $send_notification['data'] = $data;
         }
+
         $data = json_encode($send_notification);
         $result = $this->sendPushNotification($data);
     }
