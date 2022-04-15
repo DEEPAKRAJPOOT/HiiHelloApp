@@ -63,16 +63,16 @@ class GeneralController extends Controller
                         'hint'   =>  'Smoking',
                     ],
                     [
-                        'attribute'   =>  'star_sign',
-                        'hint'   =>  'Star Sign (should automatically comes as we know the bday)',
-                    ],
-                    [
-                        'attribute'   =>  'fav_festival',
-                        'hint'   =>  'Favourite Festival',
+                        'attribute'   =>  'sun_sign',
+                        'hint'   =>  'Sun Sign (should automatically comes as we know the bday)',
                     ],
                     [
                         'attribute'   =>  'religion',
                         'hint'   =>  'Religion',
+                    ],
+                    [
+                        'attribute'   =>  'community',
+                        'hint'   =>  'Community',
                     ],
                     [
                         'attribute'   =>  'pets',
@@ -83,53 +83,61 @@ class GeneralController extends Controller
                         'hint'   =>  'Education',
                     ],
                     [
-                        'attribute'   =>  'occupation',
-                        'hint'   =>  'Occupation',
+                        'attribute'   =>  'university-college',
+                        'hint'   =>  'University/College',
                     ],
                     [
-                        'attribute'   =>  'date_idea',
-                        'hint'   =>  'Your idea of a perfect date',
+                        'attribute'   =>  'profession',
+                        'hint'   =>  'Profession',
                     ],
-                    [
-                        'attribute'   =>  'social_cause',
-                        'hint'   =>  'A social cause that I care about',
-                    ],
-                    [
-                        'attribute'   =>  'risk_taken',
-                        'hint'   =>  'Biggest risk I have taken',
-                    ],
-                    [
-                        'attribute'   =>  'perfect_relation_things',
-                        'hint'   =>  'The perfect relationship has 3 things',
-                    ],
-                    [
-                        'attribute'   =>  'my_mantra',
-                        'hint'   =>  'My mantra is',
-                    ],
-                    [
-                        'attribute'   =>  'thing_about_me',
-                        'hint'   =>  'One thing you should know about me',
-                    ],
-                    [
-                        'attribute'   =>  'worst_date',
-                        'hint'   =>  'My worst date was',
-                    ],
-                    [
-                        'attribute'   =>  'introduce_to_family',
-                        'hint'   =>  'I will introduce to my family when',
-                    ],
-                    [
-                        'attribute'   =>  'found_the_one',
-                        'hint'   =>  'I will know I have found the one when',
-                    ],
-                    [
-                        'attribute'   =>  'about_me_surprises',
-                        'hint'   =>  'Something about me that surprises people',
-                    ],
-                    [
-                        'attribute'   =>  'political_views',
-                        'hint'   =>  'My political views',
-                    ],
+                    // [
+                    //     'attribute'   =>  'fav_festival',
+                    //     'hint'   =>  'Favourite Festival',
+                    // ],
+                    // [
+                    //     'attribute'   =>  'date_idea',
+                    //     'hint'   =>  'Your idea of a perfect date',
+                    // ],
+                    // [
+                    //     'attribute'   =>  'social_cause',
+                    //     'hint'   =>  'A social cause that I care about',
+                    // ],
+                    // [
+                    //     'attribute'   =>  'risk_taken',
+                    //     'hint'   =>  'Biggest risk I have taken',
+                    // ],
+                    // [
+                    //     'attribute'   =>  'perfect_relation_things',
+                    //     'hint'   =>  'The perfect relationship has 3 things',
+                    // ],
+                    // [
+                    //     'attribute'   =>  'my_mantra',
+                    //     'hint'   =>  'My mantra is',
+                    // ],
+                    // [
+                    //     'attribute'   =>  'thing_about_me',
+                    //     'hint'   =>  'One thing you should know about me',
+                    // ],
+                    // [
+                    //     'attribute'   =>  'worst_date',
+                    //     'hint'   =>  'My worst date was',
+                    // ],
+                    // [
+                    //     'attribute'   =>  'introduce_to_family',
+                    //     'hint'   =>  'I will introduce to my family when',
+                    // ],
+                    // [
+                    //     'attribute'   =>  'found_the_one',
+                    //     'hint'   =>  'I will know I have found the one when',
+                    // ],
+                    // [
+                    //     'attribute'   =>  'about_me_surprises',
+                    //     'hint'   =>  'Something about me that surprises people',
+                    // ],
+                    // [
+                    //     'attribute'   =>  'political_views',
+                    //     'hint'   =>  'My political views',
+                    // ],
                 ],
             ],
             'links' =>  [
@@ -255,7 +263,7 @@ class GeneralController extends Controller
         $rules = LocationRequest::rules();
         if( $this->apiValidator($request->all(), $rules) ) {
             try{
-                $locations = Location::with('locationTranslation')->whereIsActive('y');
+                $locations = Location::with('locationTranslation')->orderBy('is_active');
                 if(!empty($request->search)){
                     $search = $request->search;
                     $locations = $locations->whereHas('locationTranslation', function ($query) use ($search) {
