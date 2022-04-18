@@ -43,18 +43,15 @@ class ReportTest extends TestCase
         $this->postJson(route('api.user.profile-report'),$data)
         ->assertStatus(412)
         ->assertJsonStructure([
-            'meta' => [
-                'api','url','message'
-            ],
-            'data'
+            'data', 'meta' => [ 'api','url','message' ],
         ])->assertJson([
+            'data'  =>  NULL,
             'meta'  =>  [
                 'api'       =>  $this->getVersion(),
                 'url'       =>  url()->current(),
                 'language'  =>  config('utility.default_lang_code'),
                 'message'   =>  trans('validation.in', ['attribute' => __('reported_user') ])
             ],
-            'data' => NULL
         ]);
     }
 
@@ -72,9 +69,7 @@ class ReportTest extends TestCase
         $this->postJson(route('api.user.profile-report'),$data)
         // ->assertOk()
         ->assertJsonStructure([
-            'meta' => [
-                'api','url','message'
-            ],
+            'meta' => [ 'api','url','message' ],
         ])->assertJson([
             'meta'  =>  [
                 'url'       =>  url()->current(),

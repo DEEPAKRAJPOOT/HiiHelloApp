@@ -83,7 +83,7 @@ class TwillioController extends Controller
         if( $this->apiValidator($request->all(), $rules) ) {
             try{
                 $twilioAccountSid   =   config('utility.twillio.account_sid');
-                $pushCredentialSid  =   config('utility.twillio.push_sid');
+                // $pushCredentialSid  =   config('utility.twillio.push_sid');
                 $outgoingAppSid     =   $request->sid ? $request->sid : config('utility.twillio.outgoing_app_sid');
                 $twilioApiKey       =   $request->api_key;
                 $twilioApiSecret    =   $request->api_secret;
@@ -99,7 +99,7 @@ class TwillioController extends Controller
 
                 // Optional: add to allow incoming calls
                 $voiceGrant->setIncomingAllow(true);
-                $voiceGrant->setpushCredentialSid($pushCredentialSid);
+                $voiceGrant->setpushCredentialSid($request->push_id);
 
                 // Add grant to token
                 $token->addGrant($voiceGrant);

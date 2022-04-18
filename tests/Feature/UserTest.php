@@ -38,18 +38,15 @@ class UserTest extends TestCase
         $this->postJson(route('api.user.get-profile'),$data)
         ->assertStatus(412)
         ->assertJsonStructure([
-            'meta' => [
-                'api','url','message'
-            ],
-            'data'
+            'data', 'meta' => [ 'api','url','message' ],
         ])->assertJson([
+            'data'  =>  NULL,
             'meta'  =>  [
                 'api'       =>  $this->getVersion(),
                 'url'       =>  url()->current(),
                 'language'  =>  config('utility.default_lang_code'),
                 'message'   =>  trans('validation.in', ['attribute' => __('id') ])
             ],
-            'data' => NULL
         ]);
     }
 
@@ -62,12 +59,10 @@ class UserTest extends TestCase
         $this->postJson(route('api.user.get-profile'),$data)
         ->assertOk()
         ->assertJsonStructure([
-            'meta' => [
-                'api','url','message'
-            ],
             'data'  =>  [
                 'id', 'full_name', 'email', 'contact' => ['code', 'number'], 'age', 'gender', 'interest', 'profile_photo', 'media' => ['profile_images', 'profile_videos'], 'flags' => [ 'profile_setuped', 'verified_staus', 'likes', 'matches', 'chats'],
             ],
+            'meta' => [ 'api','url','message' ],
         ])->assertJson([
             'meta'  =>  [
                 'url'       =>  url()->current(),
@@ -109,12 +104,8 @@ class UserTest extends TestCase
         $this->postJson(route('api.user.common-age'),[])
         ->assertOk()
         ->assertJsonStructure([
-            'data'  =>  [
-                'max_date', 'min_date'
-            ],
-            'meta' => [
-                'url','api','language','message'
-            ],
+            'data'  =>  [ 'max_date', 'min_date' ],
+            'meta' => [ 'url','api','language','message' ],
         ])->assertJson([
             'meta'  =>  [
                 'url'       =>  url()->current(),

@@ -219,6 +219,15 @@ Breadcrumbs::register('dashboard', function ($breadcrumbs) {
 	    $breadcrumbs->push('Edit City', route(Auth::getDefaultDriver().'.cities.edit', $id));
 	});
 
+
+	// Push Notification -------------------------------------------------------------------------------------------------------------------------------------------------------
+	Breadcrumbs::register('push_notification_create', function($breadcrumbs)
+	{
+		$breadcrumbs->parent('dashboard');
+	    $breadcrumbs->push('Send Push Notifiaction', route(Auth::getDefaultDriver().'.push-notification.create'));
+	});
+
+
 	// CMS Pages ---------------------------------------------------------------------------------------------------------------------------------------------------
 	Breadcrumbs::register('cms_list', function ($breadcrumbs) {
 		$breadcrumbs->parent('dashboard');

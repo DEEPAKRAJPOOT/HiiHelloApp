@@ -43,10 +43,13 @@ function getPermissions($user_type = 'normal')
             12 =>[ //City
                 'permissions' => 'access,add,edit,delete'
             ],
-            13 =>[ //CMS Pages
+            13 =>[ // Push Notification
+                'permissions' => 'access,add'
+            ],
+            14 =>[ //CMS Pages
                 'permissions' => 'access,edit'
             ],
-            14 =>[ //Site Configurations
+            15 =>[ //Site Configurations
                 'permissions' => 'access'
             ],
         ];
@@ -56,8 +59,10 @@ function getPermissions($user_type = 'normal')
 }
 
 // Call CURL
-function fireCURL($url, $type, $data = NULL)
+function fireCURL($url, $type, $data = NULL, $header = NULL)
 {
+    if(empty($header)){ $header = array("Content-Type:application/json"); }
+
     $curl = curl_init();
     curl_setopt_array($curl, array(
         CURLOPT_URL => $url,
@@ -69,7 +74,7 @@ function fireCURL($url, $type, $data = NULL)
         CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
         CURLOPT_CUSTOMREQUEST => strtoupper($type),
         CURLOPT_POSTFIELDS => $data,
-        CURLOPT_HTTPHEADER => array("Content-Type:application/json"),
+        CURLOPT_HTTPHEADER => $header,
     ));
 
     $response = curl_exec($curl);

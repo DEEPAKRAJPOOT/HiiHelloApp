@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Http\Requests\Api\Twillio;
+namespace App\Http\Requests\Admin;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class CreateAccessTokenRequest extends FormRequest
+class PushNotificationRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -23,13 +23,11 @@ class CreateAccessTokenRequest extends FormRequest
      */
     public function rules()
     {
+        $unless = "change_status";
         return [
-            'api_key'      =>  'required|string',
-            'api_secret'   =>  'required|string',
-            'sid'          =>  'required|string',
-            'push_id'      =>  'required|string',
-            'identity'     =>  'required|string',
-            'time_line'    =>  'nullable|numeric'
+            'user_type'     =>  'required_unless:action,'.$unless,
+            'subject'       =>  'required_unless:action,'.$unless.'|min:3|max:500',
+            'message'       =>  'required_unless:action,'.$unless.'|min:3',
         ];
     }
 }

@@ -236,6 +236,8 @@ return [
         "room"                  =>  "कमरा",
         "identity"              =>  "पहचान",
         "time_line"             =>  "समय रेखा",
-        "participant_id"        =>  "प्रतिभागी"
+        "participant_id"        =>  "प्रतिभागी",
+        "full_name"             =>  "पूरा नाम",
+        "facebook_id"           =>  "फेसबुक आईडी"
     ],
 ];

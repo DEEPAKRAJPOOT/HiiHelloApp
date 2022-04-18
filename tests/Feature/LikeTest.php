@@ -42,18 +42,15 @@ class LikeTest extends TestCase
         $this->postJson(route('api.user.add-like'),$data)
         ->assertStatus(412)
         ->assertJsonStructure([
-            'meta' => [
-                'api','url','message'
-            ],
-            'data'
+            'data', 'meta' => [ 'api','url','message' ],
         ])->assertJson([
+            'data'  =>  NULL,
             'meta'  =>  [
                 'api'       =>  $this->getVersion(),
                 'url'       =>  url()->current(),
                 'language'  =>  config('utility.default_lang_code'),
                 'message'   =>  trans('validation.in', ['attribute' => __('user_id') ])
             ],
-            'data' => NULL
         ]);
     }
 
@@ -69,9 +66,7 @@ class LikeTest extends TestCase
         $this->postJson(route('api.user.add-like'),$data)
         // ->assertOk()
         ->assertJsonStructure([
-            'meta' => [
-                'api','url','message'
-            ],
+            'meta' => [ 'api','url','message' ],
         ])->assertJson([
             'meta'  =>  [
                 'url'       =>  url()->current(),
@@ -91,9 +86,7 @@ class LikeTest extends TestCase
         $this->postJson(route('api.user.get-likes'),[])
         ->assertOk()
         ->assertJsonStructure([
-            'meta' => [
-                'api','url','message'
-            ],
+            'meta' => [ 'api','url','message' ],
         ])->assertJson([
             'meta'  =>  [
                 'url'       =>  url()->current(),
