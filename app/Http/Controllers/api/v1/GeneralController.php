@@ -22,6 +22,7 @@ class GeneralController extends Controller
         $country    =   Country::select('updated_at')->orderBy('updated_at', 'DESC')->first();
         $cms_page   =   CmsPage::select('updated_at')->orderBy('updated_at', 'DESC')->first();
         $location   =   Location::select('updated_at')->orderBy('updated_at', 'DESC')->first();
+        $attributes =   ProfileDetail::whereIsActive('y')->distinct()->pluck('attribute')->toArray();
 
         $this->response['data'] = [
             'version'   =>  [
@@ -41,104 +42,7 @@ class GeneralController extends Controller
             ],
             'profile_details'   =>  [
                 'api_url'       =>  route('api.profile.get-details'),
-                'details'    =>  [
-                    [
-                        'attribute'   =>  'relationship_status',
-                        'hint'   =>  'Relationship status',
-                    ],
-                    [
-                        'attribute'   =>  'you_are_here',
-                        'hint'   =>  'You are here for',
-                    ],
-                    [
-                        'attribute'   =>  'food_preference',
-                        'hint'   =>  'Food Preference',
-                    ],
-                    [
-                        'attribute'   =>  'drinking',
-                        'hint'   =>  'Drinking',
-                    ],
-                    [
-                        'attribute'   =>  'smoking',
-                        'hint'   =>  'Smoking',
-                    ],
-                    [
-                        'attribute'   =>  'sun_sign',
-                        'hint'   =>  'Sun Sign (should automatically comes as we know the bday)',
-                    ],
-                    [
-                        'attribute'   =>  'religion',
-                        'hint'   =>  'Religion',
-                    ],
-                    [
-                        'attribute'   =>  'community',
-                        'hint'   =>  'Community',
-                    ],
-                    [
-                        'attribute'   =>  'pets',
-                        'hint'   =>  'Pets',
-                    ],
-                    [
-                        'attribute'   =>  'education',
-                        'hint'   =>  'Education',
-                    ],
-                    [
-                        'attribute'   =>  'university-college',
-                        'hint'   =>  'University/College',
-                    ],
-                    [
-                        'attribute'   =>  'profession',
-                        'hint'   =>  'Profession',
-                    ],
-                    // [
-                    //     'attribute'   =>  'fav_festival',
-                    //     'hint'   =>  'Favourite Festival',
-                    // ],
-                    // [
-                    //     'attribute'   =>  'date_idea',
-                    //     'hint'   =>  'Your idea of a perfect date',
-                    // ],
-                    // [
-                    //     'attribute'   =>  'social_cause',
-                    //     'hint'   =>  'A social cause that I care about',
-                    // ],
-                    // [
-                    //     'attribute'   =>  'risk_taken',
-                    //     'hint'   =>  'Biggest risk I have taken',
-                    // ],
-                    // [
-                    //     'attribute'   =>  'perfect_relation_things',
-                    //     'hint'   =>  'The perfect relationship has 3 things',
-                    // ],
-                    // [
-                    //     'attribute'   =>  'my_mantra',
-                    //     'hint'   =>  'My mantra is',
-                    // ],
-                    // [
-                    //     'attribute'   =>  'thing_about_me',
-                    //     'hint'   =>  'One thing you should know about me',
-                    // ],
-                    // [
-                    //     'attribute'   =>  'worst_date',
-                    //     'hint'   =>  'My worst date was',
-                    // ],
-                    // [
-                    //     'attribute'   =>  'introduce_to_family',
-                    //     'hint'   =>  'I will introduce to my family when',
-                    // ],
-                    // [
-                    //     'attribute'   =>  'found_the_one',
-                    //     'hint'   =>  'I will know I have found the one when',
-                    // ],
-                    // [
-                    //     'attribute'   =>  'about_me_surprises',
-                    //     'hint'   =>  'Something about me that surprises people',
-                    // ],
-                    // [
-                    //     'attribute'   =>  'political_views',
-                    //     'hint'   =>  'My political views',
-                    // ],
-                ],
+                'attributes'    =>  $attributes,
             ],
             'links' =>  [
                 'storage'   =>  config("utility.s3.prefix_url"),

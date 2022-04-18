@@ -34,20 +34,12 @@ class GeneralTest extends TestCase
         ->assertJsonStructure([
             'data'  =>  [
                 'version'   =>  [
-                    'ios'       =>  [
-                        'latest',
-                        'minimum',
-                    ],
-                    'android'   =>  [
-                        'latest',
-                        'minimum',
-                    ],
+                    'ios'       =>  [ 'latest', 'minimum', ],
+                    'android'   =>  [ 'latest', 'minimum', ],
                 ],
                 'updates', 'links'
             ],
-            'meta'  =>  [
-                'url', 'api', 'message', 'language'
-            ],
+            'meta'  =>  [ 'url', 'api', 'message', 'language' ],
         ])
         ->assertJson([
             'data'  =>  [
@@ -88,9 +80,7 @@ class GeneralTest extends TestCase
         $this->postJson(route('api.get-countries'),[])
         ->assertOk()
         ->assertJsonStructure([
-            'meta' => [
-                'api','url','message'
-            ],
+            'meta' => [ 'api','url','message' ],
         ])->assertJson([
             'meta'  =>  [
                 'url'       =>  url()->current(),
@@ -106,9 +96,7 @@ class GeneralTest extends TestCase
         $this->postJson(route('api.get-cms-pages'),[])
         ->assertOk()
         ->assertJsonStructure([
-            'meta' => [
-                'api','url','message'
-            ],
+            'meta' => [ 'api','url','message' ],
         ])->assertJson([
             'meta'  =>  [
                 'url'       =>  url()->current(),
@@ -127,18 +115,15 @@ class GeneralTest extends TestCase
         $this->postJson(route('api.get-locations'),$data)
         ->assertStatus(412)
         ->assertJsonStructure([
-            'meta' => [
-                'api','url','message'
-            ],
-            'data'
+            'data', 'meta' => [ 'api','url','message' ],
         ])->assertJson([
+            'data'  =>  NULL,
             'meta'  =>  [
                 'api'       =>  $this->getVersion(),
                 'url'       =>  url()->current(),
                 'language'  =>  config('utility.default_lang_code'),
                 'message'   =>  trans('validation.max.string', ['attribute' => __('search'), 'max' => 150])
             ],
-            'data' => NULL
         ]);
     }
 
@@ -147,9 +132,7 @@ class GeneralTest extends TestCase
         $this->postJson(route('api.get-locations'),[])
         ->assertOk()
         ->assertJsonStructure([
-            'meta' => [
-                'api','url','message'
-            ],
+            'meta' => [ 'api','url','message' ],
         ])->assertJson([
             'meta'  =>  [
                 'url'       =>  url()->current(),
@@ -168,18 +151,15 @@ class GeneralTest extends TestCase
         $this->postJson(route('api.get-interests'),$data)
         ->assertStatus(412)
         ->assertJsonStructure([
-            'meta' => [
-                'api','url','message'
-            ],
-            'data'
+            'data', 'meta' => [ 'api','url','message' ],
         ])->assertJson([
+            'data'  =>  NULL,
             'meta'  =>  [
                 'api'       =>  $this->getVersion(),
                 'url'       =>  url()->current(),
                 'language'  =>  config('utility.default_lang_code'),
                 'message'   =>  trans('validation.in', ['attribute' => __('location id') ])
             ],
-            'data' => NULL
         ]);
     }
 
@@ -193,9 +173,7 @@ class GeneralTest extends TestCase
         $this->postJson(route('api.get-interests'),$data)
         ->assertOk()
         ->assertJsonStructure([
-            'meta' => [
-                'api','url','message'
-            ],
+            'meta' => [ 'api','url','message' ],
         ])->assertJson([
             'meta'  =>  [
                 'url'       =>  url()->current(),
@@ -212,9 +190,7 @@ class GeneralTest extends TestCase
         $this->postJson(route('api.get-faqs'),[])
         ->assertOk()
         ->assertJsonStructure([
-            'meta' => [
-                'api','url','message', 'total'
-            ],
+            'meta' => [ 'api','url','message', 'total' ],
         ])->assertJson([
             'meta'  =>  [
                 'url'       =>  url()->current(),

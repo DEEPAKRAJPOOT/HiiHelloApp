@@ -9,4 +9,6 @@ class ProfileDetailTranslation extends Model
 {
     use HasFactory;
     protected $fillable = ['value'];
+
+    public $timestamps = false;
 }

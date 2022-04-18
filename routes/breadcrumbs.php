@@ -92,6 +92,25 @@ Breadcrumbs::register('dashboard', function ($breadcrumbs) {
 	});
 
 
+	// Profile Details -------------------------------------------------------------------------------------------------------------------------------------------------------
+	Breadcrumbs::register('profile_details_list', function($breadcrumbs)
+	{
+		$breadcrumbs->parent('dashboard');
+	    $breadcrumbs->push('Profile Details', route(Auth::getDefaultDriver().'.profile-details.index'));
+	});
+	Breadcrumbs::register('profile_details_create', function($breadcrumbs)
+	{
+		$breadcrumbs->parent('profile_details_list');
+	    $breadcrumbs->push('Add New Profile Detail', route(Auth::getDefaultDriver().'.profile-details.create'));
+	});
+
+	Breadcrumbs::register('profile_details_update', function($breadcrumbs, $id)
+	{
+		$breadcrumbs->parent('profile_details_list');
+	    $breadcrumbs->push('Edit Profile Detail', route(Auth::getDefaultDriver().'.profile-details.edit', $id));
+	});
+
+
 	// Interests Management -------------------------------------------------------------------------------------------------------------------------------------------------------
 	Breadcrumbs::register('interests_list', function($breadcrumbs)
 	{
@@ -199,6 +218,15 @@ Breadcrumbs::register('dashboard', function ($breadcrumbs) {
 		$breadcrumbs->parent('cities_list');
 	    $breadcrumbs->push('Edit City', route(Auth::getDefaultDriver().'.cities.edit', $id));
 	});
+
+
+	// Push Notification -------------------------------------------------------------------------------------------------------------------------------------------------------
+	Breadcrumbs::register('push_notification_create', function($breadcrumbs)
+	{
+		$breadcrumbs->parent('dashboard');
+	    $breadcrumbs->push('Send Push Notifiaction', route(Auth::getDefaultDriver().'.push-notification.create'));
+	});
+
 
 	// CMS Pages ---------------------------------------------------------------------------------------------------------------------------------------------------
 	Breadcrumbs::register('cms_list', function ($breadcrumbs) {

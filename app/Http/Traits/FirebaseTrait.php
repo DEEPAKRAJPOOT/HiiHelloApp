@@ -1,6 +1,8 @@
 <?php
 
 namespace App\Http\Traits;
+use App\Models\Notification;
+use App\Models\NotificationStatus;
 
 trait FirebaseTrait {
 
@@ -56,4 +58,72 @@ trait FirebaseTrait {
 		curl_close($ch);
 		return $result;
 	}
+
+	// Send push notifications to all users
+    public function sendPushNotificationToAll($notification, $users)
+    {        
+        $dbNotification = Notification::create($notification);
+        $status = [];
+        $tokens = [];
+        foreach ($users as $user) {
+            $status[] = [
+                'user_id'           =>  $user->id,
+                'notification_id'   =>  $dbNotification->id,
+                'is_read'           =>  'n',
+                'created_at'        =>  \Carbon\Carbon::now(),
+                'updated_at'        =>  \Carbon\Carbon::now(),
+            ];
+            if( !empty($user->deviceToken) && !empty($user->deviceToken->token) ) {
+                $tokens[$user->deviceToken->type][] = $user->deviceToken->token;
+            }
+        }
+        NotificationStatus::insert($status);
+        $data = [
+            'key'           =>  $dbNotification->key ?? "",
+            'value'         =>  $dbNotification->value ?? "",
+            'user_id'       =>  $dbNotification->user_id,
+            'type'          =>  $dbNotification->type,
+            'image_url'     =>  $dbNotification->image ? generateURL($dbNotification->image) : "",
+        ];
+        $url = "https://fcm.googleapis.com/fcm/send";
+        $header = ['Content-Type:application/json', 'Authorization:key='.config('utility.google.fcm') ];
+        if( !empty($tokens['ios']) ) {            
+            $iosNotification = [
+                'priority'          => 'high',
+                'registration_ids'  => $tokens['ios'],
+                'content_available' =>  false,
+                'mutable_content'   =>  true,
+                'notification'      =>  [
+                    'title' =>  $dbNotification->title,
+                    'body'  =>  str_limit($dbNotification->message, 50),
+                    'badge' =>  0,
+                    'sound' =>  'default'
+                ],
+            ];
+
+            $iosNotification['data'] = $data;
+            $sendIosNotification = json_encode($iosNotification);
+            fireCURL($url, "POST", $sendIosNotification, $header);
+        }
+
+        if( !empty($tokens['android']) ) {
+            $mData = array_merge($data, [
+                        'title' =>  $dbNotification->title,
+                        'body'  =>  str_limit($dbNotification->message, 50)]
+                    );
+            $androidNotification = [
+                'priority'          =>  'high',
+                'registration_ids'  =>  $tokens['android'],
+                'data'              =>  $mData,
+                'notification'      =>  [
+                    'title'     =>  $dbNotification->title,
+                    'body'      =>  str_limit($dbNotification->message, 50),
+                    'badge'     =>  0,
+                    'image'     =>  $dbNotification->image ? generateURL($dbNotification->image) : "",
+                ],
+            ];
+            $data = json_encode($androidNotification);
+            fireCURL($url, "POST", $data, $header);
+        }
+    }
 }

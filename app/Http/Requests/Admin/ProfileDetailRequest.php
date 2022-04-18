@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Http\Requests\Api\Twillio;
+namespace App\Http\Requests\Admin;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class CreateAccessTokenRequest extends FormRequest
+class ProfileDetailRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -23,13 +23,12 @@ class CreateAccessTokenRequest extends FormRequest
      */
     public function rules()
     {
+        $unless = "change_status";
+        $default_lang = config('utility.default_lang_code');
+
         return [
-            'api_key'      =>  'required|string',
-            'api_secret'   =>  'required|string',
-            'sid'          =>  'required|string',
-            'push_id'      =>  'required|string',
-            'identity'     =>  'required|string',
-            'time_line'    =>  'nullable|numeric'
+            'attribute'                 =>  'required_unless:action,'.$unless.'|max:500',
+            $default_lang.'_value'      =>  'required_unless:action,'.$unless.'|max:500',
         ];
     }
 }
