@@ -66,7 +66,24 @@ class UsersController extends Controller
      */
     public function show(User $user)
     {
-        //
+        $user = User::with([
+            'country.countryTransDefault','location.locationTransDefault',
+            'language','userDetails',
+            'pets.pet.profileDetailTransDefault',
+            'interests.interest.interestTransDefault',
+            'favFestivals.festival.profileDetailTransDefault',
+            'relationshipStatus.profileDetailTransDefault','youAreHere.profileDetailTransDefault',
+            'foodPreference.profileDetailTransDefault','drinking.profileDetailTransDefault',
+            'smoking.profileDetailTransDefault','starSign.profileDetailTransDefault',
+            'religion.profileDetailTransDefault','community.profileDetailTransDefault',
+            'education.profileDetailTransDefault','dateIdea.profileDetailTransDefault',
+            'socialCause.profileDetailTransDefault','riskTaken.profileDetailTransDefault',
+            'perfectRelation.profileDetailTransDefault','myMantra.profileDetailTransDefault',
+            'oneThingKnow.profileDetailTransDefault','worstDate.profileDetailTransDefault',
+            'introFamily.profileDetailTransDefault','foundOne.profileDetailTransDefault',
+            'aboutSurprising.profileDetailTransDefault','politicalView.profileDetailTransDefault',
+            ])->firstOrFail();
+        return view('admin.pages.users.view',compact('user'))->with(['custom_title' => 'User']);
     }
 
     /**

@@ -43,7 +43,7 @@ class RoleTableSeeder extends Seeder
                     'icon'                      =>  'icon-users',
                     'image'                     =>  '',
                     'icon_type'                 =>  'line-icons',
-                    'allowed_permissions'       =>  'access,add,edit,delete',
+                    'allowed_permissions'       =>  'access,view,add,edit,delete',
                     'sequence'                  =>  1,
                     'is_display'                =>  'y',
                     'is_active'                 =>  'y',

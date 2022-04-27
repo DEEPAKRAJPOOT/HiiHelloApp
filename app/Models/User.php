@@ -37,7 +37,7 @@ class User extends Authenticatable
     public function location(){ return $this->belongsTo('App\Models\Location'); }
     public function language(){ return $this->belongsTo('App\Models\Language'); }
 
-    public function likes(){ return $this->hasMany('App\Models\Like','liker_id','id'); }
+    public function likes(){ return $this->hasMany('App\Models\Like','user_id','id'); }
     public function interests(){ return $this->hasMany('App\Models\UserInterest'); }
     public function favFestivals(){ return $this->hasMany('App\Models\UserFestival'); }
     public function pets(){ return $this->hasMany('App\Models\UserPet'); }

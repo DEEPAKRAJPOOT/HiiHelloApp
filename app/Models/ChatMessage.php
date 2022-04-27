@@ -36,6 +36,7 @@ class ChatMessage extends Model
             'title'     =>  $account->full_name,
             'type'      =>  'chat-message',
             'id'        =>  $chatMessage->custom_id,
+            'room_id'   =>  $chatMessage->room ? $chatMessage->room->custom_id : "",
             'name'      =>  $account->full_name,
             'profile'   =>  generateURL($account->profile_photo),
             'message'   =>  $message,
@@ -43,7 +44,11 @@ class ChatMessage extends Model
     }
 
     public function getMessage(){
+        // $string = preg_replace("/[\r\n]+/", " ", $this->message);
+        // $message = json_decode($string);
+
         $message = json_decode( preg_replace("/\r|\n/", " ", $this->message) );
+        // dd($message);
         if(!empty($message) && !empty($message->type)){            
             if($message->type == 'location'){
                 if(!empty($message->other) && !empty($message->other->lat && !empty($message->other->lng) ) ){

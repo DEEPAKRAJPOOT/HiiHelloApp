@@ -17,66 +17,12 @@ class TwillioController extends Controller
     private $version = "v.1.0";
     public function getVersion(){ return $this->version; }
 
-    // Create Api Key & Secret Using App Name
-    public function createApiKey(Request $request)
-    {
-        $rules = CreateApiKeyRequest::rules();
-        if( $this->apiValidator($request->all(), $rules) ) {
-            try{
-                $sid        =   config('utility.twillio.account_sid');
-                $token      =   config('utility.twillio.account_token');
-                $twilio     =   new Client($sid, $token);
-                $new_key    =   $twilio->newKeys->create(["friendlyName" => $request->name]);
-                    
-                $this->status = Response::HTTP_OK;
-                return (new TwillioApiKey($new_key))
-                    ->additional([
-                        'meta' => [
-                            'message'   =>  trans('api.list', ['entity' => __("Twilio Api Key") ]),
-                        ] ]);
-            } catch (\Exception $e) {
-                $this->response['meta']['message'] = trans('api.went_wrong');
-                $this->status = Response::HTTP_NOT_FOUND;  
-                $this->storeErrorLog($e,'twilio_create_api_key');
-            }
-        }
-        return $this->returnResponse();
-    }
-
-    // Create OutGoing Application SID Using App Name
-    public function getOutgoingAppSid(Request $request)
-    {
-        $rules = OutgoingAppSidRequest::rules();
-        if( $this->apiValidator($request->all(), $rules) ) {
-            try{
-                $sid        =   config('utility.twillio.account_sid');
-                $token      =   config('utility.twillio.account_token');
-                $twilio     =   new Client($sid, $token);
-                    
-                $application = $twilio->applications
-                                    ->create([
-                                       "voiceMethod" => "GET",
-                                       "voiceUrl" => "http://demo.twilio.com/docs/voice.xml",
-                                       "friendlyName" => $request->name
-                                   ]);
-                $this->status = Response::HTTP_OK;
-                return ([
-                    'data'  =>  [
-                        'sid'   =>  $application->sid,
-                    ],
-                    'meta' => [
-                        'message'   =>  trans('api.list', ['entity' => __("Twilio Outgoing App Sid") ]),
-                    ] ]);
-            } catch (\Exception $e) {
-                $this->response['meta']['message'] = trans('api.went_wrong');
-                $this->status = Response::HTTP_NOT_FOUND;  
-                $this->storeErrorLog($e,'twilio_outgoing_app_sid');
-            }
-        }
-        return $this->returnResponse();
-    }
-
-    // Create Voice Token For Call
+    /** 
+    * Create voice token for audio calls
+    * Same api for android & ios usage
+    * @param  \Illuminate\Http\Request  $request
+    * @return \Illuminate\Http\Response
+    */
     public function createAccessToken(Request $request)
     {
         $rules = CreateAccessTokenRequest::rules();
@@ -119,6 +65,12 @@ class TwillioController extends Controller
         return $this->returnResponse();
     }
 
+    /**
+    * Hanlde voice response using ip_addrss/voice url 
+    * Need to set /voice url in twillio account configuration
+    * @param  \Illuminate\Http\Request  $request
+    * @return \Twilio\TwiML\VoiceResponse
+    */
     public function voice(Request $request)
     {
         $data = $request->all();
@@ -141,6 +93,73 @@ class TwillioController extends Controller
         return $response;
     }
 
+
+    /******************************************************** EXTRA ************************************************************/
+
+    /*
+    // Create Api Key & Secret Using App Name
+    public function createApiKey(Request $request)
+    {
+        $rules = CreateApiKeyRequest::rules();
+        if( $this->apiValidator($request->all(), $rules) ) {
+            try{
+                $sid        =   config('utility.twillio.account_sid');
+                $token      =   config('utility.twillio.account_token');
+                $twilio     =   new Client($sid, $token);
+                $new_key    =   $twilio->newKeys->create(["friendlyName" => $request->name]);
+                    
+                $this->status = Response::HTTP_OK;
+                return (new TwillioApiKey($new_key))
+                    ->additional([
+                        'meta' => [
+                            'message'   =>  trans('api.list', ['entity' => __("Twilio Api Key") ]),
+                        ] ]);
+            } catch (\Exception $e) {
+                $this->response['meta']['message'] = trans('api.went_wrong');
+                $this->status = Response::HTTP_NOT_FOUND;  
+                $this->storeErrorLog($e,'twilio_create_api_key');
+            }
+        }
+        return $this->returnResponse();
+    }
+    */
+
+    /*
+    // Create OutGoing Application SID Using App Name
+    public function getOutgoingAppSid(Request $request)
+    {
+        $rules = OutgoingAppSidRequest::rules();
+        if( $this->apiValidator($request->all(), $rules) ) {
+            try{
+                $sid        =   config('utility.twillio.account_sid');
+                $token      =   config('utility.twillio.account_token');
+                $twilio     =   new Client($sid, $token);
+                    
+                $application = $twilio->applications
+                                    ->create([
+                                       "voiceMethod" => "GET",
+                                       "voiceUrl" => "http://demo.twilio.com/docs/voice.xml",
+                                       "friendlyName" => $request->name
+                                   ]);
+                $this->status = Response::HTTP_OK;
+                return ([
+                    'data'  =>  [
+                        'sid'   =>  $application->sid,
+                    ],
+                    'meta' => [
+                        'message'   =>  trans('api.list', ['entity' => __("Twilio Outgoing App Sid") ]),
+                    ] ]);
+            } catch (\Exception $e) {
+                $this->response['meta']['message'] = trans('api.went_wrong');
+                $this->status = Response::HTTP_NOT_FOUND;  
+                $this->storeErrorLog($e,'twilio_outgoing_app_sid');
+            }
+        }
+        return $this->returnResponse();
+    }
+    */
+
+    /*
     public function connectWithTwilio(Request $request)
     {    
         $user_ids = User::whereIsActive('y')->pluck('custom_id')->toArray();
@@ -163,7 +182,9 @@ class TwillioController extends Controller
         }
         return $this->returnResponse();
     }
+    */
 
+    /*
     public function makeCall(Request $request)
     {
         $sid        =   config('utility.twillio.account_sid');
@@ -175,10 +196,10 @@ class TwillioController extends Controller
         // $auth_token = $_ENV["TWILIO_ACCOUNT_SID"]
 
         // A Twilio number you own with Voice capabilities
-        $twilio_number = "+919909977985";
+        $twilio_number = "+91123456789";
 
         // Where to make a voice call (your cell phone?)
-        $to_number = "+918866280954";
+        $to_number = "+911234567988";
 
         $client = new Client($sid, $token);
         $client->account->calls->create(  
@@ -191,7 +212,9 @@ class TwillioController extends Controller
 
         dd($client);
     }
+    */
 
+    /*
     public function ReceiveCall(Request $request)
     {
         // Start our TwiML response
@@ -205,4 +228,5 @@ class TwillioController extends Controller
 
         dd($response);
     }
+    */
 }
