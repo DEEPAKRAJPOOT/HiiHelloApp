@@ -11,7 +11,7 @@ function getPermissions($user_type = 'normal')
                 'permissions' => 'access'
             ],
             2 =>[ // Users
-                'permissions' => 'access,add,edit,delete'
+                'permissions' => 'access,view,add,edit,delete'
             ],
             3 =>[ //Role Management
                 'permissions' => 'access,add,edit,delete'

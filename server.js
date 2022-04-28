@@ -41,7 +41,7 @@ let overallUsers = [];
 
 io.on('connection', (socket)=>{
 	/* User Joined The Global Chat When It's Online */
-	socket.on('join-global',(request)=>{
+	socket.on('join-global',(request)=>{		
 		socket.join(request.user_id);
 		console.log("********* OVERALL JOINED With ID :: "+request.user_id + " *********");
 
@@ -52,7 +52,7 @@ io.on('connection', (socket)=>{
 	});
 
 	/* User Joined The Room Chat When Enter In Any Room */
-	socket.on('join-room',(request)=>{
+	socket.on('join-room',(request)=>{		
 		socket.join(request.room_id);
 		console.log("********* CHAT JOINED With Room ID :: "+request.room_id + " *********");
 
@@ -102,6 +102,31 @@ io.on('connection', (socket)=>{
 		io.sockets.emit("offline", overallUsers);
 	});
 
+
+	/* Offline (Auto Disconnect By Socket) */
+  	socket.on("disconnecting", (reason) => {
+  		let user_id = [...socket.rooms][1];  // request.user_id (custom_id) which we have pass at join time
+      	console.log("Disconnect User ID ::", user_id);
+
+      	// Remove From ChatRoom
+		for (const [key, value] of Object.entries(users)) {
+			if (value.includes(user_id)) {
+				value.splice( value.indexOf(user_id) ,1)
+
+				// Free Room Key If No Users Are There
+				if (value.length == 0) delete users[key]
+			}
+		}
+		
+      	// Remove From Overall List
+		let user = overallUsers.indexOf(user_id);
+		if (user > -1) overallUsers.splice(user, 1);
+
+		// Send Offline Method
+		io.sockets.emit("offline", overallUsers);
+  	});
+
+
 	/* Send New Message */
 	socket.on('send-message', (request) => {
 		if(request.id && request.room_id && request.sender_id && request.receiver_id && request.message_type && request.message_value && request.time){
@@ -147,12 +172,18 @@ io.on('connection', (socket)=>{
 						}
 						else{
 							json_message = '{ "type" : "'+request.message_type+'", "value" : "'+request.message_value+'", "other" : {} }';
-						}
+						}	
+
+						console.log("users :: ",users);
+						console.log("overallUsers :: ",overallUsers);
 
 						// If Both User In Same Room (Both Online)
 						let msg_status = 'send';
-						if ( users[request.room_id] && users[request.room_id].includes(request.sender_id) && users[request.room_id].includes(request.receiver_id)){
-							msg_status = 'read';
+						if ( overallUsers.includes(request.receiver_id) 
+							&& users[request.room_id] 
+							&& users[request.room_id].includes(request.sender_id) 
+							&& users[request.room_id].includes(request.receiver_id)){
+								msg_status = 'read';
 						}
 
 						let addMessageData = {
@@ -249,8 +280,10 @@ io.on('connection', (socket)=>{
 									io.in(request.receiver_id).emit('new-message', returnNewMsg);	
 									console.log("New Message Object ::"+JSON.stringify(returnNewMsg));
 								}
-							}else{
-								// Send Push Notification
+							}
+
+							// Send Push Notification
+							if(msg_status != 'read'){
 								push_message = request.message_value; 
 								sendNotification(request.room_id, request.id, push_message);
 								console.log("Log: Push Notification");
@@ -354,7 +387,7 @@ io.on('connection', (socket)=>{
 	* message => send message on notification
 	*/
 	function sendNotification(room_id, chat_message, message) {
-		if( users[room_id] !== undefined && users[room_id].length < 2 )	{
+		// if( users[room_id] !== undefined && users[room_id].length < 2 )	{
 			message = message.replace(/(\r\n|\n|\r)/gm, "");
 
 			axios.post(APP_URL + 'api/v1/chat/send-push/'+chat_message+'/'+( encodeURIComponent(message) ) )
@@ -364,11 +397,11 @@ io.on('connection', (socket)=>{
 			  	.catch(error => {
 			   		console.error(error); 
 				});
-		}else{
-			io.in(room_id).emit('went-wrong','Notification Details Not Found');
-			console.log('Notification Details Not Found'); 
-			return false;
-		}
+		// }else{
+		// 	io.in(room_id).emit('went-wrong','Notification Details Not Found');
+		// 	console.log('Notification Details Not Found'); 
+		// 	return false;
+		// }
 	}
 });
 

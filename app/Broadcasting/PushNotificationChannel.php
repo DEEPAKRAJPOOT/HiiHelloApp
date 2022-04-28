@@ -23,23 +23,23 @@ class PushNotificationChannel extends Controller
             'body'      =>  $message->message,
             'badge'     =>  $unReadNotifications,
         ];
-        
+            
         $data = [
-            'id'    =>  $message->id ?? NULL,
-            'type'  =>  $message->type ?? "general-notification",
-            // 'image' =>  'https://dwisi.s3.me-south-1.amazonaws.com/product/images/WOjOEV5wS17qzYnkKcJKlpDV6xdsianMBONJM0V8.jpg',
-            'image' =>  $notifiable->profile_photo ? generateURL($notifiable->profile_photo) : "",
+            'id'        =>  $message->id ?? NULL,
+            'type'      =>  $message->type ?? "general-notification",
+            'image'     =>  $notifiable->profile_photo ? generateURL($notifiable->profile_photo) : "",
         ];
 
         if ($message->type == 'chat-message') {
-            $data['name'] = $message->name;
-            $data['profile'] = $message->profile;
+            $data['name']       =   $message->name;
+            $data['profile']    =   $message->profile;
+            $data['room_id']    =   $message->room_id;
         }
 
         $send_notification = [
-            'priority'  => 'high',
-            'to'        => $deviceToken->token,
-            'sound'     => 'default',
+            'priority'  =>  'high',
+            'to'        =>  $deviceToken->token,
+            'sound'     =>  'default',
         ];
 
         if( $deviceToken->type == 'android' ) {

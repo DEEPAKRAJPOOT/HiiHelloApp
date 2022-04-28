@@ -38,5 +38,6 @@
     "device" : "उपकरण",
     "token" : "टोकन",
     "type" : "प्रकार",
-    "participant_id" : "प्रतिभागी"
+    "participant_id" : "प्रतिभागी",
+    "room" : "कमरा"
 }

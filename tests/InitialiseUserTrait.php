@@ -11,6 +11,8 @@ use App\Models\Interest;
 use App\Models\Language;
 use App\Models\Faq;
 use App\Models\User;
+use App\Models\ChatRoom;
+use App\Models\ChatMessage;
 
 trait InitialiseUserTrait
 {
@@ -132,5 +134,27 @@ trait InitialiseUserTrait
     protected function getLocation(){
         $interest = Interest::whereNotNull('location_id')->latest()->firstOrFail();
         return Location::whereId($interest->location_id)->firstOrFail();
+    }
+
+    protected function getChatRoomUser(){
+        $chat_room = ChatRoom::firstOrFail();
+        $user = User::whereId($chat_room->creator_id)->whereIsActive('y')->firstOrFail();
+        return $user;
+    }
+
+    protected function getChatRoom(){
+        return ChatRoom::firstOrFail();
+    }
+
+    protected function storeNewChatMessage($chat_room){
+        $chat_message = ChatMessage::create([
+            'custom_id'     =>  getUniqueString('chat_messages'),
+            'room_id'       =>  $chat_room->id,
+            'sender_id'     =>  $chat_room->creator_id,
+            'receiver_id'   =>  $chat_room->participate_id,
+            'message'       =>  '{ "type" : "text", "value" : "Hello", "others" : "[]" }',
+        ]);
+
+        return $chat_message;
     }
 }

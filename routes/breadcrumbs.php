@@ -17,12 +17,13 @@ Breadcrumbs::register('dashboard', function ($breadcrumbs) {
 	// Quick Links
 	Breadcrumbs::register('quick_link', function ($breadcrumbs) {
 		$breadcrumbs->parent('dashboard');
-		$breadcrumbs->push(__('Mange Quick Link'), route('admin.quickLink'));
+		$breadcrumbs->push('Mange Quick Link', route('admin.quickLink'));
 	});
+
 	// Profile
 	Breadcrumbs::register('my_profile', function ($breadcrumbs) {
 		$breadcrumbs->parent('dashboard');
-		$breadcrumbs->push(__('Manage Account'), route('admin.profile-view'));
+		$breadcrumbs->push('Manage Account', route('admin.profile-view'));
 	});
 
 	Breadcrumbs::register('users_create', function($breadcrumbs)
@@ -35,6 +36,12 @@ Breadcrumbs::register('dashboard', function ($breadcrumbs) {
 	{
 		$breadcrumbs->parent('users_list');
 	    $breadcrumbs->push('Edit User', route(Auth::getDefaultDriver().'.users.edit', $id));
+	});
+
+	Breadcrumbs::register('users_view', function ($breadcrumbs, $id)
+	{
+		$breadcrumbs->parent('users_list');
+		$breadcrumbs->push('View User', route('admin.users.edit', $id));
 	});
 
 // Role Management -------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -51,7 +58,7 @@ Breadcrumbs::register('dashboard', function ($breadcrumbs) {
 	Breadcrumbs::register('roles_update', function ($breadcrumbs, $id)
 	{
 		$breadcrumbs->parent('roles_list');
-		$breadcrumbs->push(__('Edit Role'), route('admin.roles.edit', $id));
+		$breadcrumbs->push('Edit Role', route('admin.roles.edit', $id));
 	});
 
 
@@ -69,7 +76,7 @@ Breadcrumbs::register('dashboard', function ($breadcrumbs) {
 	Breadcrumbs::register('passions_update', function ($breadcrumbs, $id)
 	{
 		$breadcrumbs->parent('passions_list');
-		$breadcrumbs->push(__('Edit Passion'), route('admin.passions.edit', $id));
+		$breadcrumbs->push('Edit Passion', route('admin.passions.edit', $id));
 	});
 
 
@@ -125,7 +132,7 @@ Breadcrumbs::register('dashboard', function ($breadcrumbs) {
 	Breadcrumbs::register('interests_update', function ($breadcrumbs, $id)
 	{
 		$breadcrumbs->parent('interests_list');
-		$breadcrumbs->push(__('Edit Interest'), route('admin.interests.edit', $id));
+		$breadcrumbs->push('Edit Interest', route('admin.interests.edit', $id));
 	});
 
 
@@ -143,7 +150,7 @@ Breadcrumbs::register('dashboard', function ($breadcrumbs) {
 	Breadcrumbs::register('locations_update', function ($breadcrumbs, $id)
 	{
 		$breadcrumbs->parent('locations_list');
-		$breadcrumbs->push(__('Edit Location'), route('admin.locations.edit', $id));
+		$breadcrumbs->push('Edit Location', route('admin.locations.edit', $id));
 	});
 
 
@@ -156,12 +163,12 @@ Breadcrumbs::register('dashboard', function ($breadcrumbs) {
 	Breadcrumbs::register('profile_reports_update', function ($breadcrumbs, $id)
 	{
 		$breadcrumbs->parent('profile_reports_list');
-		$breadcrumbs->push(__('Edit Profile Report'), route('admin.profile-reports.edit', $id));
+		$breadcrumbs->push('Edit Profile Report', route('admin.profile-reports.edit', $id));
 	});
 	Breadcrumbs::register('profile_reports_view', function ($breadcrumbs, $id)
 	{
 		$breadcrumbs->parent('profile_reports_list');
-		$breadcrumbs->push(__('View Profile Report'), route('admin.profile-reports.edit', $id));
+		$breadcrumbs->push('View Profile Report', route('admin.profile-reports.edit', $id));
 	});
 
 
@@ -231,14 +238,14 @@ Breadcrumbs::register('dashboard', function ($breadcrumbs) {
 	// CMS Pages ---------------------------------------------------------------------------------------------------------------------------------------------------
 	Breadcrumbs::register('cms_list', function ($breadcrumbs) {
 		$breadcrumbs->parent('dashboard');
-		$breadcrumbs->push(__('CMS Pages'), route('admin.pages.index'));
+		$breadcrumbs->push('CMS Pages', route('admin.pages.index'));
 	});
 	Breadcrumbs::register('cms_update', function ($breadcrumbs, $id) {
 		$breadcrumbs->parent('cms_list');
-		$breadcrumbs->push(__('Edit CMS Page'), route('admin.pages.edit', $id));
+		$breadcrumbs->push('Edit CMS Page', route('admin.pages.edit', $id));
 	});
 //site configuartion
 	Breadcrumbs::register('site_setting', function ($breadcrumbs) {
 		$breadcrumbs->parent('dashboard');
-		$breadcrumbs->push(__('Site Configuration'), route('admin.settings.index'));
+		$breadcrumbs->push('Site Configuration', route('admin.settings.index'));
 	});
