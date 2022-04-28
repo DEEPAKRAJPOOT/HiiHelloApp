@@ -35,10 +35,7 @@
                         </label>
 
                         <div class="mb-2">
-                            <label class="control-label"><span class="mendatory" style="font-size: 20px;"></span>First Name : <b>@if($profile_report->user) {{ $profile_report->user->first_name }} @else - @endif </b></label>
-                        </div>
-                        <div class="mb-2">
-                            <label class="control-label"><span class="mendatory" style="font-size: 20px;"></span>last Name : <b>@if($profile_report->user) {{ $profile_report->user->last_name }} @else - @endif </b></label>
+                            <label class="control-label"><span class="mendatory" style="font-size: 20px;"></span>Full Name : <b>@if($profile_report->user) {{ $profile_report->user->full_name }} @else - @endif </b></label>
                         </div>
                         <div class="mb-2">
                             <label class="control-label"><span class="mendatory" style="font-size: 20px;"></span>Contact Number : <b>@if($profile_report->user) {{ $profile_report->user->country_code }} {{ $profile_report->user->contact_no }} @else - @endif </b></label>
@@ -51,10 +48,7 @@
                             <h4>Reported User Information</h4>
                         </label>
                         <div class="mb-2">
-                            <label class="control-label"><span class="mendatory" style="font-size: 20px;"></span>First Name : <b>@if($profile_report->reportedUser) {{ $profile_report->reportedUser->first_name }} @else - @endif </b></label>
-                        </div>
-                        <div class="mb-2">
-                            <label class="control-label"><span class="mendatory" style="font-size: 20px;"></span>last Name : <b>@if($profile_report->reportedUser) {{ $profile_report->reportedUser->last_name }} @else - @endif </b></label>
+                            <label class="control-label"><span class="mendatory" style="font-size: 20px;"></span>Full Name : <b>@if($profile_report->reportedUser) {{ $profile_report->reportedUser->full_name }} @else - @endif </b></label>
                         </div>
                         <div class="mb-2">
                             <label class="control-label"><span class="mendatory" style="font-size: 20px;"></span>Contact Number : <b>@if($profile_report->reportedUser) {{ $profile_report->reportedUser->country_code }} {{ $profile_report->reportedUser->contact_no }} @else - @endif </b></label>

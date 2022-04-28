@@ -42,8 +42,6 @@ class UserProfile extends JsonResource
                 'profile_percentage'    =>  $this->calculateProfilePercent(),
                 'verified_staus'        =>  $this->getVerifiedStatus(),
                 'likes'                 =>  $this->likes_count ?? 0,
-                'matches'               =>  $this->countMatches(),
-                'chats'                 =>  $this->countChats(),
             ],
         ];
     }
