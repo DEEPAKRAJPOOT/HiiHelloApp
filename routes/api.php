@@ -53,6 +53,9 @@ Route::group(['namespace' => 'v1', 'prefix' => 'v1', 'middleware' => 'auth:sanct
     Route::post('user/profile-filters', [UserController::class,'getUsersByFilter'])->name('api.user.profile-filters');
     Route::post('user/profile-report',[UserController::class,'storeProfileReport'])->name('api.user.profile-report');
 
+    // My Profile
+    Route::post('user/my-profile', [UserController::class,'getMyProfile'])->name('api.user.my-profile');
+
     // Like
     Route::post('user/add-like', [LikeController::class,'addNewLike'])->name('api.user.add-like');
     Route::post('user/get-likes', [LikeController::class,'getLikes'])->name('api.user.get-likes');

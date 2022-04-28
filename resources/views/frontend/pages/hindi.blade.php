@@ -64,9 +64,9 @@
                                 <div class="social-box d-none d-lg-flex align-items-center">
                                     <h4>हमारा अनुसरण इस पर कीजिये: </h4>
                                     <ul class="social-list d-flex ">
-                                        <li><a href="#" target=”_blank”><i class="fab fa-instagram"></i></a></li>
-                                        <li><a href="#" target=”_blank”><i class="fab fa-facebook-f"></i></a></li>
-                                        <li><a href="#" target=”_blank”><i class="fab fa-twitter"></i></a></li>
+                                        <li><a href="{{ $instagram }}" target=”_blank”><i class="fab fa-instagram"></i></a></li>
+                                        <li><a href="{{ $facebook }}" target=”_blank”><i class="fab fa-facebook-f"></i></a></li>
+                                        <li><a href="{{ $twitter }}" target=”_blank”><i class="fab fa-twitter"></i></a></li>
                                     </ul>
                                 </div>
                             </div>
@@ -91,9 +91,9 @@
                             <div class="social-box d-flex d-lg-none justify-content-center align-items-center">
                                 <h4>हमारा अनुसरण इस पर कीजिये: </h4>
                                 <ul class="social-list d-flex ">
-                                    <li><a href="#" target=”_blank”><i class="fab fa-instagram"></i></a></li>
-                                    <li><a href="#" target=”_blank”><i class="fab fa-facebook-f"></i></a></li>
-                                    <li><a href="#" target=”_blank”><i class="fab fa-twitter"></i></a></li>
+                                    <li><a href="{{ $instagram }}" target=”_blank”><i class="fab fa-instagram"></i></a></li>
+                                    <li><a href="{{ $facebook }}" target=”_blank”><i class="fab fa-facebook-f"></i></a></li>
+                                    <li><a href="{{ $twitter }}" target=”_blank”><i class="fab fa-twitter"></i></a></li>
                                 </ul>
                             </div>
                             <!-- mobile-slider-wrapper ends -->
@@ -111,8 +111,21 @@
                 
             </div>
         </section>
-        <div class="text-center copyright-box">
-            <p>{{ $footer_text }}</p>
+        <div class="footer-section">
+            <div class="container">
+                <div class="d-flex justify-content-between">
+                    <div class="copyright-box">
+                        <p>{{ $footer_text }}</p>
+                    </div>
+                    <div class="footer-links">
+                        <ul>
+                            <li><a href="{{ route('terms') }}">{{ __("Terms & Conditions") }}</a></li>
+                            <li><a href="{{ route('privacy.policy') }}">{{ __("Privacy Policy") }}</a></li>
+                            <li><a href="{{ route('about.us') }}">{{ __("About Us") }}</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- slick js included -->

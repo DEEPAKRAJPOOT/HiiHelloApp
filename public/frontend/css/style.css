@@ -33,7 +33,25 @@ body                                    { height: 100vh; position: relative;}
 .social-box a                           { font-size: 30px; line-height: 30px; }
 .main-image                             {  width: 50%; height: 100%; background: url('../images/banner-bg-right1.png') no-repeat top left / cover;}
 .gradient                               { background: radial-gradient(96.64% 86.79% at 3.36% 13.21%, #FFBD15 0%, #FF55C6 100%); border-radius: 64px 0px 0px 140px; width: 70%; height: 37vh;}
-.copyright-box                              { margin-top: -30px; }
+.footer-section                         { padding: 10px 0;}
+.footer-links ul                        { display: flex; flex-wrap: wrap;}
+.footer-links ul li                     { padding: 0 10px;}
+.footer-links ul li a                   { font-size: 16px; line-height: 24px; color:#9B8FB1;}
+/** policy pages **/
+.policy-pages,
+.about-us                                { padding: 50px 0;}
+.policy-pages h2,
+.about-us h2                           { margin-bottom: 24px;}
+.policy-pages p                       { margin-bottom: 10px; line-height: 24px;}
+.policy-section                         { margin-bottom: 20px;}
+.policy-section ul                      { list-style: disc;}
+.policy-section li                   { font-size: 16px; line-height: 24px;}
+.policy-section li:not(:last-child)  { margin-bottom: 10px;}
+.policy-section ol                      { list-style: decimal;}
+
+/* about us */
+.about-us img                           { width: 100%;}
+.about-us p                             { margin-bottom: 16px; line-height: 24px;}
 
 @media (min-width: 1600px) and (max-width: 1699px)
 {
@@ -68,7 +86,8 @@ body                                    { height: 100vh; position: relative;}
 {
     h1                                      { font-size: 52px; line-height: 52px;  }
     h4                                      { font-size: 205x; line-height: 34.4px; }
-    p                                       { font-size: 15px; line-height: 18px; }    
+    p,
+    .policy-section li                   { font-size: 15px; line-height: 18px; }    
     .banner-left-box img                    { max-width: 55%; }
     .mobile-slider-wrapper                  { margin-left: -20%; }
     .mobile-slider-wrapper .slick-slide img { height: 62vh;   }
@@ -85,7 +104,8 @@ body                                    { height: 100vh; position: relative;}
 {
     h1                                      { font-size: 46px; line-height: 46px;  }
     h4                                      { font-size: 22px; line-height: 32.4px; }
-    p                                       { font-size: 15px; line-height: 18px; }
+    p,
+    .policy-section li                   { font-size: 15px; line-height: 18px; }
     body                                    { height: auto;}
     .logo img                               { max-width: 250px;}
     .banner-left-box                        { padding-left: 0px; padding-right: 20px;}
@@ -108,7 +128,8 @@ body                                    { height: 100vh; position: relative;}
 {
     h1                                      { font-size: 42px; line-height: 42px;  }
     h4                                      { font-size: 20px; line-height: 30.4px; }
-    p                                       { font-size: 14px; line-height: 16px; }
+    p,
+    .policy-section li                   { font-size: 14px; line-height: 16px; }
     body                                    { height: auto;}
     .logo img                               { max-width: 200px;}
     .banner-wrapper                         { padding-top: 35px;}
