@@ -7,7 +7,7 @@ use Illuminate\Http\ { Request, Response };
 use Illuminate\Support\Facades\ { Auth, DB };
 use Illuminate\Database\Eloquent\ { ModelNotFoundException };
 use App\Http\Requests\Api\General\ { PaginationRequest };
-use App\Http\Requests\Api\Chat\ { DeleteRoomRequest };
+use App\Http\Requests\Api\Match\ { DeleteMatchRequest };
 use App\Http\Resources\v1\ { MatchResource };
 use App\Models\ { User, Like, ChatRoom };
 
@@ -82,7 +82,7 @@ class MatchController extends Controller
      */
     public function removeMatch(Request $request)
     {
-        $rules = DeleteRoomRequest::rules();
+        $rules = DeleteMatchRequest::rules();
         if( $this->apiValidator($request->all(), $rules) ) {
             DB::beginTransaction();
             try{
