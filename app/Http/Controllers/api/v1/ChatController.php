@@ -9,7 +9,7 @@ use App\Http\Requests\Api\General\ { PaginationRequest };
 use Illuminate\Support\Facades\ { Auth };
 use App\Models\ { ChatRoom, ChatMessage, User };
 use App\Http\Resources\v1\ { ChatRoomResource, ChatMessageResource };
-use App\Http\Requests\Api\Chat\ { CreateRoomRequest, ChatMessagesRequest, DeleteRoomRequest };
+use App\Http\Requests\Api\Chat\ { CreateRoomRequest, ChatMessagesRequest, DeleteRoomRequest, GetRoomRequest };
 
 class ChatController extends Controller
 {
@@ -65,10 +65,12 @@ class ChatController extends Controller
     // Get Chat Rooms Details
     public function getChatRooms(Request $request)
     {
-        $rules = PaginationRequest::rules();
+        $rules = GetRoomRequest::rules();
         if( $this->apiValidator($request->all(), $rules) ) {
             try{
-                $user = $request->user();
+                $auth_id = $request->user() ? $request->user()->id : NULL;
+                $search = $request->search;
+
                 $rooms = ChatRoom::with(['creator:id,custom_id,full_name,profile_photo',
                                 'participator:id,custom_id,full_name,profile_photo',
                                 'latestMessage.sender:id,custom_id'])
@@ -77,10 +79,22 @@ class ChatController extends Controller
                         ->orderBy("latest_message_on", "DESC")
                         ->withCount(['chatMessages' => function ($query) {
                             $query->where('status','!=' ,'read');
-                        }])
-                        ->whereIsActive('y')
-                        ->whereCreatorId($user->id)
-                        ->orWhere('participate_id',$user->id);
+                        }])->where(function ($query) use ($auth_id) {
+                            $query->whereIsActive('y')
+                                    ->whereCreatorId($auth_id)
+                                    ->orWhere('participate_id',$auth_id);
+                        });
+
+                if(!empty($search)){
+                    $rooms = $rooms->where(function ($query) use ($search) {
+                                $query->whereHas('creator', function ($q1) use ($search){
+                                    $q1->where('full_name', 'like', '%'.$search.'%');
+                                })->orWhereHas('participator', function ($q2) use ($search){
+                                    $q2->where('full_name', 'like', '%'.$search.'%');
+                                });
+                            });
+                }
+
                 $count = $rooms->count();
                 $rooms = $rooms->limit($request->limit ?? config('utility.pagination.limit'))
                             ->offset($request->offset ?? config('utility.pagination.offset'))
