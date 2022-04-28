@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\DB;
 use Laravel\Sanctum\HasApiTokens;
 use App\Models\Like;
 
@@ -69,9 +70,24 @@ class User extends Authenticatable
 
     public function getAge(){ return \Carbon\Carbon::parse($this->birth_date)->diff(\Carbon\Carbon::now())->y; }
     public function getVerifiedStatus(){ return 'verified'; }
-    public function countLikes(){ return Like::whereUserId($this->id)->count() ?? 0; }
-    public function countMatches(){ return 0; }
-    public function countChats(){ return 0; }
+    public function countMatches(){
+        return DB::table('likes')
+            ->join("likes as like", function($q){
+                $q->on("likes.liker_id", "=", "like.user_id");
+                $q->on("like.liker_id", "=", "likes.user_id");
+            })
+            ->join('users', function($q){
+                $q->on('users.id',"=", "likes.user_id");
+            })
+            //to only get users details who likes current user
+            ->where("likes.liker_id", '=', $this->id)
+            ->where("likes.user_id", '!=', $this->id)
+            ->count();
+    }
+    public function countChats(){ 
+        return ChatRoom::whereHas('chatMessages')->whereIsActive('y')->whereCreatorId($this->id)
+                ->orWhere('participate_id',$this->id)->count();
+    }
 
     public function getProfileImages(){
         $imgs = [];

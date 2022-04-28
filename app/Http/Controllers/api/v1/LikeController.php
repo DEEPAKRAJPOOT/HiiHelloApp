@@ -32,8 +32,7 @@ class LikeController extends Controller
 
                 if($like->save()){
                     $this->status = Response::HTTP_OK;
-                    return (new LikeResource($like))
-                        ->additional([
+                    return (['data'  =>  NULL,
                             'meta' => [
                                 'message'   =>  trans('api.liked', ['entity' => __("User") ]),
                             ] ]);

@@ -33,6 +33,9 @@ class AuthenticationController extends Controller
 
                         return (new UserProfile($user))
                             ->additional([
+                                'data' => [ 'flags' =>  [
+                                    'matches'   =>  $user->countMatches(), 'chats'  =>  $user->countChats(),
+                                ] ], 
                                 'meta' => [
                                     'message'           =>  trans('api.login'),
                                     'auth_token'        =>  $user->createToken(config('utility.token'))->plainTextToken,
@@ -502,7 +505,7 @@ class AuthenticationController extends Controller
 
                 $user->profile_photo = $path;
                 $user->save();
-                $user = User::findOrFail($user->id);
+                $user = User::withCount('likes')->findOrFail($user->id);
                 return (new UserProfile($user))
                     ->additional([
                     'meta' => [
