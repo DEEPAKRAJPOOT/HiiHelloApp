@@ -4,7 +4,7 @@ namespace App\Http\Requests\Api\Chat;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
-use App\Models\ChatRoom;
+use App\Models\User;
 
 class DeleteRoomRequest extends FormRequest
 {
@@ -25,11 +25,10 @@ class DeleteRoomRequest extends FormRequest
      */
     public function rules()
     {
-        $auth_id = Auth::id();
-        $room_ids = ChatRoom::where('creator_id',$auth_id) ->orWhere('participate_id',$auth_id)->pluck('custom_id')->toArray();
-        
+        $user_ids = User::where('id','!=',Auth::id())->pluck('custom_id')->toArray();
+
         return [
-            'room_id'      =>  'required|in:'.implode(',',$room_ids),
+            'user_id'      =>  'required|in:'.implode(',',$user_ids),
         ];
     }
 }

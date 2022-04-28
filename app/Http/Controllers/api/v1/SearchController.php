@@ -7,6 +7,7 @@ use Illuminate\Http\ { Request, Response };
 use Illuminate\Support\Facades\ { Auth, DB };
 use Illuminate\Database\Eloquent\ { ModelNotFoundException };
 use App\Http\Requests\Api\Search\ { SearchMatchChatRequest };
+use App\Http\Resources\v1\ { SearchMatchChatResource };
 use App\Models\ { ChatRoom };
 
 class SearchController extends Controller
@@ -25,9 +26,11 @@ class SearchController extends Controller
         if( $this->apiValidator($request->all(), $rules) ) {
             try{
                 $search = $request->search;
+                $results = ['matches' => [], 'rooms' => []];
                 $auth_id = $request->user() ? $request->user()->id : NULL;
 
-                $matches = DB::table('likes')
+                // Match Profiles
+                $results['matches'] = DB::table('likes')
                     ->join("likes as like", function($q){
                         $q->on("likes.liker_id", "=", "like.user_id");
                         $q->on("like.liker_id", "=", "likes.user_id");
@@ -46,7 +49,8 @@ class SearchController extends Controller
                         $query->where('users.full_name', 'like', "%{$search}%");
                     })->get();
 
-                $rooms = ChatRoom::with(['creator:id,custom_id,full_name,profile_photo',
+                // Chat Rooms
+                $results['rooms'] = ChatRoom::with(['creator:id,custom_id,full_name,profile_photo',
                                         'participator:id,custom_id,full_name,profile_photo',
                                         'latestMessage.sender:id,custom_id'])
                                 ->whereHas('chatMessages')
@@ -68,15 +72,16 @@ class SearchController extends Controller
                                     });
                                 })->get();
 
-                $this->status = Response::HTTP_OK;
-                return ([
-                    'data'  =>   NULL,
-                    'meta' => [
-                        'api'       =>  $this->getVersion(),
-                        'url'       =>  url()->current(),
-                        'language'  =>  app()->getLocale(),
-                        'message'   =>  trans('api.list', ['entity' => __("Match & Chat") ]),
-                    ] ]);
+                if($results['matches']->isEmpty() && $results['rooms']->isEmpty() ){
+                    $this->response['meta']['message']  =   trans('api.not_found',['entity' => __("Search Result")]); 
+                    $this->status = Response::HTTP_NOT_FOUND;   
+                }else{
+                    return (new SearchMatchChatResource($results))
+                        ->additional([
+                            'meta' => [
+                                'message'       =>  trans('api.list',['entity' => __("Search Result")]),
+                            ] ]);
+                }
 
             } catch(ModelNotFoundException $exception) {    
                 $this->response['meta']['message'] = trans('api.went_wrong');

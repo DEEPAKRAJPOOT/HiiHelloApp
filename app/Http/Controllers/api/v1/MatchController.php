@@ -86,18 +86,28 @@ class MatchController extends Controller
         if( $this->apiValidator($request->all(), $rules) ) {
             DB::beginTransaction();
             try{
-                $room = ChatRoom::with('chatMessages')->whereCustomId($request->room_id)->firstOrFail();
-                    
-                // Delete Chat Room & Chat Messages
-                if($room->chatMessages){ $room->chatMessages->each->delete(); }
-                $room->delete();
+                $auth_id = $request->user() ? $request->user()->id : NULL;
+                $match_user = User::select('id')->whereCustomId($request->user_id)->firstOrFail();
 
                 // Delete Like Details
-                Like::where(function($query) use ($room){
-                    $query->whereUserId($room->creator_id)->whereLikerId($room->participate_id);
-                })->orWhere(function($query_or) use ($room){
-                    $query_or->whereUserId($room->participate_id)->whereLikerId($room->creator_id);
+                Like::where(function($query) use ($auth_id, $match_user){
+                    $query->whereUserId($auth_id)->whereLikerId($match_user->id);
+                })->orWhere(function($query_or) use ($auth_id, $match_user){
+                    $query_or->whereUserId($match_user->id)->whereLikerId($auth_id);
                 })->delete();
+
+                $room = ChatRoom::with('chatMessages')
+                                ->where(function($query) use ($auth_id, $match_user){
+                                    $query->where('creator_id',$auth_id)->where('participate_id',$match_user->id);
+                                })->orWhere(function($query_or) use ($auth_id, $match_user){
+                                    $query_or->where('creator_id',$match_user->id)->where('participate_id',$auth_id);
+                                })->first();
+
+                // Delete Chat Room & Chat Messages
+                if($room){
+                    if($room->chatMessages){ $room->chatMessages->each->delete(); }
+                    $room->delete();
+                }
 
                 DB::commit();
                 $this->status = Response::HTTP_OK;     
@@ -106,13 +116,16 @@ class MatchController extends Controller
                         'url'       =>  url()->current(),
                         'api'       =>  $this->getVersion(),
                         'language'  =>  app()->getLocale(),
-                        'message'   =>  trans('api.delete', ['entity' =>  __('Chat room')]),
+                        'message'   =>  trans('api.delete', ['entity' =>  __('Unmatch')]),
                     ] ]);
             } catch(ModelNotFoundException $exception) {   
                 DB::rollback();
                 switch ($exception->getModel()) {
                     case 'App\Models\ChatRoom':
                         $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("Chat room")]);
+                        break;
+                    case 'App\Models\User':
+                        $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("User")]);
                         break;
                     default:
                         $this->response['meta']['message'] = trans('api.went_wrong');
