@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\ { Request, Response };
 use Illuminate\Database\Eloquent\ { ModelNotFoundException };
 use Illuminate\Support\Facades\ { Storage, DB, Auth };
-use App\Http\Resources\v1\ { UserProfile, UserFullProfile, ProfileReportResource };
+use App\Http\Resources\v1\ { UserProfile, UserFullProfile, ProfileReportResource, MyProfile };
 use App\Http\Requests\Api\User\ { ProfileRequest, ProfileFilterRequest, ProfileReportRequest };
 use App\Http\Requests\Api\General\ { PaginationRequest };
 use App\Models\ { User, Location, ProfileReport };
@@ -277,6 +277,34 @@ class UserController extends Controller
             };
         } catch (\Exception $e) {
             $this->storeErrorLog($e,'get_common_age');
+        }
+        return $this->returnResponse();
+    }
+
+    // My Profile Details
+    public function getMyProfile()
+    {
+        try{
+            $user = User::with('language')->withCount('likes')->whereId(Auth::id())->firstOrFail();
+            return (new MyProfile($user))
+                ->additional([
+                'data' => [ 'flags' =>  [
+                    'matches'   =>  $user->countMatches(), 'chats'  =>  $user->countChats(),
+                ] ], 
+                'meta' => [
+                    'message'   =>  trans('api.success', ['entity' => __("Profile")]),
+                ] ]);
+        } catch(ModelNotFoundException $exception) {                
+            switch ($exception->getModel()) {
+                case 'App\Models\User':
+                    $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("Users")]);
+                    break;
+                default:
+                    $this->response['meta']['message'] = trans('api.went_wrong');
+                    break;
+            };
+        } catch (\Exception $e) {
+            $this->storeErrorLog($e,'my_profile');
         }
         return $this->returnResponse();
     }
