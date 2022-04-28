@@ -7,7 +7,7 @@ use Illuminate\Http\ { Request, Response };
 use Illuminate\Support\Facades\ { Auth, DB };
 use Illuminate\Database\Eloquent\ { ModelNotFoundException };
 use App\Http\Requests\Api\General\ { PaginationRequest };
-use App\Http\Requests\Api\Match\ { DeleteMatchRequest };
+use App\Http\Requests\Api\Match\ { DeleteMatchRequest, GetMatchRequest };
 use App\Http\Resources\v1\ { MatchResource };
 use App\Models\ { User, Like, ChatRoom };
 
@@ -23,10 +23,11 @@ class MatchController extends Controller
      */
     public function getNewMatches(Request $request)
     {
-        $rules = PaginationRequest::rules();
+        $rules = GetMatchRequest::rules();
         if( $this->apiValidator($request->all(), $rules) ) {
             try{
                 $auth_id = $request->user() ? $request->user()->id : NULL;
+                $search = $request->search;
 
                 $matches = DB::table('likes')
                     ->join("likes as like", function($q){
@@ -43,6 +44,12 @@ class MatchController extends Controller
                     ->selectRaw("likes.custom_id as custom_id, users.custom_id as user_custom_id,
                                 users.full_name as user_full_name, users.profile_photo as user_profile_photo,
                                 likes.created_at as created_at");
+
+                if(!empty($search)){
+                    $matches = $matches->where(function ($query) use ($search) {
+                        $query->where('users.full_name', 'like', "%{$search}%");
+                    });
+                }
 
                 $count = $matches->count();
                 $matches = $matches->limit($request->limit ?? config('utility.pagination.limit'))
