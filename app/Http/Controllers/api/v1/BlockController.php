@@ -9,7 +9,7 @@ use App\Http\Requests\Api\General\ { PaginationRequest };
 use Illuminate\Database\Eloquent\ { ModelNotFoundException };
 use App\Http\Resources\v1\ { BlockProfileResource };
 use Illuminate\Support\Facades\ { Auth };
-use App\Models\ { User, BlockUser };
+use App\Models\ { User, BlockUser, ChatRoom };
 
 class BlockController extends Controller
 {
@@ -30,6 +30,12 @@ class BlockController extends Controller
                 $auth_id = $request->user() ? $request->user()->id : NULL;
                 $block_user = User::select('id')->whereCustomId($request->user_id)->firstOrFail();
 
+                $chat_room = ChatRoom::where(function ($query) use ($auth_id,$block_user) {
+                                    $query->whereCreatorId($auth_id)->orWhere('participate_id',$block_user->id);
+                                })->orWhere(function ($query) use ($auth_id,$block_user) {
+                                    $query->whereCreatorId($block_user->id)->orWhere('participate_id',$auth_id);
+                                })->first();
+
                 if($request->status == 'block'){
                     $block_profile = BlockUser::firstOrCreate([
                         'block_by'      =>  $auth_id,
@@ -37,6 +43,9 @@ class BlockController extends Controller
                     ],[ 
                         'custom_id'     =>  getUniqueString('block_users'),
                     ]);
+
+                    // Block Chat
+                    if($chat_room){ if(empty($chat_room->block_by)){ $chat_room->block_by = $auth_id; $chat_room->save(); } }
 
                     if($block_profile->save()){
                         $this->status = Response::HTTP_OK;
@@ -56,6 +65,9 @@ class BlockController extends Controller
                 elseif($request->status == 'unblock'){
                     $block_profile = BlockUser::whereBlockBy($auth_id)->whereBlockedTo($block_user->id)->firstOrFail();
                     $unblock = $block_profile->delete();
+
+                    // Unblock Chat
+                    if($chat_room){ if($chat_room->block_by == $auth_id){ $chat_room->block_by = NULL; $chat_room->save(); } }
 
                     if($unblock){
                         $this->status = Response::HTTP_OK;
