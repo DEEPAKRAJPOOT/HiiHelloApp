@@ -8,7 +8,7 @@ use App\Http\Requests\Api\User\ { BlockUnblockRequest };
 use App\Http\Requests\Api\General\ { PaginationRequest };
 use Illuminate\Database\Eloquent\ { ModelNotFoundException };
 use App\Http\Resources\v1\ { BlockProfileResource };
-use Illuminate\Support\Facades\ { Auth };
+use Illuminate\Support\Facades\ { Auth, DB };
 use App\Models\ { User, BlockUser, ChatRoom };
 
 class BlockController extends Controller
@@ -25,6 +25,7 @@ class BlockController extends Controller
     {
         $rules = BlockUnblockRequest::rules();
         if( $this->apiValidator($request->all(), $rules) ) {
+            DB::beginTransaction();
             try{
                 /* Block Profile */
                 $auth_id = $request->user() ? $request->user()->id : NULL;
@@ -47,6 +48,7 @@ class BlockController extends Controller
                     // Block Chat
                     if($chat_room){ if(empty($chat_room->block_by)){ $chat_room->block_by = $auth_id; $chat_room->save(); } }
 
+                    DB::commit();
                     if($block_profile->save()){
                         $this->status = Response::HTTP_OK;
                         return (['data'  =>  NULL,
@@ -69,6 +71,7 @@ class BlockController extends Controller
                     // Unblock Chat
                     if($chat_room){ if($chat_room->block_by == $auth_id){ $chat_room->block_by = NULL; $chat_room->save(); } }
 
+                    DB::commit();
                     if($unblock){
                         $this->status = Response::HTTP_OK;
                         return (['data'  =>  NULL,
@@ -83,7 +86,8 @@ class BlockController extends Controller
                         $this->status = Response::HTTP_NOT_FOUND; 
                     }
                 }
-            } catch(ModelNotFoundException $exception) {                
+            } catch(ModelNotFoundException $exception) {   
+                DB::rollback();             
                 switch ($exception->getModel()) {
                     case 'App\Models\BlockUser':
                         $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("User")]);
@@ -96,6 +100,7 @@ class BlockController extends Controller
                         break;
                 };
             } catch (\Exception $e) {
+                DB::rollback();
                 $this->storeErrorLog($e,'block_unblock_profile');
             }
         }
