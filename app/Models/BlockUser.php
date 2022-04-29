@@ -12,5 +12,6 @@ class BlockUser extends Model
 
     protected $fillable = [ 'custom_id', 'block_by', 'blocked_to' ];
 
+    public function blockBy(){ return $this->belongsTo('App\Models\User','block_by','id'); }
     public function blockedTo(){ return $this->belongsTo('App\Models\User','blocked_to','id'); }
 }
