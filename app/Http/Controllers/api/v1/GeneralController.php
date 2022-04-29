@@ -80,7 +80,6 @@ class GeneralController extends Controller
                 $this->status = Response::HTTP_FORBIDDEN;
                 $this->response['meta']['message']  = trans('api.not_found',['entity' => __('Languages')]);
             }
-            return $this->returnResponse();
         } catch(ModelNotFoundException $exception) {                
             switch ($exception->getModel()) {
                 case 'App\Models\Language':
@@ -93,6 +92,7 @@ class GeneralController extends Controller
         } catch (\Exception $e) {
             $this->storeErrorLog($e,'get_languages');
         }
+        return $this->returnResponse();
     }
 
     // Get Countries List
@@ -145,7 +145,6 @@ class GeneralController extends Controller
                 $this->response['meta']['message']  =   trans('api.not_found',['entity' => __('Cms Pages')]); 
                 $this->status = Response::HTTP_NOT_FOUND;     
             }
-            return $this->returnResponse();
         } catch(ModelNotFoundException $exception) {                
             switch ($exception->getModel()) {
                 case 'App\Models\CmsPage':
@@ -291,7 +290,6 @@ class GeneralController extends Controller
                     $this->response['meta']['message']  =   trans('api.not_found',['entity' => __('Faqs')]); 
                     $this->status = Response::HTTP_NOT_FOUND;     
                 }
-                return $this->returnResponse();
             } catch(ModelNotFoundException $exception) {                
                 switch ($exception->getModel()) {
                     case 'App\Models\CmsPage':
@@ -340,7 +338,6 @@ class GeneralController extends Controller
                     $this->response['meta']['message']  =   trans('api.not_found',['entity' => __('Profile details')]); 
                     $this->status = Response::HTTP_NOT_FOUND;     
                 }
-                return $this->returnResponse();
             } catch(ModelNotFoundException $exception) {                
                 switch ($exception->getModel()) {
                     case 'App\Models\ProfileDetail':

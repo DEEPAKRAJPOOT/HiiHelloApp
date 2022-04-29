@@ -23,7 +23,7 @@ class LikeController extends Controller
         if( $this->apiValidator($request->all(), $rules) ) {
             try{
                 $user = User::whereCustomId($request->user_id)->whereIsActive('y')->firstOrFail();
-                $like = Like::updateOrCreate([
+                $like = Like::firstOrCreate([
                     'user_id'       =>  $user->id,
                     'liker_id'      =>  Auth::id(),
                 ],[
@@ -34,6 +34,9 @@ class LikeController extends Controller
                     $this->status = Response::HTTP_OK;
                     return (['data'  =>  NULL,
                             'meta' => [
+                                'url'       =>  url()->current(),
+                                'api'       =>  $this->getVersion(),
+                                'language'  =>  app()->getLocale(),
                                 'message'   =>  trans('api.liked', ['entity' => __("User") ]),
                             ] ]);
                 }else{
