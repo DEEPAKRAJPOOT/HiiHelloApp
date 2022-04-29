@@ -114,5 +114,14 @@ return [
         'fail'      =>  'Profile repoted unsuccesfully',
     ],
 
+    'block' =>  [
+        'success'   =>  'Profile blocked succesfully',
+        'fail'      =>  'Profile blocked unsuccesfully',
+    ],
+    'unblock' =>  [
+        'success'   =>  'Profile unblocked succesfully',
+        'fail'      =>  'Profile unblocked unsuccesfully',
+    ],
+
     /* Custom Message */    
 ];

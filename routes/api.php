@@ -3,7 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Middleware\CheckApiLanguage;
-use App\Http\Controllers\api\v1\ { AuthenticationController, GeneralController, UserController, LikeController, TwillioController, ChatController, MatchController, SearchController };
+use App\Http\Controllers\api\v1\ { AuthenticationController, GeneralController, UserController, LikeController, TwillioController, ChatController, MatchController, SearchController, BlockController };
 
 /*
 |--------------------------------------------------------------------------
@@ -55,6 +55,10 @@ Route::group(['namespace' => 'v1', 'prefix' => 'v1', 'middleware' => 'auth:sanct
 
     // My Profile
     Route::post('user/my-profile', [UserController::class,'getMyProfile'])->name('api.user.my-profile');
+
+    // Block/UnBlock
+    Route::post('user/block-list',[BlockController::class,'blockList'])->name('api.user.block-list');
+    Route::post('user/block-unblock',[BlockController::class,'blockUnblockProfile'])->name('api.user.block-unblock');
 
     // Like
     Route::post('user/add-like', [LikeController::class,'addNewLike'])->name('api.user.add-like');
