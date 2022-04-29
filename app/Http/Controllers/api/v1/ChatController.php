@@ -82,9 +82,7 @@ class ChatController extends Controller
                         }])
                         ->withCount('blockBy')
                         ->where(function ($query) use ($auth_id) {
-                            $query->whereIsActive('y')
-                                    ->whereCreatorId($auth_id)
-                                    ->orWhere('participate_id',$auth_id);
+                            $query->whereCreatorId($auth_id)->orWhere('participate_id',$auth_id);
                         });
 
                 if(!empty($search)){
