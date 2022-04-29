@@ -8,8 +8,8 @@ use App\Http\Requests\Api\User\ { BlockUnblockRequest };
 use App\Http\Requests\Api\General\ { PaginationRequest };
 use Illuminate\Database\Eloquent\ { ModelNotFoundException };
 use App\Http\Resources\v1\ { BlockProfileResource };
-use Illuminate\Support\Facades\ { Auth };
-use App\Models\ { User, BlockUser };
+use Illuminate\Support\Facades\ { Auth, DB };
+use App\Models\ { User, BlockUser, ChatRoom };
 
 class BlockController extends Controller
 {
@@ -25,10 +25,17 @@ class BlockController extends Controller
     {
         $rules = BlockUnblockRequest::rules();
         if( $this->apiValidator($request->all(), $rules) ) {
+            DB::beginTransaction();
             try{
                 /* Block Profile */
                 $auth_id = $request->user() ? $request->user()->id : NULL;
                 $block_user = User::select('id')->whereCustomId($request->user_id)->firstOrFail();
+
+                $chat_room = ChatRoom::where(function ($query) use ($auth_id,$block_user) {
+                                    $query->whereCreatorId($auth_id)->orWhere('participate_id',$block_user->id);
+                                })->orWhere(function ($query) use ($auth_id,$block_user) {
+                                    $query->whereCreatorId($block_user->id)->orWhere('participate_id',$auth_id);
+                                })->first();
 
                 if($request->status == 'block'){
                     $block_profile = BlockUser::firstOrCreate([
@@ -38,6 +45,10 @@ class BlockController extends Controller
                         'custom_id'     =>  getUniqueString('block_users'),
                     ]);
 
+                    // Block Chat
+                    if($chat_room){ if(empty($chat_room->block_by)){ $chat_room->block_by = $auth_id; $chat_room->save(); } }
+
+                    DB::commit();
                     if($block_profile->save()){
                         $this->status = Response::HTTP_OK;
                         return (['data'  =>  NULL,
@@ -57,6 +68,10 @@ class BlockController extends Controller
                     $block_profile = BlockUser::whereBlockBy($auth_id)->whereBlockedTo($block_user->id)->firstOrFail();
                     $unblock = $block_profile->delete();
 
+                    // Unblock Chat
+                    if($chat_room){ if($chat_room->block_by == $auth_id){ $chat_room->block_by = NULL; $chat_room->save(); } }
+
+                    DB::commit();
                     if($unblock){
                         $this->status = Response::HTTP_OK;
                         return (['data'  =>  NULL,
@@ -71,7 +86,8 @@ class BlockController extends Controller
                         $this->status = Response::HTTP_NOT_FOUND; 
                     }
                 }
-            } catch(ModelNotFoundException $exception) {                
+            } catch(ModelNotFoundException $exception) {   
+                DB::rollback();             
                 switch ($exception->getModel()) {
                     case 'App\Models\BlockUser':
                         $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("User")]);
@@ -84,6 +100,7 @@ class BlockController extends Controller
                         break;
                 };
             } catch (\Exception $e) {
+                DB::rollback();
                 $this->storeErrorLog($e,'block_unblock_profile');
             }
         }

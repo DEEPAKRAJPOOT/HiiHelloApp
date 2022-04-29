@@ -79,7 +79,9 @@ class ChatController extends Controller
                         ->orderBy("latest_message_on", "DESC")
                         ->withCount(['chatMessages' => function ($query) {
                             $query->where('status','!=' ,'read');
-                        }])->where(function ($query) use ($auth_id) {
+                        }])
+                        ->withCount('blockBy')
+                        ->where(function ($query) use ($auth_id) {
                             $query->whereIsActive('y')
                                     ->whereCreatorId($auth_id)
                                     ->orWhere('participate_id',$auth_id);

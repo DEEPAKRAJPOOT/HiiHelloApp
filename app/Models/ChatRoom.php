@@ -12,10 +12,11 @@ class ChatRoom extends Model
 
     public function getRouteKeyName(){ return 'custom_id'; }
     
-    protected $fillable = ['custom_id', 'creator_id', 'participate_id'];
+    protected $fillable = ['custom_id', 'creator_id', 'participate_id', 'block_by'];
 
     public function creator(){ return $this->belongsTo('App\Models\User','creator_id','id'); }
     public function participator(){ return $this->belongsTo('App\Models\User','participate_id','id'); }
+    public function blockBy(){ return $this->belongsTo('App\Models\User','block_by','id'); }
     public function latestMessage() { return $this->hasOne(ChatMessage::class,'room_id','id')->latest('id'); }
     public function chatMessages() { return $this->hasMany(ChatMessage::class,'room_id','id'); }
 }
