@@ -17,7 +17,7 @@ class ChatRoomResource extends JsonResource
     {
         return [
             'id'            =>  $this->custom_id,
-            'is_active'     =>  $this->is_active,
+            'is_active'     =>  $this->is_active ? $this->is_active == 'y' ? true : false : false,
             'is_blocked'    =>  $this->block_by_count ? $this->block_by_count > 0 ? true : false : false,
             'creator'  =>  [
                 'id'            =>  $this->creator ? $this->creator->custom_id : "",
