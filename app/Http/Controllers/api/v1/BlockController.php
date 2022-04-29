@@ -32,9 +32,9 @@ class BlockController extends Controller
                 $block_user = User::select('id')->whereCustomId($request->user_id)->firstOrFail();
 
                 $chat_room = ChatRoom::where(function ($query) use ($auth_id,$block_user) {
-                                    $query->whereCreatorId($auth_id)->orWhere('participate_id',$block_user->id);
+                                    $query->whereCreatorId($auth_id)->where('participate_id',$block_user->id);
                                 })->orWhere(function ($query) use ($auth_id,$block_user) {
-                                    $query->whereCreatorId($block_user->id)->orWhere('participate_id',$auth_id);
+                                    $query->whereCreatorId($block_user->id)->where('participate_id',$auth_id);
                                 })->first();
 
                 if($request->status == 'block'){
