@@ -113,10 +113,11 @@ class ChatController extends Controller
                         ]
                     ]);
                 }else{
+                    $this->status = Response::HTTP_OK;  // Return 200 because android can handle popup screen
                     $this->response['meta']['message']  =   trans('api.not_found',['entity' => __('Chat rooms')]); 
-                    $this->status = Response::HTTP_NOT_FOUND;     
                 }
-            } catch(ModelNotFoundException $exception) {                
+            } catch(ModelNotFoundException $exception) {     
+                $this->status = Response::HTTP_OK;     
                 switch ($exception->getModel()) {
                     case 'App\Models\ChatRoom':
                         $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("Chat rooms")]);
@@ -129,6 +130,7 @@ class ChatController extends Controller
                         break;
                 };
             } catch (\Exception $e) {
+                $this->status = Response::HTTP_OK;     
                 $this->storeErrorLog($e,'get_chat_rooms');
             }
         }

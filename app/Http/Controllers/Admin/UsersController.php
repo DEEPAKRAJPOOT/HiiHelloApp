@@ -42,14 +42,31 @@ class UsersController extends Controller
      */
     public function store(UserRequest $request)
     {
-        $request['custom_id']   =   getUniqueString('users');
-        $request['password']    =   Hash::make(config('utility.default_password'));
         $path = NULL;
         if( $request->has('profile_photo') ) {
             $path = $request->file('profile_photo')->store('users/profile_photo');
         }
-        $user = User::create($request->all());
+        $user = User::create($request->validated());
+        $user['custom_id']   =   getUniqueString('users');
+        $user['password']    =   Hash::make(config('utility.default_password'));
         $user->profile_photo = $path;
+
+        /* Verification Details */
+        $photo_verified_at  =   $request->photo_verified_at;
+        $video_verified_at  =   $request->video_verified_at;
+
+        if($photo_verified_at == 'y' && empty($user->photo_verified_at)){
+            $user->photo_verified_at = \Carbon\Carbon::now(); 
+        }elseif($photo_verified_at == NULL){
+            $user->photo_verified_at = NULL;
+        }
+
+        if($video_verified_at == 'y' && empty($user->video_verified_at)){ 
+            $user->video_verified_at = \Carbon\Carbon::now(); 
+        }elseif($video_verified_at == NULL){
+            $user->video_verified_at = NULL;
+        }
+
         if( $user->save() ) {
             flash('User account created successfully!')->success();
         } else {
@@ -135,12 +152,30 @@ class UsersController extends Controller
                     }
                     $path = $request->profile_photo->store('users/profile_photo');
                 }
-                $user->fill($request->all());
+                $user->fill($request->validated());
                 $user->profile_photo = $path;
+
+                /* Verification Details */
+                $photo_verified_at  =   $request->photo_verified_at;
+                $video_verified_at  =   $request->video_verified_at;
+
+                if($photo_verified_at == 'y' && empty($user->photo_verified_at)){
+                    $user->photo_verified_at = \Carbon\Carbon::now(); 
+                }elseif($photo_verified_at == NULL){
+                    $user->photo_verified_at = NULL;
+                }
+
+                if($video_verified_at == 'y' && empty($user->video_verified_at)){ 
+                    $user->video_verified_at = \Carbon\Carbon::now(); 
+                }elseif($video_verified_at == NULL){
+                    $user->video_verified_at = NULL;
+                }
+
                 if( $user->save() ) {
                     DB::commit();
                     flash('User details updated successfully!')->success();
                 } else {
+
                     flash('Unable to update user. Try again later')->error();
                 }
                 return redirect(route('admin.users.index'));

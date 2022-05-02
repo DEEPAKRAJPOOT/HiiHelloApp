@@ -3,7 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Middleware\CheckApiLanguage;
-use App\Http\Controllers\api\v1\ { AuthenticationController, GeneralController, UserController, LikeController, TwillioController, ChatController, MatchController, SearchController, BlockController };
+use App\Http\Controllers\api\v1\ { AuthenticationController, GeneralController, UserController, LikeController, TwillioController, ChatController, MatchController, SearchController, BlockController, VerificationController };
 
 /*
 |--------------------------------------------------------------------------
@@ -55,6 +55,11 @@ Route::group(['namespace' => 'v1', 'prefix' => 'v1', 'middleware' => 'auth:sanct
 
     // My Profile
     Route::post('user/my-profile', [UserController::class,'getMyProfile'])->name('api.user.my-profile');
+
+    // Verify Details
+    Route::post('verify/upload-detail', [VerificationController::class,'uploadVerifyDetail'])->name('api.verify.upload-detail');
+    Route::post('verify/verify-email', [VerificationController::class,'verifyEmail'])->name('api.verify.verify-email');
+    Route::post('verify/get-details', [VerificationController::class,'getVerifyDetails'])->name('api.verify.get-details');
 
     // Block/UnBlock
     Route::post('user/block-list',[BlockController::class,'blockList'])->name('api.user.block-list');

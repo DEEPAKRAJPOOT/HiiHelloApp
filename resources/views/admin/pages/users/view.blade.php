@@ -68,6 +68,27 @@
                                 - 
                             @endif </b></label>
                         </div>
+                        <div class="mb-2">
+                            <label class="control-label"><span class="mendatory" style="font-size: 20px;"></span>Photos Verified : <b>@if($user->photo_verified_at) 
+                                {{ $user->photo_verified_at }}
+                            @else
+                                - 
+                            @endif </b></label>
+                        </div>
+                        <div class="mb-2">
+                            <label class="control-label"><span class="mendatory" style="font-size: 20px;"></span>Videos Verified : <b>@if($user->video_verified_at) 
+                                {{ $user->video_verified_at }}
+                            @else
+                                - 
+                            @endif </b></label>
+                        </div>
+                        <div class="mb-2">
+                            <label class="control-label"><span class="mendatory" style="font-size: 20px;"></span>Account Verified : <b>@if($user->verify_status) 
+                                {{ $user->verify_status }}
+                            @else
+                                - 
+                            @endif </b></label>
+                        </div>
                     </div>
 
                     <div class="form-group col-md-6">

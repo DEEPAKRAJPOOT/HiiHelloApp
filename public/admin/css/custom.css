@@ -88,3 +88,8 @@ form > .card-header .card-toolbar {
 .symbol div a {
     position: absolute; top: 0; right: 0; width: 18px; height: 18px;
 }
+
+/* Profile Custom Checkbox  */
+.custom-checkbox {  display: flex; align-items: center; justify-content: flex-start; }
+.custom-checkbox input{ width: 25px; margin-right: 10px; }
+.custom-checkbox label{ margin-bottom: 0px; }

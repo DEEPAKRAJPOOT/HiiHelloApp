@@ -10,8 +10,9 @@ use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\ { DB, Auth };
 use Laravel\Sanctum\HasApiTokens;
 use App\Models\Like;
+use Carbon\Carbon;
 
-class User extends Authenticatable
+class User extends Authenticatable implements MustVerifyEmail
 {
     use HasApiTokens, Notifiable, SoftDeletes;
 
@@ -31,7 +32,10 @@ class User extends Authenticatable
         'religion_id', 'community_id', 'education_id', 'occupation_id',
         'date_idea_id', 'social_cause_id', 'risk_taken_id', 'perfect_relation_id', 'my_mantra_id', 'one_thing_know_id', 'worst_date_id', 
         'intro_family_id', 'found_one_id', 'about_surprising_id', 'political_view_id',
+        'verify_photo', 'verify_video', 'verify_status', 'email_verified_at', 'photo_verified_at', 'video_verified_at',
     ];
+    
+    public function getEmailVerifiedAtAttribute($email_verified_at){ return date('Y-m-d H:i:s', strtotime($email_verified_at)); }
 
     public function deviceToken() { return $this->hasOne('App\Models\DeviceToken'); }
     public function country(){ return $this->belongsTo('App\Models\Country'); }
@@ -69,7 +73,7 @@ class User extends Authenticatable
     public function politicalView(){ return $this->hasOne('App\Models\ProfileDetail','id','political_view_id'); }
 
     public function getAge(){ return \Carbon\Carbon::parse($this->birth_date)->diff(\Carbon\Carbon::now())->y; }
-    public function getVerifiedStatus(){ return 'verified'; }
+    public function getVerifiedStatus(){ return $this->verify_status; }
     public function countMatches(){
         return DB::table('likes')
             ->join("likes as like", function($q){
@@ -152,15 +156,16 @@ class User extends Authenticatable
         // Max Ponits
         $maximum_points        =  config('utility.profile.percent.maximum_points');
 
+        $voice_detail          =  $this->userDetails->where('voice','!=',null);
         // Improtant Details
         $full_name             =  !empty($this->full_name) ? config('utility.profile.percent.full_name') : 0;
-        $photo_verified        =  config('utility.profile.percent.photo_verified');
+        $photo_verified        =  !empty($this->photo_verified_at) ? config('utility.profile.percent.photo_verified') : 0;
         $email_verified        =  !empty($this->email_verified_at) ? config('utility.profile.percent.email_verified') : 0;
-        $id_verified           =  config('utility.profile.percent.id_verified');
-        $all_photos_verified   =  config('utility.profile.percent.all_photos_verified');
-        $video_verified        =  config('utility.profile.percent.video_verified');
+        $id_verified           =  $this->verify_status == 'verified' ? config('utility.profile.percent.id_verified') : 0;
+        $all_photos_verified   =  !empty($this->photo_verified_at) ? config('utility.profile.percent.all_photos_verified') : 0;
+        $video_verified        =  !empty($this->video_verified_at) ? config('utility.profile.percent.video_verified') : 0;
         $interest              =  !empty($this->interest) ? config('utility.profile.percent.interest') : 0;
-        $voice_prompt          =  config('utility.profile.percent.voice_prompt');
+        $voice_prompt          =  $voice_detail->isNotEmpty() ? config('utility.profile.percent.voice_prompt') : 0;
         $about_me              =  !empty($this->about_me) ? config('utility.profile.percent.about_me') : 0;
 
         // Basic Details
@@ -172,7 +177,7 @@ class User extends Authenticatable
         $star_sign             =  !empty($this->star_sign_id) ? config('utility.profile.percent.star_sign') : 0;
         $religion              =  !empty($this->religion_id) ? config('utility.profile.percent.religion') : 0;
         $community             =  !empty($this->community_id) ? config('utility.profile.percent.community') : 0;
-        $pets                  =  !empty($this->pet_id) ? config('utility.profile.percent.pets') : 0;
+        $pets                  =  $this->pets->isNotEmpty() ? config('utility.profile.percent.pets') : 0;
         $education             =  !empty($this->education_id) ? config('utility.profile.percent.education') : 0;
         $occupation            =  !empty($this->occupation_id) ? config('utility.profile.percent.occupation') : 0;
 
@@ -189,7 +194,7 @@ class User extends Authenticatable
         $about_surprising   =  !empty($this->about_surprising_id) ? config('utility.profile.percent.about_surprising') : 0;
         $political_views    =  !empty($this->political_view_id) ? config('utility.profile.percent.political_views') : 0;
 
-        $percentage = intval(($full_name+$photo_verified+$email_verified+$id_verified+$all_photos_verified+$video_verified+$interest+$voice_prompt+$about_me+$relationship_status+$you_are_here+$food_preference+$drinking+$smoking+$star_sign+$religion+$community+$pets+$education+$occupation+$date_idea+$social_cause+$risk_taken+$perfect_relation+$my_mantra+$one_thing_know+$worst_date+$intro_family+$found_one+$about_surprising+$political_views)*$maximum_points/100);
+        $percentage = intval(round(($full_name+$photo_verified+$email_verified+$id_verified+$all_photos_verified+$video_verified+$interest+$voice_prompt+$about_me+$relationship_status+$you_are_here+$food_preference+$drinking+$smoking+$star_sign+$religion+$community+$pets+$education+$occupation+$date_idea+$social_cause+$risk_taken+$perfect_relation+$my_mantra+$one_thing_know+$worst_date+$intro_family+$found_one+$about_surprising+$political_views)*$maximum_points/100));
         
         return $percentage;
     }

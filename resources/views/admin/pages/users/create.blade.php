@@ -106,6 +106,33 @@
                     @endif
                 </div>
 
+                <label>Verification Details ::</label>
+                <div class="form-group col-md-6">
+                    <div class="row">
+                        {{-- Checkbox Selection For photos --}}
+                        <div class="col-md-3 custom-checkbox">
+                            <input type="checkbox" class="form-control @error('photo_verified_at') is-invalid @enderror" name="photo_verified_at" id="categpry" value="y">
+                            <label for="photo_verified_at">Photos</label>
+                        </div>
+
+                        {{-- Checkbox Selection For Videos --}}
+                        <div class="col-md-3 custom-checkbox">
+                            <input type="checkbox" class="form-control @error('video_verified_at') is-invalid @enderror" name="video_verified_at" id="categpry" value="y">
+                            <label for="video_verified_at">Videos</label>
+                        </div>
+                    </div>
+                    @if ($errors->has('photo_verified_at'))
+                        <span class="help-block">
+                            <strong class="form-text">{{ $errors->first('photo_verified_at') }}</strong>
+                        </span>
+                    @endif
+                    @if ($errors->has('video_verified_at'))
+                        <span class="help-block">
+                            <strong class="form-text">{{ $errors->first('video_verified_at') }}</strong>
+                        </span>
+                    @endif
+                </div>
+
                 {{-- Profile Photo --}}
                 <div class="form-group">
                     <label for="profile_photo">Profile Photo</label>
