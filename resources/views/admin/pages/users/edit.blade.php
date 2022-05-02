@@ -135,6 +135,111 @@
                     @endif
                 </div>
 
+                <label>Verification Details ::</label>
+                <br><br>
+
+                {{-- Verification Photo --}}
+                <div class="form-group col-md-12">
+                    @if ($user->verify_photo)
+                    <div class="form-group col-md-6">
+                            <div class="form-group">
+                                <div class="symbol symbol-120 mr-5">
+                                    <div class="symbol-label" style="background-image:url({{ generateURL($user->verify_photo)}})">
+                                    </div>
+                                 </div>
+                            </div>
+                    </div>
+                    @endif
+
+                    @if($user->verify_video)
+                    <div class="form-group col-md-6">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <label class="control-label"><span class="mendatory" style="font-size: 20px;"></span>
+                                    <h4>Verification Video</h4>
+                                </label>
+                                <div class="mb-2">
+                                    @if($user->verify_video && generateURL($user->verify_video))
+                                        <video width="420" height="340" controls>
+                                            <source src="{{ generateURL($user->verify_video) }}" type="video/mp4">
+                                            <source src="{{ generateURL($user->verify_video) }}" type="video/ogg">
+                                            Your browser does not support the video tag.
+                                        </video>
+                                        <br><br>
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    @endif
+                </div>
+
+                <div class="form-group col-md-6">
+                    <div class="row">
+                        {{-- Checkbox Selection For photos --}}
+                        <div class="col-md-3 custom-checkbox">
+                            @if($user->photo_verified_at)
+                                <input type="checkbox" class="form-control @error('photo_verified_at') is-invalid @enderror" name="photo_verified_at" id="categpry" value="y" checked>
+                            @else
+                                <input type="checkbox" class="form-control @error('photo_verified_at') is-invalid @enderror" name="photo_verified_at" id="categpry" value="y">
+                            @endif
+                            <label for="photo_verified_at">Photos</label>
+                        </div>
+
+                        {{-- Checkbox Selection For Videos --}}
+                        <div class="col-md-3 custom-checkbox">
+                            @if($user->video_verified_at)
+                                <input type="checkbox" class="form-control @error('video_verified_at') is-invalid @enderror" name="video_verified_at" id="categpry" value="y" checked>
+                            @else
+                                <input type="checkbox" class="form-control @error('video_verified_at') is-invalid @enderror" name="video_verified_at" id="categpry" value="y">
+                            @endif
+                            <label for="video_verified_at">Videos</label>
+                        </div>
+                    </div>
+                    @if ($errors->has('photo_verified_at'))
+                        <span class="help-block">
+                            <strong class="form-text">{{ $errors->first('photo_verified_at') }}</strong>
+                        </span>
+                    @endif
+                    @if ($errors->has('video_verified_at'))
+                        <span class="help-block">
+                            <strong class="form-text">{{ $errors->first('video_verified_at') }}</strong>
+                        </span>
+                    @endif
+                </div>
+
+                {{-- Verification Status --}}
+                <div class="form-group">
+                    <label for="verify_status">{!!$mend_sign!!} Verification Status:</label>
+                    <select type="text"class="form-control" 
+                    id="verify_status" name="verify_status" value="@if(old('verify_status')){{ old('verify_status') }}@else{{ $user->verify_status }}@endif"
+                    placeholder="Select Verification Status" spellcheck="false" autocapitalize="sentences" tabindex="0" autofocus />
+                        @if($user->verify_status == 'under_review')
+                            <option value="under_review" selected>Under Review</option>
+                            <option value="verified">Verified</option>
+                            <option value="unverified">UnVerified</option>
+                        @elseif($user->verify_status == 'verified')
+                            <option value="under_review">Under Review</option>
+                            <option value="verified" selected>Verified</option>
+                            <option value="unverified">UnVerified</option>
+                        @elseif($user->verify_status == 'unverified')
+                            <option value="under_review">Under Review</option>
+                            <option value="verified">Verified</option>
+                            <option value="unverified" selected>UnVerified</option>
+                        @else
+                            <option value="" selected>Select Verification Status</option>
+                            <option value="under_review" selected>Under Review</option>
+                            <option value="verified">Verified</option>
+                            <option value="unverified">UnVerified</option>
+                        @endif
+                    </select>
+                    @if ($errors->has('verify_status'))
+                        <span class="help-block">
+                            <strong class="form-text">{{ $errors->first('verify_status') }}</strong>
+                        </span>
+                    @endif
+                </div>
+
                 {{-- Profile Photo --}}
                 <div class="form-group">
                     <label for="profile_photo">Profile Photo</label>
@@ -158,7 +263,6 @@
                         </div>
                  </div>
                  @endif
-
             </div>
             <div class="card-footer">
                 <button type="submit" class="btn btn-primary mr-2">Update {{ $custom_title }}</button>
@@ -210,6 +314,10 @@ $(document).ready(function () {
                 required: false,
                 not_empty: true,
             },
+            verify_status: {
+                required: true,
+                not_empty: true,
+            },
             profile_photo:{
                 extension: "jpg|jpeg|png",
             },
@@ -247,6 +355,10 @@ $(document).ready(function () {
             interest: {
                 required: "@lang('validation.required',['attribute'=>'interest'])",
                 not_empty: "@lang('validation.not_empty',['attribute'=>'interest'])",
+            },
+            verify_status: {
+                required: "@lang('validation.required',['attribute'=>'verification status'])",
+                not_empty: "@lang('validation.not_empty',['attribute'=>'verification status'])",
             },
             profile_photo: {
                 extension:"@lang('validation.mimetypes',['attribute'=>'profile photo','value'=>'jpg|png|jpeg'])",

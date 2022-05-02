@@ -115,7 +115,7 @@ return [
     ],
 
     'block' =>  [
-        'not_able'  =>  'Unbale to block profile.',
+        'not_able'  =>  'Unbale to block profile',
         'success'   =>  'Profile blocked succesfully',
         'fail'      =>  'Profile blocked unsuccesfully',
     ],
@@ -123,6 +123,10 @@ return [
         'success'   =>  'Profile unblocked succesfully',
         'fail'      =>  'Profile unblocked unsuccesfully',
     ],
+    'verification_upload'    =>  [
+        'success'   =>  'Verification details updated succesfully',
+        'fail'      =>  'Failed to upload Verification details',
+    ]
 
     /* Custom Message */    
 ];

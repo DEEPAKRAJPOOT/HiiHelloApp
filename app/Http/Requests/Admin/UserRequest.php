@@ -36,6 +36,7 @@ class UserRequest extends FormRequest
             'birth_date'        =>  'required_unless:action,'.$unless.'|date|before:'.$min_birth_date,
             'gender'            =>  'required_unless:action,'.$unless.'|in:'.implode(',', ['Male','Female']),
             'interest'          =>  'nullable|in:'.implode(',', ['Male','Female', 'Both']),
+            'verify_status'     =>  'required_unless:action,'.$unless.'|in:under_review,verified,unverified',
             'profile_photo'     =>  'nullable|mimes:jpg,jpeg,png',
         ];
     }

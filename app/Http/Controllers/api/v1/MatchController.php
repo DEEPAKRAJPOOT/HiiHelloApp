@@ -127,6 +127,7 @@ class MatchController extends Controller
                     ] ]);
             } catch(ModelNotFoundException $exception) {   
                 DB::rollback();
+                $this->status = Response::HTTP_OK;     
                 switch ($exception->getModel()) {
                     case 'App\Models\ChatRoom':
                         $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("Chat room")]);
@@ -140,6 +141,7 @@ class MatchController extends Controller
                 };
             } catch (\Exception $e) {
                 DB::rollback();   
+                $this->status = Response::HTTP_OK;     
                 $this->storeErrorLog($e,'delete_match');
             }
         }

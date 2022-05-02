@@ -2,6 +2,9 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\api\v1\ { TwillioController };
+use Illuminate\Foundation\Auth\ { EmailVerificationRequest };
+use Illuminate\Auth\Events\ { Verified };
+use App\Models\ { User };
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -21,6 +24,16 @@ Auth::routes(['register' => false, 'login' => false]);
 Route::post('/voice',[TwillioController::class,'voice']);
 
 Route::get('login', 'AdminAuth\LoginController@showLoginForm')->name('login');
+
+Route::get('/email/verify/{id}/{hash}', function (Request $request, $id) {
+    $user = User::findOrFail($id);
+    if (! $user->hasVerifiedEmail()) {
+        $user->markEmailAsVerified();
+        event(new Verified($user));
+    }
+    return redirect(route('home'));
+})->name('verification.verify');
+
 
 /* CMS Pages */
   Route::get('about-us', 'FrontendPagesController@about')->name('about.us');
