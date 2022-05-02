@@ -90,10 +90,10 @@ class BlockController extends Controller
                 DB::rollback();             
                 switch ($exception->getModel()) {
                     case 'App\Models\BlockUser':
-                        $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("User")]);
+                        $this->response['meta']['message'] = trans('api.block.not_able');
                         break;
                     case 'App\Models\User':
-                        $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("User")]);
+                        $this->response['meta']['message'] = trans('api.block.not_able');
                         break;
                     default:
                         $this->response['meta']['message'] = trans('api.went_wrong');

@@ -115,6 +115,7 @@ return [
     ],
 
     'block' =>  [
+        'not_able'  =>  'Unbale to block profile.',
         'success'   =>  'Profile blocked succesfully',
         'fail'      =>  'Profile blocked unsuccesfully',
     ],
