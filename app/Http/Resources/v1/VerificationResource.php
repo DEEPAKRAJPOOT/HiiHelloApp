@@ -16,13 +16,13 @@ class VerificationResource extends JsonResource
     {
         return [
             'flags'             =>  [
-                'email' =>   [
-                    'verified_status'   =>  $this->email_verified_at ? "verified" : "",
-                    'verified_at'       =>  $this->email_verified_at ?? "",
-                ],
                 'photo' =>   [
                     'verified_status'   =>  $this->photo_verified_at ? "verified" : "",
                     'verified_at'       =>  $this->photo_verified_at ?? "",
+                ],
+                'email' =>   [
+                    'verified_status'   =>  $this->email_verified_at ? "verified" : "",
+                    'verified_at'       =>  $this->email_verified_at ?? "",
                 ],
                 'video' =>   [
                     'verified_status'   =>  $this->video_verified_at ? "verified" : "",

@@ -80,9 +80,10 @@ class VerificationController extends Controller
                     $this->response['meta']['message']  =   trans('api.invalid', ['entity' => __("email")]);
                     $this->status = Response::HTTP_NOT_FOUND; 
                     return $this->returnResponse();
-                }else{
-                    $user->email = $request->email; $user->save();
                 }
+                // else{
+                //     $user->email = $request->email; $user->save();
+                // }
 
                 /* Send Verification */    
                 $user->sendEmailVerificationNotification();

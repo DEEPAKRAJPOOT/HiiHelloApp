@@ -115,9 +115,10 @@ return [
     ],
 
     'block' =>  [
-        'not_able'  =>  'Unbale to block profile',
-        'success'   =>  'Profile blocked succesfully',
-        'fail'      =>  'Profile blocked unsuccesfully',
+        'no_action'     =>  'Unbale to add :entity your profile is blocked',
+        'not_able'      =>  'Unbale to block profile',
+        'success'       =>  'Profile blocked succesfully',
+        'fail'          =>  'Profile blocked unsuccesfully',
     ],
     'unblock' =>  [
         'success'   =>  'Profile unblocked succesfully',
