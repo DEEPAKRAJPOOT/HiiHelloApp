@@ -56,6 +56,16 @@ class GeneralController extends Controller
                     'en'    =>  route('about.us'),
                 ],
             ],
+            'verification_details'  =>  [
+                'male'   =>  [
+                    'image_url' =>  'https://hi-hello-app.s3.ap-south-1.amazonaws.com/users/profile_photo/no0ByNeFWtWQnY5n58DMpxfPtF3i9BAyhQ06xRUF.jpg',
+                    'video_url' =>  'https://hi-hello-app.s3.ap-south-1.amazonaws.com/users/verify/video/5XFu8V6H87Z4nKzLkw5Ic9f5Bo4ZOuGiaBf2iuBw.mp4',
+                ],
+                'female'   =>  [
+                    'image_url' =>  'https://hi-hello-app.s3.ap-south-1.amazonaws.com/users/profile_photo/no0ByNeFWtWQnY5n58DMpxfPtF3i9BAyhQ06xRUF.jpg',
+                    'video_url' =>  'https://hi-hello-app.s3.ap-south-1.amazonaws.com/users/verify/video/5XFu8V6H87Z4nKzLkw5Ic9f5Bo4ZOuGiaBf2iuBw.mp4',
+                ],
+            ],
         ];
         $this->status = Response::HTTP_OK;
         $this->response['meta']['message'] = trans('api.list', ['entity' => __('App details')]);

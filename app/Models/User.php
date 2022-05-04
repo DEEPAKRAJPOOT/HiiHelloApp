@@ -35,7 +35,11 @@ class User extends Authenticatable implements MustVerifyEmail
         'verify_photo', 'verify_video', 'verify_status', 'email_verified_at', 'photo_verified_at', 'video_verified_at',
     ];
     
-    public function getEmailVerifiedAtAttribute($email_verified_at){ return date('Y-m-d H:i:s', strtotime($email_verified_at)); }
+    public function getEmailVerifiedAtAttribute($email_verified_at){ 
+        $email_value = "";
+        $email_verified_at ? $email_value = date('Y-m-d H:i:s', strtotime($email_verified_at)) : $email_value = "";
+        return $email_value; 
+    }
 
     public function deviceToken() { return $this->hasOne('App\Models\DeviceToken'); }
     public function country(){ return $this->belongsTo('App\Models\Country'); }

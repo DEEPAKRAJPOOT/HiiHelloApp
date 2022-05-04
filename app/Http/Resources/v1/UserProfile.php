@@ -42,7 +42,7 @@ class UserProfile extends JsonResource
                 'profile_percentage'    =>  $this->calculateProfilePercent(),
                 'verified_staus'        =>  $this->getVerifiedStatus(),
                 'likes'                 =>  $this->likes_count ?? 0,
-                'email_verified_at'     =>  $this->email_verified_at,
+                'email_verified_at'     =>  $this->email_verified_at ?? "",
                 'photo_verified_at'     =>  $this->photo_verified_at,
                 'video_verified_at'     =>  $this->video_verified_at,
             ],
