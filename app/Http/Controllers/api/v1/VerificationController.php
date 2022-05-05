@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\ { ModelNotFoundException };
 use Illuminate\Support\Facades\ { Storage };
 use App\Http\Requests\Api\User\ { UploadVerifyDetailRequest, EmailVerifyRequest };
 use App\Http\Resources\v1\ { VerificationResource };
+use App\Models\ { User };
 
 class VerificationController extends Controller
 {
@@ -83,9 +84,16 @@ class VerificationController extends Controller
                     $this->status = Response::HTTP_NOT_FOUND; 
                     return $this->returnResponse();
                 }
-                // else{
-                //     $user->email = $request->email; $user->save();
-                // }
+                else{
+                    $email_exist = User::select('id')->whereEmail($request->email)->first();
+                    if(!$email_exist){
+                        $user->email = $request->email; $user->save();
+                    }else{
+                        $this->response['meta']['message']  =   trans('api.already_exists', ['entity' => __("email")]);
+                        $this->status = Response::HTTP_NOT_FOUND; 
+                        return $this->returnResponse();
+                    }
+                }
 
                 /* Send Verification */    
                 $user->sendEmailVerificationNotification();
