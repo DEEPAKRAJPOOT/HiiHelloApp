@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\ { ModelNotFoundException };
 use App\Http\Resources\v1\ { LanguageResource, CmsResource, CountryResource, LocationResource, InterestResource, FaqResource, ProfileDetailResource };
 use App\Http\Requests\Api\General\ { PaginationRequest, LocationRequest, ProfileDetailRequest, InterestRequest };
 use App\Http\Requests\Api\User\ { AddDeviceTokenRequest };
-use App\Models\ { Language, CmsPage, Country, Location, Interest, Faq, DeviceToken, ProfileDetail };
+use App\Models\ { Language, CmsPage, Country, Location, Interest, Faq, DeviceToken, ProfileDetail, AppDetail };
 
 class GeneralController extends Controller
 {
@@ -23,6 +23,21 @@ class GeneralController extends Controller
         $cms_page   =   CmsPage::select('updated_at')->orderBy('updated_at', 'DESC')->first();
         $location   =   Location::select('updated_at')->orderBy('updated_at', 'DESC')->first();
         $attributes =   ProfileDetail::whereIsActive('y')->distinct()->pluck('attribute')->toArray();
+        $app_details =  AppDetail::all();
+
+        $verification_data = [];
+        if($app_details->isNotEmpty()){
+            $verification_data = [
+                'male'   =>  [
+                    'image_url' =>  generateURL($app_details[0]->value),
+                    'video_url' =>  generateURL($app_details[1]->value),
+                ],
+                'female'   =>  [
+                    'image_url' =>  generateURL($app_details[2]->value),
+                    'video_url' =>  generateURL($app_details[3]->value),
+                ],
+            ];
+        }
 
         $this->response['data'] = [
             'version'   =>  [
@@ -56,16 +71,7 @@ class GeneralController extends Controller
                     'en'    =>  route('about.us'),
                 ],
             ],
-            'verification_details'  =>  [
-                'male'   =>  [
-                    'image_url' =>  'https://hi-hello-app.s3.ap-south-1.amazonaws.com/users/profile_photo/no0ByNeFWtWQnY5n58DMpxfPtF3i9BAyhQ06xRUF.jpg',
-                    'video_url' =>  'https://hi-hello-app.s3.ap-south-1.amazonaws.com/users/verify/video/5XFu8V6H87Z4nKzLkw5Ic9f5Bo4ZOuGiaBf2iuBw.mp4',
-                ],
-                'female'   =>  [
-                    'image_url' =>  'https://hi-hello-app.s3.ap-south-1.amazonaws.com/users/profile_photo/no0ByNeFWtWQnY5n58DMpxfPtF3i9BAyhQ06xRUF.jpg',
-                    'video_url' =>  'https://hi-hello-app.s3.ap-south-1.amazonaws.com/users/verify/video/5XFu8V6H87Z4nKzLkw5Ic9f5Bo4ZOuGiaBf2iuBw.mp4',
-                ],
-            ],
+            'verification_details'  =>  $verification_data,
         ];
         $this->status = Response::HTTP_OK;
         $this->response['meta']['message'] = trans('api.list', ['entity' => __('App details')]);

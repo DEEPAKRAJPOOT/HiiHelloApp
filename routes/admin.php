@@ -67,6 +67,9 @@ Route::group(['namespace' => 'Admin', 'middleware' => ['check_permit','revalidat
 	/* Push Notification */
 	Route::resource('push-notification', 'PushNotificationController');	
 
+	/* App Details */
+	Route::resource('app-details', 'AppDetailController');	
+
 	/* CMS Management*/
 	Route::get('pages/listing', 'CmsPagesController@listing')->name('pages.listing');
 	Route::resource('pages', 'CmsPagesController');

@@ -135,23 +135,66 @@
                     @endif
                 </div>
 
-                <label>Verification Details ::</label>
-                <br><br>
-
-                {{-- Verification Photo --}}
-                <div class="form-group col-md-12">
-                    @if ($user->verify_photo)
-                    <div class="form-group col-md-6">
-                            <div class="form-group">
-                                <div class="symbol symbol-120 mr-5">
-                                    <div class="symbol-label" style="background-image:url({{ generateURL($user->verify_photo)}})">
-                                    </div>
-                                 </div>
-                            </div>
-                    </div>
+                {{-- Profile Photo --}}
+                <div class="form-group">
+                    <label for="profile_photo">Profile Photo</label>
+                    <div class="custom-file">
+                        <input type="file" class="custom-file-input" id="profile_photo" name="profile_photo" tabindex="0" />
+                        <label class="custom-file-label @error('profile_photo') is-invalid @enderror" for="customFile">Choose file</label>
+                        @if ($errors->has('profile_photo'))
+                        <span class="text-danger">
+                            <strong class="form-text">{{ $errors->first('profile_photo') }}</strong>
+                        </span>
                     @endif
+                    </div>
+                </div>
+                @if ($user->profile_photo)
+                <div class="symbol symbol-120 mr-5">
+                        <div class="symbol-label" style="background-image:url({{ generateURL($user->profile_photo)}})">
+                        {{-- Custom css added .symbol div a --}}
+                            <a href="#" class="btn btn-icon btn-light btn-hover-danger remove-img" id="kt_quick_user_close" style="width: 18px; height: 18px;">
+                                <i class="ki ki-close icon-xs text-muted"></i>
+                            </a>
+                        </div>
+                 </div>
+                 @endif
+            </div>
+        <!--end::Form-->
+    </div>
 
-                    @if($user->verify_video)
+    <br><br>
+    <div class="card card-custom">
+        <div class="card-header">
+            <div class="card-title">
+                <span class="card-icon">
+                    <i class="fas fa-user-edit text-primary"></i>
+                </span>
+                <h3 class="card-label text-uppercase">Verification Details</h3>
+            </div>
+        </div>
+            <div class="card-body">
+                {{-- Verification Photo --}}
+                <div class="form-group row col-md-12">
+                    <div class="form-group col-md-6">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label class="control-label"><span class="mendatory" style="font-size: 20px;"></span>
+                                    <h4>Verification Photo</h4>
+                                </label>
+                                <div class="symbol symbol-120 mr-5">
+                                    @if (generateURL($user->verify_photo))
+                                        <a href="{{ generateURL($user->verify_photo) }}" target="_blank">
+                                            <div class="symbol-label" style="width: 500px; height: 350px; background-image:url({{ generateURL($user->verify_photo)}})">
+                                            </div>
+                                        </a>
+                                    @else
+                                        <label>Photo Not Available.</label>
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="form-group col-md-6">
                         <div class="row">
                             <div class="col-md-12">
@@ -159,19 +202,21 @@
                                     <h4>Verification Video</h4>
                                 </label>
                                 <div class="mb-2">
-                                    @if($user->verify_video && generateURL($user->verify_video))
+
+                                    @if (generateURL($user->verify_video))
                                         <video width="420" height="340" controls>
                                             <source src="{{ generateURL($user->verify_video) }}" type="video/mp4">
                                             <source src="{{ generateURL($user->verify_video) }}" type="video/ogg">
                                             Your browser does not support the video tag.
                                         </video>
                                         <br><br>
+                                    @else
+                                        <label>Video Not Available.</label>
                                     @endif
                                 </div>
                             </div>
                         </div>
                     </div>
-                    @endif
                 </div>
 
                 <div class="form-group col-md-6">
@@ -208,9 +253,95 @@
                     @endif
                 </div>
 
-                {{-- Verification Status --}}
+                {{-- Photo Suggestion --}}
                 <div class="form-group">
-                    <label for="verify_status">{!!$mend_sign!!} Verification Status:</label>
+                    <label for="photo_suggestion">Photo Suggestion:</label>
+                    <textarea type="text" class="form-control @error('photo_suggestion') is-invalid @enderror" id="photo_suggestion" name="photo_suggestion" placeholder="Enter Photo Suggestion" autocomplete="photo_suggestion" spellcheck="false" autocapitalize="sentences" tabindex="0" autofocus>{{ old('photo_suggestion') != null ? old('photo_suggestion') : $user->photo_suggestion }}</textarea>
+                    @if ($errors->has('photo_suggestion'))
+                        <span class="help-block">
+                            <strong class="form-text">{{ $errors->first('photo_suggestion') }}</strong>
+                        </span>
+                    @endif
+                </div>
+
+                {{-- Video Suggestion --}}
+                <div class="form-group">
+                    <label for="video_suggestion">Video Suggestion:</label>
+                    <textarea type="text" class="form-control @error('video_suggestion') is-invalid @enderror" id="video_suggestion" name="video_suggestion" placeholder="Enter Video Suggestion" autocomplete="video_suggestion" spellcheck="false" autocapitalize="sentences" tabindex="0" autofocus>{{ old('video_suggestion') != null ? old('video_suggestion') : $user->video_suggestion }}</textarea>
+                    @if ($errors->has('video_suggestion'))
+                        <span class="help-block">
+                            <strong class="form-text">{{ $errors->first('video_suggestion') }}</strong>
+                        </span>
+                    @endif
+                </div>
+
+                {{-- Photo Verification Status --}}
+                <div class="form-group">
+                    <label for="verify_photo_status">{!!$mend_sign!!} Photo Verification Status:</label>
+                    <select type="text"class="form-control" 
+                    id="verify_photo_status" name="verify_photo_status" value="@if(old('verify_photo_status')){{ old('verify_photo_status') }}@else{{ $user->verify_photo_status }}@endif"
+                    placeholder="Select Verification Status" spellcheck="false" autocapitalize="sentences" tabindex="0" autofocus />
+                        @if($user->verify_photo_status == 'under_review')
+                            <option value="under_review" selected>Under Review</option>
+                            <option value="verified">Verified</option>
+                            <option value="unverified">UnVerified</option>
+                        @elseif($user->verify_photo_status == 'verified')
+                            <option value="under_review">Under Review</option>
+                            <option value="verified" selected>Verified</option>
+                            <option value="unverified">UnVerified</option>
+                        @elseif($user->verify_photo_status == 'unverified')
+                            <option value="under_review">Under Review</option>
+                            <option value="verified">Verified</option>
+                            <option value="unverified" selected>UnVerified</option>
+                        @else
+                            <option value="" selected>Select Verification Status</option>
+                            <option value="under_review" selected>Under Review</option>
+                            <option value="verified">Verified</option>
+                            <option value="unverified">UnVerified</option>
+                        @endif
+                    </select>
+                    @if ($errors->has('verify_photo_status'))
+                        <span class="help-block">
+                            <strong class="form-text">{{ $errors->first('verify_photo_status') }}</strong>
+                        </span>
+                    @endif
+                </div>
+
+                {{-- Video Verification Status --}}
+                <div class="form-group">
+                    <label for="verify_video_status">{!!$mend_sign!!} Video Verification Status:</label>
+                    <select type="text"class="form-control" 
+                    id="verify_video_status" name="verify_video_status" value="@if(old('verify_video_status')){{ old('verify_video_status') }}@else{{ $user->verify_video_status }}@endif"
+                    placeholder="Select Verification Status" spellcheck="false" autocapitalize="sentences" tabindex="0" autofocus />
+                        @if($user->verify_video_status == 'under_review')
+                            <option value="under_review" selected>Under Review</option>
+                            <option value="verified">Verified</option>
+                            <option value="unverified">UnVerified</option>
+                        @elseif($user->verify_video_status == 'verified')
+                            <option value="under_review">Under Review</option>
+                            <option value="verified" selected>Verified</option>
+                            <option value="unverified">UnVerified</option>
+                        @elseif($user->verify_video_status == 'unverified')
+                            <option value="under_review">Under Review</option>
+                            <option value="verified">Verified</option>
+                            <option value="unverified" selected>UnVerified</option>
+                        @else
+                            <option value="" selected>Select Verification Status</option>
+                            <option value="under_review" selected>Under Review</option>
+                            <option value="verified">Verified</option>
+                            <option value="unverified">UnVerified</option>
+                        @endif
+                    </select>
+                    @if ($errors->has('verify_video_status'))
+                        <span class="help-block">
+                            <strong class="form-text">{{ $errors->first('verify_video_status') }}</strong>
+                        </span>
+                    @endif
+                </div>
+
+                {{-- Profile Verification Status --}}
+                <div class="form-group">
+                    <label for="verify_status">{!!$mend_sign!!} Profile Verification Status:</label>
                     <select type="text"class="form-control" 
                     id="verify_status" name="verify_status" value="@if(old('verify_status')){{ old('verify_status') }}@else{{ $user->verify_status }}@endif"
                     placeholder="Select Verification Status" spellcheck="false" autocapitalize="sentences" tabindex="0" autofocus />
@@ -239,30 +370,6 @@
                         </span>
                     @endif
                 </div>
-
-                {{-- Profile Photo --}}
-                <div class="form-group">
-                    <label for="profile_photo">Profile Photo</label>
-                    <div class="custom-file">
-                        <input type="file" class="custom-file-input" id="profile_photo" name="profile_photo" tabindex="0" />
-                        <label class="custom-file-label @error('profile_photo') is-invalid @enderror" for="customFile">Choose file</label>
-                        @if ($errors->has('profile_photo'))
-                        <span class="text-danger">
-                            <strong class="form-text">{{ $errors->first('profile_photo') }}</strong>
-                        </span>
-                    @endif
-                    </div>
-                </div>
-                @if ($user->profile_photo)
-                <div class="symbol symbol-120 mr-5">
-                        <div class="symbol-label" style="background-image:url({{ generateURL($user->profile_photo)}})">
-                        {{-- Custom css added .symbol div a --}}
-                            <a href="#" class="btn btn-icon btn-light btn-hover-danger remove-img" id="kt_quick_user_close" style="width: 18px; height: 18px;">
-                                <i class="ki ki-close icon-xs text-muted"></i>
-                            </a>
-                        </div>
-                 </div>
-                 @endif
             </div>
             <div class="card-footer">
                 <button type="submit" class="btn btn-primary mr-2">Update {{ $custom_title }}</button>
@@ -314,6 +421,26 @@ $(document).ready(function () {
                 required: false,
                 not_empty: true,
             },
+            photo_suggestion: {
+                required: false,
+                not_empty: false,
+                minlength: 3,
+                maxlength: 150,
+            },
+            video_suggestion: {
+                required: false,
+                not_empty: false,
+                minlength: 3,
+                maxlength: 150,
+            },
+            verify_photo_status: {
+                required: true,
+                not_empty: true,
+            },
+            verify_video_status: {
+                required: true,
+                not_empty: true,
+            },
             verify_status: {
                 required: true,
                 not_empty: true,
@@ -356,9 +483,29 @@ $(document).ready(function () {
                 required: "@lang('validation.required',['attribute'=>'interest'])",
                 not_empty: "@lang('validation.not_empty',['attribute'=>'interest'])",
             },
+            photo_suggestion: {
+                required: "@lang('validation.required',['attribute'=>'photo suggestion'])",
+                not_empty: "@lang('validation.not_empty',['attribute'=>'photo suggestion'])",
+                minlength:"@lang('validation.min.string',['attribute'=>'photo suggestion','min'=>3])",
+                maxlength:"@lang('validation.max.string',['attribute'=>'photo suggestion','min'=>150])",
+            },
+            video_suggestion: {
+                required: "@lang('validation.required',['attribute'=>'video suggestion'])",
+                not_empty: "@lang('validation.not_empty',['attribute'=>'video suggestion'])",
+                minlength:"@lang('validation.min.string',['attribute'=>'video suggestion','min'=>3])",
+                maxlength:"@lang('validation.max.string',['attribute'=>'video suggestion','min'=>150])",
+            },
+            verify_photo_status: {
+                required: "@lang('validation.required',['attribute'=>'photo verification status'])",
+                not_empty: "@lang('validation.not_empty',['attribute'=>'photo verification status'])",
+            },
+            verify_video_status: {
+                required: "@lang('validation.required',['attribute'=>'video verification status'])",
+                not_empty: "@lang('validation.not_empty',['attribute'=>'video verification status'])",
+            },
             verify_status: {
-                required: "@lang('validation.required',['attribute'=>'verification status'])",
-                not_empty: "@lang('validation.not_empty',['attribute'=>'verification status'])",
+                required: "@lang('validation.required',['attribute'=>'profile verification status'])",
+                not_empty: "@lang('validation.not_empty',['attribute'=>'profile verification status'])",
             },
             profile_photo: {
                 extension:"@lang('validation.mimetypes',['attribute'=>'profile photo','value'=>'jpg|png|jpeg'])",

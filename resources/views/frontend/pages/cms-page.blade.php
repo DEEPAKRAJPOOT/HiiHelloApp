@@ -56,8 +56,22 @@
         </header>
         <section class="policy-pages">
             <article class="container">
-                <h2>{{ $title }}</h2>
-                {!! $page->getDescription() !!}
+                @if(generateURL($page->file))
+                <div class="row">
+                    <div class="col-md-6">
+                        <h4>{{ $title }}</h4>
+                        {!! $page->getDescription() !!}
+                    </div>
+                    <div class="col-md-6">
+                        <figure>
+                            <img src="{{ generateURL($page->file) }}" alt="image"/>
+                        </figure>
+                    </div>
+                </div>
+                @else
+                    <h2>{{ $title }}</h2>
+                    {!! $page->getDescription() !!}
+                @endif
             </article>
         </section>
         <div class="footer-section">

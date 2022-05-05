@@ -235,6 +235,13 @@ Breadcrumbs::register('dashboard', function ($breadcrumbs) {
 	});
 
 
+	// App Details -------------------------------------------------------------------------------------------------------------------------------------------------------
+	Breadcrumbs::register('app_detail_create', function($breadcrumbs)
+	{
+		$breadcrumbs->parent('dashboard');
+	    $breadcrumbs->push('Add App Details', route(Auth::getDefaultDriver().'.app-details.create'));
+	});
+
 	// CMS Pages ---------------------------------------------------------------------------------------------------------------------------------------------------
 	Breadcrumbs::register('cms_list', function ($breadcrumbs) {
 		$breadcrumbs->parent('dashboard');

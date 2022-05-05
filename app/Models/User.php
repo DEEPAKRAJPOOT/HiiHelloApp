@@ -32,7 +32,10 @@ class User extends Authenticatable implements MustVerifyEmail
         'religion_id', 'community_id', 'education_id', 'occupation_id',
         'date_idea_id', 'social_cause_id', 'risk_taken_id', 'perfect_relation_id', 'my_mantra_id', 'one_thing_know_id', 'worst_date_id', 
         'intro_family_id', 'found_one_id', 'about_surprising_id', 'political_view_id',
-        'verify_photo', 'verify_video', 'verify_status', 'email_verified_at', 'photo_verified_at', 'video_verified_at',
+        'verify_email_send',
+        'verify_photo', 'verify_video', 'photo_suggestion', 'video_suggestion',
+        'verify_photo_status', 'verify_video_status',
+        'verify_status', 'email_verified_at', 'photo_verified_at', 'video_verified_at',
     ];
     
     public function getEmailVerifiedAtAttribute($email_verified_at){ 
@@ -150,6 +153,15 @@ class User extends Authenticatable implements MustVerifyEmail
 
     public function isSocialUser(){
         return $this->is_social_user == 'y' ? true : false;
+    }
+
+    public function emailVerifyStatus(){
+        $status = "pending";
+        if($this->verify_email_send == 'y'){
+            $status = "under_review";
+            if(!empty($this->email_verified_at)){ $status = "verified"; }
+        }
+        return $status;
     }
 
     /**
