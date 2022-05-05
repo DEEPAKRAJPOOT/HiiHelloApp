@@ -27,10 +27,8 @@ Route::get('login', 'AdminAuth\LoginController@showLoginForm')->name('login');
 
 Route::get('/email/verify/{id}/{hash}', function (Request $request, $id) {
     $user = User::findOrFail($id);
-    if (! $user->hasVerifiedEmail()) {
-        $user->markEmailAsVerified();
-        event(new Verified($user));
-    }
+    $user->markEmailAsVerified();
+    
     return redirect(route('home'));
 })->name('verification.verify');
 
