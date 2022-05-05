@@ -31,5 +31,6 @@ class DatabaseSeeder extends Seeder
         $this->call(LocationTranslationSeeder::class);
         $this->call(InterestSeeder::class);
         $this->call(InterestTranslationSeeder::class);
+        $this->call(AppDetailSeeder::class);
     }
 }

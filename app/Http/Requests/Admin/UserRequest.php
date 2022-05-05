@@ -29,15 +29,19 @@ class UserRequest extends FormRequest
         $min_birth_date = now()->subYears(config('utility.minimum_age'))->format('m/d/Y');
 
         return [
-            'full_name'         =>  'required_unless:action,'.$unless.'|min:2|max:100',
-            'email'             =>  'nullable|max:150|unique:users,email,'.$id.',id,deleted_at,NULL',
-            'country_code'      =>  'required_unless:action,'.$unless.'|exists:countries,phonecode',
-            'contact_no'        =>  'required_unless:action,'.$unless.'|digits_between:6,16|unique:users,contact_no,'.$id.',id,deleted_at,NULL',
-            'birth_date'        =>  'required_unless:action,'.$unless.'|date|before:'.$min_birth_date,
-            'gender'            =>  'required_unless:action,'.$unless.'|in:'.implode(',', ['Male','Female']),
-            'interest'          =>  'nullable|in:'.implode(',', ['Male','Female', 'Both']),
-            'verify_status'     =>  'required_unless:action,'.$unless.'|in:under_review,verified,unverified',
-            'profile_photo'     =>  'nullable|mimes:jpg,jpeg,png',
+            'full_name'                 =>  'required_unless:action,'.$unless.'|min:2|max:100',
+            'email'                     =>  'nullable|max:150|unique:users,email,'.$id.',id,deleted_at,NULL',
+            'country_code'              =>  'required_unless:action,'.$unless.'|exists:countries,phonecode',
+            'contact_no'                =>  'required_unless:action,'.$unless.'|digits_between:6,16|unique:users,contact_no,'.$id.',id,deleted_at,NULL',
+            'birth_date'                =>  'required_unless:action,'.$unless.'|date|before:'.$min_birth_date,
+            'gender'                    =>  'required_unless:action,'.$unless.'|in:'.implode(',', ['Male','Female']),
+            'interest'                  =>  'nullable|in:'.implode(',', ['Male','Female', 'Both']),
+            'profile_photo'             =>  'nullable|mimes:jpg,jpeg,png',
+            'photo_suggestion'          =>  'nullable|min:3|max:150',
+            'video_suggestion'          =>  'nullable|min:3|max:150',
+            'verify_photo_status'       =>  'required_unless:action,'.$unless.'|in:under_review,verified,unverified',
+            'verify_video_status'       =>  'required_unless:action,'.$unless.'|in:under_review,verified,unverified',
+            'verify_status'             =>  'required_unless:action,'.$unless.'|in:under_review,verified,unverified',
         ];
     }
 }

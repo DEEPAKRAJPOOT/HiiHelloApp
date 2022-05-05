@@ -46,10 +46,13 @@ function getPermissions($user_type = 'normal')
             13 =>[ // Push Notification
                 'permissions' => 'access,add'
             ],
-            14 =>[ //CMS Pages
+            14 =>[ // App Details
+                'permissions' => 'access,add'
+            ],
+            15 =>[ //CMS Pages
                 'permissions' => 'access,edit'
             ],
-            15 =>[ //Site Configurations
+            16 =>[ //Site Configurations
                 'permissions' => 'access'
             ],
         ];

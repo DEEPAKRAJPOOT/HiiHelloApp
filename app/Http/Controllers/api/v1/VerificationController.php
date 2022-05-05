@@ -28,6 +28,7 @@ class VerificationController extends Controller
 
                     $path = $request->file('file')->store('users/verify/image');
                     $user->verify_photo = $path;
+                    $user->verify_photo_status = "under_review";
                     $user->photo_verified_at = NULL;
                 }
                 elseif($request->type == 'video'){
@@ -35,6 +36,7 @@ class VerificationController extends Controller
 
                     $path = $request->file('file')->store('users/verify/video');
                     $user->verify_video = $path;
+                    $user->verify_video_status = "under_review";
                     $user->video_verified_at = NULL;
                 }
                 $user->verify_status = 'under_review';
@@ -87,6 +89,9 @@ class VerificationController extends Controller
 
                 /* Send Verification */    
                 $user->sendEmailVerificationNotification();
+                $user->verify_email_send = 'y';
+                $user->save();
+                
                 return ([
                     'data'  =>  NULL,
                     'meta' => [
