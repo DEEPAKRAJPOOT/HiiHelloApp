@@ -24,8 +24,8 @@ class SocialLoginRequest extends FormRequest
     public function rules($request)
     {
         return [
-            'full_name'                 =>  'required|min:2|max:100',
-            'email'                     =>  'required|email|max:150',
+            'full_name'                 =>  'nullable|min:2|max:100',
+            'email'                     =>  'nullable|email|max:150',
             'profile_photo'             =>  'nullable|mimes:jpeg,png',
             'type'                      =>  'required|in:facebook,google,apple',
             $request->type.'_id'        =>  'required|string|min:5',

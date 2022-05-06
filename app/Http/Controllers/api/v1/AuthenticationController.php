@@ -476,14 +476,23 @@ class AuthenticationController extends Controller
         if( $this->apiValidator($request->all(), $rules, $this->version) ) {
             try {
                 // Check for deleted account details
-                $deleted = User::onlyTrashed()->pluck('email')->toArray();
-                if( in_array($request->email, $deleted) ) {
-                    $this->response['meta']['message']  =  trans('api.account_deleted');
-                    $this->status = Response::HTTP_FORBIDDEN;
-                    return $this->returnResponse();
+                if(!empty($request->email)){
+                    $deleted = User::onlyTrashed()->pluck('email')->toArray();
+                    if( in_array($request->email, $deleted) ) {
+                        $this->response['meta']['message']  =  trans('api.account_deleted');
+                        $this->status = Response::HTTP_FORBIDDEN;
+                        return $this->returnResponse();
+                    }
                 }
 
-                $user = User::where('email', $request->email)->orWhere($request->type.'_id', $request[$request->type.'_id'])->first();            
+                $user = User::query();
+                if(!empty($request->email)){
+                    $user = $user->where('email', $request->email);
+                }else{
+                    $user = $user->where($request->type.'_id', $request[$request->type.'_id']);
+                }
+                $user = $user->first();  
+                  
                 unset($request['type']);
                 if( !empty($user) ) { # Update Profile Details
                     $request['full_name'] = $user->full_name ? $user->full_name : $request->full_name;
