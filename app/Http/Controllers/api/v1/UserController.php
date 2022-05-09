@@ -313,4 +313,34 @@ class UserController extends Controller
         }
         return $this->returnResponse();
     }
+
+    // Delete Account
+    public function deletAccount(Request $request)
+    {
+        try{
+            $user = $request->user();
+            $user->delete();
+
+            return ([
+                'data'  =>  NULL,
+                'meta' => [
+                    'url'       =>  url()->current(),
+                    'api'       =>  $this->getVersion(),
+                    'language'  =>  app()->getLocale(),
+                    'message'   =>  trans('api.delete', ['entity' => __('Your Account')]),
+                ] ]);
+        } catch(ModelNotFoundException $exception) {                
+            switch ($exception->getModel()) {
+                case 'App\Models\User':
+                    $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("User")]);
+                    break;
+                default:
+                    $this->response['meta']['message'] = trans('api.went_wrong');
+                    break;
+            };
+        } catch (\Exception $e) {
+            $this->storeErrorLog($e,'delete_account');
+        }
+        return $this->returnResponse();
+    }
 }

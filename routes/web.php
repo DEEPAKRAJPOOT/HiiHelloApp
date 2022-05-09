@@ -37,6 +37,7 @@ Route::get('/email/verify/{id}/{hash}', function (Request $request, $id) {
   Route::get('about-us', 'FrontendPagesController@about')->name('about.us');
   Route::get('terms-and-conditions', 'FrontendPagesController@terms')->name('terms');
   Route::get('privacy-policy', 'FrontendPagesController@privacy')->name('privacy.policy');
+  Route::get('community-and-safety', 'FrontendPagesController@communityAndSafety')->name('community.safety');
     
 Route::group(['prefix' => 'admin'], function () {
   Route::get('login', 'AdminAuth\LoginController@showLoginForm')->name('admin.login');

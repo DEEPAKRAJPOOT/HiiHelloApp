@@ -22,6 +22,38 @@ class CmsPageTranslationSeeder extends Seeder
 
         $pages = [
             [
+                'locale'            => 'en',
+                'cms_page_id'       => 1,
+                'title'             => 'About Us',
+                'description'       => 'About Us',
+                'created_at'        => \Carbon\Carbon::now(),
+                'updated_at'        => \Carbon\Carbon::now(),
+            ],
+            [
+                'locale'            => 'en',
+                'cms_page_id'       => 2,
+                'title'             => 'Terms and Conditions',
+                'description'       => 'Terms and Conditions',
+                'created_at'        => \Carbon\Carbon::now(),
+                'updated_at'        => \Carbon\Carbon::now(),
+            ],
+            [
+                'locale'            => 'en',
+                'cms_page_id'       => 3,
+                'title'             => 'Privacy',
+                'description'       => 'Privacy',
+                'created_at'        => \Carbon\Carbon::now(),
+                'updated_at'        => \Carbon\Carbon::now(),
+            ],
+            [
+                'locale'            => 'en',
+                'cms_page_id'       => 4,
+                'title'             => 'Community And Safety Guidelines',
+                'description'       => 'Community And Safety Guidelines',
+                'created_at'        => \Carbon\Carbon::now(),
+                'updated_at'        => \Carbon\Carbon::now(),
+            ],
+            [
                 'locale'            => 'hi',
                 'cms_page_id'       => 1,
                 'title'             => 'हमारे बारे में',
@@ -42,6 +74,14 @@ class CmsPageTranslationSeeder extends Seeder
                 'cms_page_id'       => 3,
                 'title'             => 'गोपनीयता',
                 'description'       => 'गोपनीयता',
+                'created_at'        => \Carbon\Carbon::now(),
+                'updated_at'        => \Carbon\Carbon::now(),
+            ],
+            [
+                'locale'            => 'hi',
+                'cms_page_id'       => 4,
+                'title'             => 'समुदाय और सुरक्षा दिशानिर्देश',
+                'description'       => 'समुदाय और सुरक्षा दिशानिर्देश',
                 'created_at'        => \Carbon\Carbon::now(),
                 'updated_at'        => \Carbon\Carbon::now(),
             ],

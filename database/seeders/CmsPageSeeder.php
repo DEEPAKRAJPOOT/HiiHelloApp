@@ -48,6 +48,15 @@ class CmsPageSeeder extends Seeder
                 'created_at'    => \Carbon\Carbon::now(),
                 'updated_at'    => \Carbon\Carbon::now(),
             ],
+            [
+                'custom_id'     => getUniqueString('cms_pages'),
+                'slug'          => 'community-and-safety',
+                'edited_by'     => 1,
+                'hint'          => 'Community And Safety Guidelines',
+                'file'          => null,
+                'created_at'    => \Carbon\Carbon::now(),
+                'updated_at'    => \Carbon\Carbon::now(),
+            ],
         ];
         DB::table('cms_pages')->insert($pages);
     }

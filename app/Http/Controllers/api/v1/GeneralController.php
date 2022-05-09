@@ -70,6 +70,9 @@ class GeneralController extends Controller
                 'about'     =>  [
                     'en'    =>  route('about.us'),
                 ],
+                'community_safety'     =>  [
+                    'en'    =>  route('community.safety'),
+                ],
             ],
             'verification_details'  =>  $verification_data,
         ];
