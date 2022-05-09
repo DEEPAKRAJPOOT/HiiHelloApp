@@ -52,10 +52,10 @@ Route::group(['namespace' => 'v1', 'prefix' => 'v1', 'middleware' => 'auth:sanct
     Route::post('user/profile-filters', [UserController::class,'getUsersByFilter'])->name('api.user.profile-filters');
     Route::post('user/profile-report',[UserController::class,'storeProfileReport'])->name('api.user.profile-report');
 
-    Route::post('user/get-profile', [UserController::class,'getProfile'])->name('api.user.get-profile');
-
     // My Profile
     Route::post('user/my-profile', [UserController::class,'getMyProfile'])->name('api.user.my-profile');
+    Route::post('user/get-profile', [UserController::class,'getProfile'])->name('api.user.get-profile');
+    Route::post('user/delete-account', [UserController::class,'deletAccount'])->name('api.user.delete-account');
 
     // Verify Details
     Route::post('verify/upload-detail', [VerificationController::class,'uploadVerifyDetail'])->name('api.verify.upload-detail');

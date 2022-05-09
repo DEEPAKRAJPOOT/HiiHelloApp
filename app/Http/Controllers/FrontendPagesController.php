@@ -45,4 +45,12 @@ class FrontendPagesController extends Controller
         $page = CmsPage::with('cmsPageTranslations')->whereSlug('about-us')->firstOrFail();
         return view('frontend.pages.cms-page', compact('page','footer_text'))->withTitle($page->getTitle());
     }
+
+    public function communityAndSafety(){
+        $setting = Setting::select('value')->whereConstant('footer_text')->firstOrFail();
+        $footer_text = $setting->value;
+        $page = CmsPage::with('cmsPageTranslations')->whereSlug('community-and-safety')->firstOrFail();
+        return view('frontend.pages.cms-page', compact('page','footer_text'))->withTitle($page->getTitle());
+    }
+    
 }
