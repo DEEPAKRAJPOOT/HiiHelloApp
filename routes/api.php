@@ -35,7 +35,6 @@ Route::group(['namespace' => 'v1', 'prefix' => 'v1'], function () {
     Route::post('profile/get-details', [GeneralController::class,'getProfileDetails'])->name('api.profile.get-details');
 
     // User
-    Route::post('user/get-profile', [UserController::class,'getProfile'])->name('api.user.get-profile');
     Route::post('user/common-age',[UserController::class,'getCommonAge'])->name('api.user.common-age');
 
     // Third Party
@@ -52,6 +51,8 @@ Route::group(['namespace' => 'v1', 'prefix' => 'v1', 'middleware' => 'auth:sanct
     Route::post('user/get-list', [UserController::class,'getUsersList'])->name('api.user.get-list');
     Route::post('user/profile-filters', [UserController::class,'getUsersByFilter'])->name('api.user.profile-filters');
     Route::post('user/profile-report',[UserController::class,'storeProfileReport'])->name('api.user.profile-report');
+
+    Route::post('user/get-profile', [UserController::class,'getProfile'])->name('api.user.get-profile');
 
     // My Profile
     Route::post('user/my-profile', [UserController::class,'getMyProfile'])->name('api.user.my-profile');

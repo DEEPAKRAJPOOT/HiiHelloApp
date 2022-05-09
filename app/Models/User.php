@@ -49,6 +49,9 @@ class User extends Authenticatable implements MustVerifyEmail
     public function location(){ return $this->belongsTo('App\Models\Location'); }
     public function language(){ return $this->belongsTo('App\Models\Language'); }
 
+    public function blockBys(){ return $this->hasMany('App\Models\BlockUser','block_by','id'); }
+    public function blockedTos(){ return $this->hasMany('App\Models\BlockUser','blocked_to','id'); }
+
     public function likes(){ return $this->hasMany('App\Models\Like','user_id','id'); }
     public function interests(){ return $this->hasMany('App\Models\UserInterest'); }
     public function favFestivals(){ return $this->hasMany('App\Models\UserFestival'); }
@@ -163,6 +166,7 @@ class User extends Authenticatable implements MustVerifyEmail
         }
         return $status;
     }
+
 
     /**
      * Calculation Profile Completion In Percentage

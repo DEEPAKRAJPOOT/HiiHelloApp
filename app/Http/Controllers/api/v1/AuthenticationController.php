@@ -15,6 +15,7 @@ class AuthenticationController extends Controller
 {
     private $version = "v.1.0";
     public function getVersion(){ return $this->version; }
+    public function getAuthUser(){ return auth('sanctum')->user(); }
 
     // User Login
     public function login(Request $request)
@@ -59,6 +60,8 @@ class AuthenticationController extends Controller
         $rules = RegisterRequest::rules();
         if( $this->apiValidator($request->all(), $rules) ) {
             try{
+                $user = $this->getAuthUser();
+
                 $country_id = $location_id = $language_id = NULL;
                 if(!empty($request->country_code)){
                     $country = Country::wherePhonecode($request->country_code)->whereIsActive('y')->firstOrFail();
@@ -72,10 +75,10 @@ class AuthenticationController extends Controller
                     $language = Language::whereLangCode($request->language)->whereIsActive('y')->firstOrFail();
                     $language_id = $language->id;
                 }
-                if(!empty($request->email)){
+                if(empty($user) && !empty($request->email)){
                     $user = User::whereEmail($request->email)->first();
                 }
-                
+                    
                 if(!empty($user)){
                     $user->fill($request->all());
                     $user->country_id = $country_id;
@@ -476,13 +479,19 @@ class AuthenticationController extends Controller
         if( $this->apiValidator($request->all(), $rules, $this->version) ) {
             try {
                 // Check for deleted account details
+                $account_del = false;
                 if(!empty($request->email)){
                     $deleted = User::onlyTrashed()->pluck('email')->toArray();
-                    if( in_array($request->email, $deleted) ) {
-                        $this->response['meta']['message']  =  trans('api.account_deleted');
-                        $this->status = Response::HTTP_FORBIDDEN;
-                        return $this->returnResponse();
-                    }
+                    if( in_array($request->email, $deleted) ) { $account_del = true; }
+                }else{
+                    $deleted = User::onlyTrashed()->where($request->type.'_id', $request[$request->type.'_id'])->first();
+                    if($deleted){ $account_del = true; }
+                }
+
+                if($account_del){
+                    $this->response['meta']['message']  =  trans('api.account_deleted');
+                    $this->status = Response::HTTP_FORBIDDEN;
+                    return $this->returnResponse();
                 }
 
                 $user = User::query();

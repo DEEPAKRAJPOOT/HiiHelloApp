@@ -22,6 +22,8 @@ class UserController extends Controller
         $rules = ProfileRequest::rules();
         if( $this->apiValidator($request->all(), $rules) ) {
             try{
+                $auth_id = $request->user() ? $request->user()->id : NULL;
+
                 $user = User::with([
                     'favFestivals.festival.profileDetailTranslation',
                     'pets.pet.profileDetailTranslation',
@@ -38,6 +40,9 @@ class UserController extends Controller
                     'foundOne.profileDetailTranslation','aboutSurprising.profileDetailTranslation',
                     'politicalView.profileDetailTranslation','interests.interest.interestTranslation',
                     'country.countryTranslation','location.locationTranslation'])
+                    ->withCount(['blockedTos' => function ($query) use ($auth_id) {
+                        $query->whereBlockBy($auth_id);
+                    }])
                     ->withCount('likes')
                     ->whereCustomId($request->id)->whereIsActive('y')->firstOrFail();
 
