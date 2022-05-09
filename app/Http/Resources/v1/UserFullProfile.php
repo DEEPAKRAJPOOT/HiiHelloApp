@@ -22,6 +22,7 @@ class UserFullProfile extends JsonResource
                 'code'      =>  $this->country_code,
                 'number'    =>  $this->contact_no,
             ],
+            'is_blocked'        =>  $this->blocked_tos_count ? $this->blocked_tos_count > 0 ? true : false : false,
             'birth_date'        =>  $this->birth_date ?? "",
             'age'               =>  $this->getAge(),
             'gender'            =>  $this->gender ?? "",
