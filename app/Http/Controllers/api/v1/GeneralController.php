@@ -6,10 +6,10 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\ { Request, Response };
 use Illuminate\Support\Facades\ { Storage };
 use Illuminate\Database\Eloquent\ { ModelNotFoundException };
-use App\Http\Resources\v1\ { LanguageResource, CmsResource, CountryResource, LocationResource, InterestResource, FaqResource, ProfileDetailResource };
+use App\Http\Resources\v1\ { LanguageResource, CmsResource, CountryResource, LocationResource, InterestResource, FaqResource, ProfileDetailResource, PersonalityResource };
 use App\Http\Requests\Api\General\ { PaginationRequest, LocationRequest, ProfileDetailRequest, InterestRequest };
 use App\Http\Requests\Api\User\ { AddDeviceTokenRequest };
-use App\Models\ { Language, CmsPage, Country, Location, Interest, Faq, DeviceToken, ProfileDetail, AppDetail };
+use App\Models\ { Language, CmsPage, Country, Location, Interest, Faq, DeviceToken, ProfileDetail, AppDetail, Personality };
 
 class GeneralController extends Controller
 {
@@ -282,6 +282,49 @@ class GeneralController extends Controller
         return $this->returnResponse();
     }
 
+    // Get Presonlaties 
+    public function getPersonalities(Request $request)
+    {
+        $rules = PaginationRequest::rules();
+        if( $this->apiValidator($request->all(), $rules) ) {
+            try{
+                $personalities = Personality::with('personalityTranslation')->whereIsActive('y');
+                $count = $personalities->count();
+                $personalities = $personalities->limit($request->limit ?? config('utility.pagination.limit'))
+                            ->offset($request->offset ?? config('utility.pagination.offset'))
+                            ->get();
+                if($personalities->isNotEmpty()){
+                    return (PersonalityResource::collection($personalities))
+                    ->additional([
+                        'meta' => [
+                            'limit'     =>  $request->limit,
+                            'offset'    =>  $request->offset,
+                            'total'     =>  $count,
+                            'url'       =>  url()->current(),
+                            'api'       =>  $this->getVersion(),
+                            'language'  =>  app()->getLocale(),
+                            'message'   =>  trans('api.list', ['entity' => __('Personalities')]),
+                        ] ]);
+                }else{
+                    $this->response['meta']['message']  =   trans('api.not_found',['entity' => __('Personalities')]); 
+                    $this->status = Response::HTTP_NOT_FOUND;     
+                }
+            } catch(ModelNotFoundException $exception) {                
+                switch ($exception->getModel()) {
+                    case 'App\Models\Personality':
+                        $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("Personalities")]);
+                        break;
+                    default:
+                        $this->response['meta']['message'] = trans('api.went_wrong');
+                        break;
+                };
+            } catch (\Exception $e) {
+                $this->storeErrorLog($e,'get_personalities');
+            }
+        }
+        return $this->returnResponse();
+    }
+
     // Get Faq Question And Answers
     public function getFaqs(Request $request)
     {
@@ -311,7 +354,7 @@ class GeneralController extends Controller
                 }
             } catch(ModelNotFoundException $exception) {                
                 switch ($exception->getModel()) {
-                    case 'App\Models\CmsPage':
+                    case 'App\Models\Faq':
                         $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("Faqs")]);
                         break;
                     default:
