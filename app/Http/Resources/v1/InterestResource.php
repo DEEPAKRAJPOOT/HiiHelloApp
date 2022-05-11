@@ -15,9 +15,10 @@ class InterestResource extends JsonResource
     public function toArray($request)
     {
         return [
-            'id'                    =>  $this->custom_id,
+            'id'                    =>  $this->custom_id ?? "",
             'title'                 =>  $this->interestTranslation ? $this->interestTranslation->title : "",
-            'sub_interests_count'   =>  $this->sub_interests_count,
+            'level'                 =>  $this->level ?? 0,
+            'sub_interests_count'   =>  $this->sub_interests_count ?? 0,
         ];
         return parent::toArray($request);
     }

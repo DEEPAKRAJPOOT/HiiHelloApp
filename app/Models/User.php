@@ -32,6 +32,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'relationship_status_id', 'you_are_here_id', 'food_preference_id',
         'drinking_id', 'smoking_id', 'pet_id', 'star_sign_id', 
         'religion_id', 'community_id', 'education_id',
+        'discover_distance', 'discover_start_age', 'discover_end_age', 'discover_location_id',
         'verify_email_send',
         'verify_photo', 'verify_video', 'photo_suggestion', 'video_suggestion',
         'verify_photo_status', 'verify_video_status',
@@ -51,6 +52,9 @@ class User extends Authenticatable implements MustVerifyEmail
 
     public function blockBys(){ return $this->hasMany('App\Models\BlockUser','block_by','id'); }
     public function blockedTos(){ return $this->hasMany('App\Models\BlockUser','blocked_to','id'); }
+
+    public function userSettings(){ return $this->hasMany('App\Models\UserSetting','user_id','id'); }
+    public function discoveryLocation(){ return $this->belongsTo('App\Models\Location','discover_location_id'); }
 
     public function likes(){ return $this->hasMany('App\Models\Like','user_id','id'); }
     public function interests(){ return $this->hasMany('App\Models\UserInterest'); }
