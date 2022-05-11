@@ -3,7 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Middleware\CheckApiLanguage;
-use App\Http\Controllers\api\v1\ { AuthenticationController, GeneralController, UserController, LikeController, TwillioController, ChatController, MatchController, SearchController, BlockController, VerificationController, ProfileController };
+use App\Http\Controllers\api\v1\ { AuthenticationController, GeneralController, UserController, LikeController, TwillioController, ChatController, MatchController, SearchController, BlockController, VerificationController, ProfileController, DiscoveryController };
 
 /*
 |--------------------------------------------------------------------------
@@ -58,6 +58,10 @@ Route::group(['namespace' => 'v1', 'prefix' => 'v1', 'middleware' => 'auth:sanct
     Route::post('user/my-profile', [UserController::class,'getMyProfile'])->name('api.user.my-profile');
     Route::post('user/get-profile', [UserController::class,'getProfile'])->name('api.user.get-profile');
     Route::post('user/delete-account', [UserController::class,'deletAccount'])->name('api.user.delete-account');
+
+    // Discovery
+    Route::post('discovery/set-detail', [DiscoveryController::class,'setDiscoveryDetail'])->name('api.discovery.set-detail');
+    Route::post('discovery/get-detail', [DiscoveryController::class,'getDiscoveryDetail'])->name('api.discovery.get-detail');
 
     // Verify Details
     Route::post('verify/upload-detail', [VerificationController::class,'uploadVerifyDetail'])->name('api.verify.upload-detail');
