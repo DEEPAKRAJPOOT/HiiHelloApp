@@ -305,7 +305,11 @@ class ProfileDetailSeeder extends Seeder
             array('slug' => "education-phd", 'attribute' => "education", 'type' => "string"),
             array('slug' => "education-preparing-for-entrance", 'attribute' => "education", 'type' => "string"),
 
-            array('slug' => "university-college-aiims-delhi", 'attribute' => "university-college", 'type' => "string"),
+            array('slug' => "university-college-gtu", 'attribute' => "university_college", 'type' => "string"),
+            array('slug' => "university-college-osmania", 'attribute' => "university_college", 'type' => "string"),
+            array('slug' => "university-college-university-of-delhi", 'attribute' => "university_college", 'type' => "string"),
+            array('slug' => "university-college-university-of-pune", 'attribute' => "university_college", 'type' => "string"),
+            array('slug' => "university-college-iim", 'attribute' => "university_college", 'type' => "string"),
 
             array('slug' => "profession-artist", 'attribute' => "profession", 'type' => "string"),
             array('slug' => "profession-business-analyst", 'attribute' => "profession", 'type' => "string"),

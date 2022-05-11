@@ -25,20 +25,12 @@ class UserController extends Controller
                 $auth_id = $request->user() ? $request->user()->id : NULL;
 
                 $user = User::with([
-                    'favFestivals.festival.profileDetailTranslation',
                     'pets.pet.profileDetailTranslation',
                     'relationshipStatus.profileDetailTranslation','youAreHere.profileDetailTranslation',
                     'foodPreference.profileDetailTranslation','drinking.profileDetailTranslation',
                     'smoking.profileDetailTranslation','starSign.profileDetailTranslation',
-                    'religion.profileDetailTranslation',
-                    'community.profileDetailTranslation',
-                    'education.profileDetailTranslation','occupation.profileDetailTranslation',
-                    'dateIdea.profileDetailTranslation','socialCause.profileDetailTranslation',
-                    'riskTaken.profileDetailTranslation','perfectRelation.profileDetailTranslation',
-                    'myMantra.profileDetailTranslation','oneThingKnow.profileDetailTranslation',
-                    'worstDate.profileDetailTranslation','introFamily.profileDetailTranslation',
-                    'foundOne.profileDetailTranslation','aboutSurprising.profileDetailTranslation',
-                    'politicalView.profileDetailTranslation','interests.interest.interestTranslation',
+                    'religion.profileDetailTranslation','community.profileDetailTranslation',
+                    'education.profileDetailTranslation','interests.interest.interestTranslation',
                     'country.countryTranslation','location.locationTranslation'])
                     ->withCount(['blockedTos' => function ($query) use ($auth_id) {
                         $query->whereBlockBy($auth_id);

@@ -28,10 +28,10 @@ class User extends Authenticatable implements MustVerifyEmail
         'interest', 'country_id', 'location_id', 'language_id', 'profile_photo', 'password',
         'facebook_id', 'google_id', 'apple_id',
         'about_me',
-        'relationship_status_id', 'you_are_here_id', 'food_preference_id', 'drinking_id', 'smoking_id', 'star_sign_id', 
-        'religion_id', 'community_id', 'education_id', 'occupation_id',
-        'date_idea_id', 'social_cause_id', 'risk_taken_id', 'perfect_relation_id', 'my_mantra_id', 'one_thing_know_id', 'worst_date_id', 
-        'intro_family_id', 'found_one_id', 'about_surprising_id', 'political_view_id',
+        'personality_id', 'university_id', 'profession_id',
+        'relationship_status_id', 'you_are_here_id', 'food_preference_id',
+        'drinking_id', 'smoking_id', 'star_sign_id', 
+        'religion_id', 'community_id', 'education_id',
         'verify_email_send',
         'verify_photo', 'verify_video', 'photo_suggestion', 'video_suggestion',
         'verify_photo_status', 'verify_video_status',
@@ -69,18 +69,6 @@ class User extends Authenticatable implements MustVerifyEmail
     public function religion(){ return $this->hasOne('App\Models\ProfileDetail','id','religion_id'); }
     public function community(){ return $this->hasOne('App\Models\ProfileDetail','id','community_id'); }
     public function education(){ return $this->hasOne('App\Models\ProfileDetail','id','education_id'); }
-    public function occupation(){ return $this->hasOne('App\Models\ProfileDetail','id','occupation_id'); }
-    public function dateIdea(){ return $this->hasOne('App\Models\ProfileDetail','id','date_idea_id'); }
-    public function socialCause(){ return $this->hasOne('App\Models\ProfileDetail','id','social_cause_id'); }
-    public function riskTaken(){ return $this->hasOne('App\Models\ProfileDetail','id','risk_taken_id'); }
-    public function perfectRelation(){ return $this->hasOne('App\Models\ProfileDetail','id','perfect_relation_id'); }
-    public function myMantra(){ return $this->hasOne('App\Models\ProfileDetail','id','my_mantra_id'); }
-    public function oneThingKnow(){ return $this->hasOne('App\Models\ProfileDetail','id','one_thing_know_id'); }
-    public function worstDate(){ return $this->hasOne('App\Models\ProfileDetail','id','worst_date_id'); }
-    public function introFamily(){ return $this->hasOne('App\Models\ProfileDetail','id','intro_family_id'); }
-    public function foundOne(){ return $this->hasOne('App\Models\ProfileDetail','id','found_one_id'); }
-    public function aboutSurprising(){ return $this->hasOne('App\Models\ProfileDetail','id','about_surprising_id'); }
-    public function politicalView(){ return $this->hasOne('App\Models\ProfileDetail','id','political_view_id'); }
 
     public function getAge(){ return \Carbon\Carbon::parse($this->birth_date)->diff(\Carbon\Carbon::now())->y; }
     public function getVerifiedStatus(){ return $this->verify_status; }
@@ -176,45 +164,50 @@ class User extends Authenticatable implements MustVerifyEmail
         // Max Ponits
         $maximum_points        =  config('utility.profile.percent.maximum_points');
 
+        $photo_detail          =  $this->userDetails->where('image','!=',null);
+        $video_detail          =  $this->userDetails->where('video','!=',null);
         $voice_detail          =  $this->userDetails->where('voice','!=',null);
+
         // Improtant Details
+        $language              =  !empty($this->language_id) ? config('utility.profile.percent.language') : 0;
         $full_name             =  !empty($this->full_name) ? config('utility.profile.percent.full_name') : 0;
+        $birth_date            =  !empty($this->birth_date) ? config('utility.profile.percent.birth_date') : 0;
+        $location              =  !empty($this->location_id) ? config('utility.profile.percent.location') : 0;
+        $interest              =  !empty($this->interest) ? config('utility.profile.percent.interest') : 0;
+        
+        // Verification
         $photo_verified        =  !empty($this->photo_verified_at) ? config('utility.profile.percent.photo_verified') : 0;
         $email_verified        =  !empty($this->email_verified_at) ? config('utility.profile.percent.email_verified') : 0;
-        $id_verified           =  $this->verify_status == 'verified' ? config('utility.profile.percent.id_verified') : 0;
-        $all_photos_verified   =  !empty($this->photo_verified_at) ? config('utility.profile.percent.all_photos_verified') : 0;
         $video_verified        =  !empty($this->video_verified_at) ? config('utility.profile.percent.video_verified') : 0;
-        $interest              =  !empty($this->interest) ? config('utility.profile.percent.interest') : 0;
-        $voice_prompt          =  $voice_detail->isNotEmpty() ? config('utility.profile.percent.voice_prompt') : 0;
-        $about_me              =  !empty($this->about_me) ? config('utility.profile.percent.about_me') : 0;
+        $contact_no            =  !empty($this->contact_no) ? config('utility.profile.percent.contact_no') : 0;
+        
+        // Photos & Video
+        $photo                  =  $photo_detail->count() * config('utility.profile.percent.photo_detail');
+        $video                  =  $video_detail->isNotEmpty() ? config('utility.profile.percent.video_detail') : 0;
 
         // Basic Details
+        $about_me              =  !empty($this->about_me) ? config('utility.profile.percent.about_me') : 0;
+        $voice_prompt          =  $voice_detail->isNotEmpty() ? config('utility.profile.percent.voice_prompt') : 0;
+        $personality           =  !empty($this->personality_id) ? config('utility.profile.percent.personality') : 0;
         $relationship_status   =  !empty($this->relationship_status_id) ? config('utility.profile.percent.relationship_status') : 0;
         $you_are_here          =  !empty($this->you_are_here_id) ? config('utility.profile.percent.you_are_here') : 0;
         $food_preference       =  !empty($this->food_preference_id) ? config('utility.profile.percent.food_preference') : 0;
         $drinking              =  !empty($this->drinking_id) ? config('utility.profile.percent.drinking') : 0;
         $smoking               =  !empty($this->smoking_id) ? config('utility.profile.percent.smoking') : 0;
+        $pets                  =  $this->pets->isNotEmpty() ? config('utility.profile.percent.pets') : 0;
+        $education             =  !empty($this->education_id) ? config('utility.profile.percent.education') : 0;
+        $university            =  !empty($this->university_id) ? config('utility.profile.percent.university') : 0;
+        $profession            =  !empty($this->profession_id) ? config('utility.profile.percent.profession') : 0;
         $star_sign             =  !empty($this->star_sign_id) ? config('utility.profile.percent.star_sign') : 0;
         $religion              =  !empty($this->religion_id) ? config('utility.profile.percent.religion') : 0;
         $community             =  !empty($this->community_id) ? config('utility.profile.percent.community') : 0;
-        $pets                  =  $this->pets->isNotEmpty() ? config('utility.profile.percent.pets') : 0;
-        $education             =  !empty($this->education_id) ? config('utility.profile.percent.education') : 0;
-        $occupation            =  !empty($this->occupation_id) ? config('utility.profile.percent.occupation') : 0;
 
-        // Extra Details
-        $date_idea          =  !empty($this->date_idea_id) ? config('utility.profile.percent.date_idea') : 0;
-        $social_cause       =  !empty($this->social_cause_id) ? config('utility.profile.percent.social_cause') : 0;
-        $risk_taken         =  !empty($this->risk_taken_id) ? config('utility.profile.percent.risk_taken') : 0;
-        $perfect_relation   =  !empty($this->perfect_relation_id) ? config('utility.profile.percent.perfect_relation') : 0;
-        $my_mantra          =  !empty($this->my_mantra_id) ? config('utility.profile.percent.my_mantra') : 0;
-        $one_thing_know     =  !empty($this->one_thing_know_id) ? config('utility.profile.percent.one_thing_know') : 0;
-        $worst_date         =  !empty($this->worst_date_id) ? config('utility.profile.percent.worst_date') : 0;
-        $intro_family       =  !empty($this->intro_family_id) ? config('utility.profile.percent.intro_family') : 0;
-        $found_one          =  !empty($this->found_one_id) ? config('utility.profile.percent.found_one') : 0;
-        $about_surprising   =  !empty($this->about_surprising_id) ? config('utility.profile.percent.about_surprising') : 0;
-        $political_views    =  !empty($this->political_view_id) ? config('utility.profile.percent.political_views') : 0;
+        // Interests
+        $favourite_movie       =  config('utility.profile.percent.favourite_movie');
+        $interest_percenrage   =  $this->interests->count() * config('utility.profile.percent.interests');
 
-        $percentage = intval(round(($full_name+$photo_verified+$email_verified+$id_verified+$all_photos_verified+$video_verified+$interest+$voice_prompt+$about_me+$relationship_status+$you_are_here+$food_preference+$drinking+$smoking+$star_sign+$religion+$community+$pets+$education+$occupation+$date_idea+$social_cause+$risk_taken+$perfect_relation+$my_mantra+$one_thing_know+$worst_date+$intro_family+$found_one+$about_surprising+$political_views)*$maximum_points/100));
+        $percentage = intval(round(($language+$full_name+$birth_date+$location+$interest+$photo_verified+$email_verified+$video_verified+$contact_no+$photo+$video+$about_me+$voice_prompt+$personality+$relationship_status+$you_are_here+$food_preference+$drinking+$smoking+$pets+$education+$university+$profession+$star_sign+$religion+$community+$favourite_movie+$interest_percenrage)
+            *$maximum_points/100));
         
         return $percentage;
     }

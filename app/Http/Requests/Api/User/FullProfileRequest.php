@@ -6,6 +6,7 @@ use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
 use App\Models\ProfileDetail;
 use App\Models\Interest;
+use App\Models\Personality;
 
 class FullProfileRequest extends FormRequest
 {
@@ -26,25 +27,30 @@ class FullProfileRequest extends FormRequest
      */
     public function rules($request)
     {
-        $interest_ids = array();
+        $interest_ids = $personality_ids = array();
         $profile_details = ProfileDetail::whereIsActive('y')->pluck('slug')->toArray();
-        
-        if(!empty($request->interests) || $request->has('interests')){ 
-            $interest_ids = Interest::whereIsActive('y')->pluck('custom_id')->toArray(); 
+
+        if(!empty($request->interests) || $request->has('interests') || 
+            !empty($request->hobby) || $request->has('hobby') ||
+            !empty($request->fav_sport) || $request->has('fav_sport')) { 
+                $interest_ids = Interest::whereIsActive('y')->pluck('custom_id')->toArray(); 
+        }
+
+        if(!empty($request->personality) || $request->has('personality')){ 
+            $personality_ids = Personality::whereIsActive('y')->pluck('custom_id')->toArray(); 
         }
 
         return [
-            'email'                 =>  'nullable|email|max:150|unique:users,email,'.Auth::id(),
-            'relationship_status'   =>  'required|in:'.implode(',', $profile_details),
-            'you_are_here'          =>  'required|in:'.implode(',', $profile_details),
-            'food_preference'       =>  'required|in:'.implode(',', $profile_details),
-            'drinking'              =>  'required|in:'.implode(',', $profile_details),
-            'smoking'               =>  'required|in:'.implode(',', $profile_details),
-            'star_sign'             =>  'required|in:'.implode(',', $profile_details),
+            'email'                     =>  'nullable|email|max:150|unique:users,email,'.Auth::id(),
+            'relationship_status'       =>  'nullable|in:'.implode(',', $profile_details),
+            'you_are_here'              =>  'nullable|in:'.implode(',', $profile_details),
+            'food_preference'           =>  'nullable|in:'.implode(',', $profile_details),
+            'drinking'                  =>  'nullable|in:'.implode(',', $profile_details),
+            'smoking'                   =>  'nullable|in:'.implode(',', $profile_details),
+            'star_sign'                 =>  'nullable|in:'.implode(',', $profile_details),
             'religion'                  =>  'nullable|in:'.implode(',', $profile_details),
             'community'                 =>  'nullable|in:'.implode(',', $profile_details),
             'education'                 =>  'nullable|in:'.implode(',', $profile_details),
-            'occupation'                =>  'nullable|in:'.implode(',', $profile_details),
             'date_idea'                 =>  'nullable|in:'.implode(',', $profile_details),
             'social_cause'              =>  'nullable|in:'.implode(',', $profile_details),
             'risk_taken'                =>  'nullable|in:'.implode(',', $profile_details),
@@ -57,20 +63,24 @@ class FullProfileRequest extends FormRequest
             'about_me_surprises'        =>  'nullable|in:'.implode(',', $profile_details),
             'political_views'           =>  'nullable|in:'.implode(',', $profile_details),
 
-            'interests'         =>  'required|array',
-            'interests.*.*'     =>  'required|in:'.implode(',', $interest_ids),
-            'fav_festivals'     =>  'required|array',
-            'fav_festivals.*'   =>  'required|in:'.implode(',', $profile_details),
-            'pets'              =>  'required|array',
-            'pets.*'            =>  'required|in:'.implode(',', $profile_details),
-            'images'            =>  'nullable|array|max:4',
-            'images.*'          =>  'nullable|mimes:jpg,jpeg,png',
-            'videos'            =>  'nullable|array|max:1',
-            'videos.*'          =>  'nullable|mimes:mp4,ogx,oga,ogv,ogg,webm,flv,m3u8,ts,3gp,mov,avi,wmv,m4v',
+            'personality'               =>  'nullable|in:'.implode(',', $personality_ids),
+            'university'                =>  'nullable|in:'.implode(',', $profile_details),
+            'profession'                =>  'nullable|in:'.implode(',', $profile_details),
+            'hobby'                     =>  'nullable|in:'.implode(',', $interest_ids), 
+            'fav_sport'                 =>  'nullable|in:'.implode(',', $interest_ids),
 
-            'about_me'          =>  'required|min:3',
-            'voices'            =>  'nullable|array|max:1',
-            'voices.*'          =>  'nullable|file|mimes:audio/mpeg,mpga,mp3,wav,aac,m4a',
+            'interests'                 =>  'nullable|array',
+            'interests.*.*'             =>  'nullable|in:'.implode(',', $interest_ids),
+            'pets'                      =>  'nullable|array',
+            'pets.*'                    =>  'nullable|in:'.implode(',', $profile_details),
+            'images'                    =>  'nullable|array|max:4',
+            'images.*'                  =>  'nullable|mimes:jpg,jpeg,png',
+            'videos'                    =>  'nullable|array|max:1',
+            'videos.*'                  =>  'nullable|mimes:mp4,ogx,oga,ogv,ogg,webm,flv,m3u8,ts,3gp,mov,avi,wmv,m4v',
+
+            'about_me'                  =>  'nullable|min:3',
+            'voices'                    =>  'nullable|array|max:1',
+            'voices.*'                  =>  'nullable|file|mimes:audio/mpeg,mpga,mp3,wav,aac,m4a',
         ];
     }
 }

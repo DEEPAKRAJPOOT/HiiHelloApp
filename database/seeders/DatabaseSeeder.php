@@ -32,5 +32,7 @@ class DatabaseSeeder extends Seeder
         $this->call(InterestSeeder::class);
         $this->call(InterestTranslationSeeder::class);
         $this->call(AppDetailSeeder::class);
+        $this->call(PersonalitySeeder::class);
+        $this->call(PersonalityTranslationSeeder::class);
     }
 }

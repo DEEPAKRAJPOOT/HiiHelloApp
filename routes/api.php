@@ -3,7 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Middleware\CheckApiLanguage;
-use App\Http\Controllers\api\v1\ { AuthenticationController, GeneralController, UserController, LikeController, TwillioController, ChatController, MatchController, SearchController, BlockController, VerificationController };
+use App\Http\Controllers\api\v1\ { AuthenticationController, GeneralController, UserController, LikeController, TwillioController, ChatController, MatchController, SearchController, BlockController, VerificationController, ProfileController };
 
 /*
 |--------------------------------------------------------------------------
@@ -28,7 +28,9 @@ Route::group(['namespace' => 'v1', 'prefix' => 'v1'], function () {
     Route::post('get/cms-pages',[GeneralController::class,'getCmsPages'])->name('api.get-cms-pages');
     Route::post('get/locations',[GeneralController::class,'getLocations'])->name('api.get-locations');
     Route::post('get/interests',[GeneralController::class,'getInterests'])->name('api.get-interests');
+    Route::post('get/personalities',[GeneralController::class,'getPersonalities'])->name('api.get-personalities');
     Route::post('get/faqs',[GeneralController::class,'getFaqs'])->name('api.get-faqs');
+
     // Route::post('get/languages', [GeneralController::class,'getLanguages'])->name('api.get-languages');
 
     // General Profile Listing
@@ -47,7 +49,7 @@ Route::group(['namespace' => 'v1', 'prefix' => 'v1'], function () {
 Route::group(['namespace' => 'v1', 'prefix' => 'v1', 'middleware' => 'auth:sanctum'], function () {
     Route::post('logout',[AuthenticationController::class,'logout'])->name('api.user.logout'); 
 
-    Route::post('user/set-full-profile', [AuthenticationController::class,'setFullProfile'])->name('api.user.set-fill-profile');
+    Route::post('user/set-full-profile', [ProfileController::class,'setFullProfile'])->name('api.user.set-fill-profile');
     Route::post('user/get-list', [UserController::class,'getUsersList'])->name('api.user.get-list');
     Route::post('user/profile-filters', [UserController::class,'getUsersByFilter'])->name('api.user.profile-filters');
     Route::post('user/profile-report',[UserController::class,'storeProfileReport'])->name('api.user.profile-report');
