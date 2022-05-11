@@ -78,9 +78,9 @@ return [
     'link_sent'     =>  ':entity लिंक आपके दर्ज किये ईमेल पते पर सफलतापूर्वक भेजा गया।',
     'link_not_send' =>  'ईमेल भेजने के लिए सक्षम करें। कृपया पुनः देर से प्रयास करें',
     
-    'favourite'     =>  ':entity: विस्तार से सफलतापूर्वक',
-
     'reset_success' =>  'पासवर्ड सफलतापूर्वक रीसेट किया गया',
+
+    'favourite'     =>  ':entity विस्तार से सफलतापूर्वक',
     
     'already_exists'    =>  ':entity विवरण पहले से मौजूद हैं',
 
@@ -114,19 +114,30 @@ return [
         'fail'      =>  'प्रोफ़ाइल रिपोर्ट असफल हुआ',
     ],
 
+    'block' =>  [
+        'no_action'     =>  'जोड़ने में असमर्थ :entity आपकी प्रोफ़ाइल अवरुद्ध है',
+        'not_able'      =>  'प्रोफ़ाइल को अवरोधित करने के लिए असंतुलित करना',
+        'success'       =>  'प्रोफ़ाइल को सफलतापूर्वक अवरोधित किया गया',
+        'fail'          =>  'प्रोफ़ाइल को ब्लॉक नहीं किया जा सका',
+    ],
+    'unblock' =>  [
+        'success'   =>  'प्रोफ़ाइल को सफलतापूर्वक अनब्लॉक किया गया',
+        'fail'      =>  'प्रोफ़ाइल अनब्लॉक की गई असफल',
+    ],
+    'verification_upload'    =>  [
+        'success'   =>  'सत्यापन विवरण सफलतापूर्वक अपडेट किया गया',
+        'fail'      =>  'सत्यापन विवरण अपलोड करने में विफल',
+    ],
+
     /* Custom Message */   
     'attributes' => [
-
-        "email"         =>  "ईमेल",
         "field"         =>  "विशेषता",
         "password"      =>  "पासवर्ड",
         "name"          =>  "नाम",
         "username"      =>  "उपयोगकर्ता नाम",
         "contact"       =>  "संपर्क करें",
         "country"       =>  "देश",
-        "location"      =>  "स्थान",
-        "interests"     =>  "रूचियाँ",
-        "interests.*"   =>  "रूचियाँ",
+        "country_id"    =>  "देश",
         "start_age"     =>  "प्रारंभ आयु",
         "end_age"       =>  "अंतिम आयु",
         "public"        =>  [
@@ -137,7 +148,6 @@ return [
         "link"          =>  "संपर्क",
         "city"          =>  "शहर",
         "remove_profile"        =>  "प्रोफ़ाइल_हटाना",
-        "gender"                =>  "लिंग",
         "birthday"              =>  "जन्मदिन",
         "profile"               =>  "प्रोफ़ाइल",
         "old_password"          =>  "पुराना पासवर्ड",
@@ -159,12 +169,50 @@ return [
         "device"                =>  "उपकरण",
         "udid"                  =>  "udid",
         "user"                  =>  "उपयोगकर्ता",
-        "Twilio Api Key"        =>  "ट्विलियो एपीआई कुंजी",
-        "Twilio Access Token"   =>  "ट्विलियो एक्सेस टोकन",
+        "reported_user"         =>  "रिपोर्ट किया गया उपयोगकर्ता",
+        "message"               =>  "संदेश",
+        "user_id"               =>  "उपयोगकर्ता",
+
+        // Custom Resource Validation
+        "contact_no"            =>  "संपर्क",
+        "security_token"        =>  "सुरक्षा टोकन",
+        "first_name"            =>  "पहला नाम",
+        "last_name"             =>  "अंतिम नाम",
+        "full_name"             =>  "पूरा नाम",
+        "email"                 =>  "ईमेल",
+        "birth_date"            =>  "जन्म दिन",
+        "gender"                =>  "लिंग",
+        "interest"              =>  "रुचि",
+        "location"              =>  "स्थान",
+        "location_id"           =>  "स्थान",
+        "language"              =>  "भाषा",
+        "languages"             =>  "भाषाओं",
+        "profile_photo"         =>  "प्रोफाइल फोटो",
+        "country_code"          =>  "देश कोड",
+        "room_name"             =>  "कमरे का नाम",
+        "room"                  =>  "कमरा",
+        "room_id"               =>  "कमरा",
+        "participant_id"        =>  "प्रतिभागी",
+        "search"                =>  "तलाश",
+        "distance"              =>  "दूरी",
+        "parent_id"             =>  "मूल आईडी",
+        "level"                 =>  "स्तर",
+        "attribute"             =>  "विशेषता",
+        "interests"             =>  "रूचियाँ",
+        "interests.*"           =>  "रूचियाँ",
+        "images"                =>  "तस्वीरें",
+        "videos"                =>  "वीडियो",
+        "videos.*"              =>  "वीडियो",
+        "image"                 =>  "छवि",
+        "image_path"            =>  "छवि पथ",
         "api_key"               =>  "एपीआई कुंजी",
         "api_secret"            =>  "एपीआई सीक्रेट",
-        "room_name"             =>  "कमरे का नाम",
+        "sid"                   =>  "एस आईडी",
+        "push_id"               =>  "पुश आईडी",
         "identity"              =>  "पहचान",
-        "time_line"             =>  "समय रेखा"
+        "time_line"             =>  "समय रेखा",
+        "facebook_id"           =>  "फेसबुक आईडी",
+        "google_id"             =>  "गूगल आईडी",
+        "apple_id"              =>  "ऐप्पल आईडी",
     ], 
 ];
