@@ -30,7 +30,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'about_me',
         'personality_id', 'university_id', 'profession_id',
         'relationship_status_id', 'you_are_here_id', 'food_preference_id',
-        'drinking_id', 'smoking_id', 'star_sign_id', 
+        'drinking_id', 'smoking_id', 'pet_id', 'star_sign_id', 
         'religion_id', 'community_id', 'education_id',
         'verify_email_send',
         'verify_photo', 'verify_video', 'photo_suggestion', 'video_suggestion',
@@ -54,21 +54,25 @@ class User extends Authenticatable implements MustVerifyEmail
 
     public function likes(){ return $this->hasMany('App\Models\Like','user_id','id'); }
     public function interests(){ return $this->hasMany('App\Models\UserInterest'); }
-    public function favFestivals(){ return $this->hasMany('App\Models\UserFestival'); }
-    public function pets(){ return $this->hasMany('App\Models\UserPet'); }
     public function userDetails(){ return $this->hasMany('App\Models\UserDetail'); }
     public function subAccount(){ return $this->hasOne('App\Models\TwilioSubaccount','user_id','id'); }
     public function userCommunication(){ return $this->hasOne('App\Models\UserCommunication', 'user_id'); }
+
+    // Basic
+    public function personality(){ return $this->hasOne('App\Models\ProfileDetail','id','personality_id'); }
+    public function education(){ return $this->hasOne('App\Models\ProfileDetail','id','education_id'); }
+    public function university(){ return $this->hasOne('App\Models\ProfileDetail','id','university_id'); }
+    public function profession(){ return $this->hasOne('App\Models\ProfileDetail','id','profession_id'); }
+    public function religion(){ return $this->hasOne('App\Models\ProfileDetail','id','religion_id'); }
 
     public function relationshipStatus(){ return $this->hasOne('App\Models\ProfileDetail','id','relationship_status_id'); }
     public function youAreHere(){ return $this->hasOne('App\Models\ProfileDetail','id','you_are_here_id'); }
     public function foodPreference(){ return $this->hasOne('App\Models\ProfileDetail','id','food_preference_id'); }
     public function drinking(){ return $this->hasOne('App\Models\ProfileDetail','id','drinking_id'); }
     public function smoking(){ return $this->hasOne('App\Models\ProfileDetail','id','smoking_id'); }
+    public function pet(){ return $this->hasOne('App\Models\ProfileDetail','id','pet_id'); }
     public function starSign(){ return $this->hasOne('App\Models\ProfileDetail','id','star_sign_id'); }
-    public function religion(){ return $this->hasOne('App\Models\ProfileDetail','id','religion_id'); }
     public function community(){ return $this->hasOne('App\Models\ProfileDetail','id','community_id'); }
-    public function education(){ return $this->hasOne('App\Models\ProfileDetail','id','education_id'); }
 
     public function getAge(){ return \Carbon\Carbon::parse($this->birth_date)->diff(\Carbon\Carbon::now())->y; }
     public function getVerifiedStatus(){ return $this->verify_status; }
@@ -194,7 +198,7 @@ class User extends Authenticatable implements MustVerifyEmail
         $food_preference       =  !empty($this->food_preference_id) ? config('utility.profile.percent.food_preference') : 0;
         $drinking              =  !empty($this->drinking_id) ? config('utility.profile.percent.drinking') : 0;
         $smoking               =  !empty($this->smoking_id) ? config('utility.profile.percent.smoking') : 0;
-        $pets                  =  $this->pets->isNotEmpty() ? config('utility.profile.percent.pets') : 0;
+        $pet                   =  !empty($this->pet_id) ? config('utility.profile.percent.pet') : 0;
         $education             =  !empty($this->education_id) ? config('utility.profile.percent.education') : 0;
         $university            =  !empty($this->university_id) ? config('utility.profile.percent.university') : 0;
         $profession            =  !empty($this->profession_id) ? config('utility.profile.percent.profession') : 0;
@@ -206,7 +210,7 @@ class User extends Authenticatable implements MustVerifyEmail
         $favourite_movie       =  config('utility.profile.percent.favourite_movie');
         $interest_percenrage   =  $this->interests->count() * config('utility.profile.percent.interests');
 
-        $percentage = intval(round(($language+$full_name+$birth_date+$location+$interest+$photo_verified+$email_verified+$video_verified+$contact_no+$photo+$video+$about_me+$voice_prompt+$personality+$relationship_status+$you_are_here+$food_preference+$drinking+$smoking+$pets+$education+$university+$profession+$star_sign+$religion+$community+$favourite_movie+$interest_percenrage)
+        $percentage = intval(round(($language+$full_name+$birth_date+$location+$interest+$photo_verified+$email_verified+$video_verified+$contact_no+$photo+$video+$about_me+$voice_prompt+$personality+$relationship_status+$you_are_here+$food_preference+$drinking+$smoking+$pet+$education+$university+$profession+$star_sign+$religion+$community+$favourite_movie+$interest_percenrage)
             *$maximum_points/100));
         
         return $percentage;

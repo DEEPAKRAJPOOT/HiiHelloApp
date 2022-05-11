@@ -40,19 +40,22 @@ function getPermissions($user_type = 'normal')
             11 =>[ //State
                 'permissions' => 'access,add,edit,delete'
             ],
-            12 =>[ //City
+            12 =>[ //Personality Types
                 'permissions' => 'access,add,edit,delete'
             ],
-            13 =>[ // Push Notification
+            13 =>[ //City
+                'permissions' => 'access,add,edit,delete'
+            ],
+            14 =>[ // Push Notification
                 'permissions' => 'access,add'
             ],
-            14 =>[ // App Details
+            15 =>[ // App Details
                 'permissions' => 'access,add'
             ],
-            15 =>[ //CMS Pages
+            16 =>[ //CMS Pages
                 'permissions' => 'access,edit'
             ],
-            16 =>[ //Site Configurations
+            17 =>[ //Site Configurations
                 'permissions' => 'access'
             ],
         ];

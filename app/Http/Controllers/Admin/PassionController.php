@@ -81,7 +81,7 @@ class PassionController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, PassionRequest $passion)
+    public function update(PassionRequest $request, Passion $passion)
     {
         if(!empty($request->action) && $request->action == 'change_status') {
             $content = ['status'=>204, 'message'=>"something went wrong"];

@@ -24,4 +24,8 @@ class Personality extends Model implements TranslatableContract
     public function personalityTransDefault(){ 
         return $this->hasOne('App\Models\PersonalityTranslation')->whereLocale(config('utility.default_lang_code'));
     }
+
+    public function getValue($lang_code,$field){
+        return $this->translate($lang_code) ? $this->translate($lang_code)->$field : "";
+    }
 }

@@ -208,6 +208,25 @@ Breadcrumbs::register('dashboard', function ($breadcrumbs) {
 	    $breadcrumbs->push('Edit State', route(Auth::getDefaultDriver().'.states.edit', $id));
 	});
 
+
+
+	// Personality Types -------------------------------------------------------------------------------------------------------------------------------------------------------
+	Breadcrumbs::register('personality_list', function($breadcrumbs)
+	{
+		$breadcrumbs->parent('dashboard');
+	    $breadcrumbs->push('Personality Types', route(Auth::getDefaultDriver().'.personalities.index'));
+	});
+	Breadcrumbs::register('personality_create', function($breadcrumbs)
+	{
+		$breadcrumbs->parent('personality_list');
+	    $breadcrumbs->push('Add New Personality Type', route(Auth::getDefaultDriver().'.personalities.create'));
+	});
+	Breadcrumbs::register('personality_update', function ($breadcrumbs, $id)
+	{
+		$breadcrumbs->parent('personality_list');
+		$breadcrumbs->push('Edit Personality Type', route('admin.personalities.edit', $id));
+	});
+
 	// cities -------------------------------------------------------------------------------------------------------------------------------------------------------
 	Breadcrumbs::register('cities_list', function($breadcrumbs)
 	{
