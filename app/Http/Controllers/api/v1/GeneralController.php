@@ -230,7 +230,7 @@ class GeneralController extends Controller
     // Get Interests List
     public function getInterests(Request $request)
     {
-        $rules = InterestRequest::rules();
+        $rules = InterestRequest::rules($request);
         if( $this->apiValidator($request->all(), $rules) ) {
             try{
                 $interests = Interest::with(['interestTranslation:id,interest_id,title'])

@@ -32,7 +32,6 @@ class FullProfileRequest extends FormRequest
 
         if(!empty($request->interests) || $request->has('interests') || 
             !empty($request->hobby) || $request->has('hobby') ||
-            !empty($request->fav_game) || $request->has('fav_game') ||
             !empty($request->fav_sport) || $request->has('fav_sport')) { 
                 $interest_ids = Interest::whereIsActive('y')->pluck('custom_id')->toArray(); 
         }
@@ -52,7 +51,6 @@ class FullProfileRequest extends FormRequest
             'religion'                  =>  'nullable|in:'.implode(',', $profile_details),
             'community'                 =>  'nullable|in:'.implode(',', $profile_details),
             'education'                 =>  'nullable|in:'.implode(',', $profile_details),
-            'occupation'                =>  'nullable|in:'.implode(',', $profile_details),
             'date_idea'                 =>  'nullable|in:'.implode(',', $profile_details),
             'social_cause'              =>  'nullable|in:'.implode(',', $profile_details),
             'risk_taken'                =>  'nullable|in:'.implode(',', $profile_details),
@@ -69,13 +67,10 @@ class FullProfileRequest extends FormRequest
             'university'                =>  'nullable|in:'.implode(',', $profile_details),
             'profession'                =>  'nullable|in:'.implode(',', $profile_details),
             'hobby'                     =>  'nullable|in:'.implode(',', $interest_ids), 
-            'fav_game'                  =>  'nullable|in:'.implode(',', $interest_ids),
             'fav_sport'                 =>  'nullable|in:'.implode(',', $interest_ids),
 
             'interests'                 =>  'nullable|array',
             'interests.*.*'             =>  'nullable|in:'.implode(',', $interest_ids),
-            'fav_festivals'             =>  'nullable|array',
-            'fav_festivals.*'           =>  'nullable|in:'.implode(',', $profile_details),
             'pets'                      =>  'nullable|array',
             'pets.*'                    =>  'nullable|in:'.implode(',', $profile_details),
             'images'                    =>  'nullable|array|max:4',

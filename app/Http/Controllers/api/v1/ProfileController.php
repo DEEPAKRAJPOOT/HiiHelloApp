@@ -7,7 +7,7 @@ use Illuminate\Http\ { Request, Response };
 use App\Http\Requests\Api\User\ { FullProfileRequest };
 use Illuminate\Database\Eloquent\ { ModelNotFoundException };
 use Illuminate\Support\Facades\ { Storage, Auth };
-use App\Models\ { User, UserDetail, Interest, UserInterest, ProfileDetail, UserFestival, UserPet, Personality };
+use App\Models\ { User, UserDetail, Interest, UserInterest, ProfileDetail, UserPet, Personality };
 
 class ProfileController extends Controller
 {
@@ -24,7 +24,7 @@ class ProfileController extends Controller
         $rules = FullProfileRequest::rules($request);
         if( $this->apiValidator($request->all(), $rules) ) {
             try{
-                $user = User::with(['userDetails','pets'])->whereId(Auth::id())->firstOrFail();
+                $user = User::with(['userDetails','pets','interests'])->whereId(Auth::id())->firstOrFail();
 
                 if(!empty($request->email)){ $user->email = $request->email; }
 
@@ -43,21 +43,6 @@ class ProfileController extends Controller
                 if(!empty($request->profession)){
                     $profession = ProfileDetail::select('id')->whereSlug($request->profession)->whereIsActive('y')->firstOrFail();
                     $user->profession_id = $profession->id;
-                }
-
-                if(!empty($request->hobby)){
-                    $hobby = Interest::select('id')->whereCustomId($request->hobby)->whereIsActive('y')->firstOrFail();
-                    $user->hobby_id = $hobby->id;
-                }
-
-                if(!empty($request->fav_game)){
-                    $fav_game = Interest::select('id')->whereCustomId($request->fav_game)->whereIsActive('y')->firstOrFail();
-                    $user->fav_game_id = $fav_game->id;
-                }
-
-                if(!empty($request->fav_sport)){
-                    $fav_sport = Interest::select('id')->whereCustomId($request->fav_sport)->whereIsActive('y')->firstOrFail();
-                    $user->fav_sport_id = $fav_sport->id;
                 }
 
                 if(!empty($request->relationship_status)){
@@ -103,11 +88,6 @@ class ProfileController extends Controller
                 if(!empty($request->education)){
                     $education = ProfileDetail::select('id')->whereSlug($request->education)->whereIsActive('y')->firstOrFail();
                     $user->education_id = $education->id;
-                }
-
-                if(!empty($request->occupation)){
-                    $occupation = ProfileDetail::select('id')->whereSlug($request->occupation)->whereIsActive('y')->firstOrFail();
-                    $user->occupation_id = $occupation->id;
                 }
 
                 if(!empty($request->date_idea)){
@@ -191,26 +171,6 @@ class ProfileController extends Controller
 
                         // Delete Interests
                         UserInterest::whereUserId($user->id)->whereNotIn('custom_id',$not_delete_interests)->delete();
-                    }
-
-                    if(!empty($request->fav_festivals)){
-                        $not_delete_festivals = [];
-                        $festival_ids = ProfileDetail::whereIn('slug',$request->fav_festivals)->whereIsActive('y')->pluck('id')->toArray();
-                        foreach($festival_ids as $festival_id){
-                            $custom_id = getUniqueString('user_festivals');
-
-                            UserFestival::updateOrCreate([
-                                'user_id'       =>  $user->id,
-                                'festival_id'   =>  $festival_id,
-                            ],[
-                                'custom_id'     =>  $custom_id,
-                            ]);
-
-                            $not_delete_festivals[] = $custom_id;
-                        }
-
-                        // Delete Festivals
-                        UserFestival::whereUserId($user->id)->whereNotIn('custom_id',$not_delete_festivals)->delete();
                     }
 
                     if(!empty($request->pets)){
