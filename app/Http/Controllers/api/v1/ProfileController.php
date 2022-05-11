@@ -7,7 +7,7 @@ use Illuminate\Http\ { Request, Response };
 use App\Http\Requests\Api\User\ { FullProfileRequest };
 use Illuminate\Database\Eloquent\ { ModelNotFoundException };
 use Illuminate\Support\Facades\ { Storage, Auth };
-use App\Models\ { User, UserDetail, Interest, UserInterest, ProfileDetail, UserPet, Personality };
+use App\Models\ { User, UserDetail, Interest, UserInterest, ProfileDetail, Personality };
 
 class ProfileController extends Controller
 {
@@ -24,7 +24,7 @@ class ProfileController extends Controller
         $rules = FullProfileRequest::rules($request);
         if( $this->apiValidator($request->all(), $rules) ) {
             try{
-                $user = User::with(['userDetails','pets','interests'])->whereId(Auth::id())->firstOrFail();
+                $user = User::with(['userDetails','interests'])->whereId(Auth::id())->firstOrFail();
 
                 if(!empty($request->email)){ $user->email = $request->email; }
 
@@ -68,6 +68,11 @@ class ProfileController extends Controller
                 if(!empty($request->smoking)){
                     $smoking = ProfileDetail::select('id')->whereSlug($request->smoking)->whereIsActive('y')->firstOrFail();
                     $user->smoking_id = $smoking->id;
+                }
+
+                if(!empty($request->pet)){
+                    $pet = ProfileDetail::select('id')->whereSlug($request->pet)->whereIsActive('y')->firstOrFail();
+                    $user->pet_id = $pet->id;
                 }
 
                 if(!empty($request->star_sign)){
@@ -171,26 +176,6 @@ class ProfileController extends Controller
 
                         // Delete Interests
                         UserInterest::whereUserId($user->id)->whereNotIn('custom_id',$not_delete_interests)->delete();
-                    }
-
-                    if(!empty($request->pets)){
-                        $not_delete_pets = [];
-                        $pet_ids = ProfileDetail::whereIn('slug',$request->pets)->whereIsActive('y')->pluck('id')->toArray();
-                        foreach($pet_ids as $pet_id){
-                            $custom_id = getUniqueString('user_pets');
-
-                            UserPet::updateOrCreate([
-                                'user_id'       =>  $user->id,
-                                'pet_id'        =>  $pet_id,
-                            ],[
-                                'custom_id'     =>  $custom_id,
-                            ]);
-
-                            $not_delete_pets[] = $custom_id;
-                        }
-
-                        // Delete Pets
-                        UserPet::whereUserId($user->id)->whereNotIn('custom_id',$not_delete_pets)->delete();
                     }
 
                     // Store Images

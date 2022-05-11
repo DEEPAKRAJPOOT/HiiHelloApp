@@ -25,13 +25,17 @@ class UserController extends Controller
                 $auth_id = $request->user() ? $request->user()->id : NULL;
 
                 $user = User::with([
-                    'pets.pet.profileDetailTranslation',
+                    'userDetails',
+                    'interests.interest.interestTranslation',
+                    'location.locationTranslation','language',
+                    'personality.profileDetailTranslation','education.profileDetailTranslation',
+                    'university.profileDetailTranslation','profession.profileDetailTranslation',
+                    'religion.profileDetailTranslation',
                     'relationshipStatus.profileDetailTranslation','youAreHere.profileDetailTranslation',
                     'foodPreference.profileDetailTranslation','drinking.profileDetailTranslation',
-                    'smoking.profileDetailTranslation','starSign.profileDetailTranslation',
-                    'religion.profileDetailTranslation','community.profileDetailTranslation',
-                    'education.profileDetailTranslation','interests.interest.interestTranslation',
-                    'country.countryTranslation','location.locationTranslation'])
+                    'smoking.profileDetailTranslation','pet.profileDetailTranslation',
+                    'starSign.profileDetailTranslation','community.profileDetailTranslation',
+                    ])
                     ->withCount(['blockedTos' => function ($query) use ($auth_id) {
                         $query->whereBlockBy($auth_id);
                     }])
@@ -282,13 +286,23 @@ class UserController extends Controller
     public function getMyProfile()
     {
         try{
-            $user = User::with('language')->withCount('likes')->whereId(Auth::id())->firstOrFail();
+            $user = User::with([
+                    'userDetails',
+                    'interests.interest.interestTranslation',
+                    'location.locationTranslation','language',
+                    'personality.profileDetailTranslation','education.profileDetailTranslation',
+                    'university.profileDetailTranslation','profession.profileDetailTranslation',
+                    'religion.profileDetailTranslation',
+                    'relationshipStatus.profileDetailTranslation','youAreHere.profileDetailTranslation',
+                    'foodPreference.profileDetailTranslation','drinking.profileDetailTranslation',
+                    'smoking.profileDetailTranslation','pet.profileDetailTranslation',
+                    'starSign.profileDetailTranslation','community.profileDetailTranslation',
+                    ])
+                    ->withCount('likes')
+                    ->whereId(Auth::id())->firstOrFail();
+
             return (new MyProfile($user))
-                ->additional([
-                'data' => [ 'flags' =>  [
-                    'matches'   =>  $user->countMatches(), 'chats'  =>  $user->countChats(),
-                ] ], 
-                'meta' => [
+                ->additional(['meta' => [
                     'message'   =>  trans('api.success', ['entity' => __("Profile")]),
                 ] ]);
         } catch(ModelNotFoundException $exception) {                

@@ -47,6 +47,7 @@ class FullProfileRequest extends FormRequest
             'food_preference'           =>  'nullable|in:'.implode(',', $profile_details),
             'drinking'                  =>  'nullable|in:'.implode(',', $profile_details),
             'smoking'                   =>  'nullable|in:'.implode(',', $profile_details),
+            'pet'                       =>  'nullable|in:'.implode(',', $profile_details),
             'star_sign'                 =>  'nullable|in:'.implode(',', $profile_details),
             'religion'                  =>  'nullable|in:'.implode(',', $profile_details),
             'community'                 =>  'nullable|in:'.implode(',', $profile_details),
@@ -71,8 +72,6 @@ class FullProfileRequest extends FormRequest
 
             'interests'                 =>  'nullable|array',
             'interests.*.*'             =>  'nullable|in:'.implode(',', $interest_ids),
-            'pets'                      =>  'nullable|array',
-            'pets.*'                    =>  'nullable|in:'.implode(',', $profile_details),
             'images'                    =>  'nullable|array|max:4',
             'images.*'                  =>  'nullable|mimes:jpg,jpeg,png',
             'videos'                    =>  'nullable|array|max:1',

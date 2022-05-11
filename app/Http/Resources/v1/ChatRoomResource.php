@@ -31,7 +31,7 @@ class ChatRoomResource extends JsonResource
             ],
             'latest_message'    =>  [
                 'id'        =>  $this->latestMessage ? $this->latestMessage->custom_id ?? "" : "",
-                'message'   =>  $this->latestMessage ? $this->latestMessage->getMessage() ?? "" : "",
+                'message'   =>  $this->latestMessage ? $this->latestMessage->getMessage() ?? NULL : NULL,
                 'status'    =>  $this->latestMessage ? $this->latestMessage->status ?? "" : "",
                 'sender'  =>  [
                     'id'    =>  $this->latestMessage ? $this->latestMessage->sender ? $this->latestMessage->sender->custom_id : "" : "",

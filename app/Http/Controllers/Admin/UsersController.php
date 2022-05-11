@@ -86,7 +86,6 @@ class UsersController extends Controller
         $user = User::with([
             'country.countryTransDefault','location.locationTransDefault',
             'language','userDetails',
-            'pets.pet.profileDetailTransDefault',
             'interests.interest.interestTransDefault',
             'relationshipStatus.profileDetailTransDefault','youAreHere.profileDetailTransDefault',
             'foodPreference.profileDetailTransDefault','drinking.profileDetailTransDefault',

@@ -60,6 +60,10 @@ Route::group(['namespace' => 'Admin', 'middleware' => ['check_permit','revalidat
 	Route::get('states/listing', 'StateController@listing')->name('states.listing');
 	Route::resource('states', 'StateController');
 
+	/* Personlaity Types Management*/
+	Route::get('personalities/listing', 'PersonalityController@listing')->name('personalities.listing');
+	Route::resource('personalities', 'PersonalityController');
+
 	/* City Management*/
 	Route::get('cities/listing', 'CityController@listing')->name('cities.listing');
 	Route::resource('cities', 'CityController');
