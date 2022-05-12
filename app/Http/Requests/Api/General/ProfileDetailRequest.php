@@ -24,9 +24,10 @@ class ProfileDetailRequest extends FormRequest
     public function rules()
     {
         return [
+            'search'        =>  'nullable|max:150',
+            'attribute'     =>  'required|string',
             'limit'         =>  'nullable|numeric|min:5',
             'offset'        =>  'nullable|numeric|min:0',
-            'attribute'     =>  'required|string',
         ];
     }
 }

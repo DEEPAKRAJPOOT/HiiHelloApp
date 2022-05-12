@@ -29,6 +29,7 @@ class InterestRequest extends FormRequest
         $location_ids = Location::select('custom_id')->whereIsActive('y')->pluck('custom_id')->toArray();
 
         return [
+            'search'        =>  'nullable|max:150',
             'parent_id'     =>  'nullable|in:'.implode(',', $parent_ids),
             'location_id'   =>  'required|in:'.implode(',', $location_ids),
             'level'         =>  'required_with:parent_id|in:2,3',
