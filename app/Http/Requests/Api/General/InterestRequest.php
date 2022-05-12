@@ -33,6 +33,8 @@ class InterestRequest extends FormRequest
             'parent_id'     =>  'nullable|in:'.implode(',', $parent_ids),
             'location_id'   =>  'required|in:'.implode(',', $location_ids),
             'level'         =>  'required_with:parent_id|in:2,3',
+            'limit'         =>  'nullable|numeric|min:5',
+            'offset'        =>  'nullable|numeric|min:0',
         ];
     }
 }
