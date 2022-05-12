@@ -260,11 +260,19 @@ class GeneralController extends Controller
                                     $query->whereHas('location',function($q) use ($request) {
                                        $q->whereCustomId($request->location_id)->whereIsActive('y');
                                     });
-                                }])->get();
+                                }]);
+
+                $count = $interests->count();
+                $interests = $interests->limit($request->limit ?? config('utility.pagination.limit'))
+                            ->offset($request->offset ?? config('utility.pagination.offset'))
+                            ->get();
 
                 if($interests->isNotEmpty()){
                     return (InterestResource::collection($interests))->additional([
                         'meta' => [
+                            'limit'     =>  $request->limit,
+                            'offset'    =>  $request->offset,
+                            'total'     =>  $count,
                             'url'       =>  url()->current(),
                             'api'       =>  $this->getVersion(),
                             'language'  =>  app()->getLocale(),
