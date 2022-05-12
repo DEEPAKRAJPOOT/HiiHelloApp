@@ -292,11 +292,11 @@ class ProfileDetailSeeder extends Seeder
             array('slug' => "community-vokaliga", 'attribute' => "community", 'type' => "string"),
             array('slug' => "community-vysya", 'attribute' => "community", 'type' => "string"),
 
-            array('slug' => "pets-dogs", 'attribute' => "pets", 'type' => "string"),
-            array('slug' => "pets-cats", 'attribute' => "pets", 'type' => "string"),
-            array('slug' => "pets-other", 'attribute' => "pets", 'type' => "string"),
-            array('slug' => "pets-dont-want", 'attribute' => "pets", 'type' => "string"),
-            array('slug' => "pets-undecided", 'attribute' => "pets", 'type' => "string"),
+            array('slug' => "pet-dogs", 'attribute' => "pet", 'type' => "string"),
+            array('slug' => "pet-cats", 'attribute' => "pet", 'type' => "string"),
+            array('slug' => "pet-other", 'attribute' => "pet", 'type' => "string"),
+            array('slug' => "pet-dont-want", 'attribute' => "pet", 'type' => "string"),
+            array('slug' => "pet-undecided", 'attribute' => "pet", 'type' => "string"),
 
             array('slug' => "education-finished-schooling", 'attribute' => "education", 'type' => "string"),
             array('slug' => "education-under-graduate", 'attribute' => "education", 'type' => "string"),

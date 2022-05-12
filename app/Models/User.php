@@ -27,7 +27,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'custom_id', 'full_name', 'email', 'country_code', 'contact_no', 'birth_date', 'gender',
         'interest', 'country_id', 'location_id', 'language_id', 'profile_photo', 'password',
         'facebook_id', 'google_id', 'apple_id',
-        'about_me',
+        'about_me', 'fav_movie',
         'personality_id', 'university_id', 'profession_id',
         'relationship_status_id', 'you_are_here_id', 'food_preference_id',
         'drinking_id', 'smoking_id', 'pet_id', 'star_sign_id', 
@@ -63,7 +63,7 @@ class User extends Authenticatable implements MustVerifyEmail
     public function userCommunication(){ return $this->hasOne('App\Models\UserCommunication', 'user_id'); }
 
     // Basic
-    public function personality(){ return $this->hasOne('App\Models\ProfileDetail','id','personality_id'); }
+    public function personality(){ return $this->hasOne('App\Models\Personality','id','personality_id','id'); }
     public function education(){ return $this->hasOne('App\Models\ProfileDetail','id','education_id'); }
     public function university(){ return $this->hasOne('App\Models\ProfileDetail','id','university_id'); }
     public function profession(){ return $this->hasOne('App\Models\ProfileDetail','id','profession_id'); }
@@ -211,10 +211,10 @@ class User extends Authenticatable implements MustVerifyEmail
         $community             =  !empty($this->community_id) ? config('utility.profile.percent.community') : 0;
 
         // Interests
-        $favourite_movie       =  config('utility.profile.percent.favourite_movie');
+        $fav_movie             =  !empty($this->fav_movie) ? config('utility.profile.percent.favourite_movie') : 0;
         $interest_percenrage   =  $this->interests->count() * config('utility.profile.percent.interests');
 
-        $percentage = intval(round(($language+$full_name+$birth_date+$location+$interest+$photo_verified+$email_verified+$video_verified+$contact_no+$photo+$video+$about_me+$voice_prompt+$personality+$relationship_status+$you_are_here+$food_preference+$drinking+$smoking+$pet+$education+$university+$profession+$star_sign+$religion+$community+$favourite_movie+$interest_percenrage)
+        $percentage = intval(round(($language+$full_name+$birth_date+$location+$interest+$photo_verified+$email_verified+$video_verified+$contact_no+$photo+$video+$about_me+$voice_prompt+$personality+$relationship_status+$you_are_here+$food_preference+$drinking+$smoking+$pet+$education+$university+$profession+$star_sign+$religion+$community+$fav_movie+$interest_percenrage)
             *$maximum_points/100));
         
         return $percentage;

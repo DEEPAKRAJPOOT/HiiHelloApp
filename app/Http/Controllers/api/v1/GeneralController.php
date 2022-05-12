@@ -185,9 +185,9 @@ class GeneralController extends Controller
         $rules = LocationRequest::rules();
         if( $this->apiValidator($request->all(), $rules) ) {
             try{
+                $search = $request->search;
                 $locations = Location::with('locationTranslation')->orderBy('is_active');
-                if(!empty($request->search)){
-                    $search = $request->search;
+                if(!empty($search)){
                     $locations = $locations->whereHas('locationTranslation', function ($query) use ($search) {
                                     $query->where('name', 'like', "%{$search}%");
                                 });
@@ -233,10 +233,18 @@ class GeneralController extends Controller
         $rules = InterestRequest::rules($request);
         if( $this->apiValidator($request->all(), $rules) ) {
             try{
+                $search = $request->search;
                 $interests = Interest::with(['interestTranslation:id,interest_id,title'])
                                 ->whereHas('location',function($query) use ($request) {
                                    $query->whereCustomId($request->location_id)->whereIsActive('y');
                                 });
+
+                if(!empty($search)){
+                    $interests = $interests->whereHas('interestTranslation', function ($query) use ($search) {
+                                    $query->where('title', 'like', "%{$search}%");
+                                });
+                }
+
                 if(!empty($request->parent_id)){
                     $interests = $interests->whereNotNull('parent_id')
                                     ->whereHas('parentInterest', function($query) use ($request){
@@ -374,10 +382,16 @@ class GeneralController extends Controller
         $rules = ProfileDetailRequest::rules();
         if( $this->apiValidator($request->all(), $rules) ) {
             try{
+                $search = $request->search;
                 $profile_details = ProfileDetail::with('profileDetailTranslation')->whereIsActive('y');
 
                 if(!empty($request->attribute)){
                     $profile_details = $profile_details->whereAttribute($request->attribute); 
+                }
+                if(!empty($search)){
+                    $profile_details = $profile_details->whereHas('profileDetailTranslation', function ($query) use ($search) {
+                                    $query->where('value', 'like', "%{$search}%");
+                                });
                 }
                 $count = $profile_details->count();
                 $profile_details = $profile_details->limit($request->limit ?? config('utility.pagination.limit'))

@@ -7,6 +7,7 @@ use Illuminate\Http\ { Request, Response };
 use App\Http\Requests\Api\User\ { FullProfileRequest };
 use Illuminate\Database\Eloquent\ { ModelNotFoundException };
 use Illuminate\Support\Facades\ { Storage, Auth };
+use App\Http\Resources\v1\ { UserFullProfile };
 use App\Models\ { User, UserDetail, Interest, UserInterest, ProfileDetail, Personality };
 
 class ProfileController extends Controller
@@ -24,130 +25,62 @@ class ProfileController extends Controller
         $rules = FullProfileRequest::rules($request);
         if( $this->apiValidator($request->all(), $rules) ) {
             try{
-                $user = User::with(['userDetails','interests'])->whereId(Auth::id())->firstOrFail();
-
+                $user = $request->user();
                 if(!empty($request->email)){ $user->email = $request->email; }
-
                 if(!empty($request->about_me)){ $user->about_me = $request->about_me; }
+                if(!empty($request->fav_movie)){ $user->fav_movie = $request->fav_movie; }
 
                 if(!empty($request->personality)){
                     $personality = Personality::select('id')->whereCustomId($request->personality)->whereIsActive('y')->firstOrFail();
                     $user->personality_id = $personality->id;
                 }
-
                 if(!empty($request->university)){
                     $university = ProfileDetail::select('id')->whereSlug($request->university)->whereIsActive('y')->firstOrFail();
                     $user->university_id = $university->id;
                 }
-
                 if(!empty($request->profession)){
                     $profession = ProfileDetail::select('id')->whereSlug($request->profession)->whereIsActive('y')->firstOrFail();
                     $user->profession_id = $profession->id;
                 }
-
                 if(!empty($request->relationship_status)){
                     $relationship_status = ProfileDetail::select('id')->whereSlug($request->relationship_status)->whereIsActive('y')->firstOrFail();
                     $user->relationship_status_id = $relationship_status->id;
                 }
-
                 if(!empty($request->you_are_here)){
                     $you_are_here = ProfileDetail::select('id')->whereSlug($request->you_are_here)->whereIsActive('y')->firstOrFail();
                     $user->you_are_here_id = $you_are_here->id;
                 }
-
                 if(!empty($request->food_preference)){
                     $food_preference = ProfileDetail::select('id')->whereSlug($request->food_preference)->whereIsActive('y')->firstOrFail();
                     $user->food_preference_id = $food_preference->id;
                 }
-
                 if(!empty($request->drinking)){
                     $drinking = ProfileDetail::select('id')->whereSlug($request->drinking)->whereIsActive('y')->firstOrFail();
                     $user->drinking_id = $drinking->id;
                 }
-
                 if(!empty($request->smoking)){
                     $smoking = ProfileDetail::select('id')->whereSlug($request->smoking)->whereIsActive('y')->firstOrFail();
                     $user->smoking_id = $smoking->id;
                 }
-
                 if(!empty($request->pet)){
                     $pet = ProfileDetail::select('id')->whereSlug($request->pet)->whereIsActive('y')->firstOrFail();
                     $user->pet_id = $pet->id;
                 }
-
                 if(!empty($request->star_sign)){
                     $star_sign = ProfileDetail::select('id')->whereSlug($request->star_sign)->whereIsActive('y')->firstOrFail();
                     $user->star_sign_id = $star_sign->id;
                 }
-
                 if(!empty($request->religion)){
                     $religion = ProfileDetail::select('id')->whereSlug($request->religion)->whereIsActive('y')->firstOrFail();
                     $user->religion_id = $religion->id;
                 }
-
                 if(!empty($request->community)){
                     $community = ProfileDetail::select('id')->whereSlug($request->community)->whereIsActive('y')->firstOrFail();
                     $user->community_id = $community->id;
                 }
-                
                 if(!empty($request->education)){
                     $education = ProfileDetail::select('id')->whereSlug($request->education)->whereIsActive('y')->firstOrFail();
                     $user->education_id = $education->id;
-                }
-
-                if(!empty($request->date_idea)){
-                    $date_idea = ProfileDetail::select('id')->whereSlug($request->date_idea)->whereIsActive('y')->firstOrFail();
-                    $user->date_idea_id = $date_idea->id;
-                }
-
-                if(!empty($request->social_cause)){
-                    $social_cause = ProfileDetail::select('id')->whereSlug($request->social_cause)->whereIsActive('y')->firstOrFail();
-                    $user->social_cause_id = $social_cause->id;
-                }
-
-                if(!empty($request->risk_taken)){
-                    $risk_taken = ProfileDetail::select('id')->whereSlug($request->risk_taken)->whereIsActive('y')->firstOrFail();
-                    $user->risk_taken_id = $risk_taken->id;
-                }
-
-                if(!empty($request->perfect_relation_things)){
-                    $perfect_relation_things = ProfileDetail::select('id')->whereSlug($request->perfect_relation_things)->whereIsActive('y')->firstOrFail();
-                    $user->perfect_relation_id = $perfect_relation_things->id;
-                }
-
-                if(!empty($request->my_mantra)){
-                    $my_mantra = ProfileDetail::select('id')->whereSlug($request->my_mantra)->whereIsActive('y')->firstOrFail();
-                    $user->my_mantra_id = $my_mantra->id;
-                }
-
-                if(!empty($request->one_thing_know)){
-                    $one_thing_know = ProfileDetail::select('id')->whereSlug($request->one_thing_know)->whereIsActive('y')->firstOrFail();
-                    $user->one_thing_know_id = $one_thing_know->id;
-                }
-
-                if(!empty($request->worst_date)){
-                    $worst_date = ProfileDetail::select('id')->whereSlug($request->worst_date)->whereIsActive('y')->firstOrFail();
-                    $user->worst_date_id = $worst_date->id;
-                }
-
-                if(!empty($request->introduce_to_family)){
-                    $introduce_to_family = ProfileDetail::select('id')->whereSlug($request->introduce_to_family)->whereIsActive('y')->firstOrFail();
-                    $user->intro_family_id = $introduce_to_family->id;
-                }
-
-                if(!empty($request->found_the_one)){
-                    $found_the_one = ProfileDetail::select('id')->whereSlug($request->found_the_one)->whereIsActive('y')->firstOrFail();
-                    $user->found_one_id = $found_the_one->id;
-                }
-
-                if(!empty($request->about_me_surprises)){
-                    $about_me_surprises = ProfileDetail::select('id')->whereSlug($request->about_me_surprises)->whereIsActive('y')->firstOrFail();
-                    $user->about_surprising_id = $about_me_surprises->id;
-                }
-
-                if(!empty($request->political_views)){
-                    $political_views = ProfileDetail::select('id')->whereSlug($request->political_views)->whereIsActive('y')->firstOrFail();
-                    $user->political_view_id = $political_views->id;
                 }
 
                 if($user->save()){
@@ -173,7 +106,6 @@ class ProfileController extends Controller
                                 $not_delete_interests[] = $custom_id;
                             }
                         }
-
                         // Delete Interests
                         UserInterest::whereUserId($user->id)->whereNotIn('custom_id',$not_delete_interests)->delete();
                     }
@@ -188,7 +120,6 @@ class ProfileController extends Controller
                                 }
                             }
                         }
-
                         $image_data = [];
                         foreach ($request->images as $key => $image) {
                             if($image){
@@ -215,7 +146,6 @@ class ProfileController extends Controller
                                 }
                             }
                         }
-
                         $video_data = [];
                         foreach ($request->videos as $key => $video) {
                             if($video){
@@ -242,7 +172,6 @@ class ProfileController extends Controller
                                 }
                             }
                         }
-
                         $video_data = [];
                         foreach ($request->voices as $key => $voice) {
                             if($voice){
@@ -260,10 +189,13 @@ class ProfileController extends Controller
                     }
                 }
 
-                return [ 'data' => [ 'flags' =>  [ 'profile_percentage'    =>  $user->calculateProfilePercent(),],],
-                        'meta'  => [
+                $user = User::with(['userDetails','interests','personality.personalityTranslation'])
+                                ->whereId($user->id)->firstOrFail();
+
+                return (new UserFullProfile($user))
+                        ->additional(['meta'  => [
                             'message'       =>  trans('api.profile_setuped'), 
-                        ]];
+                        ]]);
             } catch(ModelNotFoundException $exception) {                
                 switch ($exception->getModel()) {
                     case 'App\Models\Personality':
