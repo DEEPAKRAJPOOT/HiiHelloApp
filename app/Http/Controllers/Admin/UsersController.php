@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\UserRequest;
 use App\Models\User;
+use App\Models\Personality;
+use App\Models\ProfileDetail;
 use Exception;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
@@ -31,7 +33,21 @@ class UsersController extends Controller
      */
     public function create()
     {
-        return view('admin.pages.users.create')->with(['custom_title' => 'User']);
+        //personality
+        $personalities = Personality::where('is_active','y')->get();
+        $university = ProfileDetail::where(['attribute'=>'university_college','is_active'=>'y'])->get();
+        $educations = ProfileDetail::where(['attribute'=>'education','is_active'=>'y'])->get(); 
+        $professions = ProfileDetail::where(['attribute'=>'profession','is_active'=>'y'])->get();
+        $religions = ProfileDetail::where(['attribute' => 'religion','is_active'=>'y'])->get();
+        $relationship_status = ProfileDetail::where(['attribute'=>'relationship_status','is_active'=>'y'])->get();
+        $you_are_here = ProfileDetail::where(['attribute'=>'you_are_here','is_active'=>'y'])->get();
+        $food_preferences = ProfileDetail::where(['attribute'=>'food_preference','is_active'=>'y'])->get();
+        $drinking = ProfileDetail::where(['attribute'=>'drinking','is_active'=>'y'])->get();
+        $smoking = ProfileDetail::where(['attribute'=>'smoking','is_active'=>'y'])->get();
+        $pets = ProfileDetail::where(['attribute'=>'pets','is_active'=>'y'])->get();
+        $star_signs = ProfileDetail::where(['attribute'=>'sun_sign','is_active'=>'y'])->get();
+        $community = ProfileDetail::where(['attribute'=>'community','is_active'=>'y'])->get();
+        return view('admin.pages.users.create',compact('personalities','university','educations','professions','religions','relationship_status','you_are_here','food_preferences','drinking','smoking','pets','star_signs','community'))->with(['custom_title' => 'User']);
     }
 
     /**
@@ -103,7 +119,20 @@ class UsersController extends Controller
      */
     public function edit(User $user)
     {
-        return view('admin.pages.users.edit', compact('user'))->with(['custom_title' => 'Users']);
+        $personalities = Personality::where('is_active','y')->get();
+        $university = ProfileDetail::where(['attribute'=>'university_college','is_active'=>'y'])->get();
+        $educations = ProfileDetail::where(['attribute'=>'education','is_active'=>'y'])->get(); 
+        $professions = ProfileDetail::where(['attribute'=>'profession','is_active'=>'y'])->get();
+        $religions = ProfileDetail::where(['attribute' => 'religion','is_active'=>'y'])->get();
+        $relationship_status = ProfileDetail::where(['attribute'=>'relationship_status','is_active'=>'y'])->get();
+        $you_are_here = ProfileDetail::where(['attribute'=>'you_are_here','is_active'=>'y'])->get();
+        $food_preferences = ProfileDetail::where(['attribute'=>'food_preference','is_active'=>'y'])->get();
+        $drinking = ProfileDetail::where(['attribute'=>'drinking','is_active'=>'y'])->get();
+        $smoking = ProfileDetail::where(['attribute'=>'smoking','is_active'=>'y'])->get();
+        $pets = ProfileDetail::where(['attribute'=>'pets','is_active'=>'y'])->get();
+        $star_signs = ProfileDetail::where(['attribute'=>'sun_sign','is_active'=>'y'])->get();
+        $community = ProfileDetail::where(['attribute'=>'community','is_active'=>'y'])->get();
+        return view('admin.pages.users.edit', compact('user','personalities','university','educations','professions','religions','relationship_status','you_are_here','food_preferences','drinking','smoking','pets','star_signs','community'))->with(['custom_title' => 'Users']);
     }
 
     /**
