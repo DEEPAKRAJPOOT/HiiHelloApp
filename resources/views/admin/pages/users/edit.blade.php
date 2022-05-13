@@ -135,6 +135,216 @@
                     @endif
                 </div>
 
+                {{-- Personality --}}
+                <div class="form-group">
+                    <label for="personality_id">Personality Type</label>
+                    <select type="text" class="form-control @error('personality_id') is-invalid @enderror" id="personality_id" name="personality_id"/>
+                        <option value="">Select Personality</option>
+                        @foreach($personalities as $personality)
+                        <option {{ $personality->id == $user->personality_id ? 'selected=selected' : '' }} value="{{ $personality->id }}"> {{ $personality->title }}</option>
+                        @endforeach
+                    </select>
+                    @if ($errors->has('personality_id'))
+                        <span class="text-danger">
+                            <strong class="form-text">{{ $errors->first('personality_id') }}</strong>
+                        </span>
+                    @endif
+                </div>
+
+                {{-- University --}}
+                <div class="form-group">
+                    <label for="university_id">University</label>
+                    <select type="text" class="form-control @error('university_id') is-invalid @enderror" id="university_id" name="university_id" spellcheck="false" tabindex="0" />
+                        <option value="">Select University</option>
+                        @foreach($university as $collage)
+                        <option {{ $collage->id == $user->university_id ? 'selected=selected' : '' }} value="{{ $collage->id }}"> {{ $collage->slug }}</option>
+                        @endforeach
+                    </select>
+                    @if ($errors->has('university_id'))
+                        <span class="text-danger">
+                            <strong class="form-text">{{ $errors->first('university_id') }}</strong>
+                        </span>
+                    @endif
+                </div>
+
+                {{-- Education --}}
+                <div class="form-group">
+                    <label for="education_id">Education</label>
+                    <select type="text" class="form-control @error('education_id') is-invalid @enderror" id="education_id" name="education_id" spellcheck="false" tabindex="0" />
+                        <option value="">Select Education</option>
+                        @foreach($educations as $education)
+                        <option {{ $education->id == $user->education_id ? 'selected=selected' : '' }} value="{{ $education->id }}"> {{ $education->slug }}</option>
+                        @endforeach
+                    </select>
+                    @if ($errors->has('education_id'))
+                        <span class="text-danger">
+                            <strong class="form-text">{{ $errors->first('education_id') }}</strong>
+                        </span>
+                    @endif
+                </div>
+
+                {{-- Profession --}}
+                <div class="form-group">
+                    <label for="profession_id">Profession</label>
+                    <select type="text" class="form-control @error('profession_id') is-invalid @enderror" id="profession_id" name="profession_id" spellcheck="false" tabindex="0" />
+                        <option value="">Select Profession</option>
+                        @foreach($professions as $profession)
+                        <option {{ $profession->id == $user->profession_id ? 'selected=selected' : '' }} value="{{ $profession->id }}"> {{ $profession->slug }}</option>
+                        @endforeach
+                    </select>
+                    @if ($errors->has('education_id'))
+                        <span class="text-danger">
+                            <strong class="form-text">{{ $errors->first('education_id') }}</strong>
+                        </span>
+                    @endif
+                </div>
+
+                {{-- Religion --}}
+                <div class="form-group">
+                    <label for="religion_id">Religion</label>
+                    <select type="text" class="form-control @error('religion_id') is-invalid @enderror" id="religion_id" name="religion_id" spellcheck="false" tabindex="0" />
+                        <option value="">Select Religion</option>
+                        @foreach($religions as $religion)
+                        <option {{ $religion->id == $user->religion_id ? 'selected=selected' : '' }} value="{{ $religion->id }}"> {{ $religion->slug }}</option>
+                        @endforeach
+                    </select>
+                    @if ($errors->has('religion_id'))
+                        <span class="text-danger">
+                            <strong class="form-text">{{ $errors->first('religion_id') }}</strong>
+                        </span>
+                    @endif
+                </div>
+
+                {{-- Relationship status --}}
+                <div class="form-group">
+                    <label for="relationship_status_id">Relationship Status</label>
+                    <select type="text" class="form-control @error('relationship_status_id') is-invalid @enderror" id="relationship_status_id" name="relationship_status_id" spellcheck="false" tabindex="0" />
+                        <option value="">Select Relationship Status</option>
+                        @foreach($relationship_status as $relation)
+                        <option {{ $relation->id == $user->relationship_status_id ? 'selected=selected' : '' }} value="{{ $relation->id }}"> {{ $relation->slug }}</option>
+                        @endforeach
+                    </select>
+                    @if ($errors->has('relationship_status_id'))
+                        <span class="text-danger">
+                            <strong class="form-text">{{ $errors->first('relationship_status_id') }}</strong>
+                        </span>
+                    @endif
+                </div>
+
+                {{-- You are here --}}
+                <div class="form-group">
+                    <label for="you_are_here_id">You Are Here</label>
+                    <select type="text" class="form-control @error('you_are_here_id') is-invalid @enderror" id="you_are_here_id" name="you_are_here_id" spellcheck="false" tabindex="0" />
+                        <option value="">Select You Are Here</option>
+                        @foreach($you_are_here as $here)
+                        <option {{ $here->id == $user->you_are_here_id ? 'selected=selected' : '' }} value="{{ $here->id }}"> {{ $here->slug }}</option>
+                        @endforeach
+                    </select>
+                    @if ($errors->has('you_are_here_id'))
+                        <span class="text-danger">
+                            <strong class="form-text">{{ $errors->first('you_are_here_id') }}</strong>
+                        </span>
+                    @endif
+                </div>
+
+                {{-- Food Preference --}}
+                <div class="form-group">
+                    <label for="food_preference_id">Food Preference</label>
+                    <select type="text" class="form-control @error('food_preference_id') is-invalid @enderror" id="food_preference_id" name="food_preference_id" spellcheck="false" tabindex="0" />
+                        <option value="">Select Food Preference</option>
+                        @foreach($food_preferences as $food)
+                        <option {{ $food->id == $user->food_preference_id ? 'selected=selected' : '' }} value="{{ $food->id }}"> {{ $food->slug }}</option>
+                        @endforeach
+                    </select>
+                    @if ($errors->has('food_preference_id'))
+                        <span class="text-danger">
+                            <strong class="form-text">{{ $errors->first('food_preference_id') }}</strong>
+                        </span>
+                    @endif
+                </div>
+
+                {{-- Drinking --}}
+                <div class="form-group">
+                    <label for="drinking_id">Drinking</label>
+                    <select type="text" class="form-control @error('drinking_id') is-invalid @enderror" id="drinking_id" name="drinking_id" spellcheck="false" tabindex="0" />
+                        <option value="">Select Drinking</option>
+                        @foreach($drinking as $drink)
+                        <option {{ $drink->id == $user->drinking_id ? 'selected=selected' : '' }} value="{{ $drink->id }}"> {{ $drink->slug }}</option>
+                        @endforeach
+                    </select>
+                    @if ($errors->has('drinking_id'))
+                        <span class="text-danger">
+                            <strong class="form-text">{{ $errors->first('drinking_id') }}</strong>
+                        </span>
+                    @endif
+                </div>
+
+                {{-- Smoking --}}
+                <div class="form-group">
+                    <label for="smoking_id">Smoking</label>
+                    <select type="text" class="form-control @error('smoking_id') is-invalid @enderror" id="smoking_id" name="smoking_id" spellcheck="false" tabindex="0" />
+                        <option value="">Select Smoking</option>
+                        @foreach($smoking as $smoke)
+                        <option {{ $smoke->id == $user->smoking_id ? 'selected=selected' : '' }} value="{{ $smoke->id }}"> {{ $smoke->slug }}</option>
+                        @endforeach
+                    </select>
+                    @if ($errors->has('smoking_id'))
+                        <span class="text-danger">
+                            <strong class="form-text">{{ $errors->first('smoking_id') }}</strong>
+                        </span>
+                    @endif
+                </div>
+
+                {{-- Pet --}}
+                <div class="form-group">
+                    <label for="pet_id">Pet</label>
+                    <select type="text" class="form-control @error('pet_id') is-invalid @enderror" id="pet_id" name="pet_id" spellcheck="false" tabindex="0" />
+                        <option value="">Select Pet</option>
+                        @foreach($pets as $pet)
+                        <option {{ $pet->id == $user->pet_id ? 'selected=selected' : '' }} value="{{ $pet->id }}"> {{ $pet->slug }}</option>
+                        @endforeach
+                    </select>
+                    @if ($errors->has('pet_id'))
+                        <span class="text-danger">
+                            <strong class="form-text">{{ $errors->first('pet_id') }}</strong>
+                        </span>
+                    @endif
+                </div>
+
+                {{-- Star_sign --}}
+                <div class="form-group">
+                    <label for="star_sign_id">Star Sign</label>
+                    <select type="text" class="form-control @error('star_sign_id') is-invalid @enderror" id="star_sign_id" name="star_sign_id" spellcheck="false" tabindex="0" />
+                        <option value="">Select Star Sign</option>
+                        @foreach($star_signs as $star_sign)
+                        <option {{ $star_sign->id == $user->star_sign_id ? 'selected=selected' : '' }} value="{{ $star_sign->id }}"> {{ $star_sign->slug }}</option>
+                        @endforeach
+                    </select>
+                    @if ($errors->has('star_sign_id'))
+                        <span class="text-danger">
+                            <strong class="form-text">{{ $errors->first('star_sign_id') }}</strong>
+                        </span>
+                    @endif
+                </div>
+
+                {{-- Community --}}
+                <div class="form-group">
+                    <label for="community_id">Community</label>
+                    <select type="text" class="form-control @error('community_id') is-invalid @enderror" id="community_id" name="community_id" spellcheck="false" tabindex="0" />
+                        <option value="">Select Community</option>
+                        @foreach($community as $com)
+                        <option {{ $com->id == $user->community_id ? 'selected=selected' : '' }} value="{{ $com->id }}"> {{ $com->slug }}</option>
+                        @endforeach
+                    </select>
+                    @if ($errors->has('community_id'))
+                        <span class="text-danger">
+                            <strong class="form-text">{{ $errors->first('community_id') }}</strong>
+                        </span>
+                    @endif
+                </div>
+
+
+
                 {{-- Profile Photo --}}
                 <div class="form-group">
                     <label for="profile_photo">Profile Photo</label>
@@ -419,6 +629,58 @@ $(document).ready(function () {
             },
             interest: {
                 required: false,
+                not_empty: true,
+            },
+            personality_id: {
+                required: true,
+                not_empty: true,
+            },
+            profession_id:{
+                required: true,
+                not_empty: true,
+            },
+            education_id: {
+                required:true,
+                not_empty: true,
+            },
+            university_id: {
+                required: true,
+                not_empty: true,
+            },
+            pet_id: {
+                required: true,
+                not_empty: true,
+            },
+            religion_id: {
+                required: true,
+                not_empty: true,
+            },
+            community_id: {
+                required: true,
+                not_empty: true,
+            },
+            star_sign_id: {
+                required: true,
+                not_empty: true,
+            },
+            relationship_status_id: {
+                required: true,
+                not_empty: true,
+            },
+            drinking_id: {
+                required: true,
+                not_empty: true,
+            },
+            smoking_id: {
+                required: true,
+                not_empty: true,
+            },
+            you_are_here_id: {
+                required: true,
+                not_empty: true,
+            },
+            food_preference_id: {
+                required: true,
                 not_empty: true,
             },
             photo_suggestion: {
