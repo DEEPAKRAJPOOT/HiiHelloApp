@@ -82,6 +82,17 @@
                         </span>
                     @endif
                 </div>
+
+                {{-- Sequence --}}
+                <div class="form-group {{ $errors->has('sequence') ? 'has-error' : '' }}">
+                    <label for="sequence">Sequence</label>
+                    <input type="text" class="form-control" id="sequence" name="sequence" value="{{ $interest->sequence ?? '' }}" placeholder="Enter Sequence Number" spellcheck="false" autocapitalize="sentences" tabindex="0" autofocus />
+                    @if ($errors->has('sequence')))
+                        <span class="help-block">
+                            <strong class="form-text">{{ $errors->first('sequence') }}</strong>
+                        </span>
+                    @endif
+                </div>
             </div>
 
             @forelse($languages as $language)
@@ -146,6 +157,11 @@ $(document).ready(function () {
                 number: true,
                 not_empty: false,
             },
+            sequence: {
+                required: false,
+                number: true,
+                not_empty: false,
+            },
             '{{ $default_lang }}_title': {
                 required: true,
                 not_empty: true,
@@ -165,6 +181,11 @@ $(document).ready(function () {
                 required:"@lang('validation.required',['attribute'=>'sub level'])",
                 number:"@lang('validation.numeric',['attribute'=>'sub level'])",
                 not_empty:"@lang('validation.not_empty',['attribute'=>'sub level'])",
+            },
+            sequence:{
+                required:"@lang('validation.required',['attribute'=>'sequence'])",
+                number:"@lang('validation.numeric',['attribute'=>'sequence'])",
+                not_empty:"@lang('validation.not_empty',['attribute'=>'sequence'])",
             },
             '{{ $default_lang }}_title': {
                 required: "@lang('validation.required',['attribute'=>'title'])",

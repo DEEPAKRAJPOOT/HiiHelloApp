@@ -29,6 +29,8 @@ class InterestRequest extends FormRequest
         return [
             $default_lang.'_title'          =>  'required_unless:action,'.$unless.'|max:500',
             'parent_id'                     =>  'nullable',
+            'level'                         =>  'nullable|numeric',
+            'sequence'                      =>  'nullable|numeric',
             'location_id'                   =>  'required_unless:action,'.$unless,
         ];
     }

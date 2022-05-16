@@ -263,7 +263,8 @@ class GeneralController extends Controller
                                 }]);
 
                 $count = $interests->count();
-                $interests = $interests->limit($request->limit ?? config('utility.pagination.limit'))
+                $interests = $interests->orderBy('sequence')
+                            ->limit($request->limit ?? config('utility.pagination.limit'))
                             ->offset($request->offset ?? config('utility.pagination.offset'))
                             ->get();
 

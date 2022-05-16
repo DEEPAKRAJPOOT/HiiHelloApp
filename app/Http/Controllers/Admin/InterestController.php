@@ -48,6 +48,7 @@ class InterestController extends Controller
         $data['parent_id'] = $request->parent_id;
         $data['location_id'] = $request->location_id;
         $data['level'] = $request->level;
+        $data['sequence'] = $request->sequence;
 
         $interest = Interest::create($data);
         if ($interest->save()) {
@@ -108,6 +109,7 @@ class InterestController extends Controller
             $data['parent_id'] = $request->parent_id;
             $data['location_id'] = $request->location_id;
             $data['level'] = $request->level;
+            $data['sequence'] = $request->sequence;
 
             $interest->update($data);
             if( $interest->save() ) {
@@ -162,6 +164,7 @@ class InterestController extends Controller
         if ($search != '') {
             $interests->where(function ($query) use ($search) {
                 $query->where('custom_id', 'like', "%{$search}%")
+                    ->orWhere('sequence', 'like', "%{$search}%")
                     ->orWhereHas('interestTranslations', function ($query) use ($search) {
                         $query->where('title', 'like', "%{$search}%");
                     });
@@ -187,6 +190,7 @@ class InterestController extends Controller
             $records['data'][] = [
                 'id'            =>  $interest->id,
                 'title'         =>  $interest->interestTransDefault ? $interest->interestTransDefault->title : "",
+                'sequence'      =>  $interest->sequence ?? 0,
                 'active'        =>  view('admin.layouts.includes.switch', compact('params'))->render(),
                 'action'        =>  view('admin.layouts.includes.actions')->with(['custom_title' => 'Interest', 'id' => $interest->custom_id], $interest)->render(),
                 'checkbox'      =>  view('admin.layouts.includes.checkbox')->with('id', $interest->custom_id)->render(),
