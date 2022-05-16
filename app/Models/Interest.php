@@ -13,7 +13,7 @@ class Interest extends Model implements TranslatableContract
 
     public function getRouteKeyName(){ return 'custom_id'; }
     
-    protected $fillable = ['custom_id', 'parent_id', 'location_id', 'level'];
+    protected $fillable = ['custom_id', 'parent_id', 'location_id', 'level', 'sequence'];
 
     protected $translatedAttributes = ['title'];
 

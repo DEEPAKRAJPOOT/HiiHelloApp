@@ -66,10 +66,21 @@
                 {{-- Sub Level --}}
                 <div class="form-group {{ $errors->has('level') ? 'has-error' : '' }}">
                     <label for="level">Sub Level</label>
-                    <input type="text" class="form-control" id="level" name="level" value="{{ old('title') }}" placeholder="Enter Sub Level" spellcheck="false" autocapitalize="sentences" tabindex="0" autofocus />
+                    <input type="text" class="form-control" id="level" name="level" value="{{ old('level') }}" placeholder="Enter Sub Level" spellcheck="false" autocapitalize="sentences" tabindex="0" autofocus />
                     @if ($errors->has('level')))
                         <span class="help-block">
                             <strong class="form-text">{{ $errors->first('level') }}</strong>
+                        </span>
+                    @endif
+                </div>
+
+                {{-- Sequence --}}
+                <div class="form-group {{ $errors->has('sequence') ? 'has-error' : '' }}">
+                    <label for="sequence">Sequence</label>
+                    <input type="text" class="form-control" id="sequence" name="sequence" value="{{ old('sequence') }}" placeholder="Enter Sequence Number" spellcheck="false" autocapitalize="sentences" tabindex="0" autofocus />
+                    @if ($errors->has('sequence')))
+                        <span class="help-block">
+                            <strong class="form-text">{{ $errors->first('sequence') }}</strong>
                         </span>
                     @endif
                 </div>
@@ -130,6 +141,11 @@ $(document).ready(function () {
                 number: true,
                 not_empty: false,
             },
+            sequence: {
+                required: false,
+                number: true,
+                not_empty: false,
+            },
             '{{ $default_lang }}_title': {
                 required: true,
                 not_empty: true,
@@ -149,6 +165,11 @@ $(document).ready(function () {
                 required:"@lang('validation.required',['attribute'=>'sub level'])",
                 number:"@lang('validation.numeric',['attribute'=>'sub level'])",
                 not_empty:"@lang('validation.not_empty',['attribute'=>'sub level'])",
+            },
+            sequence:{
+                required:"@lang('validation.required',['attribute'=>'sequence'])",
+                number:"@lang('validation.numeric',['attribute'=>'sequence'])",
+                not_empty:"@lang('validation.not_empty',['attribute'=>'sequence'])",
             },
             '{{ $default_lang }}_title': {
                 required: "@lang('validation.required',['attribute'=>'title'])",
