@@ -46,9 +46,9 @@ class ProfileController extends Controller
                     $relationship_status = ProfileDetail::select('id')->whereSlug($request->relationship_status)->whereIsActive('y')->firstOrFail();
                     $user->relationship_status_id = $relationship_status->id;
                 }
-                if(!empty($request->you_are_here)){
-                    $you_are_here = ProfileDetail::select('id')->whereSlug($request->you_are_here)->whereIsActive('y')->firstOrFail();
-                    $user->you_are_here_id = $you_are_here->id;
+                if(!empty($request->i_am_here)){
+                    $i_am_here = ProfileDetail::select('id')->whereSlug($request->i_am_here)->whereIsActive('y')->firstOrFail();
+                    $user->you_are_here_id = $i_am_here->id;
                 }
                 if(!empty($request->food_preference)){
                     $food_preference = ProfileDetail::select('id')->whereSlug($request->food_preference)->whereIsActive('y')->firstOrFail();
@@ -66,9 +66,9 @@ class ProfileController extends Controller
                     $pet = ProfileDetail::select('id')->whereSlug($request->pet)->whereIsActive('y')->firstOrFail();
                     $user->pet_id = $pet->id;
                 }
-                if(!empty($request->sun_sign)){
-                    $sun_sign = ProfileDetail::select('id')->whereSlug($request->sun_sign)->whereIsActive('y')->firstOrFail();
-                    $user->star_sign_id = $sun_sign->id;
+                if(!empty($request->star_sign)){
+                    $star_sign = ProfileDetail::select('id')->whereSlug($request->star_sign)->whereIsActive('y')->firstOrFail();
+                    $user->star_sign_id = $star_sign->id;
                 }
                 if(!empty($request->religion)){
                     $religion = ProfileDetail::select('id')->whereSlug($request->religion)->whereIsActive('y')->firstOrFail();
