@@ -34,9 +34,9 @@ class ProfileController extends Controller
                     $personality = Personality::select('id')->whereCustomId($request->personality)->whereIsActive('y')->firstOrFail();
                     $user->personality_id = $personality->id;
                 }
-                if(!empty($request->university)){
-                    $university = ProfileDetail::select('id')->whereSlug($request->university)->whereIsActive('y')->firstOrFail();
-                    $user->university_id = $university->id;
+                if(!empty($request->university_college)){
+                    $university_college = ProfileDetail::select('id')->whereSlug($request->university_college)->whereIsActive('y')->firstOrFail();
+                    $user->university_id = $university_college->id;
                 }
                 if(!empty($request->profession)){
                     $profession = ProfileDetail::select('id')->whereSlug($request->profession)->whereIsActive('y')->firstOrFail();
@@ -66,9 +66,9 @@ class ProfileController extends Controller
                     $pet = ProfileDetail::select('id')->whereSlug($request->pet)->whereIsActive('y')->firstOrFail();
                     $user->pet_id = $pet->id;
                 }
-                if(!empty($request->star_sign)){
-                    $star_sign = ProfileDetail::select('id')->whereSlug($request->star_sign)->whereIsActive('y')->firstOrFail();
-                    $user->star_sign_id = $star_sign->id;
+                if(!empty($request->sun_sign)){
+                    $sun_sign = ProfileDetail::select('id')->whereSlug($request->sun_sign)->whereIsActive('y')->firstOrFail();
+                    $user->star_sign_id = $sun_sign->id;
                 }
                 if(!empty($request->religion)){
                     $religion = ProfileDetail::select('id')->whereSlug($request->religion)->whereIsActive('y')->firstOrFail();
@@ -83,13 +83,20 @@ class ProfileController extends Controller
                     $user->education_id = $education->id;
                 }
 
+                if(!empty($request->voice) && !empty($request->voice_answer)){
+                    if(!empty($user->voice)){ if( Storage::exists($user->voice) ) { Storage::delete($user->voice); } }
+
+                    $voice_path = $request->voice->store('users/voice');
+                    $user->voice = $voice_path;
+                    $user->voice_answer = $request->voice_answer;
+                }
+                    
                 if($user->save()){
                     if(!empty($request->interests)){
                         $selected_inerests = []; $not_delete_interests = [];
-                        foreach($request->interests as $key => $interest_levels){
-                            foreach($interest_levels as $key => $req_interest){
-                                $selected_inerests[] = $req_interest;
-                            }
+
+                        foreach($request->interests as $key => $interest){
+                            $selected_inerests[] = $interest;
                         }
 
                         if(count($selected_inerests) > 0){
@@ -161,32 +168,6 @@ class ProfileController extends Controller
                         }
                         UserDetail::insert($video_data);
                     }   
-
-                    // Store Audios
-                    if(!empty($request->voices)){
-                        if($user->userDetails->isNotEmpty()){
-                            foreach($user->userDetails as $userDetail){
-                                if(!empty($userDetail->voice)){
-                                    if( Storage::exists($userDetail->voice) ) { Storage::delete($userDetail->voice); }
-                                    $userDetail->delete();
-                                }
-                            }
-                        }
-                        $video_data = [];
-                        foreach ($request->voices as $key => $voice) {
-                            if($voice){
-                                $voice_path = $voice->store('users/voice');
-                                $video_data[] = [
-                                    'custom_id'         =>  getUniqueString('user_details'),
-                                    'user_id'           =>  $user->id,
-                                    'voice'             =>  $voice_path,
-                                    'created_at'        =>  \Carbon\Carbon::now(),
-                                    'updated_at'        =>  \Carbon\Carbon::now(),
-                                ];
-                            }
-                        }
-                        UserDetail::insert($video_data);
-                    }
                 }
 
                 $user = User::with(['userDetails','interests','personality.personalityTranslation'])

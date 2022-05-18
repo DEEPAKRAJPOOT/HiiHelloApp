@@ -45,7 +45,10 @@ class MyProfile extends JsonResource
             'media' =>  [
                 'profile_images'    =>  $this->getProfileImages(),
                 'profile_videos'    =>  $this->getProfileVideos(),
-                'profile_voices'    =>  $this->getProfileVoices(),
+                'profile_voice'     =>  [
+                    'voice'         =>  generateURL($this->voice),
+                    'voice_answer'  =>  $this->voice_answer ?? "",
+                ],
             ],
             'flags'             =>  [
                 'social_user'           =>  $this->isSocialUser(),

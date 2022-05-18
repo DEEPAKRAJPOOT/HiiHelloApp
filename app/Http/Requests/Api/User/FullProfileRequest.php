@@ -47,7 +47,7 @@ class FullProfileRequest extends FormRequest
 
             'personality'               =>  'nullable|in:'.implode(',', $personality_ids),
             'education'                 =>  'nullable|in:'.implode(',', $profile_details),
-            'university'                =>  'nullable|in:'.implode(',', $profile_details),
+            'university_college'        =>  'nullable|in:'.implode(',', $profile_details),
             'profession'                =>  'nullable|in:'.implode(',', $profile_details),
             'religion'                  =>  'nullable|in:'.implode(',', $profile_details),
 
@@ -57,7 +57,7 @@ class FullProfileRequest extends FormRequest
             'drinking'                  =>  'nullable|in:'.implode(',', $profile_details),
             'smoking'                   =>  'nullable|in:'.implode(',', $profile_details),
             'pet'                       =>  'nullable|in:'.implode(',', $profile_details),
-            'star_sign'                 =>  'nullable|in:'.implode(',', $profile_details),
+            'sun_sign'                  =>  'nullable|in:'.implode(',', $profile_details),
             'community'                 =>  'nullable|in:'.implode(',', $profile_details),
 
             'date_idea'                 =>  'nullable|in:'.implode(',', $profile_details),
@@ -73,13 +73,13 @@ class FullProfileRequest extends FormRequest
             'political_views'           =>  'nullable|in:'.implode(',', $profile_details),
 
             'interests'                 =>  'nullable|array',
-            'interests.*.*'             =>  'nullable|in:'.implode(',', $interest_ids),
+            'interests.*'               =>  'nullable|in:'.implode(',', $interest_ids),
             'images'                    =>  'nullable|array|max:4',
             'images.*'                  =>  'nullable|mimes:jpg,jpeg,png',
             'videos'                    =>  'nullable|array|max:1',
             'videos.*'                  =>  'nullable|mimes:mp4,ogx,oga,ogv,ogg,webm,flv,m3u8,ts,3gp,mov,avi,wmv,m4v',
-            'voices'                    =>  'nullable|array|max:1',
-            'voices.*'                  =>  'nullable|file|mimes:audio/mpeg,mpga,mp3,wav,aac,m4a',
+            'voice'                     =>  'nullable|mimes:audio/mpeg,mpga,mp3,wav,aac,m4a',
+            'voice_answer'              =>  'required_with:voice|string|max:500',
         ];
     }
 }

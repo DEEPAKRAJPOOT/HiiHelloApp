@@ -25,7 +25,7 @@ class User extends Authenticatable implements MustVerifyEmail
 
     protected $fillable = [
         'custom_id', 'full_name', 'email', 'country_code', 'contact_no', 'birth_date', 'gender',
-        'interest', 'country_id', 'location_id', 'language_id', 'profile_photo', 'password',
+        'interest', 'country_id', 'location_id', 'language_id', 'profile_photo', 'voice', 'voice_answer', 'password',
         'facebook_id', 'google_id', 'apple_id',
         'about_me', 'fav_movie',
         'personality_id', 'university_id', 'profession_id',
@@ -127,20 +127,6 @@ class User extends Authenticatable implements MustVerifyEmail
         return $videos;
     }
 
-    public function getProfileVoices(){ 
-        $voices = [];
-        if($this->userDetails){
-            foreach($this->userDetails as $key => $userDetail){
-                $voice = generateURL($userDetail->voice);
-                if(!empty($voice)){
-                    $voices[$key]['id']   =   $userDetail->custom_id;  
-                    $voices[$key]['url']  =   $voice; 
-                }
-            }
-        }
-        return $voices;
-    }
-
     public function isProfileSetuped(){
         return !empty($this->full_name)
             && !empty($this->birth_date)
@@ -174,7 +160,6 @@ class User extends Authenticatable implements MustVerifyEmail
 
         $photo_detail          =  $this->userDetails->where('image','!=',null);
         $video_detail          =  $this->userDetails->where('video','!=',null);
-        $voice_detail          =  $this->userDetails->where('voice','!=',null);
 
         // Improtant Details
         $language              =  !empty($this->language_id) ? config('utility.profile.percent.language') : 0;
@@ -195,7 +180,7 @@ class User extends Authenticatable implements MustVerifyEmail
 
         // Basic Details
         $about_me              =  !empty($this->about_me) ? config('utility.profile.percent.about_me') : 0;
-        $voice_prompt          =  $voice_detail->isNotEmpty() ? config('utility.profile.percent.voice_prompt') : 0;
+        $voice_prompt          =  !empty($this->voice) ? config('utility.profile.percent.voice_prompt') : 0;
         $personality           =  !empty($this->personality_id) ? config('utility.profile.percent.personality') : 0;
         $relationship_status   =  !empty($this->relationship_status_id) ? config('utility.profile.percent.relationship_status') : 0;
         $you_are_here          =  !empty($this->you_are_here_id) ? config('utility.profile.percent.you_are_here') : 0;

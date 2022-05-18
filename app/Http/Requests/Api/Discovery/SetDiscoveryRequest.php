@@ -34,7 +34,7 @@ class SetDiscoveryRequest extends FormRequest
             'end_age'           =>  'required_with:start_age|numeric|min:1|max:100',
             'interest'          =>  'required|in:Male,Female,Both',
             'location'          =>  'required|in:'.implode(',', $location_ids),
-            'languages'         =>  'required|array',
+            'languages'         =>  'nullable|array',
             'languages.*'       =>  'required|in:'.implode(',', $language_ids),
         ];
     }
