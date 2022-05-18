@@ -52,12 +52,12 @@ class FullProfileRequest extends FormRequest
             'religion'                  =>  'nullable|in:'.implode(',', $profile_details),
 
             'relationship_status'       =>  'nullable|in:'.implode(',', $profile_details),
-            'you_are_here'              =>  'nullable|in:'.implode(',', $profile_details),
+            'i_am_here'                 =>  'nullable|in:'.implode(',', $profile_details),
             'food_preference'           =>  'nullable|in:'.implode(',', $profile_details),
             'drinking'                  =>  'nullable|in:'.implode(',', $profile_details),
             'smoking'                   =>  'nullable|in:'.implode(',', $profile_details),
             'pet'                       =>  'nullable|in:'.implode(',', $profile_details),
-            'sun_sign'                  =>  'nullable|in:'.implode(',', $profile_details),
+            'star_sign'                 =>  'nullable|in:'.implode(',', $profile_details),
             'community'                 =>  'nullable|in:'.implode(',', $profile_details),
 
             'date_idea'                 =>  'nullable|in:'.implode(',', $profile_details),

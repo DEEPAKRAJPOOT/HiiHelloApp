@@ -9,8 +9,8 @@ const mysql 	= 	require('mysql');
 const tech 		= 	io.of('/');
 const port 		= 	8080;
 
-// const APP_URL 	= 	"https://hihelloapp.com/";
-const APP_URL 	= 	"http://localhost:8000/";
+const APP_URL 	= 	"https://hihelloapp.com/";
+// const APP_URL 	= 	"http://localhost:8000/";
 
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(cors());
@@ -18,17 +18,17 @@ app.use(cors());
 /* MySQL Connections */
 var connection = mysql.createConnection({
 
-	host     : "127.0.0.1",
-	port     : "8889",
-	user     : "root",
-	password : "root",
-	database : "la_hi_hello"
+	// host     : "127.0.0.1",
+	// port     : "8889",
+	// user     : "root",
+	// password : "root",
+	// database : "la_hi_hello"
 
-	// host     : "hihellapp.cx3wyfpc93bh.ap-south-1.rds.amazonaws.com",
-	// port     : "3306",
-	// user     : "admin",
-	// password : "JINJN5A0cELWaT6xRJ1S",
-	// database : "dev_hi_hello_app"
+	host     : "hihellapp.cx3wyfpc93bh.ap-south-1.rds.amazonaws.com",
+	port     : "3306",
+	user     : "admin",
+	password : "JINJN5A0cELWaT6xRJ1S",
+	database : "dev_hi_hello_app"
 });
 
 /* Listen On Respective Port */
