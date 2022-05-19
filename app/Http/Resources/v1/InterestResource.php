@@ -17,6 +17,7 @@ class InterestResource extends JsonResource
         return [
             'id'                    =>  $this->custom_id ?? "",
             'title'                 =>  $this->interestTranslation ? $this->interestTranslation->title : "",
+            'parent_id'             =>  $this->parentInterest ? $this->parentInterest->custom_id : "",
             'level'                 =>  $this->level ?? 0,
             'sub_interests_count'   =>  $this->sub_interests_count ?? 0,
         ];

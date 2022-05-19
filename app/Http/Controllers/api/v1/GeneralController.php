@@ -234,7 +234,7 @@ class GeneralController extends Controller
         if( $this->apiValidator($request->all(), $rules) ) {
             try{
                 $search = $request->search;
-                $interests = Interest::with(['interestTranslation:id,interest_id,title'])
+                $interests = Interest::with(['parentInterest:id,custom_id','interestTranslation:id,interest_id,title'])
                                 ->whereHas('location',function($query) use ($request) {
                                    $query->whereCustomId($request->location_id)->whereIsActive('y');
                                 });

@@ -27,7 +27,10 @@ class AuthenticationController extends Controller
             $checksumDetails = $this->validateCheckSum($request->security_token, $request->contact_no);
             if( $checksumDetails->validate ) {
                 try {
-                    $user = User::whereContactNo($request->contact_no)->withCount('likes')->firstOrFail();
+                    $user = User::with(['userDetails','language',
+                                        'country.countryTranslation','location.locationTranslation',
+                                        'interests.interest.parentInterest','interests.interest.interestTranslation'])
+                                        ->whereContactNo($request->contact_no)->withCount('likes')->firstOrFail();
                     if($user->is_active == 'y'){
                         Auth::login($user);
                         Auth::user()->tokens()->delete(); // Logout From All Devices    
