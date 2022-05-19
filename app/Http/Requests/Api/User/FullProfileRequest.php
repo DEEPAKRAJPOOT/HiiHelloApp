@@ -31,6 +31,7 @@ class FullProfileRequest extends FormRequest
         $profile_details = ProfileDetail::whereIsActive('y')->pluck('slug')->toArray();
 
         if(!empty($request->interests) || $request->has('interests') || 
+            !empty($request->remove_interests) || $request->has('remove_interests') || 
             !empty($request->hobby) || $request->has('hobby') ||
             !empty($request->fav_sport) || $request->has('fav_sport')) { 
                 $interest_ids = Interest::whereIsActive('y')->pluck('custom_id')->toArray(); 
@@ -74,6 +75,9 @@ class FullProfileRequest extends FormRequest
 
             'interests'                 =>  'nullable|array',
             'interests.*'               =>  'nullable|in:'.implode(',', $interest_ids),
+            'remove_interests'          =>  'nullable|array',
+            'remove_interests.*'        =>  'nullable|in:'.implode(',', $interest_ids),
+
             'images'                    =>  'nullable|array|max:4',
             'images.*'                  =>  'nullable|mimes:jpg,jpeg,png',
             'videos'                    =>  'nullable|array|max:1',

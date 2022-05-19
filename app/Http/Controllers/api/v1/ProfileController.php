@@ -92,29 +92,33 @@ class ProfileController extends Controller
                 }
                     
                 if($user->save()){
-                    if(!empty($request->interests)){
-                        $selected_inerests = []; $not_delete_interests = [];
+                    // Remove Interests
+                    if(!empty($request->remove_interests)){
+                        $rmv_inerests = [];
+                        foreach($request->remove_interests as $key => $remove_interest){ $rmv_inerests[] = $remove_interest; }
+                        
+                        UserInterest::whereUserId($user->id)
+                            ->whereHas('interest',function($query) use ($rmv_inerests){
+                                $query->whereIn('custom_id',$rmv_inerests);
+                            })->delete();
+                    }
 
-                        foreach($request->interests as $key => $interest){
-                            $selected_inerests[] = $interest;
-                        }
+                    // Store Interest
+                    if(!empty($request->interests)){
+                        $selected_inerests = [];
+                        foreach($request->interests as $key => $interest){ $selected_inerests[] = $interest; }
 
                         if(count($selected_inerests) > 0){
                             $interest_ids = Interest::whereIn('custom_id',$selected_inerests)->whereIsActive('y')->pluck('id')->toArray();
                             foreach($interest_ids as $interest_id){
-                                $custom_id = getUniqueString('user_interests');
-
                                 UserInterest::updateOrCreate([
                                     'user_id'       =>  $user->id,
                                     'interest_id'   =>  $interest_id,
                                 ],[
-                                    'custom_id'     =>  $custom_id,
+                                    'custom_id'     =>  getUniqueString('user_interests'),
                                 ]);
-                                $not_delete_interests[] = $custom_id;
                             }
                         }
-                        // Delete Interests
-                        UserInterest::whereUserId($user->id)->whereNotIn('custom_id',$not_delete_interests)->delete();
                     }
 
                     // Store Images
