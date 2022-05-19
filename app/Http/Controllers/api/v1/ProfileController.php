@@ -170,7 +170,7 @@ class ProfileController extends Controller
                     }   
                 }
 
-                $user = User::with(['userDetails','interests','personality.personalityTranslation'])
+                $user = User::with(['userDetails','interests.interest.parentInterest','personality.personalityTranslation'])
                                 ->whereId($user->id)->firstOrFail();
 
                 return (new UserFullProfile($user))
