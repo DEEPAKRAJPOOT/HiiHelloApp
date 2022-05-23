@@ -37,6 +37,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'verify_photo', 'verify_video', 'photo_suggestion', 'video_suggestion',
         'verify_photo_status', 'verify_video_status',
         'verify_status', 'email_verified_at', 'contact_verified_at', 'photo_verified_at', 'video_verified_at',
+        'reason_of_delete'
     ];
     
     public function getEmailVerifiedAtAttribute($email_verified_at){ 
