@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\ { Request, Response };
 use Illuminate\Database\Eloquent\ { ModelNotFoundException };
 use Illuminate\Support\Facades\ { Storage };
-use App\Http\Requests\Api\User\ { UploadVerifyDetailRequest, EmailVerifyRequest };
+use App\Http\Requests\Api\User\ { UploadVerifyDetailRequest, EmailVerifyRequest, VerifyContactRequest };
 use App\Http\Resources\v1\ { VerificationResource };
 use App\Models\ { User };
 
@@ -67,6 +67,42 @@ class VerificationController extends Controller
                 };
             } catch (\Exception $e) {
                 $this->storeErrorLog($e,'upload_verify_detail');
+            }
+        }
+        return $this->returnResponse();
+    }
+
+    // Upload Verification Details
+    public function verifyContactNumber(Request $request)
+    {
+        $rules = VerifyContactRequest::rules();
+        if( $this->apiValidator($request->all(), $rules) ) {
+            try{
+                $user = $request->user();
+                $user->country_code = $request->country_code;
+                $user->contact_no = $request->contact_no;
+                $user->contact_verified_at  = \Carbon\Carbon::now();
+                $user->save();
+
+                $this->status = Response::HTTP_OK;
+                return (['data'  =>  NULL,
+                        'meta' => [
+                            'url'       =>  url()->current(),
+                            'api'       =>  $this->getVersion(),
+                            'language'  =>  app()->getLocale(),
+                            'message'   =>  trans('api.verification.success', ['entity' => __("Contact number")]),
+                        ] ]);
+            } catch(ModelNotFoundException $exception) {                
+                switch ($exception->getModel()) {
+                    case 'App\Models\User':
+                        $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("User")]);
+                        break;
+                    default:
+                        $this->response['meta']['message'] = trans('api.went_wrong');
+                        break;
+                };
+            } catch (\Exception $e) {
+                $this->storeErrorLog($e,'verify_contact_number');
             }
         }
         return $this->returnResponse();

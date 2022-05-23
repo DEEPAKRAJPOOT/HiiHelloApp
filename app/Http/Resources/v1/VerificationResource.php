@@ -21,14 +21,18 @@ class VerificationResource extends JsonResource
                     'verified_at'       =>  $this->photo_verified_at ?? "",
                     'suggestion'        =>  $this->photo_suggestion ?? "",
                 ],
-                'email' =>   [
-                    'verified_status'   =>  $this->emailVerifyStatus(),
-                    'verified_at'       =>  $this->email_verified_at ?? "",
-                ],
                 'video' =>   [
                     'verified_status'   =>  $this->verify_video_status ?? "",
                     'verified_at'       =>  $this->video_verified_at ?? "",
                     'suggestion'        =>  $this->video_suggestion ?? "",
+                ],
+                'email' =>   [
+                    'verified_status'   =>  $this->emailVerifyStatus(),
+                    'verified_at'       =>  $this->email_verified_at ?? "",
+                ],
+                'contact_no' =>   [
+                    'verified_status'   =>  $this->contactVerifyStatus(),
+                    'verified_at'       =>  $this->contact_verified_at ?? "",
                 ],
             ],
         ];

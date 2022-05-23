@@ -27,7 +27,7 @@ class UserController extends Controller
                 $user = User::with([
                     'userDetails',
                     'interests.interest.interestTranslation',
-                    'interests.interest.parentInterest','interests.interest.,masterInterest',
+                    'interests.interest.parentInterest','interests.interest.masterInterest',
                     'location.locationTranslation','language',
                     'personality.personalityTranslation','education.profileDetailTranslation',
                     'university.profileDetailTranslation','profession.profileDetailTranslation',
