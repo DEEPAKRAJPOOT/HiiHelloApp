@@ -90,6 +90,14 @@ class ProfileController extends Controller
                     $user->voice = $voice_path;
                     $user->voice_answer = $request->voice_answer;
                 }
+
+                if( !empty($request->profile_photo) ) {
+                    if(!empty($user->profile_photo)){
+                        if( Storage::exists($user->profile_photo) ) { Storage::delete($user->profile_photo); }
+                    }
+                    $path = $request->file('profile_photo')->store('users/profile_photo');
+                    $user->profile_photo = $path;
+                }
                     
                 if($user->save()){
                     // Remove Interests
@@ -119,34 +127,86 @@ class ProfileController extends Controller
                                 ]);
                             }
                         }
-                    }
+                    }   
 
-                    // Store Images
-                    if($request->has('images')){
-                        if($user->userDetails->isNotEmpty()){
-                            foreach($user->userDetails as $userDetail){
-                                if(!empty($userDetail->image)){
-                                    if( Storage::exists($userDetail->image) ) { Storage::delete($userDetail->image); }
-                                    $userDetail->delete();
+                    // Update Sequence Of Images
+                    $del_imgs = UserDetail::whereUserId($user->id);
+                    if(!empty($request->old_images) && !empty($request->old_images['sequence']) && !empty($request->old_images['file']) ){
+                        $not_delete_images = $request->old_images['file'];
+
+                        $total_old_images = count($request->old_images['file']);
+                        if( $total_old_images == count($request->old_images['sequence']) ){
+                            for ($i=0; $i < $total_old_images; $i++) { 
+                                $custom_id = $request->old_images['file'][$i];
+                                $sequence = $request->old_images['sequence'][$i];
+
+                                if($custom_id == 'profile_photo'){
+                                    $main_img = UserDetail::updateOrCreate([
+                                        'user_id'   =>  $user->id,
+                                        'image'     =>  $user->profile_photo,
+                                        'sequence'  =>  $sequence,
+                                    ],[
+                                        'custom_id' =>  getUniqueString('user_details'),
+                                    ]);
+                                    $not_delete_images[] = $main_img->custom_id;
+                                }else{
+                                    $image_data = UserDetail::whereUserId($user->id)->whereCustomId($custom_id)->first();
+                                    if($image_data){
+                                        $image_data->update(['sequence' => $sequence]);
+                                        $image_data->save();
+                                    }
                                 }
                             }
                         }
-                        $image_data = [];
-                        foreach ($request->images as $key => $image) {
-                            if($image){
-                                $image_path = $image->store('users/images');
-                                $image_data[] = [
-                                    'custom_id'         =>  getUniqueString('user_details'),
-                                    'user_id'           =>  $user->id,
-                                    'image'             =>  $image_path,
-                                    'created_at'        =>  \Carbon\Carbon::now(),
-                                    'updated_at'        =>  \Carbon\Carbon::now(),
-                                ];
+                        $del_imgs = $del_imgs->whereNotIn('custom_id',$not_delete_images);
+                    }
+
+                    // Update Image As Main Image
+                    if(!empty($request->old_profile_photo)){
+                        $main_image = UserDetail::select('image')->whereUserId($user->id)->whereCustomId($request->old_profile_photo)->first();
+                        if($main_image){
+                            // if(!empty($user->profile_photo)){
+                            //     if( Storage::exists($user->profile_photo) ) { Storage::delete($user->profile_photo); }
+                            // }
+                            $user->profile_photo = $main_image->image; 
+                            $user->save();
+                        }
+                    }
+
+                    // Delete Extra Images
+                    $del_imgs = $del_imgs->whereNotNull('image')->whereNull('video')->get();
+                    if($del_imgs->isNotEmpty()){
+                        foreach ($del_imgs as $key => $del_img) {
+                            if($del_img && $del_img->image != $user->profile_photo){
+                                if( Storage::exists($del_img->image) ) { Storage::delete($del_img->image); } 
                             }
                         }
-                        UserDetail::insert($image_data);
+                        $del_imgs->each->delete();
                     }
                     
+                    // Store New Images
+                    if(!empty($request->images) && !empty($request->images['sequence']) && !empty($request->images['file']) ){
+                        $total_images = count($request->images['file']);
+                        if( $total_images == count($request->images['sequence']) ){
+                            $new_images = [];
+                            for ($i=0; $i < $total_images; $i++) { 
+                                $image      =   $request->images['file'][$i];
+                                $sequence   =   $request->images['sequence'][$i];
+                                $path       =   $image->store('users/images');
+
+                                $new_images[] = [
+                                    'custom_id'                 =>  getUniqueString('user_details'),
+                                    'user_id'                   =>  $user->id,
+                                    'image'                     =>  $path,   
+                                    'sequence'                  =>  $sequence,
+                                    'created_at'                =>  \Carbon\Carbon::now(),
+                                    'updated_at'                =>  \Carbon\Carbon::now(),
+                                ];
+                            }
+                            UserDetail::insert($new_images);
+                        }
+                    }
+
                     // Store Videos
                     if($request->hasFile('videos')){
                         if($user->userDetails->isNotEmpty()){

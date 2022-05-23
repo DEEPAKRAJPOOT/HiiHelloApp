@@ -58,7 +58,7 @@ class User extends Authenticatable implements MustVerifyEmail
 
     public function likes(){ return $this->hasMany('App\Models\Like','user_id','id'); }
     public function interests(){ return $this->hasMany('App\Models\UserInterest'); }
-    public function userDetails(){ return $this->hasMany('App\Models\UserDetail'); }
+    public function userDetails(){ return $this->hasMany('App\Models\UserDetail')->orderBy('sequence'); }
     public function subAccount(){ return $this->hasOne('App\Models\TwilioSubaccount','user_id','id'); }
     public function userCommunication(){ return $this->hasOne('App\Models\UserCommunication', 'user_id'); }
 

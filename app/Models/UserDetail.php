@@ -11,5 +11,5 @@ class UserDetail extends Model
 
     public function getRouteKeyName(){ return 'custom_id'; }
 
-    protected $fillable = [ 'custom_id', 'user_id', 'image', 'video', 'voice' ];
+    protected $fillable = [ 'custom_id', 'user_id', 'image', 'video', 'sequence' ];
 }
