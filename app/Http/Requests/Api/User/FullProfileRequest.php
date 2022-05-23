@@ -61,27 +61,31 @@ class FullProfileRequest extends FormRequest
             'star_sign'                 =>  'nullable|in:'.implode(',', $profile_details),
             'community'                 =>  'nullable|in:'.implode(',', $profile_details),
 
-            'date_idea'                 =>  'nullable|in:'.implode(',', $profile_details),
-            'social_cause'              =>  'nullable|in:'.implode(',', $profile_details),
-            'risk_taken'                =>  'nullable|in:'.implode(',', $profile_details),
-            'perfect_relation_things'   =>  'nullable|in:'.implode(',', $profile_details),
-            'my_mantra'                 =>  'nullable|in:'.implode(',', $profile_details),
-            'one_thing_know'            =>  'nullable|in:'.implode(',', $profile_details),
-            'worst_date'                =>  'nullable|in:'.implode(',', $profile_details),
-            'introduce_to_family'       =>  'nullable|in:'.implode(',', $profile_details),
-            'found_the_one'             =>  'nullable|in:'.implode(',', $profile_details),
-            'about_me_surprises'        =>  'nullable|in:'.implode(',', $profile_details),
-            'political_views'           =>  'nullable|in:'.implode(',', $profile_details),
-
+            // Add / Remove Interests
             'interests'                 =>  'nullable|array',
             'interests.*'               =>  'nullable|in:'.implode(',', $interest_ids),
             'remove_interests'          =>  'nullable|array',
             'remove_interests.*'        =>  'nullable|in:'.implode(',', $interest_ids),
 
+            // Main Image (To Upload New Image & Change Extra Image As Main Image)
+            'profile_photo'             =>  'nullable|mimes:jpg,jpeg,png',
+            'old_profile_photo'         =>  'nullable',
+
+            // Extra Images (To Upload New Images & Add Sequence)
             'images'                    =>  'nullable|array|max:4',
-            'images.*'                  =>  'nullable|mimes:jpg,jpeg,png',
+            'images.file.*'             =>  'nullable|mimes:jpg,jpeg,png',
+            'images.sequence.*'         =>  'required_with:images|numeric',
+
+            // Extra Images (To Change Sequqence Of Old Images)
+            'old_images'                =>  'nullable|array',
+            'old_images.file.*'         =>  'nullable',
+            'old_images.sequence.*'     =>  'required_with:old_images|numeric',
+
+            // Video Upload
             'videos'                    =>  'nullable|array|max:1',
             'videos.*'                  =>  'nullable|mimes:mp4,ogx,oga,ogv,ogg,webm,flv,m3u8,ts,3gp,mov,avi,wmv,m4v',
+
+            // Voice Upload
             'voice'                     =>  'nullable|mimes:audio/mpeg,mpga,mp3,wav,aac,m4a',
             'voice_answer'              =>  'required_with:voice|string|max:500',
         ];
