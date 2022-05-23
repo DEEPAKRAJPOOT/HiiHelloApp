@@ -124,6 +124,9 @@ return [
         'success'   =>  'Profile unblocked succesfully',
         'fail'      =>  'Profile unblocked unsuccesfully',
     ],
+    'verification'    =>  [
+        'success'   =>  ':entity verified succesfully',
+    ],
     'verification_upload'    =>  [
         'success'   =>  'Verification details updated succesfully',
         'fail'      =>  'Failed to upload Verification details',

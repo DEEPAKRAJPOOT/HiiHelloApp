@@ -36,13 +36,19 @@ class User extends Authenticatable implements MustVerifyEmail
         'verify_email_send',
         'verify_photo', 'verify_video', 'photo_suggestion', 'video_suggestion',
         'verify_photo_status', 'verify_video_status',
-        'verify_status', 'email_verified_at', 'photo_verified_at', 'video_verified_at',
+        'verify_status', 'email_verified_at', 'contact_verified_at', 'photo_verified_at', 'video_verified_at',
     ];
     
     public function getEmailVerifiedAtAttribute($email_verified_at){ 
         $email_value = "";
         $email_verified_at ? $email_value = date('Y-m-d H:i:s', strtotime($email_verified_at)) : $email_value = "";
         return $email_value; 
+    }
+
+    public function getContactVerifiedAtAttribute($contact_verified_at){ 
+        $contact_value = "";
+        $contact_verified_at ? $contact_value = date('Y-m-d H:i:s', strtotime($contact_verified_at)) : $contact_value = "";
+        return $contact_value; 
     }
 
     public function deviceToken() { return $this->hasOne('App\Models\DeviceToken'); }
@@ -149,6 +155,12 @@ class User extends Authenticatable implements MustVerifyEmail
         return $status;
     }
 
+    public function contactVerifyStatus(){
+        $status = "pending";
+        if(!empty($this->contact_verified_at)){ $status = "verified"; }
+        return $status;
+    }
+
 
     /**
      * Calculation Profile Completion In Percentage
@@ -157,6 +169,8 @@ class User extends Authenticatable implements MustVerifyEmail
     public function calculateProfilePercent(){
         // Max Ponits
         $maximum_points        =  config('utility.profile.percent.maximum_points');
+        $photo_max_point       =  config('utility.profile.percent.photo_max_point');
+        $interests_max_point   =  config('utility.profile.percent.interests_max_point');
 
         $photo_detail          =  $this->userDetails->where('image','!=',null);
         $video_detail          =  $this->userDetails->where('video','!=',null);
@@ -172,9 +186,10 @@ class User extends Authenticatable implements MustVerifyEmail
         $photo_verified        =  !empty($this->photo_verified_at) ? config('utility.profile.percent.photo_verified') : 0;
         $email_verified        =  !empty($this->email_verified_at) ? config('utility.profile.percent.email_verified') : 0;
         $video_verified        =  !empty($this->video_verified_at) ? config('utility.profile.percent.video_verified') : 0;
-        $contact_no            =  !empty($this->contact_no) ? config('utility.profile.percent.contact_no') : 0;
+        $contact_verified      =  !empty($this->contact_verified_at) ? config('utility.profile.percent.contact_no') : 0;
         
         // Photos & Video
+        $main_photo             =  !empty($this->profile_photo) ? config('utility.profile.percent.main_photo') : 0;
         $photo                  =  $photo_detail->count() * config('utility.profile.percent.photo_detail');
         $video                  =  $video_detail->isNotEmpty() ? config('utility.profile.percent.video_detail') : 0;
 
@@ -197,9 +212,12 @@ class User extends Authenticatable implements MustVerifyEmail
 
         // Interests
         $fav_movie             =  !empty($this->fav_movie) ? config('utility.profile.percent.favourite_movie') : 0;
-        $interest_percenrage   =  $this->interests->count() * config('utility.profile.percent.interests');
+        $interest_percent      =  $this->interests->count() * config('utility.profile.percent.interests');
 
-        $percentage = intval(round(($language+$full_name+$birth_date+$location+$interest+$photo_verified+$email_verified+$video_verified+$contact_no+$photo+$video+$about_me+$voice_prompt+$personality+$relationship_status+$you_are_here+$food_preference+$drinking+$smoking+$pet+$education+$university+$profession+$star_sign+$religion+$community+$fav_movie+$interest_percenrage)
+        if($photo > $photo_max_point){ $photo = $photo_max_point; }
+        if($interest_percent > $interests_max_point){ $interest_percent = $interests_max_point; }
+
+        $percentage = intval(round(($language+$full_name+$birth_date+$location+$interest+$photo_verified+$email_verified+$video_verified+$contact_verified+$main_photo+$photo+$video+$about_me+$voice_prompt+$personality+$relationship_status+$you_are_here+$food_preference+$drinking+$smoking+$pet+$education+$university+$profession+$star_sign+$religion+$community+$fav_movie+$interest_percent)
             *$maximum_points/100));
         
         return $percentage;
@@ -221,5 +239,6 @@ class User extends Authenticatable implements MustVerifyEmail
      */
     protected $casts = [
         'email_verified_at' => 'datetime',
+        'contact_verified_at' => 'datetime',
     ];
 }

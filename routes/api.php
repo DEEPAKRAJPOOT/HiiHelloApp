@@ -65,6 +65,7 @@ Route::group(['namespace' => 'v1', 'prefix' => 'v1', 'middleware' => 'auth:sanct
 
     // Verify Details
     Route::post('verify/upload-detail', [VerificationController::class,'uploadVerifyDetail'])->name('api.verify.upload-detail');
+    Route::post('verify/contact-no', [VerificationController::class,'verifyContactNumber'])->name('api.verify.contact-no');
     Route::post('verify/verify-email', [VerificationController::class,'verifyEmail'])->name('api.verify.verify-email');
     Route::post('verify/get-details', [VerificationController::class,'getVerifyDetails'])->name('api.verify.get-details');
 
