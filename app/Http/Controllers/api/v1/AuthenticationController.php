@@ -90,19 +90,24 @@ class AuthenticationController extends Controller
                     $user->language_id = $language_id;
                 }else{
                     $user = User::updateOrCreate([
-                        'country_code'      =>  $request->country_code ?? NULL,
-                        'contact_no'        =>  $request->contact_no ?? NULL,
+                        'country_code'          =>  $request->country_code ?? NULL,
+                        'contact_no'            =>  $request->contact_no ?? NULL,
                     ],[
-                        'custom_id'         =>  getUniqueString('users'),
-                        'full_name'         =>  $request->full_name ?? NULL,
-                        'birth_date'        =>  $request->birth_date ?? NULL,
-                        'gender'            =>  $request->gender ?? NULL,
-                        'interest'          =>  $request->interest ?? NULL,
-                        'country_id'        =>  $country_id ?? NULL,
-                        'location_id'       =>  $location_id ?? NULL,
-                        'language_id'       =>  $language_id ?? NULL,
-                        'password'          =>  Hash::make(config('utility.default_password')),
+                        'custom_id'             =>  getUniqueString('users'),
+                        'full_name'             =>  $request->full_name ?? NULL,
+                        'birth_date'            =>  $request->birth_date ?? NULL,
+                        'gender'                =>  $request->gender ?? NULL,
+                        'interest'              =>  $request->interest ?? NULL,
+                        'country_id'            =>  $country_id ?? NULL,
+                        'location_id'           =>  $location_id ?? NULL,
+                        'language_id'           =>  $language_id ?? NULL,
+                        'password'              =>  Hash::make(config('utility.default_password')),
                     ]);
+                }
+
+                // Set Contact Number As Verified
+                if($user->wasRecentlyCreated && !empty($user->contact_no)){
+                    $user->contact_verified_at = \Carbon\Carbon::now(); 
                 }
 
                 if( !empty($request->profile_photo) ) {
