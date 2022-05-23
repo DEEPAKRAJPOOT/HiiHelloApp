@@ -13,12 +13,13 @@ class Interest extends Model implements TranslatableContract
 
     public function getRouteKeyName(){ return 'custom_id'; }
     
-    protected $fillable = ['custom_id', 'parent_id', 'location_id', 'level', 'sequence'];
+    protected $fillable = ['custom_id', 'parent_id', 'master_parent_id', 'location_id', 'level', 'sequence'];
 
     protected $translatedAttributes = ['title'];
 
     public function location(){ return $this->belongsTo('App\Models\Location'); }
     public function parentInterest(){ return $this->hasOne('App\Models\Interest','id','parent_id'); }
+    public function masterInterest(){ return $this->hasOne('App\Models\Interest','id','master_parent_id'); }
     public function subInterests(){ return $this->hasMany('App\Models\Interest','parent_id','id'); }
     public function interestTranslations(){ return $this->hasMany('App\Models\InterestTranslation'); }
     public function interestTranslation(){ 

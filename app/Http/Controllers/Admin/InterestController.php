@@ -43,9 +43,12 @@ class InterestController extends Controller
      */
     public function store(InterestRequest $request)
     {
+        $parent_interest = Interest::whereId($request->parent_id)->first();
         $data = $this->getLangStoreData($request);
+
         $data['custom_id'] = getUniqueString('interests');
-        $data['parent_id'] = $request->parent_id;
+        $data['parent_id'] = $parent_interest ? $parent_interest->id : NULL;
+        $data['master_parent_id'] = $parent_interest ? $parent_interest->master_parent_id ?? $parent_interest->id : NULL;
         $data['location_id'] = $request->location_id;
         $data['level'] = $request->level;
         $data['sequence'] = $request->sequence;
@@ -105,8 +108,11 @@ class InterestController extends Controller
             }
             return response()->json($content);
         } else {
+            $parent_interest = Interest::whereId($request->parent_id)->first();
             $data = $this->getLangStoreData($request);
-            $data['parent_id'] = $request->parent_id;
+
+            $data['parent_id'] = $parent_interest ? $parent_interest->id : NULL;
+            $data['master_parent_id'] = $parent_interest ? $parent_interest->master_parent_id ?? $parent_interest->id : NULL;
             $data['location_id'] = $request->location_id;
             $data['level'] = $request->level;
             $data['sequence'] = $request->sequence;
