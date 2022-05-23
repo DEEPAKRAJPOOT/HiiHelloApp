@@ -29,7 +29,8 @@ class AuthenticationController extends Controller
                 try {
                     $user = User::with(['userDetails','language',
                                         'country.countryTranslation','location.locationTranslation',
-                                        'interests.interest.parentInterest','interests.interest.interestTranslation'])
+                                        'interests.interest.parentInterest','interests.interest.masterInterest',
+                                        'interests.interest.interestTranslation'])
                                         ->whereContactNo($request->contact_no)->withCount('likes')->firstOrFail();
                     if($user->is_active == 'y'){
                         Auth::login($user);
