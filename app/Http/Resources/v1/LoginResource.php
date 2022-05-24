@@ -3,9 +3,8 @@
 namespace App\Http\Resources\v1;
 
 use Illuminate\Http\Resources\Json\JsonResource;
-use App\Http\Resources\v1\UserInterestResource;
 
-class UserProfile extends JsonResource
+class LoginResource extends JsonResource
 {
     /**
      * Transform the resource into an array.
@@ -23,14 +22,11 @@ class UserProfile extends JsonResource
                 'code'      =>  $this->country_code,
                 'number'    =>  $this->contact_no,
             ],
-            'birth_date'        =>  $this->birth_date ?? "",
             'age'               =>  $this->getAge(),
             'gender'            =>  $this->gender ?? "",
             'interest'          =>  $this->interest ?? "",
-            'country'           =>  new CountryResource($this->country),
             'location'          =>  new LocationResource($this->location),
             'language'          =>  new LanguageResource($this->language),
-            'interests'         =>  UserInterestResource::collection($this->interests),
             'profile_photo'     =>  generateURL($this->profile_photo) ?? "",
             'media' =>  [
                 'profile_images'    =>  $this->getProfileImages(),
