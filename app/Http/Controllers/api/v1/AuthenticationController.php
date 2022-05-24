@@ -4,7 +4,7 @@ namespace App\Http\Controllers\api\v1;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\ { Request, Response };
-use App\Http\Resources\v1\ { UserProfile };
+use App\Http\Resources\v1\ { UserProfile, LoginResource };
 use Illuminate\Database\Eloquent\ { ModelNotFoundException };
 use Illuminate\Support\Facades\ { Storage, Auth, Hash };
 use App\Http\Requests\Api\Authentication\ { LoginRequest, RegisterRequest, SocialLoginRequest };
@@ -27,16 +27,13 @@ class AuthenticationController extends Controller
             $checksumDetails = $this->validateCheckSum($request->security_token, $request->contact_no);
             if( $checksumDetails->validate ) {
                 try {
-                    $user = User::with(['userDetails','language',
-                                        'country.countryTranslation','location.locationTranslation',
-                                        'interests.interest.parentInterest','interests.interest.masterInterest',
-                                        'interests.interest.interestTranslation'])
+                    $user = User::with(['userDetails','language','location.locationTranslation'])
                                         ->whereContactNo($request->contact_no)->withCount('likes')->firstOrFail();
                     if($user->is_active == 'y'){
                         Auth::login($user);
                         Auth::user()->tokens()->delete(); // Logout From All Devices    
 
-                        return (new UserProfile($user))
+                        return (new LoginResource($user))
                             ->additional([
                                 'data' => [ 'flags' =>  [
                                     'matches'   =>  $user->countMatches(), 'chats'  =>  $user->countChats(),
