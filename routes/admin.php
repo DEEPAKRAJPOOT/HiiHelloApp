@@ -22,6 +22,8 @@ Route::group(['namespace' => 'Admin', 'middleware' => ['check_permit','revalidat
 
 	/* User */
 	Route::get('users/listing', 'UsersController@listing')->name('users.listing');
+	Route::post('user/actor-list','UsersController@getActorList')->name('user.actor-list');
+	Route::post('user/singer-list','UsersController@getSingerList')->name('user.singer-list');
 	Route::resource('users','UsersController');
 
 	/* Role Management */

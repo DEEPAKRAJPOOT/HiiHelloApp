@@ -7,6 +7,8 @@ use App\Http\Requests\Admin\UserRequest;
 use App\Models\User;
 use App\Models\Personality;
 use App\Models\ProfileDetail;
+use App\Models\Interest;
+use App\Models\UserInterest;
 use Exception;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
@@ -47,7 +49,17 @@ class UsersController extends Controller
         $pets = ProfileDetail::where(['attribute'=>'pets','is_active'=>'y'])->get();
         $star_signs = ProfileDetail::where(['attribute'=>'sun_sign','is_active'=>'y'])->get();
         $community = ProfileDetail::where(['attribute'=>'community','is_active'=>'y'])->get();
-        return view('admin.pages.users.create',compact('personalities','university','educations','professions','religions','relationship_status','you_are_here','food_preferences','drinking','smoking','pets','star_signs','community'))->with(['custom_title' => 'User']);
+        $travelling = Interest::with(['subInterests.interestTransDefault'])->where(['slug'=>'traveling','is_active'=>'y'])->get();
+        $musics = Interest::with(['subInterests.interestTransDefault'])->where(['slug' => 'music','is_active' => 'y'])->get();
+        $books = Interest::with(['subInterests.interestTransDefault'])->where(['slug' => 'books', 'is_active' => 'y'])->get();
+        $films = Interest::with(['subInterests.interestTransDefault'])->where(['slug' => 'film', 'is_active' => 'y'])->get();
+        $hobbies = Interest::with(['subInterests.interestTransDefault'])->where(['slug' => 'hobbies','is_active' => 'y'])->get();
+        $childhood = Interest::with(['subInterests.interestTransDefault'])->where(['slug' => 'childhood-game','is_active' => 'y'])->get();
+        $sports = Interest::with(['subInterests.interestTransDefault'])->where(['slug' => 'sports','is_active' => 'y'])->get();
+        $actors = Interest::with(['subInterests.interestTransDefault'])->where(['slug' => 'actors', 'is_active' => 'y'])->get();
+        $singers = Interest::with(['subInterests.interestTransDefault'])->where(['slug' => 'singers', 'is_active' => 'y'])->get();
+        $foods = Interest::with(['subInterests.interestTransDefault'])->where(['slug' => 'food', 'is_active' => 'y'])->get();
+        return view('admin.pages.users.create',compact('personalities','university','educations','professions','religions','relationship_status','you_are_here','food_preferences','drinking','smoking','pets','star_signs','community','travelling','musics','books','films','hobbies','childhood','sports','actors','singers','foods'))->with(['custom_title' => 'User']);
     }
 
     /**
@@ -56,31 +68,105 @@ class UsersController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(UserRequest $request)
+    public function store(Request $request)
     {
         $path = NULL;
         if( $request->has('profile_photo') ) {
             $path = $request->file('profile_photo')->store('users/profile_photo');
         }
-        $user = User::create($request->validated());
+
+        $user = User::create($request->all());
         $user['custom_id']   =   getUniqueString('users');
         $user['password']    =   Hash::make(config('utility.default_password'));
         $user->profile_photo = $path;
 
         /* Verification Details */
-        $photo_verified_at  =   $request->photo_verified_at;
-        $video_verified_at  =   $request->video_verified_at;
+        $verify_photo  =   $request->verify_photo;
+        $verify_video  =   $request->verify_video;
 
-        if($photo_verified_at == 'y' && empty($user->photo_verified_at)){
+        if($verify_photo == 'y' && empty($user->photo_verified_at)){
             $user->photo_verified_at = \Carbon\Carbon::now(); 
-        }elseif($photo_verified_at == NULL){
+        }elseif($verify_photo == NULL){
             $user->photo_verified_at = NULL;
         }
 
-        if($video_verified_at == 'y' && empty($user->video_verified_at)){ 
+        if($verify_video == 'y' && empty($user->video_verified_at)){ 
             $user->video_verified_at = \Carbon\Carbon::now(); 
-        }elseif($video_verified_at == NULL){
+        }elseif($verify_video == NULL){
             $user->video_verified_at = NULL;
+        }
+
+        /* User Interest */
+        if(!empty($request->traveling_id)){
+            UserInterest::create(
+                ['custom_id' => getUniqueString('user_interests'),
+                  'user_id'  => $user->id,
+                  'interest_id' => $request->traveling_id,  
+                ]);
+        }
+
+        if(!empty($request->music_id)){
+            UserInterest::create(
+                ['custom_id' => getUniqueString('user_interests'),
+                  'user_id'  => $user->id,
+                  'interest_id' => $request->music_id,  
+                ]);
+        }
+
+        if(!empty($request->hobbie_id)){
+            UserInterest::create(
+                ['custom_id' => getUniqueString('user_interests'),
+                  'user_id'  => $user->id,
+                  'interest_id' => $request->hobbie_id,  
+                ]);
+        }
+
+        if(!empty($request->game_id)){
+            UserInterest::create(
+                ['custom_id' => getUniqueString('user_interests'),
+                  'user_id'  => $user->id,
+                  'interest_id' => $request->game_id,  
+                ]);
+        }
+
+        if(!empty($request->sport_id)){
+            UserInterest::create(
+                ['custom_id' => getUniqueString('user_interests'),
+                  'user_id'  => $user->id,
+                  'interest_id' => $request->sport_id,  
+                ]);
+        }
+
+        if(!empty($request->film_id)){
+            UserInterest::create(
+                ['custom_id' => getUniqueString('user_interests'),
+                  'user_id'  => $user->id,
+                  'interest_id' => $request->film_id,  
+                ]);
+        }
+
+        if(!empty($request->depend_id)){
+            UserInterest::create(
+                ['custom_id' => getUniqueString('user_interests'),
+                  'user_id'  => $user->id,
+                  'interest_id' => $request->depend_id,  
+                ]);
+        }
+
+        if(!empty($request->singer_id)){
+            UserInterest::create(
+                ['custom_id' => getUniqueString('user_interests'),
+                  'user_id'  => $user->id,
+                  'interest_id' => $request->singer_id,  
+                ]);
+        }
+
+        if(!empty($request->food_id)){
+            UserInterest::create(
+                ['custom_id' => getUniqueString('user_interests'),
+                  'user_id'  => $user->id,
+                  'interest_id' => $request->food_id,  
+                ]);
         }
 
         if( $user->save() ) {
@@ -132,7 +218,17 @@ class UsersController extends Controller
         $pets = ProfileDetail::where(['attribute'=>'pets','is_active'=>'y'])->get();
         $star_signs = ProfileDetail::where(['attribute'=>'sun_sign','is_active'=>'y'])->get();
         $community = ProfileDetail::where(['attribute'=>'community','is_active'=>'y'])->get();
-        return view('admin.pages.users.edit', compact('user','personalities','university','educations','professions','religions','relationship_status','you_are_here','food_preferences','drinking','smoking','pets','star_signs','community'))->with(['custom_title' => 'Users']);
+        $travelling = Interest::with(['subInterests.interestTransDefault'])->where(['slug'=>'traveling','is_active'=>'y'])->get();
+        $musics = Interest::with(['subInterests.interestTransDefault'])->where(['slug' => 'music','is_active' => 'y'])->get();
+        $books = Interest::with(['subInterests.interestTransDefault'])->where(['slug' => 'books', 'is_active' => 'y'])->get();
+        $films = Interest::with(['subInterests.interestTransDefault'])->where(['slug' => 'film', 'is_active' => 'y'])->get();
+        $hobbies = Interest::with(['subInterests.interestTransDefault'])->where(['slug' => 'hobbies','is_active' => 'y'])->get();
+        $childhood = Interest::with(['subInterests.interestTransDefault'])->where(['slug' => 'childhood-game','is_active' => 'y'])->get();
+        $sports = Interest::with(['subInterests.interestTransDefault'])->where(['slug' => 'sports','is_active' => 'y'])->get();
+        $actors = Interest::with(['subInterests.interestTransDefault'])->where(['slug' => 'actors', 'is_active' => 'y'])->get();
+        $singers = Interest::with(['subInterests.interestTransDefault'])->where(['slug' => 'singers', 'is_active' => 'y'])->get();
+        $foods = Interest::with(['subInterests.interestTransDefault'])->where(['slug' => 'food', 'is_active' => 'y'])->get();
+        return view('admin.pages.users.edit', compact('user','personalities','university','educations','professions','religions','relationship_status','you_are_here','food_preferences','drinking','smoking','pets','star_signs','community','travelling','musics','books','films','hobbies','childhood','sports','actors','singers','foods'))->with(['custom_title' => 'Users']);
     }
 
     /**
@@ -353,5 +449,17 @@ class UsersController extends Controller
         // dd($records);
 
         return $records;
+    }
+
+    public function getActorList(Request $request)
+    {
+        $data['interest_id'] = Interest::where('parent_id',$request->actor_id)->get();
+        return response()->json($data);
+    }
+
+    public function getSingerList(Request $request)
+    {
+        $data['interest_id'] = Interest::where('parent_id',$request->singer_id)->get();
+        return response()->json($data);
     }
 }
