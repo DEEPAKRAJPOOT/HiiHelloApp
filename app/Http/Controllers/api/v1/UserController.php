@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\ { Request, Response };
 use Illuminate\Database\Eloquent\ { ModelNotFoundException };
 use Illuminate\Support\Facades\ { Storage, DB, Auth };
-use App\Http\Resources\v1\ { UserProfile, UserFullProfile, ProfileReportResource, MyProfile };
+use App\Http\Resources\v1\ { UserProfile, UserDetailResource, ProfileReportResource, MyProfile };
 use App\Http\Requests\Api\User\ { ProfileRequest, ProfileFilterRequest, ProfileReportRequest };
 use App\Http\Requests\Api\Authentication\ { DeleteAccountRequest };
 use App\Http\Requests\Api\General\ { PaginationRequest };
@@ -24,27 +24,33 @@ class UserController extends Controller
         if( $this->apiValidator($request->all(), $rules) ) {
             try{
                 $auth_id = $request->user() ? $request->user()->id : NULL;
+                $max_interest = config('utility.profile.detail.max_interest') ?? 5;
 
-                $user = User::with([
-                    'userDetails',
-                    'interests.interest.interestTranslation',
-                    'interests.interest.parentInterest','interests.interest.masterInterest',
-                    'location.locationTranslation','language',
-                    'personality.personalityTranslation','education.profileDetailTranslation',
-                    'university.profileDetailTranslation','profession.profileDetailTranslation',
-                    'religion.profileDetailTranslation',
-                    'relationshipStatus.profileDetailTranslation','youAreHere.profileDetailTranslation',
-                    'foodPreference.profileDetailTranslation','drinking.profileDetailTranslation',
-                    'smoking.profileDetailTranslation','pet.profileDetailTranslation',
-                    'starSign.profileDetailTranslation','community.profileDetailTranslation',
-                    ])
-                    ->withCount(['blockedTos' => function ($query) use ($auth_id) {
-                        $query->whereBlockBy($auth_id);
-                    }])
-                    ->withCount('likes')
-                    ->whereCustomId($request->id)->whereIsActive('y')->firstOrFail();
+                $user = User::select('id','custom_id','full_name','birth_date','about_me','location_id',
+                            'profile_photo','voice','voice_answer',
+                            'personality_id','education_id','university_id','profession_id','religion_id',
+                            'relationship_status_id','you_are_here_id','food_preference_id','drinking_id','smoking_id',
+                            'pet_id','star_sign_id','community_id','is_active')
+                        ->with([
+                            'interests' => function($query) use ($max_interest) {
+                                $query->latest()->take($max_interest); 
+                            },
+                            'userDetails','interests.interest.interestTranslation',
+                            'interests.interest.parentInterest','interests.interest.masterInterest',
+                            'location.locationTranslation','personality.personalityTranslation',
+                            'education.profileDetailTranslation','university.profileDetailTranslation',
+                            'profession.profileDetailTranslation','religion.profileDetailTranslation',
+                            'relationshipStatus.profileDetailTranslation','youAreHere.profileDetailTranslation',
+                            'foodPreference.profileDetailTranslation','drinking.profileDetailTranslation',
+                            'smoking.profileDetailTranslation','pet.profileDetailTranslation',
+                            'starSign.profileDetailTranslation','community.profileDetailTranslation',
+                        ])
+                        ->withCount(['blockedTos' => function ($query) use ($auth_id) {
+                            $query->whereBlockBy($auth_id);
+                        }])
+                        ->whereCustomId($request->id)->whereIsActive('y')->firstOrFail();
 
-                return (new UserFullProfile($user))
+                return (new UserDetailResource($user))
                             ->additional([
                             'meta' => [
                                 'message'  =>  trans('api.success', ['entity' => __("User")]),
@@ -72,13 +78,9 @@ class UserController extends Controller
         if( $this->apiValidator($request->all(), $rules) ) {
             try{
                 $user = $request->user();
-                $users = User::with(['interests.interest.interestTranslation',
-                                    'location.locationTranslation',
-                                    'country.countryTranslation',
-                                    'language','userDetails'])
-                            ->where('id','!=',Auth::id())
-                            ->withCount('likes')
-                            ->whereIsActive('y');
+                $users = User::with(['interests.interest.interestTranslation','location.locationTranslation',
+                                    'country.countryTranslation','language','userDetails'])
+                                ->where('id','!=',Auth::id())->withCount('likes')->whereIsActive('y');
 
                 if(!empty($user->interest)){
                     $user_interest = $user->interest;
