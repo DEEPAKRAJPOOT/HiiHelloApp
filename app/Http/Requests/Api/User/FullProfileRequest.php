@@ -27,15 +27,8 @@ class FullProfileRequest extends FormRequest
      */
     public function rules($request)
     {
-        $interest_ids = $personality_ids = array();
+        $personality_ids = array();
         $profile_details = ProfileDetail::whereIsActive('y')->pluck('slug')->toArray();
-
-        if(!empty($request->interests) || $request->has('interests') || 
-            !empty($request->remove_interests) || $request->has('remove_interests') || 
-            !empty($request->hobby) || $request->has('hobby') ||
-            !empty($request->fav_sport) || $request->has('fav_sport')) { 
-                $interest_ids = Interest::whereIsActive('y')->pluck('custom_id')->toArray(); 
-        }
 
         if(!empty($request->personality) || $request->has('personality')){ 
             $personality_ids = Personality::whereIsActive('y')->pluck('custom_id')->toArray(); 
@@ -60,12 +53,6 @@ class FullProfileRequest extends FormRequest
             'pet'                       =>  'nullable|in:'.implode(',', $profile_details),
             'star_sign'                 =>  'nullable|in:'.implode(',', $profile_details),
             'community'                 =>  'nullable|in:'.implode(',', $profile_details),
-
-            // Add / Remove Interests
-            'interests'                 =>  'nullable|array',
-            'interests.*'               =>  'nullable|in:'.implode(',', $interest_ids),
-            'remove_interests'          =>  'nullable|array',
-            'remove_interests.*'        =>  'nullable|in:'.implode(',', $interest_ids),
 
             // Main Image (To Upload New Image & Change Extra Image As Main Image)
             'profile_photo'             =>  'nullable|mimes:jpg,jpeg,png',
