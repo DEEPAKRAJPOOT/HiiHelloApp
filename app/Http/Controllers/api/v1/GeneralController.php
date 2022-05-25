@@ -520,13 +520,31 @@ class GeneralController extends Controller
     public function generateAwsUrl(Request $request)
     {
         $rules = [
+            'path'          =>  'required|in:chat,user_images,user_videos,user_voice',
             'extension'     =>  'required|string',
             'contentType'   =>  'required',
         ];
         if( $this->apiValidator($request->all(), $rules) ) {
             $user = $request->user() ?? NULL;
             $time = \Carbon\Carbon::now()->timestamp;
-            $fileName = 'message-media/'.$user->custom_id.'/'.$time.'-'.$user->custom_id.'.'.$request->extension;
+
+            if($request->path == 'chat'){
+                $fileName = 'message-media/'.$user->custom_id.'/'.$time.'-'.$user->custom_id.'.'.$request->extension;
+            }
+            elseif($request->path == 'user_images'){
+                $fileName = 'users/images/'.$time.'-'.$user->custom_id.'.'.$request->extension;
+            }
+            elseif($request->path == 'user_videos'){
+                $fileName = 'users/videos/'.$time.'-'.$user->custom_id.'.'.$request->extension;
+            }
+            elseif($request->path == 'user_voice'){
+                $fileName = 'users/voice/'.$time.'-'.$user->custom_id.'.'.$request->extension;
+            }
+            else{
+                $this->status = Response::HTTP_FORBIDDEN;
+                $this->response['meta']['message'] = trans('api.went_wrong');
+                return $this->returnResponse();
+            }
 
             try {
                 $s3Client = new \Aws\S3\S3Client([

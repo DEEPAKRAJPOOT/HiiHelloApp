@@ -4,7 +4,7 @@ namespace App\Http\Controllers\api\v1;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\ { Request, Response };
-use App\Http\Resources\v1\ { UserProfile, LoginResource };
+use App\Http\Resources\v1\ { UserProfile, LoginResource, SignUpResource };
 use Illuminate\Database\Eloquent\ { ModelNotFoundException };
 use Illuminate\Support\Facades\ { Storage, Auth, Hash };
 use App\Http\Requests\Api\Authentication\ { LoginRequest, RegisterRequest, SocialLoginRequest };
@@ -116,8 +116,10 @@ class AuthenticationController extends Controller
                 }
 
                 if($user->save()){
+                    $user = User::with(['interests','userDetails','location.locationTranslation','language'])
+                                    ->whereId($user->id)->firstOrFail();
                     Auth::login($user);
-                    return (new UserProfile($user))
+                    return (new SignUpResource($user))
                         ->additional([
                             'meta' => [
                                 'message'       =>  trans('api.profile_setuped'), 

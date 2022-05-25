@@ -50,6 +50,8 @@ Route::group(['namespace' => 'v1', 'prefix' => 'v1', 'middleware' => 'auth:sanct
     Route::post('logout',[AuthenticationController::class,'logout'])->name('api.user.logout'); 
 
     Route::post('user/set-full-profile', [ProfileController::class,'setFullProfile'])->name('api.user.set-fill-profile');
+    Route::post('user/set-interest', [ProfileController::class,'setInterest'])->name('api.user.set-interest');
+    Route::post('user/set-media', [ProfileController::class,'setMedia'])->name('api.user.set-media');
     Route::post('user/get-list', [UserController::class,'getUsersList'])->name('api.user.get-list');
     Route::post('user/profile-filters', [UserController::class,'getUsersByFilter'])->name('api.user.profile-filters');
     Route::post('user/profile-report',[UserController::class,'storeProfileReport'])->name('api.user.profile-report');

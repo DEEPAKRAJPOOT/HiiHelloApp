@@ -27,12 +27,7 @@ class MyProfile extends JsonResource
             'language'          =>  new LanguageResource($this->language),
             'interests'         =>  UserInterestResource::collection($this->interests),
             'profile_photo'     =>  generateURL($this->profile_photo) ?? "",
-            'personality'       =>  new PersonalityResource($this->personality),
-            'personal'          =>  [
-                'education'             =>  new ProfileDetailResource($this->education),
-                'university_college'    =>  new ProfileDetailResource($this->university),
-                'profession'            =>  new ProfileDetailResource($this->profession),
-                'religion'              =>  new ProfileDetailResource($this->religion),
+            'my_things'         =>  [
                 'relationship_status'   =>  new ProfileDetailResource($this->relationshipStatus),
                 'i_am_here'             =>  new ProfileDetailResource($this->youAreHere),
                 'food_preference'       =>  new ProfileDetailResource($this->foodPreference),
@@ -41,6 +36,13 @@ class MyProfile extends JsonResource
                 'pet'                   =>  new ProfileDetailResource($this->pet),
                 'star_sign'             =>  new ProfileDetailResource($this->starSign),
                 'community'             =>  new ProfileDetailResource($this->community),
+            ],
+            'my_basics'         =>  [
+                'personality'           =>  new PersonalityResource($this->personality),
+                'education'             =>  new ProfileDetailResource($this->education),
+                'university_college'    =>  new ProfileDetailResource($this->university),
+                'profession'            =>  new ProfileDetailResource($this->profession),
+                'religion'              =>  new ProfileDetailResource($this->religion),
             ],
             'media' =>  [
                 'profile_images'    =>  $this->getProfileImages(),
