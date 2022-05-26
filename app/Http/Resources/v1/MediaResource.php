@@ -23,6 +23,9 @@ class MediaResource extends JsonResource
                     'voice_answer'  =>  $this->voice_answer ?? "",
                 ],
             ],
+            'flags'             =>  [
+                'profile_percentage'    =>  $this->calculateProfilePercent(),
+            ],
         ];
     }
 

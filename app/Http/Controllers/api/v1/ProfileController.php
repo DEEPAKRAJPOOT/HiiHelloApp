@@ -168,18 +168,20 @@ class ProfileController extends Controller
                 }   
 
                 $user = User::select('id','custom_id')
-                                    ->with(['interests.interest.parentInterest','interests.interest.masterInterest',
-                                    'interests.interest.interestTranslation'])
-                                    ->whereId($user->id)->firstOrFail();
+                            ->with(['userDetails','interests.interest.parentInterest','interests.interest.masterInterest',
+                            'interests.interest.interestTranslation'])
+                            ->whereId($user->id)->firstOrFail();
 
                 return (['data'  =>  [
                             'interests' => UserInterestResource::collection($user->interests),
-                        ],
+                            'flags'     =>  [
+                                'profile_percentage'    =>  $user->calculateProfilePercent(),
+                            ]],
                         'meta'  => [
-                        'url'       =>  url()->current(),
-                        'api'       =>  $this->getVersion(),
-                        'language'  =>  app()->getLocale(),
-                        'message'   =>  trans('api.profile_setuped'), 
+                            'url'       =>  url()->current(),
+                            'api'       =>  $this->getVersion(),
+                            'language'  =>  app()->getLocale(),
+                            'message'   =>  trans('api.profile_setuped'), 
                         ]]);
             } catch(ModelNotFoundException $exception) {                
                 switch ($exception->getModel()) {
@@ -231,50 +233,65 @@ class ProfileController extends Controller
                     ],[
                         'custom_id'     =>  getUniqueString('user_details'),
                     ]);
+                }
 
-                    $old_videos = UserDetail::whereUserId($user->id)->where('id','!=',$user_video->id)->whereNotNull('video')->get();
-                    if($old_videos->isNotEmpty()){
-                        foreach($old_videos as $old_video_data){
-                            if(!empty($old_video_data->video)){
-                                if( Storage::exists($old_video_data->video) ) { Storage::delete($old_video_data->video); }
-                                $old_video_data->delete();
-                            }
-                        }
+                // Delete Video
+                if(!empty($request->remove_video)){
+                    $rmv_video = UserDetail::select('id','video')->whereUserId($user->id)
+                                        ->whereCustomId($request->remove_video)->first();
+                    if($rmv_video){
+                        if( Storage::exists($rmv_video->video) ) { Storage::delete($rmv_video->video); }
+                        $rmv_video->delete();
                     }
                 } 
 
                 // Store New Images
-                $count_images = $user->userDetails->whereNotNull('image')->count();
-                $new_sequence = $count_images + 1;
+                if(!empty($user->image_path)){
+                    if(empty($user->profile_photo)){
+                        $user->profile_photo = $request->image_path;
+                        $user->save();
+                    }else{
+                        $count_images = $user->userDetails->whereNotNull('image')->count();
+                        $new_sequence = $count_images + 1;
 
-                if(empty($user->profile_photo)){
-                    $user->profile_photo = $request->image_path;
-                    $user->save();
-                }else{
-                    $new_image = UserDetail::updateOrCreate([
-                        'user_id'   =>  $user->id,
-                        'image'     =>  $request->image_path,
-                    ],[
-                        'custom_id' =>  getUniqueString('user_details'),
-                    ]);
+                        $new_image = UserDetail::updateOrCreate([
+                            'user_id'   =>  $user->id,
+                            'image'     =>  $request->image_path,
+                        ],[
+                            'custom_id' =>  getUniqueString('user_details'),
+                        ]);
 
-                    if($new_image->wasRecentlyCreated){
-                        $new_image->sequence = $new_sequence;
-                        $new_image->save();
+                        if($new_image->wasRecentlyCreated){
+                            $new_image->sequence = $new_sequence;
+                            $new_image->save();
+                        }
                     }
                 }
 
+                // Delete Image
+                if(!empty($request->remove_image)){
+                    if($user->profile_photo == $request->remove_image){
+                        if( Storage::exists($user->profile_photo) ) { Storage::delete($user->profile_photo); }
+                        $user->profile_photo = NULL;
+                        $user->save();
+                    }else{
+                        $rmv_image = UserDetail::select('id','image')->whereUserId($user->id)
+                                        ->whereImage($request->remove_image)->first();
+                        if($rmv_image){
+                            if( Storage::exists($rmv_image->image) ) { Storage::delete($rmv_image->image); }
+                            $rmv_image->delete();
+                        }
+                    }
+                } 
+
                 // Change Sequence
                 if(!empty($request->image_sequence)){
-                    $not_delete_images = [];
-
                     for ($i=0; $i < count($request->image_sequence); $i++) { 
                         $custom_id = $request->image_sequence[$i];
                         $old_sequence  = $i+1;
 
                         $image_data = UserDetail::whereUserId($user->id)->whereCustomId($custom_id)->first();
                         if($image_data){
-                            $not_delete_images[] = $image_data->custom_id;
                             $image_data->update(['sequence' => $old_sequence]);
                             $image_data->save();
                         }else{
@@ -282,11 +299,10 @@ class ProfileController extends Controller
                             $user->save();
                         }
                     }
-                    UserDetail::whereUserId($user->id)->whereNotIn('custom_id',$not_delete_images)->delete();
                 }
 
                 $user = User::select('id','custom_id','voice','voice_answer')
-                            ->with(['userDetails'])->whereId($user->id)->firstOrFail();
+                            ->with(['userDetails','interests'])->whereId($user->id)->firstOrFail();
 
                 return (new MediaResource($user))
                         ->additional(['meta'  => [
