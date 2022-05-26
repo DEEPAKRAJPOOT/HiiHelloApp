@@ -4,7 +4,7 @@ namespace App\Http\Resources\v1;
 
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class LocationResource extends JsonResource
+class SortInterestResource extends JsonResource
 {
     /**
      * Transform the resource into an array.
@@ -15,9 +15,8 @@ class LocationResource extends JsonResource
     public function toArray($request)
     {
         return [
-            'id'            =>  $this->custom_id,
-            'name'          =>  $this->locationTranslation ? $this->locationTranslation->name : "",
-            'is_active'     =>  $this->is_active,
+            'id'        =>  $this->custom_id ?? "",
+            'title'     =>  $this->interestTranslation ? $this->interestTranslation->title : "",
         ];
         return parent::toArray($request);
     }

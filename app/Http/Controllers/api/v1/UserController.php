@@ -7,7 +7,7 @@ use Illuminate\Http\ { Request, Response };
 use Illuminate\Database\Eloquent\ { ModelNotFoundException };
 use Illuminate\Support\Facades\ { Storage, DB, Auth };
 use App\Http\Resources\v1\ { UserProfile, UserDetailResource, ProfileReportResource, MyProfile };
-use App\Http\Requests\Api\User\ { ProfileRequest, ProfileFilterRequest, ProfileReportRequest };
+use App\Http\Requests\Api\User\ { ProfileRequest, ProfileReportRequest };
 use App\Http\Requests\Api\Authentication\ { DeleteAccountRequest };
 use App\Http\Requests\Api\General\ { PaginationRequest };
 use App\Models\ { User, Location, ProfileReport };
@@ -66,136 +66,6 @@ class UserController extends Controller
                 };
             } catch (\Exception $e) {
                 $this->storeErrorLog($e,'get_profile');
-            }
-        }
-        return $this->returnResponse();
-    }
-
-    // Get All Users List With Filters
-    public function getUsersList(Request $request)
-    {
-        $rules = PaginationRequest::rules();
-        if( $this->apiValidator($request->all(), $rules) ) {
-            try{
-                $user = $request->user();
-                $users = User::with(['interests.interest.interestTranslation','location.locationTranslation',
-                                    'country.countryTranslation','language','userDetails'])
-                                ->where('id','!=',Auth::id())->withCount('likes')->whereIsActive('y');
-
-                if(!empty($user->interest)){
-                    $user_interest = $user->interest;
-                    if($user_interest != 'Both'){ $users = $users->whereGender($user_interest); }
-                }
-
-                $users = $users->inRandomOrder();
-                $count = $users->count();
-                $users = $users->limit($request->limit ?? config('utility.pagination.limit'))
-                                ->offset($request->offset ?? config('utility.pagination.offset'))
-                                ->get();
-
-                if($users->isNotEmpty()){
-                    return (UserProfile::collection($users))->additional([
-                        'meta' => [
-                            'limit'     =>  $request->limit,
-                            'offset'    =>  $request->offset,
-                            'total'     =>  $count,
-                            'url'       =>  url()->current(),
-                            'api'       =>  $this->getVersion(),
-                            'language'  =>  app()->getLocale(),
-                            'message'   =>  trans('api.list', ['entity' => __('Users')]),
-                        ] ]);
-                }else{
-                    $this->response['meta']['message']  =   trans('api.not_found',['entity' => __('Users')]); 
-                    $this->status = Response::HTTP_NOT_FOUND;     
-                }
-            } catch(ModelNotFoundException $exception) {                
-                switch ($exception->getModel()) {
-                    case 'App\Models\User':
-                        $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("Users")]);
-                        break;
-                    case 'App\Models\Location':
-                        $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("Location")]);
-                        break;
-                    default:
-                        $this->response['meta']['message'] = trans('api.went_wrong');
-                        break;
-                };
-            } catch (\Exception $e) {
-                $this->storeErrorLog($e,'get_users_list');
-            }
-        }
-        return $this->returnResponse();
-    }
-
-    // Apply Filters On Users List
-    public function getUsersByFilter(Request $request)
-    {
-        $rules = ProfileFilterRequest::rules($request);
-        if( $this->apiValidator($request->all(), $rules) ) {
-            try{
-                $users = User::with(['interests.interest.interestTranslation',
-                                    'location.locationTranslation','country.countryTranslation',
-                                    'language','userDetails'])
-                            ->withCount('likes')
-                            ->where('id','!=',Auth::id())->whereIsActive('y');
-
-                if(!empty($request->start_age) && !empty($request->end_age)){
-                    $from   =   \Carbon\Carbon::today()->subYears($request->start_age);
-                    $to     =   \Carbon\Carbon::today()->subYears($request->end_age);
-                    $users  =   $users->whereBetween('birth_date',[$to, $from]);
-                }
-                if(!empty($request->gender)){ $users = $users->whereGender($request->gender); }
-                if(!empty($request->interests)){
-                    $interests = $request->interests;
-                    $users = $users->whereHas('interests.interest.interestTranslations',function($q) use ($interests){
-                                $q->whereIn('custom_id',$interests);
-                            });
-                }
-                if(!empty($request->location)){
-                    $location = Location::whereCustomId($request->location)->whereIsActive('y')->firstOrFail();
-                    $users = $users->whereLocationId($location->id);
-                }
-                if(!empty($request->languages)){
-                    $languages = $request->languages;
-                    $users = $users->whereHas('language',function($q) use ($languages){
-                                $q->whereIn('lang_code',$languages);
-                            });
-                }
-
-                $users = $users->inRandomOrder();
-                $count = $users->count();
-                $users = $users->limit($request->limit ?? config('utility.pagination.limit'))
-                                ->offset($request->offset ?? config('utility.pagination.offset'))
-                                ->get();
-                if($users->isNotEmpty()){
-                    return (UserProfile::collection($users))->additional([
-                        'meta' => [
-                            'limit'     =>  $request->limit,
-                            'offset'    =>  $request->offset,
-                            'total'     =>  $count,
-                            'url'       =>  url()->current(),
-                            'api'       =>  $this->getVersion(),
-                            'language'  =>  app()->getLocale(),
-                            'message'   =>  trans('api.list', ['entity' => __('Users')]),
-                        ] ]);
-                }else{
-                    $this->response['meta']['message']  =   trans('api.not_found',['entity' => __('Users')]); 
-                    $this->status = Response::HTTP_NOT_FOUND;     
-                }
-            } catch(ModelNotFoundException $exception) {                
-                switch ($exception->getModel()) {
-                    case 'App\Models\User':
-                        $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("Users")]);
-                        break;
-                    case 'App\Models\Location':
-                        $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("Location")]);
-                        break;
-                    default:
-                        $this->response['meta']['message'] = trans('api.went_wrong');
-                        break;
-                };
-            } catch (\Exception $e) {
-                $this->storeErrorLog($e,'get_users_filters');
             }
         }
         return $this->returnResponse();

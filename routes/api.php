@@ -3,7 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Middleware\CheckApiLanguage;
-use App\Http\Controllers\api\v1\ { AuthenticationController, GeneralController, UserController, LikeController, TwillioController, ChatController, MatchController, SearchController, BlockController, VerificationController, ProfileController, DiscoveryController };
+use App\Http\Controllers\api\v1\ { AuthenticationController, GeneralController, UserController, LikeController, TwillioController, ChatController, MatchController, SearchController, BlockController, VerificationController, ProfileController, DiscoveryController, FilterController, HomeController };
 
 /*
 |--------------------------------------------------------------------------
@@ -49,12 +49,17 @@ Route::group(['namespace' => 'v1', 'prefix' => 'v1'], function () {
 Route::group(['namespace' => 'v1', 'prefix' => 'v1', 'middleware' => 'auth:sanctum'], function () {
     Route::post('logout',[AuthenticationController::class,'logout'])->name('api.user.logout'); 
 
+    // Home List
+    Route::post('user/get-list', [HomeController::class,'getUsersList'])->name('api.user.get-list');
+
+    // User
     Route::post('user/set-full-profile', [ProfileController::class,'setFullProfile'])->name('api.user.set-fill-profile');
     Route::post('user/set-interest', [ProfileController::class,'setInterest'])->name('api.user.set-interest');
     Route::post('user/set-media', [ProfileController::class,'setMedia'])->name('api.user.set-media');
-    Route::post('user/get-list', [UserController::class,'getUsersList'])->name('api.user.get-list');
-    Route::post('user/profile-filters', [UserController::class,'getUsersByFilter'])->name('api.user.profile-filters');
     Route::post('user/profile-report',[UserController::class,'storeProfileReport'])->name('api.user.profile-report');
+
+    // Filter
+    Route::post('user/profile-filters', [FilterController::class,'getUsersByFilter'])->name('api.user.profile-filters');
 
     // My Profile
     Route::post('user/my-profile', [UserController::class,'getMyProfile'])->name('api.user.my-profile');

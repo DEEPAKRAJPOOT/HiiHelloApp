@@ -3,9 +3,9 @@
 namespace App\Http\Requests\Api\User;
 
 use Illuminate\Foundation\Http\FormRequest;
+use App\Models\ProfileDetail;
+use App\Models\Personality;
 use App\Models\Interest;
-use App\Models\Location;
-use App\Models\Language;
 
 class ProfileFilterRequest extends FormRequest
 {
@@ -26,28 +26,28 @@ class ProfileFilterRequest extends FormRequest
      */
     public function rules($request)
     {
-        $interest_ids = $location_ids = $language_ids = array();
+        $personality_ids = $interest_ids = array();
+        $profile_details = ProfileDetail::whereIsActive('y')->pluck('slug')->toArray();
+
+        if(!empty($request->personality) || $request->has('personality')){ 
+            $personality_ids = Personality::whereIsActive('y')->pluck('custom_id')->toArray(); 
+        }
         if(!empty($request->interests) || $request->has('interests')){ 
             $interest_ids = Interest::whereIsActive('y')->pluck('custom_id')->toArray(); 
         }
-        if(!empty($request->location) || $request->has('location)')){ 
-            $location_ids = Location::whereIsActive('y')->pluck('custom_id')->toArray(); 
-        }
-        if(!empty($request->languages) || $request->has('languages')){
-            $language_ids = Language::whereIsActive('y')->pluck('lang_code')->toArray(); 
-        }
 
         return [
-            'limit'             =>  'nullable|numeric',
-            'offset'            =>  'nullable|numeric',
-            'start_age'         =>  'nullable|numeric',
-            'end_age'           =>  'required_with:start_age|numeric',
-            'gender'            =>  'nullable|in:Male,Female',
-            'interests'         =>  'nullable|array',
-            'interests.*'       =>  'nullable|in:'.implode(',', $interest_ids),
-            'location'          =>  'nullable|in:'.implode(',', $location_ids),
-            'languages'         =>  'nullable|array',
-            'languages.*'       =>  'nullable|in:'.implode(',', $language_ids),
+            'limit'                     =>  'nullable|numeric',
+            'offset'                    =>  'nullable|numeric',
+
+            'relationship_status'       =>  'nullable|in:'.implode(',', $profile_details),
+            'i_am_here'                 =>  'nullable|in:'.implode(',', $profile_details),
+            'personality'               =>  'nullable|in:'.implode(',', $personality_ids),
+            'star_sign'                 =>  'nullable|in:'.implode(',', $profile_details),
+            'fav_movie'                 =>  'nullable|min:1|max:250',
+            
+            'interests'                 =>  'nullable|array',
+            'interests.*'               =>  'nullable|in:'.implode(',', $interest_ids),
         ];
     }
 }
