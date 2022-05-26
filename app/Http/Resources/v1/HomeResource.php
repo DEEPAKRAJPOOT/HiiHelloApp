@@ -4,7 +4,7 @@ namespace App\Http\Resources\v1;
 
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class LocationResource extends JsonResource
+class HomeResource extends JsonResource
 {
     /**
      * Transform the resource into an array.
@@ -15,11 +15,17 @@ class LocationResource extends JsonResource
     public function toArray($request)
     {
         return [
-            'id'            =>  $this->custom_id,
-            'name'          =>  $this->locationTranslation ? $this->locationTranslation->name : "",
-            'is_active'     =>  $this->is_active,
+            'id'                =>  $this->custom_id ?? "",
+            'full_name'         =>  $this->full_name ?? "",
+            'age'               =>  $this->getAge(),
+            'gender'            =>  $this->gender ?? "",
+            'location'          =>  new LocationResource($this->location),
+            'interests'         =>  HomeInterestResource::collection($this->interests),
+            'profile_photo'     =>  generateURL($this->profile_photo) ?? "",
+            'flags'             =>  [
+                'verified_staus'   =>  $this->getVerifiedStatus(),
+            ],
         ];
-        return parent::toArray($request);
     }
 
     public function with($request)
