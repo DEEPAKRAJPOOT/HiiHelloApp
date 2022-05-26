@@ -71,6 +71,7 @@ class AuthenticationController extends Controller
                 if(!empty($request->location)){
                     $location = Location::whereCustomId($request->location)->whereIsActive('y')->firstOrFail();
                     $location_id = $location->id;
+
                 }
                 if(!empty($request->language)){
                     $language = Language::whereLangCode($request->language)->whereIsActive('y')->firstOrFail();
@@ -84,6 +85,7 @@ class AuthenticationController extends Controller
                     $user->fill($request->all());
                     $user->country_id = $country_id;
                     $user->location_id = $location_id;
+                    $user->discover_location_id = $location_id;
                     $user->language_id = $language_id;
                 }else{
                     $user = User::updateOrCreate([
@@ -97,6 +99,7 @@ class AuthenticationController extends Controller
                         'interest'              =>  $request->interest ?? NULL,
                         'country_id'            =>  $country_id ?? NULL,
                         'location_id'           =>  $location_id ?? NULL,
+                        'discover_location_id'  =>  $location_id ?? NULL,
                         'language_id'           =>  $language_id ?? NULL,
                         'password'              =>  Hash::make(config('utility.default_password')),
                     ]);
@@ -114,6 +117,11 @@ class AuthenticationController extends Controller
                     $path = $request->file('profile_photo')->store('users/profile_photo');
                     $user->profile_photo = $path;
                 }
+
+                // Set Default Discover
+                $user->discover_distance    = config('utility.profile.detail.discover_distance');
+                $user->discover_start_age   = config('utility.profile.detail.discover_start_age');
+                $user->discover_end_age     = config('utility.profile.detail.discover_end_age');
 
                 if($user->save()){
                     $user = User::with(['interests','userDetails','location.locationTranslation','language'])

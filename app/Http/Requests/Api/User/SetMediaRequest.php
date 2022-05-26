@@ -29,8 +29,7 @@ class SetMediaRequest extends FormRequest
             'voice_answer'              =>  'required_with:voice|string|max:500',
 
             // Video Details
-            'videos'                    =>  'nullable|array|max:1',
-            'videos.*'                  =>  'nullable',
+            'video'                     =>  'nullable|string|max:500',
 
             // Image Details
             'image_path'                =>  'nullable|string|max:500',
