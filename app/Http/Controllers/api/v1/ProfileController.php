@@ -205,7 +205,7 @@ class ProfileController extends Controller
     }
 
     /**
-     * Set user images, videos & audio after uploding s3 directly
+     * Set user images, video & audio after uploding s3 directly
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
     */
@@ -223,29 +223,24 @@ class ProfileController extends Controller
                     $user->save();
                 }
 
-                // Store Videos
-                if(!empty($request->videos)){
-                    if($user->userDetails->isNotEmpty()){
-                        foreach($user->userDetails as $userDetail){
-                            if(!empty($userDetail->video)){
-                                if( Storage::exists($userDetail->video) ) { Storage::delete($userDetail->video); }
-                                $userDetail->delete();
+                // Store Video
+                if(!empty($request->video)){
+                    $user_video =  UserDetail::updateOrCreate([
+                        'user_id'       =>  $user->id,
+                        'video'         =>  $request->video,
+                    ],[
+                        'custom_id'     =>  getUniqueString('user_details'),
+                    ]);
+
+                    $old_videos = UserDetail::whereUserId($user->id)->where('id','!=',$user_video->id)->whereNotNull('video')->get();
+                    if($old_videos->isNotEmpty()){
+                        foreach($old_videos as $old_video_data){
+                            if(!empty($old_video_data->video)){
+                                if( Storage::exists($old_video_data->video) ) { Storage::delete($old_video_data->video); }
+                                $old_video_data->delete();
                             }
                         }
                     }
-                    $video_data = [];
-                    foreach ($request->videos as $key => $video_path) {
-                        if($video_path){
-                            $video_data[] = [
-                                'custom_id'         =>  getUniqueString('user_details'),
-                                'user_id'           =>  $user->id,
-                                'video'             =>  $video_path,
-                                'created_at'        =>  \Carbon\Carbon::now(),
-                                'updated_at'        =>  \Carbon\Carbon::now(),
-                            ];
-                        }
-                    }
-                    UserDetail::insert($video_data);
                 } 
 
                 // Store New Images
