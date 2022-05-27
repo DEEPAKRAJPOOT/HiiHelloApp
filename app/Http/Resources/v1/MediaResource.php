@@ -15,6 +15,7 @@ class MediaResource extends JsonResource
     public function toArray($request)
     {
         return [
+            'profile_photo'     =>  generateURL($this->profile_photo) ?? "",
             'media' =>  [
                 'profile_images'    =>  $this->getProfileImages(),
                 'profile_videos'    =>  $this->getProfileVideos(),

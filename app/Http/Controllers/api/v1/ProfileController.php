@@ -302,8 +302,7 @@ class ProfileController extends Controller
                                 'custom_id' =>  getUniqueString('user_details'),
                                 'sequence'  =>  $old_sequence,
                             ]);
-                        }
-                        else{
+                        }else{
                             $image_data = UserDetail::whereUserId($user->id)->whereCustomId($custom_id)->first();
                             if($image_data){
                                 $image_data->update(['sequence' => $old_sequence]);
@@ -319,9 +318,7 @@ class ProfileController extends Controller
                     }
                 }
 
-                $user = User::select('id','custom_id','voice','voice_answer')
-                            ->with(['userDetails','interests'])->whereId($user->id)->firstOrFail();
-
+                $user = User::with(['userDetails','interests'])->whereId($user->id)->firstOrFail();
                 return (new MediaResource($user))
                         ->additional(['meta'  => [
                             'message'       =>  trans('api.profile_setuped'), 
