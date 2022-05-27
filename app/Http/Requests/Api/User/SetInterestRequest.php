@@ -28,10 +28,10 @@ class SetInterestRequest extends FormRequest
         
         /* Add & Remove Interests */
         return [
-            'interests'                 =>  'required_without:remove_interests|array',
-            'interests.*'               =>  'required_without:remove_interests|in:'.implode(',', $interest_ids),
-            'remove_interests'          =>  'required_without:interests|array',
-            'remove_interests.*'        =>  'required_without:interests|in:'.implode(',', $interest_ids),
+            'interests'                 =>  'nullable|array',
+            'interests.*'               =>  'nullable|in:'.implode(',', $interest_ids),
+            'remove_interests'          =>  'nullable|array',
+            'remove_interests.*'        =>  'nullable|in:'.implode(',', $interest_ids),
         ];
     }
 }

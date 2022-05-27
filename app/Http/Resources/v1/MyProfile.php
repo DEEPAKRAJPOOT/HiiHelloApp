@@ -18,6 +18,7 @@ class MyProfile extends JsonResource
             'id'                =>  $this->custom_id ?? "",
             'full_name'         =>  $this->full_name ?? "",
             'age'               =>  $this->getAge(),
+            'gender'            =>  $this->gender ?? "",
             'interest'          =>  $this->interest ?? "",
             'extra'             =>  [
                 'about_me'      =>  $this->about_me ?? "",
