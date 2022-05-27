@@ -246,7 +246,7 @@ class ProfileController extends Controller
                 } 
 
                 // Store New Images
-                if(!empty($user->image_path)){
+                if(!empty($request->image_path)){
                     if(empty($user->profile_photo)){
                         $user->profile_photo = $request->image_path;
                         $user->save();
@@ -286,17 +286,35 @@ class ProfileController extends Controller
 
                 // Change Sequence
                 if(!empty($request->image_sequence)){
+                    $original_photo = $user->profile_photo;
+
                     for ($i=0; $i < count($request->image_sequence); $i++) { 
                         $custom_id = $request->image_sequence[$i];
-                        $old_sequence  = $i+1;
+                        $old_sequence = $i + 1;
 
-                        $image_data = UserDetail::whereUserId($user->id)->whereCustomId($custom_id)->first();
-                        if($image_data){
-                            $image_data->update(['sequence' => $old_sequence]);
-                            $image_data->save();
-                        }else{
-                            $user->profile_photo = $custom_id;
-                            $user->save();
+                        if($custom_id == 'profile_photo' && !empty($original_photo)){
+                            if($old_sequence > 1){ $old_sequence = $old_sequence - 1; }
+
+                            UserDetail::updateOrCreate([
+                                'user_id'   =>  $user->id,
+                                'image'     =>  $original_photo,
+                            ],[
+                                'custom_id' =>  getUniqueString('user_details'),
+                                'sequence'  =>  $old_sequence,
+                            ]);
+                        }
+                        else{
+                            $image_data = UserDetail::whereUserId($user->id)->whereCustomId($custom_id)->first();
+                            if($image_data){
+                                $image_data->update(['sequence' => $old_sequence]);
+                                $image_data->save();
+                            }else{
+                                $user->profile_photo = $custom_id;
+                                $user->save();
+
+                                // Delete From Other
+                                UserDetail::whereUserId($user->id)->whereImage($custom_id)->delete();
+                            }
                         }
                     }
                 }
