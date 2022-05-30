@@ -105,6 +105,17 @@ return [
         ],
     ],
 
+    'razorpay'  =>  [
+        'order' =>  [
+            'success'   =>  'Your order id is generated successfully.',
+            'fail'      =>  'Unable to generate order id.',
+        ],
+        'verify_signature'  => [
+            'success'   =>  'Your payment was successful.',
+            'fail'      =>  'Your payment failed.',
+        ],
+    ],
+
     'verified'    =>  "Your :entity has been successfully verified.",
     'already_verified'    =>  "Your :entity was already verified.",
     'thanks'    =>  'Thanks for :entity :type.',

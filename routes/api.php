@@ -3,7 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Middleware\CheckApiLanguage;
-use App\Http\Controllers\api\v1\ { AuthenticationController, GeneralController, UserController, LikeController, TwillioController, ChatController, MatchController, SearchController, BlockController, VerificationController, ProfileController, DiscoveryController, FilterController, HomeController };
+use App\Http\Controllers\api\v1\ { AuthenticationController, GeneralController, UserController, LikeController, TwillioController, ChatController, MatchController, SearchController, BlockController, VerificationController, ProfileController, DiscoveryController, FilterController, HomeController, PaymentController };
 
 /*
 |--------------------------------------------------------------------------
@@ -90,6 +90,11 @@ Route::group(['namespace' => 'v1', 'prefix' => 'v1', 'middleware' => 'auth:sanct
 
     // Search Match/Chat
     Route::post('search/match-chat',[SearchController::class,'searchMatchAndChat'])->name('api.search.match-chat');
+
+    // Razorpay Android
+    Route::post('get/subscription-plans',[PaymentController::class,'getSubscriptionPlans'])->name('api.get-subscription-plans');
+    Route::post('payment/create-order',[PaymentController::class,'createOrder'])->name('api.payment.create-order');
+    Route::post('payment/varify-signature',[PaymentController::class,'verifySignature'])->name('api.payment.varify-signature');
 
     // Twillio Call
     Route::post('/twillio/create-access-token',[TwillioController::class,'createAccessToken'])->name('api.twillio.create-access-token');
