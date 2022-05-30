@@ -21,6 +21,7 @@ class InterestResource extends JsonResource
             'master_parent_id'      =>  $this->masterInterest ? $this->masterInterest->custom_id : "",
             'level'                 =>  $this->level ?? 0,
             'sub_interests_count'   =>  $this->sub_interests_count ?? 0,
+            'is_required'           =>  $this->is_required ?? "",
         ];
         return parent::toArray($request);
     }

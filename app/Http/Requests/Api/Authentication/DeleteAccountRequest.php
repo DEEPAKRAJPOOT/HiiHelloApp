@@ -24,7 +24,7 @@ class DeleteAccountRequest extends FormRequest
     public function rules()
     {
         return [
-            'reason'    =>  'required|min:3|max:500',
+            'reason'    =>  'nullable|min:3|max:500',
         ];
     }
 }

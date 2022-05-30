@@ -217,6 +217,13 @@ class ProfileController extends Controller
             try{
                 $user = $request->user();
 
+                // Delete Voice
+                if(!empty($request->remove_voice) && $request->remove_voice == 'y'){
+                    if(!empty($user->voice)){ if( Storage::exists($user->voice) ) { Storage::delete($user->voice); } }
+                    $user->voice = NULL;
+                    $user->save();
+                }
+
                 // Store Audio
                 if(!empty($request->voice) && !empty($request->voice_answer)){
                     if(!empty($user->voice)){ if( Storage::exists($user->voice) ) { Storage::delete($user->voice); } }

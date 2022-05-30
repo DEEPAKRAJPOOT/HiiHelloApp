@@ -84,6 +84,30 @@
                         </span>
                     @endif
                 </div>
+
+                {{-- Required --}}
+                <div class="form-group {{ $errors->has('is_required') ? 'has-error' : '' }}">
+                    <label for="is_required">{!!$mend_sign!!}Required:</label>
+                    <div class="custom-file">
+                        <div class="row">
+                            <div class="col-md-1">
+                                <input type="radio" id="yes" name="is_required" value="y" data-error-container="#error-authorizable">
+                                <label for="Yes">Yes</label><br> 
+                            </div>
+                            <div class="col-md-1">
+                                <input type="radio" id="no" name="is_required" value="n" data-error-container="#error-authorizable">
+                                <label for="No">No</label><br>
+                            </div>
+                        </div>
+                        <span id="error-authorizable"></span>
+                        @if ($errors->has('is_required'))
+                            <span class="help-block">
+                                <strong class="form-text">{{ $errors->first('is_required') }}</strong>
+                            </span>
+                        @endif
+                    </div>
+                </div>
+                                
             </div>
 
             @forelse($languages as $language)
@@ -151,6 +175,10 @@ $(document).ready(function () {
                 not_empty: true,
                 minlength: 3,
             },
+            is_required: {
+                required: true,
+                not_empty: true,
+            },
         },
         messages: {
             parent_id:{
@@ -175,6 +203,10 @@ $(document).ready(function () {
                 required: "@lang('validation.required',['attribute'=>'title'])",
                 not_empty: "@lang('validation.not_empty',['attribute'=>'title'])",
                 minlength:"@lang('validation.min.string',['attribute'=>'title','min'=>3])",
+            },
+            is_required:{
+                required:"@lang('validation.required',['attribute'=>'required'])",
+                not_empty:"@lang('validation.not_empty',['attribute'=>'required'])",
             },
         },
         errorClass: 'invalid-feedback',

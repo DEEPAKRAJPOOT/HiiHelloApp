@@ -54,6 +54,8 @@ class InterestController extends Controller
         $data['sequence'] = $request->sequence;
 
         $interest = Interest::create($data);
+        $interest->is_required = $request->is_required;
+
         if ($interest->save()) {
             flash('Interest created successfully!')->success();
         } else {
@@ -118,6 +120,8 @@ class InterestController extends Controller
             $data['sequence'] = $request->sequence;
 
             $interest->update($data);
+            $interest->is_required = $request->is_required;
+
             if( $interest->save() ) {
                 flash('Interest details updated successfully!')->success();
             } else {
@@ -197,6 +201,7 @@ class InterestController extends Controller
                 'id'            =>  $interest->id,
                 'title'         =>  $interest->interestTransDefault ? $interest->interestTransDefault->title : "",
                 'sequence'      =>  $interest->sequence ?? 0,
+                'is_required'   =>  $interest->is_required ?? 0,
                 'active'        =>  view('admin.layouts.includes.switch', compact('params'))->render(),
                 'action'        =>  view('admin.layouts.includes.actions')->with(['custom_title' => 'Interest', 'id' => $interest->custom_id], $interest)->render(),
                 'checkbox'      =>  view('admin.layouts.includes.checkbox')->with('id', $interest->custom_id)->render(),
