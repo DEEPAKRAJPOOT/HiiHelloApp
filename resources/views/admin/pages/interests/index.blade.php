@@ -56,7 +56,7 @@
             ajax: {
                 url: "{{ route('admin.interests.listing') }}",
                 data: {
-                    columnsDef: ['checkbox','title', 'sequence', 'active', 'action'],
+                    columnsDef: ['checkbox','title', 'sequence', 'is_required', 'active', 'action'],
                 },
             },
             columns: [
@@ -64,6 +64,7 @@
                 { data: 'id' },
                 { data: 'title' },
                 { data: 'sequence' },
+                { data: 'is_required' },
                 { data: 'active' },
                 { data: 'action', responsivePriority: -1 },
             ],
@@ -73,7 +74,8 @@
                 { targets: 1, title: 'Id', orderable: true },
                 { targets: 2, title: 'Title', orderable: false },
                 { targets: 3, title: 'Sequence', orderable: true },
-                { targets: 4, title: 'Active', orderable: false },
+                { targets: 4, title: 'Required', orderable: true },
+                { targets: 5, title: 'Active', orderable: false },
                 // Action buttons
                 { targets: -1, title: 'Action',
                 orderable: false },

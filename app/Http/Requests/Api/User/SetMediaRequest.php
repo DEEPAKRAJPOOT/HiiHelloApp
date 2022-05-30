@@ -34,6 +34,7 @@ class SetMediaRequest extends FormRequest
             // Voice Details
             'voice'                     =>  'nullable|string|max:500',
             'voice_answer'              =>  'required_with:voice|string|max:500',
+            'remove_voice'              =>  'nullable|in:y,n',
 
             // Video Details
             'video'                     =>  'nullable|string|max:500',

@@ -41,7 +41,6 @@ class ProfileFilterRequest extends FormRequest
             'offset'                    =>  'nullable|numeric',
 
             'relationship_status'       =>  'nullable|in:'.implode(',', $profile_details),
-            'i_am_here'                 =>  'nullable|in:'.implode(',', $profile_details),
             'personality'               =>  'nullable|in:'.implode(',', $personality_ids),
             'star_sign'                 =>  'nullable|in:'.implode(',', $profile_details),
             'fav_movie'                 =>  'nullable|min:1|max:250',

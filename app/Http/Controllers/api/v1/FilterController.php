@@ -37,11 +37,6 @@ class FilterController extends Controller
                         $query->whereSlug($request->relationship_status);
                     });
                 }
-                if(!empty($request->i_am_here)){
-                    $users = $users->whereHas('youAreHere', function($query) use ($request){
-                        $query->whereSlug($request->i_am_here);
-                    });
-                }
                 if(!empty($request->personality)){
                     $users = $users->whereHas('personality', function($query) use ($request){
                         $query->whereCustomId($request->personality);
