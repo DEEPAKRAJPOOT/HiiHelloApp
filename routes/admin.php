@@ -94,6 +94,7 @@ Route::get('active-deactive-users-chart', 'Admin\ChartController@getActiveDeacti
 
 Route::post('check-email', 'UtilityController@checkEmail')->name('check.email');
 Route::post('check-contact', 'UtilityController@checkContact')->name('check.contact');
+Route::get('api-translate','UtilityController@translate');
 
 Route::post('summernote-image-upload','Admin\SummernoteController@imageUpload')->name('summernote.imageUpload');
 Route::post('summernote-media-image','Admin\SummernoteController@mediaDelete')->name('summernote.mediaDelete');

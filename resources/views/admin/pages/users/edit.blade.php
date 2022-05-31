@@ -475,84 +475,88 @@
                 </div>
 
                 {{-- Fav Actors --}}
-            <div class="form-group">
-                <label for="actor_id">Select Gender</label>
-                <select type="text" class="form-control @error('actor_id') is-invalid @enderror" id="actor_id" name="actor_id" spellcheck="false" tabindex="0" />
-                    <option value="">Select Gender</option>
+                <div class="form-group">
+                    <label for="actor_id">Select Gender</label>
+                    <select type="text" class="form-control @error('actor_id') is-invalid @enderror" id="actor_id" name="actor_id" spellcheck="false" tabindex="0" />
+                        <option value="">Select Gender</option>
+                        @foreach($actors as $actor)
+                            @foreach($actor->subInterests as $sub_actor)
+                                @foreach($user->interests as $data)
+                                <option {{ $sub_actor->id == $data->interest->parent_id ? 'selected=selected' : '' }} value="{{ $sub_actor->id }}"> {{ $sub_actor->interestTransDefault->title }}</option>
+                                @endforeach
+                            @endforeach
+                        @endforeach
+                    </select>
+                    @if ($errors->has('actor_id'))
+                        <span class="text-danger">
+                            <strong class="form-text">{{ $errors->first('actor_id') }}</strong>
+                        </span>
+                    @endif
+                </div>
+
+                {{-- Depend data --}}
+                <div class="form-group">
+                    <label for="depend_id">Favourite Actors/Actress</label>
+                    <select type="text" class="form-control @error('depend_id') is-invalid @enderror" id="depend_id" name="depend_id" />
+                    <option value="">Select Films</option>
                     @foreach($actors as $actor)
-                    @foreach($actor->subInterests as $sub_actor)
-                    <option value="{{ $sub_actor->id }}"> {{ $sub_actor->interestTransDefault->title }}</option>
-                    @endforeach
-                    @endforeach
-                </select>
-                @if ($errors->has('actor_id'))
-                    <span class="text-danger">
-                        <strong class="form-text">{{ $errors->first('actor_id') }}</strong>
-                    </span>
-                @endif
-            </div>
-
-            {{-- Depend data --}}
-            <div class="form-group">
-                <label for="depend_id">Favourite Actors/Actress</label>
-                <select type="text" class="form-control @error('depend_id') is-invalid @enderror" id="depend_id" name="depend_id" />
-                <option value="">Select Films</option>
-                @foreach($actors as $actor)
-                    @foreach($actor->subInterests as $sub_actor)
-                        @foreach($sub_actor->subInterests as $sub_gender)
-                            @foreach($user->interests as $data)
-                            <option {{ $sub_gender->id == $data->interest_id ? 'selected=selected' : '' }} value="{{ $sub_gender->id }}"> {{ $sub_gender->interestTransDefault->title }}</option>
+                        @foreach($actor->subInterests as $sub_actor)
+                            @foreach($sub_actor->subInterests as $sub_gender)
+                                @foreach($user->interests as $data)
+                                <option {{ $sub_gender->id == $data->interest_id ? 'selected=selected' : '' }} value="{{ $sub_gender->id }}"> {{ $sub_gender->interestTransDefault->title }}</option>
+                                @endforeach
                             @endforeach
                         @endforeach
                     @endforeach
-                @endforeach
-                </select>
-                @if ($errors->has('depend_id'))
-                    <span class="text-danger">
-                        <strong class="form-text">{{ $errors->first('depend_id') }}</strong>
-                    </span>
-                @endif
-            </div>
+                    </select>
+                    @if ($errors->has('depend_id'))
+                        <span class="text-danger">
+                            <strong class="form-text">{{ $errors->first('depend_id') }}</strong>
+                        </span>
+                    @endif
+                </div>
 
-            {{-- select Singer gender --}}
-            <div class="form-group">
-                <label for="singer_male_id">Select Gender</label>
-                <select type="text" class="form-control @error('singer_male_id') is-invalid @enderror" id="singer_male_id" name="singer_male_id" spellcheck="false" tabindex="0" />
-                    <option value="">Select Gender</option>
+                {{-- select Singer gender --}}
+                <div class="form-group">
+                    <label for="singer_male_id">Select Gender</label>
+                    <select type="text" class="form-control @error('singer_male_id') is-invalid @enderror" id="singer_male_id" name="singer_male_id" spellcheck="false" tabindex="0" />
+                        <option value="">Select Gender</option>
+                        @foreach($singers as $singer)
+                            @foreach($singer->subInterests as $sub_singer)
+                                @foreach($user->interests as $data)
+                                    <option {{ $sub_singer->id == $data->interest->parent_id ? 'selected=selected' : '' }} value="{{ $sub_singer->id }}"> {{ $sub_singer->interestTransDefault->title }}</option>
+                                @endforeach
+                            @endforeach
+                        @endforeach
+                    </select>
+                    @if ($errors->has('singer_male_id'))
+                        <span class="text-danger">
+                            <strong class="form-text">{{ $errors->first('singer_male_id') }}</strong>
+                        </span>
+                    @endif
+                </div>
+
+                {{-- Fav Singer (Male/Female) --}}
+                <div class="form-group">
+                    <label for="singer_id">Favourite Singer (Male/Female)</label>
+                    <select type="text" class="form-control @error('singer_id') is-invalid @enderror" id="singer_id" name="singer_id" />
+                    <option value="">Select Films</option>
                     @foreach($singers as $singer)
-                    @foreach($singer->subInterests as $sub_singer)
-                    <option value="{{ $sub_singer->id }}"> {{ $sub_singer->interestTransDefault->title }}</option>
-                    @endforeach
-                    @endforeach
-                </select>
-                @if ($errors->has('singer_male_id'))
-                    <span class="text-danger">
-                        <strong class="form-text">{{ $errors->first('singer_male_id') }}</strong>
-                    </span>
-                @endif
-            </div>
-
-            {{-- Fav Singer (Male/Female) --}}
-            <div class="form-group">
-                <label for="singer_id">Favourite Singer (Male/Female)</label>
-                <select type="text" class="form-control @error('singer_id') is-invalid @enderror" id="singer_id" name="singer_id" />
-                <option value="">Select Films</option>
-                @foreach($singers as $singer)
-                    @foreach($singer->subInterests as $sub_singer)
-                        @foreach($sub_singer->subInterests as $sub_gender)
-                            @foreach($user->interests as $data)
-                            <option {{ $sub_gender->id == $data->interest_id ? 'selected=selected' : '' }} value="{{ $sub_gender->id }}"> {{ $sub_gender->interestTransDefault->title }}</option>
+                        @foreach($singer->subInterests as $sub_singer)
+                            @foreach($sub_singer->subInterests as $sub_gender)
+                                @foreach($user->interests as $data)
+                                <option {{ $sub_gender->id == $data->interest_id ? 'selected=selected' : '' }} value="{{ $sub_gender->id }}"> {{ $sub_gender->interestTransDefault->title }}</option>
+                                @endforeach
                             @endforeach
                         @endforeach
                     @endforeach
-                @endforeach
-                </select>
-                @if ($errors->has('singer_id'))
-                    <span class="text-danger">
-                        <strong class="form-text">{{ $errors->first('singer_id') }}</strong>
-                    </span>
-                @endif
-            </div>
+                    </select>
+                    @if ($errors->has('singer_id'))
+                        <span class="text-danger">
+                            <strong class="form-text">{{ $errors->first('singer_id') }}</strong>
+                        </span>
+                    @endif
+                </div>
 
                 {{-- Fav Food --}}
                 <div class="form-group">
