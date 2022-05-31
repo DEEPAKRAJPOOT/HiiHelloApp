@@ -5,11 +5,14 @@ namespace App\Http\Controllers\api\v1;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\ { Request, Response };
 use Illuminate\Database\Eloquent\ { ModelNotFoundException };
+use Illuminate\Support\Facades\ { DB };
 use App\Http\Requests\Api\General\ { PaginationRequest };
 use App\Http\Resources\v1\ { SubscriptionPlanResource, RazorPayOrderResource };
-use App\Models\ { SubscriptionPlan };
+use App\Models\ { SubscriptionPlan, Subscription, Transaction };
 use Razorpay\Api\Api;
 use Razorpay\Api\Errors\SignatureVerificationError;
+use Monolog\Handler\StreamHandler;
+use Monolog\Logger;
 
 class PaymentController extends Controller
 {
@@ -79,18 +82,23 @@ class PaymentController extends Controller
      */ 
     public function verifySignature(Request $request)
     {
+        $plan_ids = SubscriptionPlan::whereIsActive('y')->pluck('custom_id')->toArray();
+
         $rules = [
+            'plan_id'               =>  'required|in:'.implode(',', $plan_ids),
             'razorpay_order_id'     =>  'required',
             'razorpay_payment_id'   =>  'required',
             'razorpay_signature'    =>  'required',
         ];
 
         if( $this->apiValidator($request->all(), $rules) ) {
+            $user = $request->user();
+
+            DB::beginTransaction();
             try{
                 $keyId      =   config('utility.razorpay.api_key');
                 $keySecret  =   config('utility.razorpay.api_secret');
-
-                $api = new Api($keyId, $keySecret);
+                $api        =   new Api($keyId, $keySecret);
 
                 $attributes = array(
                     'razorpay_order_id'     =>  $request->razorpay_order_id,
@@ -98,16 +106,88 @@ class PaymentController extends Controller
                     'razorpay_signature'    =>  $request->razorpay_signature,
                 );  
 
+                $plan = SubscriptionPlan::whereCustomId($request->plan_id)->whereIsActive('y')->firstOrFail();
+                $alredy_subscribed = Subscription::whereUserId($user->id)->wherePlanId($plan->id)
+                                        ->whereStartDate(now()->format('Y-m-d'))
+                                        ->whereStatus('active')->first();
+
+                if($alredy_subscribed){
+                    DB::rollback();
+                    $this->status = Response::HTTP_OK;
+                    $this->response['meta']['message'] = trans('api.subscription.already_purchased');
+                    return $this->returnResponse();  
+                }
+
+                $days = $plan->calculateDays();
+                if($days < 1){
+                    DB::rollback();
+                    $this->status = Response::HTTP_NOT_FOUND;
+                    $this->response['meta']['message'] = trans('api.went_wrong');
+                    return $this->returnResponse();   
+                }
+
+                $end_date = $plan->calculateEndDate();
+                $subscription =  Subscription::create([
+                    'custom_id'     =>  getUniqueString('subscriptions'),
+                    'user_id'       =>  $user->id ?? NULL,
+                    'plan_id'       =>  $plan->id ?? NULL,
+                    'amount'        =>  $plan->amount,
+                    'start_date'    =>  now(),
+                    'end_date'      =>  $end_date,
+                    'payment_date'  =>  now(),
+                    'status'        =>  'incomplete',
+                ]);
+
+                $transaction =  Transaction::create([
+                    'custom_id'             =>  getUniqueString('transactions'),
+                    'user_id'               =>  $user->id ?? NULL,
+                    'plan_id'               =>  $plan->id ?? NULL,
+                    'subscription_id'       =>  $subscription->id ?? NULL,
+                    'razorpay_order_id'     =>  $request->razorpay_order_id,
+                    'razorpay_payment_id'   =>  $request->razorpay_payment_id,
+                    'razorpay_signature'    =>  $request->razorpay_signature,
+                    'amount'                =>  $subscription->amount,
+                    'status'                =>  'pending',
+                ]);
+                DB::commit();
+
+                // if signature is verified (Payment Success)
                 $api->utility->verifyPaymentSignature($attributes);
+
+                $subscription->update(['status' => 'active']);
+                $subscription->save();
+
+                $transaction->update(['status' => 'success']);
+                $transaction->save();
+
+                DB::commit();
+                // Add Payment success log
+                $transaction_data = json_decode($transaction, true);
+                $file = 'payment_' . $user->id;
+                $paymentLog = new Logger($file);
+                $paymentLog->pushHandler(new StreamHandler(storage_path('logs/' . $file . '.log')), Logger::INFO);
+                $paymentLog->info($file, ['success' => $transaction_data]);
 
                 $this->status = Response::HTTP_OK;
                 $this->response['meta']['message'] = trans('api.razorpay.verify_signature.success');
                 return $this->returnResponse();    
 
             }catch(SignatureVerificationError $e){
-                $this->storeErrorLog($e,'razorpay_verify_signature',$e->getMessage());
+                if($subscription){
+                    $subscription->update(['status' => 'unpaid']);
+                    $subscription->save();
+                }
+                if($transaction){
+                    $transaction->update(['status' => 'fail']);
+                    $transaction->save();
+                }
+                DB::rollback();
+                $file = 'payment_' . $user->id;
+                $this->storeErrorLog($e,$file,$e->getMessage());
             }catch (\Exception $e) {
-                $this->storeErrorLog($e,'razorpay_verify_signature');
+                DB::rollback();
+                $file = 'payment_' . $user->id;
+                $this->storeErrorLog($e,$file);
             }
         }
         return $this->returnResponse();

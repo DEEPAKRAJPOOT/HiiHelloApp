@@ -142,6 +142,9 @@ return [
         'success'   =>  'सत्यापन विवरण सफलतापूर्वक अपडेट किया गया',
         'fail'      =>  'सत्यापन विवरण अपलोड करने में विफल',
     ],
+    'subscription'    =>  [
+        'already_purchased'   =>  'सदस्यता पहले ही खरीदी जा चुकी है।',
+    ],
 
     /* Custom Message */   
     'attributes' => [

@@ -142,6 +142,9 @@ return [
         'success'   =>  'Verification details updated succesfully',
         'fail'      =>  'Failed to upload Verification details',
     ],
+    'subscription'    =>  [
+        'already_purchased'   =>  'Subscription already purchased.',
+    ],
 
     /* Custom Message */ 
     'attributes' => [
