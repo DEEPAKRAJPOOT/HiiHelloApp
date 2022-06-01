@@ -25,6 +25,7 @@ return [
     'not_found' => ':entity नहीं मिली',
     'not_verified' => 'आपका :entity सत्यापित नहीं किया जा सका|',
     'not_activated' => ':entity सक्रिय नहीं है',
+    'subscription_required' => 'आपकी सदस्यता सक्रिय नहीं है। जारी रखने के लिए कृपया सदस्यता लें।',
     'went_wrong'    =>  'ओह! कुछ गलत हो गया है। कृपया बाद में दोबारा प्रयास करें',
     'not_empty'     => 'कृपया सही :entity चुने',
     'not_available' =>  ':entity उपलब्ध नहीं हैं',

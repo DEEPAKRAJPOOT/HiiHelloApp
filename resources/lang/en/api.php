@@ -25,6 +25,7 @@ return [
     'not_found' => ':entity not found',
     'not_verified' => ':entity is not varified',
     'not_activated' => ':entity is not activated',
+    'subscription_required' => 'Your subscription is not activated. Please subscribe to continue.',
     'went_wrong'    =>  'Oops! Something went wrong, please try again later',
     'not_empty'     => 'Please select valid :entity',
     'not_available' =>  ':entity is not available',

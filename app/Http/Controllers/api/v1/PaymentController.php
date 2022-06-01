@@ -118,22 +118,22 @@ class PaymentController extends Controller
                     return $this->returnResponse();  
                 }
 
-                $days = $plan->calculateDays();
-                if($days < 1){
-                    DB::rollback();
-                    $this->status = Response::HTTP_NOT_FOUND;
-                    $this->response['meta']['message'] = trans('api.went_wrong');
-                    return $this->returnResponse();   
+                $new_subscription_start_date = \Carbon\Carbon::today()->format('Y-m-d');
+                if( $user->subscription_end_date >= $new_subscription_start_date ) {
+                    $new_subscription_start_date = $user->subscription_end_date;
                 }
+                $subscription_end_date = !empty($user->subscription_end_date)
+                                            ? \Carbon\Carbon::parse($new_subscription_start_date)->addMonth($plan->months)->format('Y-m-d')
+                                            : \Carbon\Carbon::today()->addMonth($plan->months)->format('Y-m-d');
 
-                $end_date = $plan->calculateEndDate();
                 $subscription =  Subscription::create([
                     'custom_id'     =>  getUniqueString('subscriptions'),
                     'user_id'       =>  $user->id ?? NULL,
                     'plan_id'       =>  $plan->id ?? NULL,
+                    'months'        =>  $plan->months,
                     'amount'        =>  $plan->amount,
-                    'start_date'    =>  now(),
-                    'end_date'      =>  $end_date,
+                    'start_date'    =>  $new_subscription_start_date,
+                    'end_date'      =>  $subscription_end_date,
                     'payment_date'  =>  now(),
                     'status'        =>  'incomplete',
                 ]);
@@ -160,6 +160,10 @@ class PaymentController extends Controller
                 $transaction->update(['status' => 'success']);
                 $transaction->save();
 
+                $user->is_subscribed = 'y';
+                $user->subscription_end_date = $subscription_end_date;
+                $user->save();
+
                 DB::commit();
                 // Add Payment success log
                 $transaction_data = json_decode($transaction, true);
@@ -173,6 +177,13 @@ class PaymentController extends Controller
                 return $this->returnResponse();    
 
             }catch(SignatureVerificationError $e){
+                DB::rollback();
+                
+                $user->is_subscribed = $user->subscription_end_date >= \Carbon\Carbon::now()->format('Y-m-d') ? 'n' : $user->is_subscribed;
+                $user->subscription_end_date = $user->subscription_end_date >= \Carbon\Carbon::now()->format('Y-m-d')
+                                                    ? NULL
+                                                    : $user->subscription_end_date;
+                $user->save();
                 if($subscription){
                     $subscription->update(['status' => 'unpaid']);
                     $subscription->save();
@@ -181,13 +192,8 @@ class PaymentController extends Controller
                     $transaction->update(['status' => 'fail']);
                     $transaction->save();
                 }
-                DB::rollback();
                 $file = 'payment_' . $user->id;
                 $this->storeErrorLog($e,$file,$e->getMessage());
-            }catch (\Exception $e) {
-                DB::rollback();
-                $file = 'payment_' . $user->id;
-                $this->storeErrorLog($e,$file);
             }
         }
         return $this->returnResponse();

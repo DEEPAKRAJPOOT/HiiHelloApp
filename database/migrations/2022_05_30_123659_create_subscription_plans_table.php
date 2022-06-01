@@ -17,9 +17,9 @@ class CreateSubscriptionPlansTable extends Migration
             $table->id();
 
             $table->string('custom_id')->nullable();
-            $table->enum('period', ['daily', 'weekly', 'monthly', 'yearly'])->nullable();
-            $table->string('interval')->nullable();
+            $table->string('months')->nullable();
             $table->integer('amount')->nullable();
+
             $table->enum('is_popular', ['y', 'n'])->default('n')->nullable();
             $table->enum('is_active', ['y', 'n'])->default('y')->nullable();
             

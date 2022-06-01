@@ -20,6 +20,7 @@ class CreateSubscriptionsTable extends Migration
 
             $table->bigInteger('user_id')->unsigned()->nullable();
             $table->bigInteger('plan_id')->unsigned()->nullable();
+            $table->string('months')->nullable();
             $table->integer('amount')->nullable();
 
             $table->date('start_date')->nullable();
