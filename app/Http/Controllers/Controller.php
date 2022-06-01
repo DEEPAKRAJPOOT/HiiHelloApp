@@ -7,6 +7,7 @@ use Illuminate\Foundation\Bus\DispatchesJobs;
 use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Routing\Controller as BaseController;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Response;
 use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
@@ -22,6 +23,8 @@ class Controller extends BaseController
                     'url'   =>  "",
                     'api'   =>  "",
                     'message'   =>  "",
+                    'is_subscribed' =>  false,
+                    'subscription_end_date' =>  "",
                 ],
             ];
 
@@ -159,9 +162,20 @@ class Controller extends BaseController
                 $i++;
             }
 
+            $is_subscribed = false;
+            $subscription_end_date = "";
+            if( !Auth::guest() ) {
+                if( Auth::user()->is_subscribed == 'y' && Auth::user()->subscription_end_date >= \Carbon\Carbon::today()->format('Y-m-d') ){
+                    $is_subscribed = true;
+                }
+                $subscription_end_date = Auth::user()->subscription_end_date;
+            }
+
             $this->response['meta']['message'] = $r_message;
             $this->response['meta']['url'] = url()->current();
             $this->response['meta']['language'] = app()->getLocale();
+            $this->response['meta']['is_subscribed'] = $is_subscribed;
+            $this->response['meta']['subscription_end_date'] = $subscription_end_date;
             $this->response['meta']['api'] = request()->route()->controller->getVersion();
             return false;
         }
@@ -171,9 +185,19 @@ class Controller extends BaseController
     // Send JSON object as response
     public function returnResponse()
     {
+        $is_subscribed = false;
+        $subscription_end_date = "";
+        if( !Auth::guest() ) {
+            if( Auth::user()->is_subscribed == 'y' && Auth::user()->subscription_end_date >= \Carbon\Carbon::today()->format('Y-m-d') ){
+                $is_subscribed = true;
+            }
+            $subscription_end_date = Auth::user()->subscription_end_date;
+        }
         $this->response['meta']['url'] = url()->current();
         $this->response['meta']['api'] = request()->route()->controller->getVersion();
         $this->response['meta']['language'] = app()->getLocale();
+        $this->response['meta']['is_subscribed'] = $is_subscribed;
+        $this->response['meta']['subscription_end_date'] = $subscription_end_date;
         return response()->json($this->response, $this->status);
     }
 

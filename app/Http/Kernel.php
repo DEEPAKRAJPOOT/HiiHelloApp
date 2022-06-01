@@ -72,5 +72,7 @@ class Kernel extends HttpKernel
 
         'check_permit'  =>  \App\Http\Middleware\CheckPermit::class,
         'revalidate' => \App\Http\Middleware\RevalidateBackHistory::class,
+        'check_subscriptions' => \App\Http\Middleware\CheckSubscriptions::class,
+        
     ];
 }

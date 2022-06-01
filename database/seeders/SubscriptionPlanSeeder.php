@@ -22,8 +22,7 @@ class SubscriptionPlanSeeder extends Seeder
         $subscription_plans = array(
             array(
                 'custom_id'     =>  getUniqueString('subscription_plans'), 
-                'period'        =>  'monthly', 
-                'interval'      =>  1, 
+                'months'        =>  1, 
                 'amount'        =>  99, 
                 'is_popular'    =>  'n', 
                 'created_at'    =>  now(), 
@@ -31,8 +30,7 @@ class SubscriptionPlanSeeder extends Seeder
             ),
             array(
                 'custom_id'     =>  getUniqueString('subscription_plans'), 
-                'period'        =>  'monthly', 
-                'interval'      =>  6, 
+                'months'        =>  6, 
                 'amount'        =>  199, 
                 'is_popular'    =>  'y', 
                 'created_at'    =>  now(), 
@@ -40,8 +38,7 @@ class SubscriptionPlanSeeder extends Seeder
             ),
             array(
                 'custom_id'     =>  getUniqueString('subscription_plans'), 
-                'period'        =>  'monthly', 
-                'interval'      =>  12, 
+                'months'        =>  12, 
                 'amount'        =>  299, 
                 'is_popular'    =>  'n', 
                 'created_at'    =>  now(), 
