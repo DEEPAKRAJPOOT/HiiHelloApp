@@ -98,6 +98,8 @@ Route::group(['namespace' => 'v1', 'prefix' => 'v1', 'middleware' => 'auth:sanct
 
     // Twillio Call
     Route::post('/twillio/create-access-token',[TwillioController::class,'createAccessToken'])->name('api.twillio.create-access-token');
+    Route::post('/twillio/get-call-log',[TwillioController::class,'getCallLog'])->name('api.twillio.get-call-log');
+    Route::post('/twillio/store-call-log',[TwillioController::class,'storeCallLog'])->name('api.twillio.store-call-log');
 
     // Socket Chat
     Route::post('chat/create-room', [ChatController::class,'createRoom'])->name('chat.create-room');

@@ -23,6 +23,8 @@ class CreateSubscriptionPlansTable extends Migration
             $table->enum('is_popular', ['y', 'n'])->default('n')->nullable();
             $table->enum('is_active', ['y', 'n'])->default('y')->nullable();
             
+            $table->softDeletes();
+            
             $table->timestamps();
         });
     }

@@ -4,13 +4,14 @@ namespace App\Http\Controllers\api\v1;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\ { Request, Response };
-use App\Http\Requests\Api\Twillio\ { CreateApiKeyRequest, OutgoingAppSidRequest, CreateAccessTokenRequest };
-use App\Http\Resources\v1\ { TwillioApiKey, TwillioAccessToken };
+use App\Http\Requests\Api\Twillio\ { CreateApiKeyRequest, OutgoingAppSidRequest, CreateAccessTokenRequest, GetCallLogRequest, StoreCallLogRequest };
+use App\Http\Resources\v1\ { TwillioApiKey, TwillioAccessToken, CallLogResource };
+use Illuminate\Database\Eloquent\ { ModelNotFoundException };
 use Twilio\Rest\ { Client };
 use Twilio\Jwt\ { AccessToken };
 use Twilio\Jwt\Grants\ { ChatGrant, VideoGrant, VoiceGrant };
 use Twilio\TwiML\ { VoiceResponse };
-use App\Models\ { User, UserCommunication };
+use App\Models\ { User, UserCommunication, ChatRoom, CallLog };
 
 class TwillioController extends Controller
 {
@@ -91,6 +92,92 @@ class TwillioController extends Controller
         ]);
 
         return $response;
+    }
+
+    /**
+     * Get Remaining Call time details
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Twilio\TwiML\VoiceResponse
+     */
+    public function getCallLog(Request $request)
+    {
+        $rules = GetCallLogRequest::rules();
+        if( $this->apiValidator($request->all(), $rules) ) {
+            try{
+                $room = ChatRoom::with('callLog')->whereCustomId($request->room)->firstOrFail();
+                
+                if($room->callLog){ 
+                    $this->status = Response::HTTP_OK;
+                    return (new CallLogResource($room->callLog))
+                        ->additional([
+                            'meta' => [
+                                'message'   =>  trans('api.success', ['entity' => __("Call log") ]),
+                            ] ]);
+                }else{
+                    $this->response['meta']['message']  =   trans('api.not_found',['entity' => __('Call log')]); 
+                    $this->status = Response::HTTP_NOT_FOUND;     
+                }
+            } catch(ModelNotFoundException $exception) {                
+                switch ($exception->getModel()) {
+                    case 'App\Models\ChatRoom':
+                        $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("Chat room")]);
+                        break;
+                    default:
+                        $this->response['meta']['message'] = trans('api.went_wrong');
+                        break;
+                };
+            } catch (\Exception $e) {
+                $this->storeErrorLog($e,'get_call_time');
+            }
+        }
+        return $this->returnResponse();
+    }
+
+    /**
+     * Store call log details
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Twilio\TwiML\VoiceResponse
+     */
+    public function storeCallLog(Request $request)
+    {
+        $rules = StoreCallLogRequest::rules();
+        if( $this->apiValidator($request->all(), $rules) ) {
+            try{
+                $room = ChatRoom::whereCustomId($request->room)->firstOrFail();
+
+                $call_log = CallLog::updateOrCreate([
+                    'room_id'           =>  $room->id,
+                    'date'              =>  now()->format('Y-m-d'),
+                    'start_time'        =>  $request->start_time ?? NULL,
+                ],[
+                    'custom_id'         =>  getUniqueString('call_logs'),
+                    'end_time'          =>  $request->end_time ?? NULL,
+                    'remaining_time'    =>  $request->remaining_time ?? NULL,
+                ]);
+
+                $this->status = Response::HTTP_OK;
+                return (new CallLogResource($call_log))
+                        ->additional([
+                            'meta' => [
+                                'message'   =>  trans('api.add', ['entity' => __("Call log") ]),
+                            ] ]);
+            } catch(ModelNotFoundException $exception) {                
+                switch ($exception->getModel()) {
+                    case 'App\Models\ChatRoom':
+                        $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("Chat room")]);
+                        break;
+                    case 'App\Models\CallLog':
+                        $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("Call log")]);
+                        break;
+                    default:
+                        $this->response['meta']['message'] = trans('api.went_wrong');
+                        break;
+                };
+            } catch (\Exception $e) {
+                $this->storeErrorLog($e,'store_call_log');
+            }
+        }
+        return $this->returnResponse();
     }
 
 

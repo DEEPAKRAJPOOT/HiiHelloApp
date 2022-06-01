@@ -19,4 +19,5 @@ class ChatRoom extends Model
     public function blockBy(){ return $this->belongsTo('App\Models\User','block_by','id'); }
     public function latestMessage() { return $this->hasOne(ChatMessage::class,'room_id','id')->latest('id'); }
     public function chatMessages() { return $this->hasMany(ChatMessage::class,'room_id','id'); }
+    public function callLog() { return $this->hasOne(CallLog::class,'room_id','id')->latest(); }
 }
