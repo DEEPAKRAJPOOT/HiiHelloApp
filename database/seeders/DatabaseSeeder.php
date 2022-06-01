@@ -34,5 +34,7 @@ class DatabaseSeeder extends Seeder
         $this->call(AppDetailSeeder::class);
         $this->call(PersonalitySeeder::class);
         $this->call(PersonalityTranslationSeeder::class);
+        $this->call(SubscriptionPlanSeeder::class);
+        $this->call(SubscriptionPlanTranslationSeeder::class);
     }
 }
