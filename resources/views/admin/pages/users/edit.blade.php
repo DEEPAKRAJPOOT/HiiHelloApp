@@ -135,7 +135,47 @@
                     @endif
                 </div>
 
-                {{-- Personality --}}
+                {{-- Profile Photo --}}
+                <div class="form-group">
+                    <label for="profile_photo">Profile Photo</label>
+                    <div class="custom-file">
+                        <input type="file" class="custom-file-input" id="profile_photo" name="profile_photo" tabindex="0" />
+                        <label class="custom-file-label @error('profile_photo') is-invalid @enderror" for="customFile">Choose file</label>
+                        @if ($errors->has('profile_photo'))
+                        <span class="text-danger">
+                            <strong class="form-text">{{ $errors->first('profile_photo') }}</strong>
+                        </span>
+                    @endif
+                    </div>
+                </div>
+                @if ($user->profile_photo)
+                <div class="symbol symbol-120 mr-5">
+                        <div class="symbol-label" style="background-image:url({{ generateURL($user->profile_photo)}})">
+                        {{-- Custom css added .symbol div a --}}
+                            <a href="#" class="btn btn-icon btn-light btn-hover-danger remove-img" id="kt_quick_user_close" style="width: 18px; height: 18px;">
+                                <i class="ki ki-close icon-xs text-muted"></i>
+                            </a>
+                        </div>
+                 </div>
+                 @endif
+            </div>
+        <!--end::Form-->
+    </div>
+
+
+    <br><br>
+    <div class="card card-custom">
+        <div class="card-header">
+            <div class="card-title">
+                <span class="card-icon">
+                    <i class="fas fa-user-edit text-primary"></i>
+                </span>
+                <h3 class="card-label text-uppercase">Long Profile</h3>
+            </div>
+        </div>
+
+        <div class="card-body">
+            {{-- Personality --}}
                 <div class="form-group">
                     <label for="personality_id">Personality Type</label>
                     <select type="text" class="form-control @error('personality_id') is-invalid @enderror" id="personality_id" name="personality_id"/>
@@ -361,9 +401,11 @@
                         <option value="">Select Idea of Travelling</option>
                         @foreach($travelling as $travel)
                             @foreach($travel->subInterests as $sub)
-                                @foreach($user->interests as $data)
-                                <option {{ $sub->id == $data->interest_id ? 'selected=selected' : '' }} value="{{ $sub->id }}"> {{ $sub->interestTransDefault->title }}</option>
-                                @endforeach
+                                @if(in_array($sub->id, $user_interest))
+                                    <option value="{{ $sub->id }}" selected> {{ $sub->interestTransDefault->title }}</option>
+                                @else
+                                    <option value="{{ $sub->id }}"> {{ $sub->interestTransDefault->title }}</option>
+                                @endif
                             @endforeach
                         @endforeach
                     </select>
@@ -381,9 +423,11 @@
                         <option value="">Select Music</option>
                         @foreach($musics as $music)
                             @foreach($music->subInterests as $sub_music)
-                                @foreach($user->interests as $data)
-                                <option {{ $sub_music->id == $data->interest_id ? 'selected=selected' : '' }} value="{{ $sub_music->id }}"> {{ $sub_music->interestTransDefault->title }}</option>
-                                @endforeach
+                                @if(in_array($sub_music->id, $user_interest))
+                                    <option value="{{ $sub_music->id }}" selected> {{ $sub_music->interestTransDefault->title }}</option>
+                                @else
+                                    <option value="{{ $sub_music->id }}"> {{ $sub_music->interestTransDefault->title }}</option>
+                                @endif
                             @endforeach
                         @endforeach
                     </select>
@@ -401,9 +445,11 @@
                         <option value="">Select Hobbies</option>
                         @foreach($hobbies as $hobbie)
                             @foreach($hobbie->subInterests as $sub_hobbie)
-                                @foreach($user->interests as $data)
-                                <option {{ $sub_hobbie->id == $data->interest_id ? 'selected=selected' : '' }} value="{{ $sub_hobbie->id }}"> {{ $sub_hobbie->interestTransDefault->title }}</option>
-                                @endforeach
+                                @if(in_array($sub_hobbie->id, $user_interest))
+                                    <option value="{{ $sub_hobbie->id }}" selected> {{ $sub_hobbie->interestTransDefault->title }}</option>
+                                @else
+                                    <option value="{{ $sub_hobbie->id }}"> {{ $sub_hobbie->interestTransDefault->title }}</option>
+                                @endif
                             @endforeach
                         @endforeach
                     </select>
@@ -421,9 +467,11 @@
                         <option value="">Select Childhood Game</option>
                         @foreach($childhood as $game)
                             @foreach($game->subInterests as $sub_game)
-                                @foreach($user->interests as $data)
-                                <option {{ $sub_game->id == $data->interest_id ? 'selected=selected' : '' }} value="{{ $sub_game->id }}"> {{ $sub_game->interestTransDefault->title }}</option>
-                                @endforeach
+                                @if(in_array($sub_game->id, $user_interest))
+                                    <option value="{{ $sub_game->id }}" selected> {{ $sub_game->interestTransDefault->title }}</option>
+                                @else
+                                    <option value="{{ $sub_game->id }}"> {{ $sub_game->interestTransDefault->title }}</option>
+                                @endif
                             @endforeach
                         @endforeach
                     </select>
@@ -441,9 +489,11 @@
                         <option value="">Select Sports</option>
                         @foreach($sports as $sport)
                             @foreach($sport->subInterests as $sub_sport)
-                                @foreach($user->interests as $data)
-                                <option {{ $sub_sport->id == $data->interest_id ? 'selected=selected' : '' }} value="{{ $sub_sport->id }}"> {{ $sub_sport->interestTransDefault->title }}</option>
-                                @endforeach
+                                @if(in_array($sub_sport->id, $user_interest))
+                                    <option value="{{ $sub_sport->id }}" selected> {{ $sub_sport->interestTransDefault->title }}</option>
+                                @else
+                                    <option value="{{ $sub_sport->id }}"> {{ $sub_sport->interestTransDefault->title }}</option>
+                                @endif
                             @endforeach
                         @endforeach
                     </select>
@@ -461,9 +511,11 @@
                         <option value="">Select Films</option>
                         @foreach($films as $film)
                             @foreach($film->subInterests as $sub_film)
-                                @foreach($user->interests as $data)
-                                <option {{ $sub_film->id == $data->interest_id ? 'selected=selected' : '' }} value="{{ $sub_film->id }}"> {{ $sub_film->interestTransDefault->title }}</option>
-                                @endforeach
+                                @if(in_array($sub_film->id, $user_interest))
+                                    <option value="{{ $sub_film->id }}" selected> {{ $sub_film->interestTransDefault->title }}</option>
+                                @else
+                                    <option value="{{ $sub_film->id }}"> {{ $sub_film->interestTransDefault->title }}</option>
+                                @endif
                             @endforeach
                         @endforeach
                     </select>
@@ -481,9 +533,11 @@
                         <option value="">Select Gender</option>
                         @foreach($actors as $actor)
                             @foreach($actor->subInterests as $sub_actor)
-                                @foreach($user->interests as $data)
-                                <option {{ $sub_actor->id == $data->interest->parent_id ? 'selected=selected' : '' }} value="{{ $sub_actor->id }}"> {{ $sub_actor->interestTransDefault->title }}</option>
-                                @endforeach
+                                @if(in_array($sub_actor->id,$user_interest))
+                                    <option value="{{ $sub_actor->id }}" selected> {{ $sub_actor->interestTransDefault->title }}</option>
+                                @else
+                                    <option value="{{ $sub_actor->id }}"> {{ $sub_actor->interestTransDefault->title }}</option>
+                                @endif
                             @endforeach
                         @endforeach
                     </select>
@@ -502,9 +556,11 @@
                     @foreach($actors as $actor)
                         @foreach($actor->subInterests as $sub_actor)
                             @foreach($sub_actor->subInterests as $sub_gender)
-                                @foreach($user->interests as $data)
-                                <option {{ $sub_gender->id == $data->interest_id ? 'selected=selected' : '' }} value="{{ $sub_gender->id }}"> {{ $sub_gender->interestTransDefault->title }}</option>
-                                @endforeach
+                                @if(in_array($sub_gender->id,$user_interest))
+                                    <option value="{{ $sub_gender->id }}" selected> {{ $sub_gender->interestTransDefault->title }}</option>
+                                @else
+                                    <option value="{{ $sub_gender->id }}"> {{ $sub_gender->interestTransDefault->title }}</option>
+                                @endif
                             @endforeach
                         @endforeach
                     @endforeach
@@ -523,9 +579,11 @@
                         <option value="">Select Gender</option>
                         @foreach($singers as $singer)
                             @foreach($singer->subInterests as $sub_singer)
-                                @foreach($user->interests as $data)
-                                    <option {{ $sub_singer->id == $data->interest->parent_id ? 'selected=selected' : '' }} value="{{ $sub_singer->id }}"> {{ $sub_singer->interestTransDefault->title }}</option>
-                                @endforeach
+                                @if(in_array($sub_singer->id,$user_interest))
+                                    <option {{ $sub_singer->id == $user_interest->interest->parent_id ? 'selected=selected' : '' }} value="{{ $sub_singer->id }}" selected> {{ $sub_singer->interestTransDefault->title }}</option>
+                                @else
+                                    <option value="{{ $sub_singer->id }}"> {{ $sub_singer->interestTransDefault->title }}</option>
+                                @endif
                             @endforeach
                         @endforeach
                     </select>
@@ -544,9 +602,11 @@
                     @foreach($singers as $singer)
                         @foreach($singer->subInterests as $sub_singer)
                             @foreach($sub_singer->subInterests as $sub_gender)
-                                @foreach($user->interests as $data)
-                                <option {{ $sub_gender->id == $data->interest_id ? 'selected=selected' : '' }} value="{{ $sub_gender->id }}"> {{ $sub_gender->interestTransDefault->title }}</option>
-                                @endforeach
+                                @if(in_array($sub_gender->id,$user_interest))
+                                    <option value="{{ $sub_gender->id }}" selected> {{ $sub_gender->interestTransDefault->title }}</option>
+                                @else
+                                    <option value="{{ $sub_gender->id }}"> {{ $sub_gender->interestTransDefault->title }}</option>
+                                @endif
                             @endforeach
                         @endforeach
                     @endforeach
@@ -565,9 +625,11 @@
                         <option value="">Select Food</option>
                         @foreach($foods as $food)
                             @foreach($food->subInterests as $sub_food)
-                                @foreach($user->interests as $data)
-                                <option {{ $sub_food->id == $data->interest_id ? 'selected=selected' : '' }} value="{{ $sub_food->id }}"> {{ $sub_food->interestTransDefault->title }}</option>
-                                @endforeach
+                                @if(in_array($sub_food->id,$user_interest))
+                                    <option value="{{ $sub_food->id }}" selected> {{ $sub_food->interestTransDefault->title }}</option>
+                                @else
+                                    <option value="{{ $sub_food->id }}"> {{ $sub_food->interestTransDefault->title }}</option>
+                                @endif
                             @endforeach
                         @endforeach
                     </select>
@@ -577,32 +639,7 @@
                         </span>
                     @endif
                 </div>
-
-                {{-- Profile Photo --}}
-                <div class="form-group">
-                    <label for="profile_photo">Profile Photo</label>
-                    <div class="custom-file">
-                        <input type="file" class="custom-file-input" id="profile_photo" name="profile_photo" tabindex="0" />
-                        <label class="custom-file-label @error('profile_photo') is-invalid @enderror" for="customFile">Choose file</label>
-                        @if ($errors->has('profile_photo'))
-                        <span class="text-danger">
-                            <strong class="form-text">{{ $errors->first('profile_photo') }}</strong>
-                        </span>
-                    @endif
-                    </div>
-                </div>
-                @if ($user->profile_photo)
-                <div class="symbol symbol-120 mr-5">
-                        <div class="symbol-label" style="background-image:url({{ generateURL($user->profile_photo)}})">
-                        {{-- Custom css added .symbol div a --}}
-                            <a href="#" class="btn btn-icon btn-light btn-hover-danger remove-img" id="kt_quick_user_close" style="width: 18px; height: 18px;">
-                                <i class="ki ki-close icon-xs text-muted"></i>
-                            </a>
-                        </div>
-                 </div>
-                 @endif
-            </div>
-        <!--end::Form-->
+        </div>
     </div>
 
     <br><br>

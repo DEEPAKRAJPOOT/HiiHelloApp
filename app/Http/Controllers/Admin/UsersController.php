@@ -218,6 +218,8 @@ class UsersController extends Controller
         $pets = ProfileDetail::where(['attribute'=>'pets','is_active'=>'y'])->get();
         $star_signs = ProfileDetail::where(['attribute'=>'sun_sign','is_active'=>'y'])->get();
         $community = ProfileDetail::where(['attribute'=>'community','is_active'=>'y'])->get();
+        //user interest
+        $user_interest = UserInterest::with('interest')->where('user_id',$user->id)->pluck('interest_id')->toArray();
         $travelling = Interest::with(['subInterests.interestTransDefault'])->where(['slug'=>'traveling','is_active'=>'y'])->get();
         $musics = Interest::with(['subInterests.interestTransDefault'])->where(['slug' => 'music','is_active' => 'y'])->get();
         $books = Interest::with(['subInterests.interestTransDefault'])->where(['slug' => 'books', 'is_active' => 'y'])->get();
@@ -228,7 +230,7 @@ class UsersController extends Controller
         $actors = Interest::with(['subInterests.interestTransDefault'])->where(['slug' => 'actors', 'is_active' => 'y'])->get();
         $singers = Interest::with(['subInterests.interestTransDefault'])->where(['slug' => 'singers', 'is_active' => 'y'])->get();
         $foods = Interest::with(['subInterests.interestTransDefault'])->where(['slug' => 'food', 'is_active' => 'y'])->get();
-        return view('admin.pages.users.edit', compact('user','personalities','university','educations','professions','religions','relationship_status','you_are_here','food_preferences','drinking','smoking','pets','star_signs','community','travelling','musics','books','films','hobbies','childhood','sports','actors','singers','foods'))->with(['custom_title' => 'Users']);
+        return view('admin.pages.users.edit', compact('user','personalities','university','educations','professions','religions','relationship_status','you_are_here','food_preferences','drinking','smoking','pets','star_signs','community','travelling','musics','books','films','hobbies','childhood','sports','actors','singers','foods','user_interest'))->with(['custom_title' => 'Users']);
     }
 
     /**
@@ -287,6 +289,83 @@ class UsersController extends Controller
                 }elseif($video_verified_at == NULL){
                     $user->video_verified_at = NULL;
                 }
+
+                if(!empty($request->traveling_id)){
+                    UserInterest::updateOrCreate(
+                        [
+                          'user_id'  => $user->id,
+                          'interest_id' => $request->traveling_id,  
+                        ],
+                        [
+                            'custom_id' => getUniqueString('user_interests'),
+                        ]);
+                }
+
+                if(!empty($request->music_id)){
+                    UserInterest::create(
+                        ['custom_id' => getUniqueString('user_interests'),
+                          'user_id'  => $user->id,
+                          'interest_id' => $request->music_id,  
+                        ]);
+                }
+
+                if(!empty($request->hobbie_id)){
+                    UserInterest::create(
+                        ['custom_id' => getUniqueString('user_interests'),
+                          'user_id'  => $user->id,
+                          'interest_id' => $request->hobbie_id,  
+                        ]);
+                }
+
+                if(!empty($request->game_id)){
+                    UserInterest::create(
+                        ['custom_id' => getUniqueString('user_interests'),
+                          'user_id'  => $user->id,
+                          'interest_id' => $request->game_id,  
+                        ]);
+                }
+
+                if(!empty($request->sport_id)){
+                    UserInterest::create(
+                        ['custom_id' => getUniqueString('user_interests'),
+                          'user_id'  => $user->id,
+                          'interest_id' => $request->sport_id,  
+                        ]);
+                }
+
+                if(!empty($request->film_id)){
+                    UserInterest::create(
+                        ['custom_id' => getUniqueString('user_interests'),
+                          'user_id'  => $user->id,
+                          'interest_id' => $request->film_id,  
+                        ]);
+                }
+
+                if(!empty($request->depend_id)){
+                    UserInterest::create(
+                        ['custom_id' => getUniqueString('user_interests'),
+                          'user_id'  => $user->id,
+                          'interest_id' => $request->depend_id,  
+                        ]);
+                }
+
+                if(!empty($request->singer_id)){
+                    UserInterest::create(
+                        ['custom_id' => getUniqueString('user_interests'),
+                          'user_id'  => $user->id,
+                          'interest_id' => $request->singer_id,  
+                        ]);
+                }
+
+                if(!empty($request->food_id)){
+                    UserInterest::create(
+                        ['custom_id' => getUniqueString('user_interests'),
+                          'user_id'  => $user->id,
+                          'interest_id' => $request->food_id,  
+                        ]);
+                }
+
+                // dd($request->all());
 
                 if( $user->save() ) {
                     DB::commit();
