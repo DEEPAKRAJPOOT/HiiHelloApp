@@ -207,12 +207,20 @@ class PaymentController extends Controller
         $rules = PaginationRequest::rules();
         if( $this->apiValidator($request->all(), $rules) ) {
             try{
-                $subscription_plans = SubscriptionPlan::with('subscriptionPlanTranslation')->whereIsActive('y')->get();
+                $subscription_plans = SubscriptionPlan::with('subscriptionPlanTranslation')->whereIsActive('y');
+                
+                $count = $subscription_plans->count();
+                $subscription_plans = $subscription_plans->limit($request->limit ?? config('utility.pagination.limit'))
+                            ->offset($request->offset ?? config('utility.pagination.offset'))
+                            ->get();
 
                 if($subscription_plans->isNotEmpty()){
                     return (SubscriptionPlanResource::collection($subscription_plans))
                     ->additional([
                         'meta' => [
+                            'limit'     =>  $request->limit,
+                            'offset'    =>  $request->offset,
+                            'total'     =>  $count,
                             'url'       =>  url()->current(),
                             'api'       =>  $this->getVersion(),
                             'language'  =>  app()->getLocale(),
