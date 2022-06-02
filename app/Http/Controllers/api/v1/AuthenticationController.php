@@ -31,7 +31,7 @@ class AuthenticationController extends Controller
                                         ->whereContactNo($request->contact_no)->withCount('likes')->firstOrFail();
                     if($user->is_active == 'y'){
                         Auth::login($user);
-                        Auth::user()->tokens()->delete(); // Logout From All Devices    
+                        // Auth::user()->tokens()->delete(); // Logout From All Devices    
 
                         return (new LoginResource($user))
                             ->additional([
@@ -81,14 +81,6 @@ class AuthenticationController extends Controller
                 if(empty($user) && !empty($request->email)){
                     $user = User::whereEmail($request->email)->first();
                 }
-                if(!empty($request->full_name)){
-                    $language_codes = Language::pluck('lang_code')->toArray();
-                    foreach($language_codes as $language_code){
-                        $traslate_data[$language_code] =  [ 'full_name' =>  $request->full_name ];
-                    }
-                    $user->update($traslate_data);
-                    $user->is_translated = 'n';
-                }
 
                 if(!empty($user)){
                     $user->fill($request->all());
@@ -114,6 +106,15 @@ class AuthenticationController extends Controller
                     ]);
                 }
 
+                if(!empty($request->full_name)){
+                    $language_codes = Language::pluck('lang_code')->toArray();
+                    foreach($language_codes as $language_code){
+                        $traslate_data[$language_code] =  [ 'full_name' =>  $request->full_name ];
+                    }
+                    $user->update($traslate_data);
+                    $user->is_translated = 'n';
+                }
+                
                 // Set Contact Number As Verified
                 if($user->wasRecentlyCreated && !empty($user->contact_no)){
                     $user->contact_verified_at = \Carbon\Carbon::now(); 
