@@ -16,13 +16,13 @@ class MyProfile extends JsonResource
     {
         return [
             'id'                =>  $this->custom_id ?? "",
-            'full_name'         =>  $this->full_name ?? "",
+            'full_name'         =>  $this->userTranslation ? $this->userTranslation->full_name : "",
             'age'               =>  $this->getAge(),
             'gender'            =>  $this->gender ?? "",
             'interest'          =>  $this->interest ?? "",
             'extra'             =>  [
-                'about_me'      =>  $this->about_me ?? "",
-                'fav_movie'     =>  $this->fav_movie ?? "",
+                'about_me'      =>  $this->userTranslation ? $this->userTranslation->about_me : "",
+                'fav_movie'     =>  $this->userTranslation ? $this->userTranslation->fav_movie : "",
             ],
             'location'          =>  new LocationResource($this->location),
             'language'          =>  new LanguageResource($this->language),

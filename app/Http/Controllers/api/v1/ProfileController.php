@@ -8,7 +8,7 @@ use App\Http\Requests\Api\User\ { FullProfileRequest, SetInterestRequest, SetMed
 use Illuminate\Database\Eloquent\ { ModelNotFoundException };
 use Illuminate\Support\Facades\ { Storage, Auth };
 use App\Http\Resources\v1\ { UserFullProfile, UserInterestResource, MediaResource };
-use App\Models\ { User, UserDetail, Interest, UserInterest, ProfileDetail, Personality };
+use App\Models\ { User, UserDetail, Interest, UserInterest, ProfileDetail, Personality, Language };
 
 class ProfileController extends Controller
 {
@@ -27,10 +27,27 @@ class ProfileController extends Controller
             try{
                 $user = $request->user();
                 $auth_id = $user ? $user->id : NULL;
+                $traslate_data = [];
 
                 if(!empty($request->email)){ $user->email = $request->email; }
-                if(!empty($request->about_me)){ $user->about_me = $request->about_me; }
-                if(!empty($request->fav_movie)){ $user->fav_movie = $request->fav_movie; }
+
+                if(!empty($request->about_me) && !empty($user->language) ){
+                    $language_codes = Language::pluck('lang_code')->toArray();
+                    foreach($language_codes as $language_code){
+                        $traslate_data[$language_code] =  [ 'about_me' =>  $request->about_me ];
+                    }
+                    $user->update($traslate_data);
+                    $user->is_translated = 'n';
+                }
+
+                if(!empty($request->fav_movie) && !empty($user->language) ){
+                    $language_codes = Language::pluck('lang_code')->toArray();
+                    foreach($language_codes as $language_code){
+                        $traslate_data[$language_code] =  [ 'fav_movie' =>  $request->fav_movie ];
+                    }
+                    $user->update($traslate_data);
+                    $user->is_translated = 'n';
+                }
 
                 if(!empty($request->personality)){
                     $personality = Personality::select('id')->whereCustomId($request->personality)->whereIsActive('y')->firstOrFail();
@@ -86,7 +103,7 @@ class ProfileController extends Controller
                 }
                 $user->save();
 
-                $user = User::with(['location.locationTranslation','language',
+                $user = User::with(['userTranslation','location.locationTranslation','language',
                                 'personality.personalityTranslation','education.profileDetailTranslation',
                                 'university.profileDetailTranslation','profession.profileDetailTranslation',
                                 'religion.profileDetailTranslation',

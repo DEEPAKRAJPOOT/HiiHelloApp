@@ -78,7 +78,7 @@ class LikeController extends Controller
         $rules = PaginationRequest::rules();
         if( $this->apiValidator($request->all(), $rules) ) {
             try{
-                $likes = Like::with(['likerUser.location.locationTranslation'])
+                $likes = Like::with(['likerUser.userTranslation','likerUser.location.locationTranslation'])
                                 ->whereHas('likerUser')
                                 ->where('user_id',Auth::id())
                                 ->latest();

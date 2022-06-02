@@ -83,17 +83,17 @@ class ProfileReportController extends Controller
     {
         extract($this->DTFilters($request->all()));
         $records = [];
-        $profile_reports = ProfileReport::with('user','reportedUser')->orderBy($sort_column, $sort_order);
+        $profile_reports = ProfileReport::with('user.userTranslations','reportedUser.userTranslations')->orderBy($sort_column, $sort_order);
 
         if ($search != '') {
             $profile_reports->where(function ($query) use ($search) {
                 $query->where('custom_id', 'like', "%{$search}%")
                     ->orWhere('message', 'like', "%{$search}%")
                     ->orWhere('status', 'like', "%{$search}%")
-                    ->orWhereHas('user', function ($query) use ($search) {
+                    ->orWhereHas('user.userTranslations', function ($query) use ($search) {
                         $query->where('full_name', 'like', "%{$search}%");
                     })
-                    ->orWhereHas('reportedUser', function ($query) use ($search) {
+                    ->orWhereHas('reportedUser.userTranslations', function ($query) use ($search) {
                         $query->where('full_name', 'like', "%{$search}%");
                     });
             });
@@ -116,9 +116,9 @@ class ProfileReportController extends Controller
             ];
 
             $records['data'][] = [
-                'id'            =>  $profile_report->id,
-                'user_id'       =>  $profile_report->user ? $profile_report->user->full_name : "",
-                'reported_user_id' =>  $profile_report->reportedUser ? $profile_report->reportedUser->full_name : "",
+                'id'                =>  $profile_report->id,
+                'user_id'           =>  $profile_report->user ? $profile_report->user->userTransDefault ? $profile_report->user->full_name : "" : "",
+                'reported_user_id'  =>  $profile_report->reportedUser ? $profile_report->reportedUser->userTransDefault ? $profile_report->reportedUser->full_name : "" : "",
                 'message'       =>  $profile_report->message,
                 'status'        =>  $profile_report->status,
                 'created_at'    =>  $profile_report->created_at,

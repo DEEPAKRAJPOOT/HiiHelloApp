@@ -24,12 +24,12 @@ class FilterController extends Controller
                 $auth_id = $user ? $user->id : NULL;
                 $max_interest = config('utility.profile.detail.max_interest') ?? 5;
 
-                $users = User::select('id','custom_id','full_name','birth_date','profile_photo','gender','interest',
+                $users = User::select('id','custom_id','birth_date','profile_photo','gender','interest',
                                 'location_id','verify_status','is_active')
                                 ->with(['interests' => function($query) use ($max_interest) {
                                         $query->latest()->take($max_interest); 
                                     },
-                                    'interests.interest.interestTranslation','location.locationTranslation'])
+                                    'interests.interest.interestTranslation','userTranslation','location.locationTranslation'])
                                 ->where('id','!=',$auth_id)->whereIsActive('y');
 
                 if(!empty($request->relationship_status)){

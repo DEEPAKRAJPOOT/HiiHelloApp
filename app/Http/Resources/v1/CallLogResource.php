@@ -16,10 +16,10 @@ class CallLogResource extends JsonResource
     {
         return [
             'id'                =>  $this->custom_id ?? "",
-            'date'              =>  $this->date ?? "",
-            'start_time'        =>  $this->start_time ?? "",
-            'end_time'          =>  $this->end_time ?? "",
-            'remaining_time'    =>  $this->remaining_time ?? "",
+            'date'              =>  $this->callLog ? $this->callLog->date : now()->format('Y-m-d'),
+            'start_time'        =>  $this->callLog ? $this->callLog->start_time : "",
+            'end_time'          =>  $this->callLog ? $this->callLog->end_time : "",
+            'remaining_time'    =>  $this->callLog ? $this->callLog->remaining_time : config('utility.twillio.allow_call_time'),
         ];
         return parent::toArray($request);
     }

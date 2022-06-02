@@ -23,9 +23,9 @@ class HomeController extends Controller
                 $user = $request->user();
                 $auth_id = $user ? $user->id : NULL;
 
-                $users = User::select('id','custom_id','full_name','birth_date','profile_photo','gender','interest',
+                $users = User::select('id','custom_id','birth_date','profile_photo','gender','interest',
                                 'location_id','verify_status','is_active')
-                                ->with(['interests','interests.interest.interestTranslation','location.locationTranslation'])
+                                ->with(['userTranslation','interests','interests.interest.interestTranslation','location.locationTranslation'])
                                 ->where('id','!=',$auth_id)->whereIsActive('y');
 
                 if(!empty($user->interest)){

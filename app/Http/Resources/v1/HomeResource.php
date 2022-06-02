@@ -16,7 +16,7 @@ class HomeResource extends JsonResource
     {
         return [
             'id'                =>  $this->custom_id ?? "",
-            'full_name'         =>  $this->full_name ?? "",
+            'full_name'         =>  $this->userTranslation ? $this->userTranslation->full_name : "",
             'age'               =>  $this->getAge(),
             'gender'            =>  $this->gender ?? "",
             'location'          =>  new LocationResource($this->location),

@@ -16,7 +16,7 @@ class SignUpResource extends JsonResource
     {
         return [
             'id'                =>  $this->custom_id ?? "",
-            'full_name'         =>  $this->full_name ?? "",
+            'full_name'         =>  $this->userTranslation ? $this->userTranslation->full_name : "",
             'email'             =>  $this->email ?? "",
             'contact'       =>  [
                 'code'      =>  $this->country_code,

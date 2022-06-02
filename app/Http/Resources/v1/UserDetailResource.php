@@ -16,10 +16,10 @@ class UserDetailResource extends JsonResource
     {
         return [
             'id'                =>  $this->custom_id ?? "",
-            'full_name'         =>  $this->full_name ?? "",
+            'full_name'         =>  $this->userTranslation ? $this->userTranslation->full_name : "",
             'age'               =>  $this->getAge(),
             'extra'             =>  [
-                'about_me'      =>  $this->about_me ?? "",
+                'about_me'      =>  $this->userTranslation ? $this->userTranslation->about_me : "",
             ],
             'location'          =>  new LocationResource($this->location),
             'interests'         =>  UserInterestResource::collection($this->interests),

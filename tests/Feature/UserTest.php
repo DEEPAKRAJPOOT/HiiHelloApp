@@ -72,7 +72,7 @@ class UserTest extends TestCase
             ],
             'data'  =>  [
                 'id'                =>  $user->custom_id ?? "",
-                'full_name'         =>  $user->full_name ?? "",
+                'full_name'         =>  $user->userTranslation ? $user->userTranslation->full_name : "",
                 'email'             =>  $user->email ?? "",
                 'contact'       =>  [
                     'code'      =>  $user->country_code,

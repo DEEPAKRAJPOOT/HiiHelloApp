@@ -71,8 +71,9 @@ class ChatController extends Controller
                 $auth_id = $request->user() ? $request->user()->id : NULL;
                 $search = $request->search;
 
-                $rooms = ChatRoom::with(['creator:id,custom_id,full_name,profile_photo',
-                                'participator:id,custom_id,full_name,profile_photo',
+                $rooms = ChatRoom::with(['creator:id,custom_id,profile_photo',
+                                'participator:id,custom_id,profile_photo',
+                                'creator.userTranslation','participator.userTranslation',
                                 'latestMessage.sender:id,custom_id'])
                         ->whereHas('chatMessages')
                         ->selectRaw("chat_rooms.*, (SELECT MAX(created_at) from chat_messages WHERE chat_messages.room_id=chat_rooms.id) as latest_message_on")
@@ -87,9 +88,9 @@ class ChatController extends Controller
 
                 if(!empty($search)){
                     $rooms = $rooms->where(function ($query) use ($search) {
-                                $query->whereHas('creator', function ($q1) use ($search){
+                                $query->whereHas('creator.userTranslation', function ($q1) use ($search){
                                     $q1->where('full_name', 'like', '%'.$search.'%');
-                                })->orWhereHas('participator', function ($q2) use ($search){
+                                })->orWhereHas('participator.userTranslation', function ($q2) use ($search){
                                     $q2->where('full_name', 'like', '%'.$search.'%');
                                 });
                             });

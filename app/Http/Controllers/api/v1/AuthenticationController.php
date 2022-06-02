@@ -27,7 +27,7 @@ class AuthenticationController extends Controller
             $checksumDetails = $this->validateCheckSum($request->security_token, $request->contact_no);
             if( $checksumDetails->validate ) {
                 try {
-                    $user = User::with(['userDetails','language','location.locationTranslation'])
+                    $user = User::with(['userTranslation','userDetails','language','location.locationTranslation','interests'])
                                         ->whereContactNo($request->contact_no)->withCount('likes')->firstOrFail();
                     if($user->is_active == 'y'){
                         Auth::login($user);
@@ -62,8 +62,9 @@ class AuthenticationController extends Controller
         if( $this->apiValidator($request->all(), $rules) ) {
             try{
                 $user = $this->getAuthUser();
-
                 $country_id = $location_id = $language_id = NULL;
+                $traslate_data = [];
+
                 if(!empty($request->country_code)){
                     $country = Country::wherePhonecode($request->country_code)->whereIsActive('y')->firstOrFail();
                     $country_id = $country->id;
@@ -80,7 +81,15 @@ class AuthenticationController extends Controller
                 if(empty($user) && !empty($request->email)){
                     $user = User::whereEmail($request->email)->first();
                 }
-                    
+                if(!empty($request->full_name)){
+                    $language_codes = Language::pluck('lang_code')->toArray();
+                    foreach($language_codes as $language_code){
+                        $traslate_data[$language_code] =  [ 'full_name' =>  $request->full_name ];
+                    }
+                    $user->update($traslate_data);
+                    $user->is_translated = 'n';
+                }
+
                 if(!empty($user)){
                     $user->fill($request->all());
                     $user->country_id = $country_id;
@@ -93,7 +102,7 @@ class AuthenticationController extends Controller
                         'contact_no'            =>  $request->contact_no ?? NULL,
                     ],[
                         'custom_id'             =>  getUniqueString('users'),
-                        'full_name'             =>  $request->full_name ?? NULL,
+                        // 'full_name'             =>  $request->full_name ?? NULL,
                         'birth_date'            =>  $request->birth_date ?? NULL,
                         'gender'                =>  $request->gender ?? NULL,
                         'interest'              =>  $request->interest ?? NULL,
@@ -124,7 +133,7 @@ class AuthenticationController extends Controller
                 $user->discover_end_age     = config('utility.profile.detail.discover_end_age');
 
                 if($user->save()){
-                    $user = User::with(['interests','userDetails','location.locationTranslation','language'])
+                    $user = User::with(['userTranslation','interests','userDetails','location.locationTranslation','language'])
                                     ->whereId($user->id)->firstOrFail();
                     Auth::login($user);
                     return (new SignUpResource($user))
@@ -264,6 +273,8 @@ class AuthenticationController extends Controller
             try {
                 // Check for deleted account details
                 $account_del = false;
+                $traslate_data = [];
+
                 if(!empty($request->email)){
                     $deleted = User::onlyTrashed()->pluck('email')->toArray();
                     if( in_array($request->email, $deleted) ) { $account_del = true; }
@@ -284,11 +295,11 @@ class AuthenticationController extends Controller
                 }else{
                     $user = $user->where($request->type.'_id', $request[$request->type.'_id']);
                 }
-                $user = $user->first();  
+                $user = $user->first();
                   
                 unset($request['type']);
                 if( !empty($user) ) { # Update Profile Details
-                    $request['full_name'] = $user->full_name ? $user->full_name : $request->full_name;
+                    // $request['full_name'] = $user->full_name ? $user->full_name : $request->full_name;
                     $user->fill($request->all());
                 } else { # Create new user
                     $request['custom_id'] = getUniqueString('users');
@@ -297,6 +308,15 @@ class AuthenticationController extends Controller
                     
                     $user = User::create($request->all());
                     $user->is_social_user = 'y'; 
+                }
+
+                if(!empty($request->full_name) && empty($user->full_name)){
+                    $language_codes = Language::pluck('lang_code')->toArray();
+                    foreach($language_codes as $language_code){
+                        $traslate_data[$language_code] =  [ 'full_name' =>  $request->full_name ];
+                    }
+                    $user->update($traslate_data);
+                    $user->is_translated = 'n';
                 }
 
                 $path = $user->profile_photo;

@@ -18,11 +18,12 @@ class UserCommunication extends Model
 
     public static function connectWithTwilio($user_id)
     {
-        $account_user = $card_user = User::with(['subAccount','userCommunication', 'userDetails'])
+        $account_user = $card_user = User::with(['userTranslation','subAccount','userCommunication', 'userDetails'])
                                     ->whereCustomId($user_id)->firstOrFail();
-            
+        $full_name = $user->userTranslation ? $user->userTranslation->full_name : "",
+        
         if( empty($account_user->subAccount) ) {
-            $account = TwilioTrait::createSubAccount($account_user->full_name);
+            $account = TwilioTrait::createSubAccount($full_name);
             if($account){ 
                 if(!empty($account->sid)){
                     $subAccount = TwilioSubaccount::create([
@@ -73,7 +74,7 @@ class UserCommunication extends Model
                 $bought = TwilioTrait::buyIncomingNumber($incomingNumber, $subaccount_sid);
                 if($bought){
                     \Log::info( "Number purchased ".$incomingNumber);   
-                    $identity = strtolower(str_replace(" ","_", $card_user->full_name))."_".$card_user->id."_".date("YmdHis");        
+                    $identity = strtolower(str_replace(" ","_", $full_name))."_".$card_user->id."_".date("YmdHis");        
                     self::create([
                         'user_id'           => $card_user->id, //user id of user
                         'subaccount_id'     => $subaccount_id,

@@ -23,12 +23,12 @@ class CheckApiLanguage
         // 'gu',       //  Gujarati        =>  ગુજરાતી
         // 'kn',       //  Kannada         =>  ಕನ್ನಡ
         // 'ml',       //  Malayalam       =>  മലയാളം
-        // 'bho',      //  Bhojpuri        =>  भोजपुरी
+        // 'or',      //  Oriya             =>  ଓଡ଼ିଆ
         // 'pa',       //  Punjabi         =>  पंजाबी
         // 'te',       //  Telugu          =>  తెలుగు
 
         $default_lang_code = config('utility.default_lang_code');
-        $language_allowed  = ['en', 'hi', 'ta', 'mr', 'bn', 'gu', 'kn', 'ml', 'bho', 'pa', 'te'];
+        $language_allowed  = ['en', 'hi', 'ta', 'mr', 'bn', 'gu', 'kn', 'ml', 'or', 'pa', 'te'];
         $language = request()->header()['x-language'][0] ?? $default_lang_code;
         $language = in_array($language, $language_allowed) ? $language : $default_lang_code;
         app()->setLocale($language);

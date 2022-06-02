@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Astrotomic\Translatable\Contracts\Translatable as TranslatableContract;
+use Astrotomic\Translatable\Translatable;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -12,9 +14,9 @@ use Laravel\Sanctum\HasApiTokens;
 use App\Models\Like;
 use Carbon\Carbon;
 
-class User extends Authenticatable implements MustVerifyEmail
+class User extends Authenticatable implements MustVerifyEmail, TranslatableContract
 {
-    use HasApiTokens, Notifiable, SoftDeletes;
+    use HasApiTokens, Notifiable, SoftDeletes, Translatable;
 
     /**
      * The attributes that are mass assignable.
@@ -26,7 +28,7 @@ class User extends Authenticatable implements MustVerifyEmail
     protected $fillable = [
         'custom_id', 'full_name', 'email', 'country_code', 'contact_no', 'birth_date', 'gender',
         'interest', 'country_id', 'location_id', 'language_id', 'profile_photo', 'voice', 'voice_answer', 'password',
-        'is_subscribed', 'subscription_end_date',
+        'is_social_user', 'is_translated', 'is_subscribed', 'subscription_end_date',
         'facebook_id', 'google_id', 'apple_id',
         'about_me', 'fav_movie',
         'personality_id', 'university_id', 'profession_id',
@@ -41,6 +43,8 @@ class User extends Authenticatable implements MustVerifyEmail
         'reason_of_delete'
     ];
     
+    protected $translatedAttributes = ['full_name', 'about_me', 'fav_movie'];
+
     public function getEmailVerifiedAtAttribute($email_verified_at){ 
         $email_value = "";
         $email_verified_at ? $email_value = date('Y-m-d H:i:s', strtotime($email_verified_at)) : $email_value = "";
@@ -51,6 +55,14 @@ class User extends Authenticatable implements MustVerifyEmail
         $contact_value = "";
         $contact_verified_at ? $contact_value = date('Y-m-d H:i:s', strtotime($contact_verified_at)) : $contact_value = "";
         return $contact_value; 
+    }
+
+    public function userTranslations(){ return $this->hasMany('App\Models\UserTranslation'); }
+    public function userTranslation(){ 
+        return $this->hasOne('App\Models\UserTranslation')->whereLocale(app()->getlocale());
+    }
+    public function userTransDefault(){ 
+        return $this->hasOne('App\Models\UserTranslation')->whereLocale(config('utility.default_lang_code'));
     }
 
     public function deviceToken() { return $this->hasOne('App\Models\DeviceToken'); }
@@ -136,7 +148,9 @@ class User extends Authenticatable implements MustVerifyEmail
     }
 
     public function isProfileSetuped(){
-        return !empty($this->full_name)
+        $full_name = $this->userTranslation ? $this->userTranslation->full_name : "";
+
+        return !empty($full_name)
             && !empty($this->birth_date)
             && !empty($this->email)
             && !empty($this->gender) && !empty($this->interest)
@@ -174,12 +188,16 @@ class User extends Authenticatable implements MustVerifyEmail
         $photo_max_point       =  config('utility.profile.percent.photo_max_point');
         $interests_max_point   =  config('utility.profile.percent.interests_max_point');
 
+        $full_name             =  $this->userTranslation ? $this->userTranslation->full_name : "";
+        $about_me              =  $this->userTranslation ? $this->userTranslation->about_me : "";
+        $fav_movie             =  $this->userTranslation ? $this->userTranslation->fav_movie : "";
+        
         $photo_detail          =  $this->userDetails->where('image','!=',null);
         $video_detail          =  $this->userDetails->where('video','!=',null);
 
         // Improtant Details
         $language              =  !empty($this->language_id) ? config('utility.profile.percent.language') : 0;
-        $full_name             =  !empty($this->full_name) ? config('utility.profile.percent.full_name') : 0;
+        $full_name             =  !empty($full_name) ? config('utility.profile.percent.full_name') : 0;
         $birth_date            =  !empty($this->birth_date) ? config('utility.profile.percent.birth_date') : 0;
         $location              =  !empty($this->location_id) ? config('utility.profile.percent.location') : 0;
         $interest              =  !empty($this->interest) ? config('utility.profile.percent.interest') : 0;
@@ -196,7 +214,7 @@ class User extends Authenticatable implements MustVerifyEmail
         $video                  =  $video_detail->isNotEmpty() ? config('utility.profile.percent.video_detail') : 0;
 
         // Basic Details
-        $about_me              =  !empty($this->about_me) ? config('utility.profile.percent.about_me') : 0;
+        $about_me              =  !empty($about_me) ? config('utility.profile.percent.about_me') : 0;
         $voice_prompt          =  !empty($this->voice) ? config('utility.profile.percent.voice_prompt') : 0;
         $personality           =  !empty($this->personality_id) ? config('utility.profile.percent.personality') : 0;
         $relationship_status   =  !empty($this->relationship_status_id) ? config('utility.profile.percent.relationship_status') : 0;
@@ -213,7 +231,7 @@ class User extends Authenticatable implements MustVerifyEmail
         $community             =  !empty($this->community_id) ? config('utility.profile.percent.community') : 0;
 
         // Interests
-        $fav_movie             =  !empty($this->fav_movie) ? config('utility.profile.percent.favourite_movie') : 0;
+        $fav_movie             =  !empty($fav_movie) ? config('utility.profile.percent.favourite_movie') : 0;
         $interest_percent      =  $this->interests->count() * config('utility.profile.percent.interests');
 
         if($photo > $photo_max_point){ $photo = $photo_max_point; }

@@ -18,7 +18,10 @@ class BlockProfileResource extends JsonResource
             'id'            =>  $this->custom_id ?? "",
             'blocked_to'    =>  [
                 'id'                =>  $this->blockedTo ? $this->blockedTo->custom_id : "",
-                'full_name'         =>  $this->blockedTo ? $this->blockedTo->full_name : "",
+                'full_name'         =>  $this->blockedTo ? 
+                                            $this->blockedTo->userTranslation 
+                                            ? $this->blockedTo->userTranslation->full_name 
+                                            : "" : "",
                 'age'               =>  $this->blockedTo ? $this->blockedTo->getAge() : 0,
                 'profile_photo'     =>  $this->blockedTo ? generateURL($this->blockedTo->profile_photo) : "",
                 'location'          =>  $this->blockedTo ? new LocationResource($this->blockedTo->location) : "",
