@@ -91,6 +91,12 @@ class TwillioController extends Controller
             "value" => $data["outgoing_caller_id"],
         ]);
 
+        // pass custom room_id params to handle voice call logs
+        $client->parameter([
+            "name" => "room_id",
+            "value" => $data["room_id"],
+        ]);
+
         return $response;
     }
 
@@ -104,19 +110,17 @@ class TwillioController extends Controller
         $rules = GetCallLogRequest::rules();
         if( $this->apiValidator($request->all(), $rules) ) {
             try{
-                $room = ChatRoom::with('callLog')->whereCustomId($request->room)->firstOrFail();
+                $room = ChatRoom::with(['callLog' => function($query){
+                            $query->where('date',now()->format('Y-m-d'));
+                        }])->whereCustomId($request->room)->firstOrFail();
                 
-                if($room->callLog){ 
-                    $this->status = Response::HTTP_OK;
-                    return (new CallLogResource($room->callLog))
-                        ->additional([
-                            'meta' => [
-                                'message'   =>  trans('api.success', ['entity' => __("Call log") ]),
-                            ] ]);
-                }else{
-                    $this->response['meta']['message']  =   trans('api.not_found',['entity' => __('Call log')]); 
-                    $this->status = Response::HTTP_NOT_FOUND;     
-                }
+                $this->status = Response::HTTP_OK;
+                return (new CallLogResource($room))
+                    ->additional([
+                        'meta' => [
+                            'message'   =>  trans('api.success', ['entity' => __("Call log") ]),
+                        ] ]);
+                
             } catch(ModelNotFoundException $exception) {                
                 switch ($exception->getModel()) {
                     case 'App\Models\ChatRoom':

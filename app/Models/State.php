@@ -16,7 +16,7 @@ class State extends Model implements TranslatableContract
     protected $translatedAttributes = ['name'];
 
     public function stateTranslations(){ return $this->hasMany('App\Models\StateTranslation'); }
-        public function stateTranslation(){ 
+    public function stateTranslation(){ 
         return $this->hasOne('App\Models\StateTranslation')->whereLocale(app()->getlocale());
     }
     public function stateTransDefault(){ 

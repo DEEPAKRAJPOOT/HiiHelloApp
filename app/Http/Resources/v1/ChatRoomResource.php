@@ -21,12 +21,16 @@ class ChatRoomResource extends JsonResource
             'is_blocked'    =>  $this->block_by_count ? $this->block_by_count > 0 ? true : false : false,
             'creator'  =>  [
                 'id'            =>  $this->creator ? $this->creator->custom_id : "",
-                'full_name'     =>  $this->creator ? $this->creator->full_name : "",
+                'full_name'     =>  $this->creator ? 
+                                        $this->creator->userTranslation ? $this->creator->userTranslation->full_name : ""
+                                    : "",
                 'profile'       =>  $this->creator ? $this->creator->profile_photo : "",
             ],
             'participator'  =>  [
                 'id'            =>  $this->participator ? $this->participator->custom_id : "",
-                'full_name'     =>  $this->participator ? $this->participator->full_name : "",
+                'full_name'     =>  $this->participator ? 
+                                        $this->participator->userTranslation ? $this->participator->userTranslation->full_name : ""
+                                    : "",
                 'profile'       =>  $this->participator ? $this->participator->profile_photo : "",
             ],
             'latest_message'    =>  [

@@ -26,7 +26,7 @@ class UserController extends Controller
                 $auth_id = $request->user() ? $request->user()->id : NULL;
                 $max_interest = config('utility.profile.detail.max_interest') ?? 5;
 
-                $user = User::select('id','custom_id','full_name','birth_date','about_me','location_id',
+                $user = User::select('id','custom_id','birth_date','location_id',
                             'profile_photo','voice','voice_answer',
                             'personality_id','education_id','university_id','profession_id','religion_id',
                             'relationship_status_id','you_are_here_id','food_preference_id','drinking_id','smoking_id',
@@ -35,7 +35,7 @@ class UserController extends Controller
                             'interests' => function($query) use ($max_interest) {
                                 $query->latest()->take($max_interest); 
                             },
-                            'userDetails','interests.interest.interestTranslation',
+                            'userTranslation','userDetails','interests.interest.interestTranslation',
                             'interests.interest.parentInterest','interests.interest.masterInterest',
                             'location.locationTranslation','personality.personalityTranslation',
                             'education.profileDetailTranslation','university.profileDetailTranslation',
@@ -161,7 +161,7 @@ class UserController extends Controller
     {
         try{
             $user = User::with([
-                    'userDetails',
+                    'userTranslation','userDetails',
                     'interests.interest.interestTranslation',
                     'interests.interest.parentInterest','interests.interest.masterInterest',
                     'location.locationTranslation','language',

@@ -29,15 +29,16 @@ class ChatMessage extends Model
 
     protected function chatPushNFData($account, $chatMessage, $message = ""){
         $message = trim( preg_replace("/\r|\n/", " ", $message) );
+        $full_name = $account->userTranslation ? $account->userTranslation->full_name : "";
         if( $message == "" ) {
-            $message =  $account->full_name." has sent you a image 📷.";
+            $message =  $full_name." has sent you a image 📷.";
         }
         return [
-            'title'     =>  $account->full_name,
+            'title'     =>  $full_name,
             'type'      =>  'chat-message',
             'id'        =>  $chatMessage->custom_id,
             'room_id'   =>  $chatMessage->room ? $chatMessage->room->custom_id : "",
-            'name'      =>  $account->full_name,
+            'name'      =>  $full_name,
             'profile'   =>  generateURL($account->profile_photo),
             'message'   =>  $message,
         ];

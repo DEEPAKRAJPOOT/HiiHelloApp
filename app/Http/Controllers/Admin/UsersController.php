@@ -251,12 +251,11 @@ class UsersController extends Controller
     {
         extract($this->DTFilters($request->all()));
         $records = [];
-        $users = User::orderBy($sort_column, $sort_order);
+        $users = User::with('userTransDefault')->orderBy($sort_column, $sort_order);
 
         if ($search != '') {
             $users->where(function ($query) use ($search) {
-                $query->where('full_name', 'like', "%{$search}%")
-                    ->orWhere('country_code', 'like', "%{$search}%")
+                $query->Where('country_code', 'like', "%{$search}%")
                     ->orWhere('contact_no', 'like', "%{$search}%")
                     ->orWhere('gender', 'like', "%{$search}%")
                     ->orWhere('interest', 'like', "%{$search}%")
@@ -284,7 +283,7 @@ class UsersController extends Controller
 
             $records['data'][] = [
                 'id' => $user->id,
-                'full_name' => $user->full_name,
+                'full_name' =>  $user->userTransDefault ? $city->userTransDefault->full_name : "",
                 'country_code' => $user->country_code,
                 'contact_no' => $user->contact_no ? '<a href="tel:' . $user->contact_no . '" >' . $user->contact_no . '</a>' : 'N/A',
                 'gender' => $user->gender,
@@ -307,12 +306,11 @@ class UsersController extends Controller
     {
         extract($this->DTFilters($request->all()));
         $records = [];
-        $users = User::orderBy($sort_column, $sort_order);
+        $users = User::with('userTransDefault')->orderBy($sort_column, $sort_order);
 
         if ($search != '') {
             $users->where(function ($query) use ($search) {
-                $querywhere('full_name', 'like', "%{$search}%")
-                    ->orWhere('country_code', 'like', "%{$search}%")
+                $query->Where('country_code', 'like', "%{$search}%")
                     ->orWhere('contact_no', 'like', "%{$search}%")
                     ->orWhere('gender', 'like', "%{$search}%")
                     ->orWhere('interest', 'like', "%{$search}%")
@@ -340,7 +338,7 @@ class UsersController extends Controller
             ];
 
             $records['data'][] = [
-                'full_name' => $user->full_name,
+                'full_name' =>  $user->userTransDefault ? $city->userTransDefault->full_name : "",
                 'country_code' => $user->country_code,
                 'contact_no' => $user->contact_no ? '<a href="tel:' . $user->contact_no . '" >' . $user->contact_no . '</a>' : 'N/A',
                 'gender' => $user->gender,
