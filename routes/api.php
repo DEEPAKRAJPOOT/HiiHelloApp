@@ -89,7 +89,7 @@ Route::group(['namespace' => 'v1', 'prefix' => 'v1', 'middleware' => 'auth:sanct
     Route::post('match/remove-match',[MatchController::class,'removeMatch'])->name('api.remove-match');
 
     // Search Match/Chat
-    Route::post('search/match-chat',[SearchController::class,'searchMatchAndChat'])->name('api.search.match-chat');
+    // Route::post('search/match-chat',[SearchController::class,'searchMatchAndChat'])->name('api.search.match-chat');
 
     // Razorpay Android
     Route::post('get/subscription-plans',[PaymentController::class,'getSubscriptionPlans'])->name('api.get-subscription-plans');

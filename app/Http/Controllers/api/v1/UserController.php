@@ -126,7 +126,7 @@ class UserController extends Controller
     public function getCommonAge()
     {
         try{
-            $common_age = User::select(DB::raw('MAX(birth_date) as max_date'), DB::raw('MIN(birth_date) as min_date'))
+            $common_age = User::select(DB::raw('MAX(birth_date) as min_date'), DB::raw('MIN(birth_date) as max_date'))
                             ->whereIsActive('y')->first();
             if(!empty($common_age)){
                 return ([

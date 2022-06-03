@@ -20,6 +20,8 @@ class SearchController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
+
+    /* Currently Not Working
     public function searchMatchAndChat(Request $request)
     {
         $rules = SearchMatchChatRequest::rules();
@@ -92,4 +94,5 @@ class SearchController extends Controller
         }
         return $this->returnResponse();
     }
+    */
 }

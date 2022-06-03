@@ -17,9 +17,12 @@ class MatchResource extends JsonResource
         return [
             'id'            =>  $this->custom_id ?? "",
             'user'          =>  [
-                'id'            =>  $this->user_custom_id ?? "",
-                'full_name'     =>  $this->user_full_name ?? "",
-                'profile_photo' =>  generateURL($this->user_profile_photo) ?? "",
+                'id'            =>  $this->custom_id ?? "",
+                'full_name'     =>  $this->userTranslation ? $this->userTranslation->full_name : "",
+                'profile_photo' =>  generateURL($this->profile_photo) ?? "",
+                // 'id'            =>  $this->user_custom_id ?? "",
+                // 'full_name'     =>  $this->user_full_name ?? "",
+                // 'profile_photo' =>  generateURL($this->user_profile_photo) ?? "",
             ],
             'created_at'    =>  $this->created_at ?? "",
         ];
