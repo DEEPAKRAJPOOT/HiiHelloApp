@@ -29,28 +29,35 @@ class MatchController extends Controller
                 $auth_id = $request->user() ? $request->user()->id : NULL;
                 $search = $request->search;
 
-                $matches = User::with('userTranslation')->where('id','!=',Auth::id())->whereIsActive('y');
-
-                // $matches = DB::table('likes')
-                //     ->join("likes as like", function($q){
-                //         $q->on("likes.liker_id", "=", "like.user_id");
-                //         $q->on("like.liker_id", "=", "likes.user_id");
-                //     })
-                //     ->join('users', function($q){
-                //         $q->on('users.id',"=", "likes.user_id");
-                //     })
-                //     //to only get users details who likes current user
-                //     ->where("likes.liker_id", '=', $auth_id)
-                //     ->where("likes.user_id", '!=', $auth_id)
-                //     ->orderBy('likes.created_at', 'desc')
-                //     ->selectRaw("likes.custom_id as custom_id, users.custom_id as user_custom_id,
-                //                 users.full_name as user_full_name, users.profile_photo as user_profile_photo,
-                //                 likes.created_at as created_at");
+                // $matches = User::with('userTranslation')->where('id','!=',Auth::id())->whereIsActive('y');
+                
+                $matches = DB::table('likes')
+                    ->join("likes as like", function($q){
+                        $q->on("likes.liker_id", "=", "like.user_id");
+                        $q->on("like.liker_id", "=", "likes.user_id");
+                    })
+                    ->join('users', function($q){
+                        $q->on('users.id',"=", "likes.user_id");
+                    })
+                    ->join('user_translations', function($q){
+                        $q->on("users.id","=", "user_translations.user_id")
+                            ->where("user_translations.locale","=",app()->getLocale());
+                    })
+                    //to only get users details who likes current user
+                    ->where("likes.liker_id", '=', $auth_id)
+                    ->where("likes.user_id", '!=', $auth_id)
+                    ->orderBy('likes.created_at', 'desc')
+                    ->selectRaw("likes.custom_id as custom_id, users.custom_id as user_custom_id,
+                                users.profile_photo as user_profile_photo,
+                                user_translations.full_name as user_full_name,
+                                likes.created_at as created_at");
 
                 if(!empty($search)){
-                    $matches = $matches->whereHas('userTranslation',function ($query) use ($search) {
-                                     $query->where('full_name', 'like', "%{$search}%");
-                                });
+                    $matches = $matches->where('user_translations.full_name', 'like', "%{$search}%");
+
+                    // $matches = $matches->whereHas('userTranslation',function ($query) use ($search) {
+                    //                  $query->where('full_name', 'like', "%{$search}%");
+                    //             });
 
                     // $matches = $matches->where(function ($query) use ($search) {
                     //     $query->where('users.full_name', 'like', "%{$search}%");
