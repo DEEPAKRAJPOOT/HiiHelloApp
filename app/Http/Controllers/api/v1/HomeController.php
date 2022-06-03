@@ -28,7 +28,7 @@ class HomeController extends Controller
                                 'location_id','verify_status','is_active')
                                 ->with(['interests.interest.interestTranslation',
                                     'userTranslation','location.locationTranslation'])
-                                ->whereHas('interests')
+                                // ->whereHas('interests')
                                 ->where('id','!=',$auth_id)->whereIsActive('y');
 
                 if(!empty($user->interest)){
