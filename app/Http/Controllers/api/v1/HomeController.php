@@ -26,10 +26,9 @@ class HomeController extends Controller
 
                 $users = User::select('id','custom_id','birth_date','profile_photo','gender','interest',
                                 'location_id','verify_status','is_active')
-                                ->with(['interests' => function($query) use ($max_interest) {
-                                        $query->latest()->take($max_interest); 
-                                    },
-                                    'interests.interest.interestTranslation','userTranslation','location.locationTranslation'])
+                                ->with(['interests.interest.interestTranslation',
+                                    'userTranslation','location.locationTranslation'])
+                                ->whereHas('interests')
                                 ->where('id','!=',$auth_id)->whereIsActive('y');
 
                 if(!empty($user->interest)){
@@ -41,7 +40,11 @@ class HomeController extends Controller
                 $count = $users->count();
                 $users = $users->limit($request->limit ?? config('utility.pagination.limit'))
                                 ->offset($request->offset ?? config('utility.pagination.offset'))
-                                ->get();
+                                ->get()
+                                ->map(function($map) use ($max_interest){
+                                    $map['interests'] =  $map->interests->sortBy('desc')->take($max_interest);
+                                    return $map;
+                                });
 
                 if($users->isNotEmpty()){
                     return (HomeResource::collection($users))->additional([
