@@ -184,8 +184,7 @@ class ProfileController extends Controller
                     }
                 }   
 
-                $user = User::select('id','custom_id')
-                            ->with(['userDetails','interests.interest.parentInterest','interests.interest.masterInterest',
+                $user = User::with(['userDetails','interests.interest.parentInterest','interests.interest.masterInterest',
                             'interests.interest.interestTranslation'])
                             ->whereId($user->id)->firstOrFail();
 
