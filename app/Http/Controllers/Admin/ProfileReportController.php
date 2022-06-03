@@ -117,8 +117,8 @@ class ProfileReportController extends Controller
 
             $records['data'][] = [
                 'id'                =>  $profile_report->id,
-                'user_id'           =>  $profile_report->user ? $profile_report->user->userTransDefault ? $profile_report->user->full_name : "" : "",
-                'reported_user_id'  =>  $profile_report->reportedUser ? $profile_report->reportedUser->userTransDefault ? $profile_report->reportedUser->full_name : "" : "",
+                'user_id'           =>  $profile_report->user ? $profile_report->user->userTransDefault ? $profile_report->user->userTransDefault->full_name : "" : "",
+                'reported_user_id'  =>  $profile_report->reportedUser ? $profile_report->reportedUser->userTransDefault ? $profile_report->reportedUser->userTransDefault->full_name : "" : "",
                 'message'       =>  $profile_report->message,
                 'status'        =>  $profile_report->status,
                 'created_at'    =>  $profile_report->created_at,
