@@ -160,7 +160,7 @@ class TwillioController extends Controller
                 ]);
 
                 $this->status = Response::HTTP_OK;
-                return (new CallLogResource($call_log))
+                return (new CallLogResource($room))
                         ->additional([
                             'meta' => [
                                 'message'   =>  trans('api.add', ['entity' => __("Call log") ]),

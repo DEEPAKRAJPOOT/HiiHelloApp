@@ -26,6 +26,14 @@ class RazorPayOrderResource extends JsonResource
             'status'        =>  $this->status,
             'attempts'      =>  $this->attempts,
             'created_at'    =>  $this->created_at,
+            'subscription'  =>  [
+                'id'            =>  $this->subscription ? $this->subscription->custom_id : "",
+                'months'        =>  $this->subscription ? $this->subscription->months : "",
+                'amount'        =>  $this->subscription ? $this->subscription->amount : "",
+                'start_date'    =>  $this->subscription ? $this->subscription->start_date : "",
+                'end_date'      =>  $this->subscription ? $this->subscription->end_date : "",
+                'status'        =>  $this->subscription ? $this->subscription->status : "",
+            ],
         ];
         return parent::toArray($request);
     }

@@ -5,7 +5,7 @@ namespace App\Http\Controllers\api\v1;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\ { Request, Response };
 use Illuminate\Database\Eloquent\ { ModelNotFoundException };
-use Illuminate\Support\Facades\ { DB };
+use Illuminate\Support\Facades\ { Auth, DB };
 use App\Http\Requests\Api\General\ { PaginationRequest };
 use App\Http\Resources\v1\ { SubscriptionPlanResource, RazorPayOrderResource };
 use App\Models\ { SubscriptionPlan, Subscription, Transaction };
@@ -55,6 +55,30 @@ class PaymentController extends Controller
                 
                 $razorpayOrder = $api->order->create($orderData);
 
+                $new_subscription_start_date = \Carbon\Carbon::today()->format('Y-m-d');
+                if( $user->subscription_end_date >= $new_subscription_start_date ) {
+                    $new_subscription_start_date = $user->subscription_end_date;
+                }
+
+                $subscription_end_date = !empty($user->subscription_end_date)
+                                            ? \Carbon\Carbon::parse($new_subscription_start_date)->addMonth($plan->months)->format('Y-m-d')
+                                            : \Carbon\Carbon::today()->addMonth($plan->months)->format('Y-m-d');
+
+                $subscription =  Subscription::firstOrCreate([
+                    'user_id'       =>  $user->id ?? NULL,
+                    'plan_id'       =>  $plan->id ?? NULL,
+                    'months'        =>  $plan->months,
+                    'amount'        =>  $plan->amount,
+                    'start_date'    =>  $new_subscription_start_date,
+                    'end_date'      =>  $subscription_end_date,
+                    'payment_date'  =>  NULL,
+                    'status'        =>  'incomplete',
+                ],[
+                    'custom_id'     =>  getUniqueString('subscriptions'),
+                ]);
+
+                $razorpayOrder['subscription'] = $subscription;
+
                 return (new RazorPayOrderResource($razorpayOrder))
                     ->additional([
                         'meta' => [
@@ -82,10 +106,10 @@ class PaymentController extends Controller
      */ 
     public function verifySignature(Request $request)
     {
-        $plan_ids = SubscriptionPlan::whereIsActive('y')->pluck('custom_id')->toArray();
+        $subscription_ids = Subscription::whereUserId(Auth::id())->whereNull('payment_date')->pluck('custom_id')->toArray();
 
         $rules = [
-            'plan_id'               =>  'required|in:'.implode(',', $plan_ids),
+            'subscription_id'       =>  'required|in:'.implode(',', $subscription_ids),
             'razorpay_order_id'     =>  'required',
             'razorpay_payment_id'   =>  'required',
             'razorpay_signature'    =>  'required',
@@ -100,81 +124,56 @@ class PaymentController extends Controller
                 $keySecret  =   config('utility.razorpay.api_secret');
                 $api        =   new Api($keyId, $keySecret);
 
-                $attributes = array(
-                    'razorpay_order_id'     =>  $request->razorpay_order_id,
-                    'razorpay_payment_id'   =>  $request->razorpay_payment_id,
-                    'razorpay_signature'    =>  $request->razorpay_signature,
-                );  
+                $subscription = Subscription::with('subscriptionPlan')->whereUserId(Auth::id())->whereCustomId($request->subscription_id)->firstOrFail();
+                if($subscription->subscriptionPlan){
+                   
+                    $transaction =  Transaction::create([
+                        'custom_id'             =>  getUniqueString('transactions'),
+                        'user_id'               =>  $user->id ?? NULL,
+                        'plan_id'               =>  $subscription->subscriptionPlan->id ?? NULL,
+                        'subscription_id'       =>  $subscription->id ?? NULL,
+                        'razorpay_order_id'     =>  $request->razorpay_order_id,
+                        'razorpay_payment_id'   =>  $request->razorpay_payment_id,
+                        'razorpay_signature'    =>  $request->razorpay_signature,
+                        'amount'                =>  $subscription->amount,
+                        'status'                =>  'pending',
+                    ]);
+                    DB::commit();
 
-                $plan = SubscriptionPlan::whereCustomId($request->plan_id)->whereIsActive('y')->firstOrFail();
-                $alredy_subscribed = Subscription::whereUserId($user->id)->wherePlanId($plan->id)
-                                        ->whereStartDate(now()->format('Y-m-d'))
-                                        ->whereStatus('active')->first();
+                    $attributes = array(
+                        'razorpay_order_id'     =>  $request->razorpay_order_id,
+                        'razorpay_payment_id'   =>  $request->razorpay_payment_id,
+                        'razorpay_signature'    =>  $request->razorpay_signature,
+                    );  
+                    // if signature is verified (Payment Success)
+                    $api->utility->verifyPaymentSignature($attributes);
 
-                if($alredy_subscribed){
-                    DB::rollback();
+                    $subscription->update(['payment_date' => now(), 'status' => 'active']);
+                    $subscription->save();
+
+                    $transaction->update(['status' => 'success']);
+                    $transaction->save();
+
+                    $user->is_subscribed = 'y';
+                    $user->subscription_end_date = $subscription->end_date;
+                    $user->save();
+
+                    DB::commit();
+                    // Add Payment success log
+                    $transaction_data = json_decode($transaction, true);
+                    $file = 'payment_' . $user->id;
+                    $paymentLog = new Logger($file);
+                    $paymentLog->pushHandler(new StreamHandler(storage_path('logs/' . $file . '.log')), Logger::INFO);
+                    $paymentLog->info($file, ['success' => $transaction_data]);
+
                     $this->status = Response::HTTP_OK;
-                    $this->response['meta']['message'] = trans('api.subscription.already_purchased');
+                    $this->response['meta']['message'] = trans('api.razorpay.verify_signature.success');
+                    return $this->returnResponse();    
+                }else{
+                    $this->status = Response::HTTP_NOT_FOUND;  
+                    $this->response['meta']['message']  =   trans('api.not_found',['entity' => __('Subscription plan')]); 
                     return $this->returnResponse();  
                 }
-
-                $new_subscription_start_date = \Carbon\Carbon::today()->format('Y-m-d');
-                if( $user->subscription_end_date >= $new_subscription_start_date ) {
-                    $new_subscription_start_date = $user->subscription_end_date;
-                }
-                $subscription_end_date = !empty($user->subscription_end_date)
-                                            ? \Carbon\Carbon::parse($new_subscription_start_date)->addMonth($plan->months)->format('Y-m-d')
-                                            : \Carbon\Carbon::today()->addMonth($plan->months)->format('Y-m-d');
-
-                $subscription =  Subscription::create([
-                    'custom_id'     =>  getUniqueString('subscriptions'),
-                    'user_id'       =>  $user->id ?? NULL,
-                    'plan_id'       =>  $plan->id ?? NULL,
-                    'months'        =>  $plan->months,
-                    'amount'        =>  $plan->amount,
-                    'start_date'    =>  $new_subscription_start_date,
-                    'end_date'      =>  $subscription_end_date,
-                    'payment_date'  =>  now(),
-                    'status'        =>  'incomplete',
-                ]);
-
-                $transaction =  Transaction::create([
-                    'custom_id'             =>  getUniqueString('transactions'),
-                    'user_id'               =>  $user->id ?? NULL,
-                    'plan_id'               =>  $plan->id ?? NULL,
-                    'subscription_id'       =>  $subscription->id ?? NULL,
-                    'razorpay_order_id'     =>  $request->razorpay_order_id,
-                    'razorpay_payment_id'   =>  $request->razorpay_payment_id,
-                    'razorpay_signature'    =>  $request->razorpay_signature,
-                    'amount'                =>  $subscription->amount,
-                    'status'                =>  'pending',
-                ]);
-                DB::commit();
-
-                // if signature is verified (Payment Success)
-                $api->utility->verifyPaymentSignature($attributes);
-
-                $subscription->update(['status' => 'active']);
-                $subscription->save();
-
-                $transaction->update(['status' => 'success']);
-                $transaction->save();
-
-                $user->is_subscribed = 'y';
-                $user->subscription_end_date = $subscription_end_date;
-                $user->save();
-
-                DB::commit();
-                // Add Payment success log
-                $transaction_data = json_decode($transaction, true);
-                $file = 'payment_' . $user->id;
-                $paymentLog = new Logger($file);
-                $paymentLog->pushHandler(new StreamHandler(storage_path('logs/' . $file . '.log')), Logger::INFO);
-                $paymentLog->info($file, ['success' => $transaction_data]);
-
-                $this->status = Response::HTTP_OK;
-                $this->response['meta']['message'] = trans('api.razorpay.verify_signature.success');
-                return $this->returnResponse();    
 
             }catch(SignatureVerificationError $e){
                 DB::rollback();
@@ -185,7 +184,7 @@ class PaymentController extends Controller
                                                     : $user->subscription_end_date;
                 $user->save();
                 if($subscription){
-                    $subscription->update(['status' => 'unpaid']);
+                    $subscription->update(['payment_date' => NULL, 'status' => 'unpaid']);
                     $subscription->save();
                 }
                 if($transaction){
