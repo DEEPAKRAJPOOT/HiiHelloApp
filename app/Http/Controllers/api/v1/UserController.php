@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\ { Request, Response };
 use Illuminate\Database\Eloquent\ { ModelNotFoundException };
 use Illuminate\Support\Facades\ { Storage, DB, Auth };
-use App\Http\Resources\v1\ { UserProfile, UserDetailResource, ProfileReportResource, MyProfile };
+use App\Http\Resources\v1\ { UserProfile, UserDetailResource, MyProfile };
 use App\Http\Requests\Api\User\ { ProfileRequest, ProfileReportRequest };
 use App\Http\Requests\Api\Authentication\ { DeleteAccountRequest };
 use App\Http\Requests\Api\General\ { PaginationRequest };
@@ -94,11 +94,14 @@ class UserController extends Controller
 
                 if($profile_report->save()){
                     $this->status = Response::HTTP_OK;     
-                    return (new ProfileReportResource($profile_report))
-                            ->additional([
-                            'meta' => [
-                                'message'  =>  trans('api.report.success'),
-                            ] ]);
+                    return response()->json([
+                        'data'  =>  NULL,
+                        'meta' => [
+                            'url'       =>  url()->current(),
+                            'api'       =>  $this->getVersion(),
+                            'language'  =>  app()->getLocale(),
+                            'message'   =>  trans('api.report.success'),
+                    ] ]);
                 }else{
                     $this->response['meta']['message']  =   trans('api.report.fail'); 
                     $this->status = Response::HTTP_NOT_FOUND;     
