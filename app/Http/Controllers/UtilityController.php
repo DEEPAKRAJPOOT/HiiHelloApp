@@ -135,4 +135,43 @@ class UtilityController extends Controller
             return "false";
         }
     }
+
+    public function translate()
+    {
+        $apiKey = 'AIzaSyCnTLblh4He46O3-5NoJ0sXOzyelS76jEY';
+        $text = 'Hello world!';
+        $target_lang = ['en','hi','ta','mr','bn','gu','kn','ml','or','pa','te'];
+        foreach($target_lang as $lang)
+        {
+            echo 'lang: '.$lang;
+            // $url = 'https://www.googleapis.com/language/translate/v2?key=' . $apiKey . '&q=' . rawurlencode($text) . '&source=en&target=' .$lang;
+        }
+
+        //for translate
+        // $url = 'https://www.googleapis.com/language/translate/v2?key=' . $apiKey . '&q=' . rawurlencode($text) . '&source=en&target=te';
+
+        $url = 'https://translation.googleapis.com/language/translate/v2?key=AIzaSyCnTLblh4He46O3-5NoJ0sXOzyelS76jEY&source=en&target=hi&q=helloworld';
+
+        //for detect
+        // $url = 'https://translation.googleapis.com/language/translate/v2/detect?key=AIzaSyCnTLblh4He46O3-5NoJ0sXOzyelS76jEY&q=helloworld';
+
+        $handle = curl_init($url);
+        curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
+        $response = curl_exec($handle);
+        $responseDecoded = json_decode($response, true);
+        $responseCode = curl_getinfo($handle, CURLINFO_HTTP_CODE);
+              //Here we fetch the HTTP response code
+        // dd($url);
+        curl_close($handle);
+        
+        if($responseCode != 200) {
+            dump('Fetching translation failed! Server response code:' . $responseCode);
+            dd('Error description: ' . $responseDecoded['error']['errors'][0]['message']);
+        }
+        else {
+            dump('Source: ' . $text);
+            dd($responseDecoded);
+            dd('Translation: ' . $responseDecoded['data']['translations'][0]['translatedText']);
+        }
+    }
 }

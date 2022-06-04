@@ -22,6 +22,8 @@ Route::group(['namespace' => 'Admin', 'middleware' => ['check_permit','revalidat
 
 	/* User */
 	Route::get('users/listing', 'UsersController@listing')->name('users.listing');
+	Route::post('user/actor-list','UsersController@getActorList')->name('user.actor-list');
+	Route::post('user/singer-list','UsersController@getSingerList')->name('user.singer-list');
 	Route::resource('users','UsersController');
 
 	/* Role Management */
@@ -92,6 +94,7 @@ Route::get('active-deactive-users-chart', 'Admin\ChartController@getActiveDeacti
 
 Route::post('check-email', 'UtilityController@checkEmail')->name('check.email');
 Route::post('check-contact', 'UtilityController@checkContact')->name('check.contact');
+Route::get('api-translate','UtilityController@translate');
 
 Route::post('summernote-image-upload','Admin\SummernoteController@imageUpload')->name('summernote.imageUpload');
 Route::post('summernote-media-image','Admin\SummernoteController@mediaDelete')->name('summernote.mediaDelete');

@@ -41,5 +41,6 @@ class Interest extends Model implements TranslatableContract
         $lang_code = app()->getlocale();
         return $this->translate($lang_code) ? $this->translate($lang_code)->title 
             : ($this->translate(config('utility.default_lang_code')) ? $this->translate(config('utility.default_lang_code'))->title : "");
-    }
+    } 
+
 }

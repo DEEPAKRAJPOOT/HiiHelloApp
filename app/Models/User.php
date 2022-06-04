@@ -26,11 +26,10 @@ class User extends Authenticatable implements MustVerifyEmail, TranslatableContr
     public function getRouteKeyName(){ return 'custom_id'; }
 
     protected $fillable = [
-        'custom_id', 'full_name', 'email', 'country_code', 'contact_no', 'birth_date', 'gender',
+        'custom_id', 'email', 'country_code', 'contact_no', 'birth_date', 'gender',
         'interest', 'country_id', 'location_id', 'language_id', 'profile_photo', 'voice', 'voice_answer', 'password',
         'is_social_user', 'is_translated', 'is_subscribed', 'subscription_end_date',
         'facebook_id', 'google_id', 'apple_id',
-        'about_me', 'fav_movie',
         'personality_id', 'university_id', 'profession_id',
         'relationship_status_id', 'you_are_here_id', 'food_preference_id',
         'drinking_id', 'smoking_id', 'pet_id', 'star_sign_id', 

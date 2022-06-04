@@ -81,6 +81,7 @@ function fireCURL($url, $type, $data = NULL, $header = NULL)
         CURLOPT_CUSTOMREQUEST => strtoupper($type),
         CURLOPT_POSTFIELDS => $data,
         CURLOPT_HTTPHEADER => $header,
+
     ));
 
     $response = curl_exec($curl);
