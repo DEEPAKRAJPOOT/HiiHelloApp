@@ -38,17 +38,17 @@ class UsersController extends Controller
         //personality
         $personalities = Personality::where('is_active','y')->get();
         $university = ProfileDetail::where(['attribute'=>'university_college','is_active'=>'y'])->get();
-        $educations = ProfileDetail::where(['attribute'=>'education','is_active'=>'y'])->get(); 
-        $professions = ProfileDetail::where(['attribute'=>'profession','is_active'=>'y'])->get();
-        $religions = ProfileDetail::where(['attribute' => 'religion','is_active'=>'y'])->get();
-        $relationship_status = ProfileDetail::where(['attribute'=>'relationship_status','is_active'=>'y'])->get();
-        $you_are_here = ProfileDetail::where(['attribute'=>'you_are_here','is_active'=>'y'])->get();
-        $food_preferences = ProfileDetail::where(['attribute'=>'food_preference','is_active'=>'y'])->get();
-        $drinking = ProfileDetail::where(['attribute'=>'drinking','is_active'=>'y'])->get();
-        $smoking = ProfileDetail::where(['attribute'=>'smoking','is_active'=>'y'])->get();
-        $pets = ProfileDetail::where(['attribute'=>'pets','is_active'=>'y'])->get();
-        $star_signs = ProfileDetail::where(['attribute'=>'sun_sign','is_active'=>'y'])->get();
-        $community = ProfileDetail::where(['attribute'=>'community','is_active'=>'y'])->get();
+        $educations = ProfileDetail::with(['profileDetailTransDefault'])->where(['attribute'=>'education','is_active'=>'y'])->get(); 
+        $professions = ProfileDetail::with('profileDetailTransDefault')->where(['attribute'=>'profession','is_active'=>'y'])->get();
+        $religions = ProfileDetail::with('profileDetailTransDefault')->where(['attribute' => 'religion','is_active'=>'y'])->get();
+        $relationship_status = ProfileDetail::with('profileDetailTransDefault')->where(['attribute'=>'relationship_status','is_active'=>'y'])->get();
+        $you_are_here = ProfileDetail::with('profileDetailTransDefault')->where(['attribute'=>'you_are_here','is_active'=>'y'])->get();
+        $food_preferences = ProfileDetail::with('profileDetailTransDefault')->where(['attribute'=>'food_preference','is_active'=>'y'])->get();
+        $drinking = ProfileDetail::with('profileDetailTransDefault')->where(['attribute'=>'drinking','is_active'=>'y'])->get();
+        $smoking = ProfileDetail::with('profileDetailTransDefault')->where(['attribute'=>'smoking','is_active'=>'y'])->get();
+        $pets = ProfileDetail::with('profileDetailTransDefault')->where(['attribute'=>'pets','is_active'=>'y'])->get();
+        $star_signs = ProfileDetail::with('profileDetailTransDefault')->where(['attribute'=>'sun_sign','is_active'=>'y'])->get();
+        $community = ProfileDetail::with('profileDetailTransDefault')->where(['attribute'=>'community','is_active'=>'y'])->get();
         $travelling = Interest::with(['subInterests.interestTransDefault'])->where(['slug'=>'traveling','is_active'=>'y'])->get();
         $musics = Interest::with(['subInterests.interestTransDefault'])->where(['slug' => 'music','is_active' => 'y'])->get();
         $books = Interest::with(['subInterests.interestTransDefault'])->where(['slug' => 'books', 'is_active' => 'y'])->get();
@@ -206,18 +206,18 @@ class UsersController extends Controller
     public function edit(User $user)
     {
         $personalities = Personality::where('is_active','y')->get();
-        $university = ProfileDetail::where(['attribute'=>'university_college','is_active'=>'y'])->get();
-        $educations = ProfileDetail::where(['attribute'=>'education','is_active'=>'y'])->get(); 
-        $professions = ProfileDetail::where(['attribute'=>'profession','is_active'=>'y'])->get();
-        $religions = ProfileDetail::where(['attribute' => 'religion','is_active'=>'y'])->get();
-        $relationship_status = ProfileDetail::where(['attribute'=>'relationship_status','is_active'=>'y'])->get();
-        $you_are_here = ProfileDetail::where(['attribute'=>'you_are_here','is_active'=>'y'])->get();
-        $food_preferences = ProfileDetail::where(['attribute'=>'food_preference','is_active'=>'y'])->get();
-        $drinking = ProfileDetail::where(['attribute'=>'drinking','is_active'=>'y'])->get();
-        $smoking = ProfileDetail::where(['attribute'=>'smoking','is_active'=>'y'])->get();
-        $pets = ProfileDetail::where(['attribute'=>'pets','is_active'=>'y'])->get();
-        $star_signs = ProfileDetail::where(['attribute'=>'sun_sign','is_active'=>'y'])->get();
-        $community = ProfileDetail::where(['attribute'=>'community','is_active'=>'y'])->get();
+        $university = ProfileDetail::with('profileDetailTransDefault')->where(['attribute'=>'university_college','is_active'=>'y'])->get();
+        $educations = ProfileDetail::with('profileDetailTransDefault')->where(['attribute'=>'education','is_active'=>'y'])->get(); 
+        $professions = ProfileDetail::with('profileDetailTransDefault')->where(['attribute'=>'profession','is_active'=>'y'])->get();
+        $religions = ProfileDetail::with('profileDetailTransDefault')->where(['attribute' => 'religion','is_active'=>'y'])->get();
+        $relationship_status = ProfileDetail::with('profileDetailTransDefault')->where(['attribute'=>'relationship_status','is_active'=>'y'])->get();
+        $you_are_here = ProfileDetail::with('profileDetailTransDefault')->where(['attribute'=>'you_are_here','is_active'=>'y'])->get();
+        $food_preferences = ProfileDetail::with('profileDetailTransDefault')->where(['attribute'=>'food_preference','is_active'=>'y'])->get();
+        $drinking = ProfileDetail::with('profileDetailTransDefault')->where(['attribute'=>'drinking','is_active'=>'y'])->get();
+        $smoking = ProfileDetail::with('profileDetailTransDefault')->where(['attribute'=>'smoking','is_active'=>'y'])->get();
+        $pets = ProfileDetail::with('profileDetailTransDefault')->where(['attribute'=>'pets','is_active'=>'y'])->get();
+        $star_signs = ProfileDetail::with('profileDetailTransDefault')->where(['attribute'=>'sun_sign','is_active'=>'y'])->get();
+        $community = ProfileDetail::with('profileDetailTransDefault')->where(['attribute'=>'community','is_active'=>'y'])->get();
         //user interest
         $user_interest = UserInterest::with('interest')->where('user_id',$user->id)->pluck('interest_id')->toArray();
         $travelling = Interest::with(['subInterests.interestTransDefault'])->where(['slug'=>'traveling','is_active'=>'y'])->get();
