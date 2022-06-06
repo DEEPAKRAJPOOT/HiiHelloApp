@@ -208,6 +208,7 @@ class UsersController extends Controller
     public function show(User $user)
     {
         $user = User::with([
+            'userTransDefault',
             'country.countryTransDefault','location.locationTransDefault',
             'language','userDetails',
             'interests.interest.interestTransDefault',

@@ -26,7 +26,7 @@
                         </label>
 
                         <div class="mb-2">
-                            <label class="control-label"><span class="mendatory" style="font-size: 20px;"></span>Full Name : <b>@if($user->full_name) {{ $user->full_name }} @else - @endif </b></label>
+                            <label class="control-label"><span class="mendatory" style="font-size: 20px;"></span>Full Name : <b>@if($user->userTransDefault) {{ $user->userTransDefault->full_name }} @else - @endif </b></label>
                         </div>
                         <div class="mb-2">
                             <label class="control-label"><span class="mendatory" style="font-size: 20px;"></span>Email : <b>@if($user->email) {{ $user->email }} @else - @endif </b></label>
@@ -234,22 +234,6 @@
                                 </b>
                             </label>
                         </div>
-                        <div class="mb-2">
-                            <label class="control-label">
-                                <span class="mendatory" style="font-size: 20px;"></span>Pets : 
-                                <b>
-                                    @if($user->pets->isNotEmpty())
-                                        @foreach($user->pets as $pets)
-                                            @if($pets->pet && $pets->pet->profileDetailTransDefault)
-                                                {{ $pets->pet->profileDetailTransDefault->value }}, 
-                                            @endif
-                                        @endforeach
-                                    @else
-                                        - 
-                                    @endif 
-                                </b>
-                            </label>
-                        </div>
                     </div>
 
                     @if($user->userDetails->isNotEmpty())
@@ -294,11 +278,12 @@
                     @endif
 
                     <div class="form-group col-md-12">
-                        <br><br>
-                        <div class="form-group col-md-12">
-                            <label class="control-label"><span class="mendatory" style="font-size: 20px;"></span>
-                                <h4>Report Status : {{ $user->status }}</h4>
-                            </label>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <label class="control-label"><span class="mendatory" style="font-size: 20px;"></span>
+                                    <h4>Verify Status : {{ $user->verify_status }}</h4>
+                                </label>
+                            </div>
                         </div>
                     </div>
 
