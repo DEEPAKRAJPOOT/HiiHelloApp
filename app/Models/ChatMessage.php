@@ -16,7 +16,7 @@ class ChatMessage extends Model
     
     protected $fillable = ['custom_id', 'room_id', 'sender_id', 'receiver_id', 'message', 'status'];
 
-    public function room(){ return $this->belongsTo('App\Models\ChatRoom','room_id','id'); }
+public function room(){ return $this->belongsTo('App\Models\ChatRoom','room_id','id'); }
     public function sender(){ return $this->belongsTo('App\Models\User','sender_id','id'); }
     public function receiver(){ return $this->belongsTo('App\Models\User','receiver_id','id'); }
 
