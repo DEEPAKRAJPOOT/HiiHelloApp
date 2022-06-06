@@ -7,7 +7,7 @@ use Illuminate\Http\ { Request, Response };
 use Illuminate\Database\Eloquent\ { ModelNotFoundException };
 use App\Http\Requests\Api\General\ { PaginationRequest };
 use Illuminate\Support\Facades\ { Auth };
-use App\Models\ { ChatRoom, ChatMessage, User };
+use App\Models\ { ChatRoom, ChatMessage, User, CallLog };
 use App\Http\Resources\v1\ { ChatRoomResource, ChatMessageResource };
 use App\Http\Requests\Api\Chat\ { CreateRoomRequest, ChatMessagesRequest, DeleteRoomRequest, GetRoomRequest };
 
@@ -154,9 +154,15 @@ class ChatController extends Controller
                                     ->offset($request->offset ?? config('utility.pagination.offset'))
                                     ->get();
 
+                $callLog    =   CallLog::select('id','room_id','remaining_time')->where('date',now()->format('Y-m-d'))
+                                    ->whereHas('room', function($q) use ($request){
+                                        $q->whereCustomId($request->room)->whereIsActive('y');
+                                    })->latest()->first();
+
                 if($messages->isNotEmpty()){
                     return (ChatMessageResource::Collection($messages))->additional([
                         'meta'  =>  [
+                            'remaining_time'    =>  $callLog ? $callLog->remaining_time : config('utility.twillio.allow_call_time'),
                             'limit'     =>  $request->limit,
                             'offset'    =>  $request->offset,
                             'total'     =>  $count,
@@ -167,6 +173,7 @@ class ChatController extends Controller
                         ],
                     ]);
                 }else{
+                    $this->response['meta']['remaining_time']  = $callLog ? $callLog->remaining_time : config('utility.twillio.allow_call_time'); 
                     $this->response['meta']['message']  =   trans('api.not_found',['entity' => __('Chat history')]); 
                     $this->status = Response::HTTP_NOT_FOUND;     
                 }
