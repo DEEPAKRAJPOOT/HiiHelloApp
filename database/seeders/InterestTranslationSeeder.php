@@ -445,6 +445,9 @@ class InterestTranslationSeeder extends Seeder
             array('locale' => 'en', 'interest_id' => 383, 'title' => "Falooda", 'created_at' => now(), 'updated_at' => now()),
             array('locale' => 'en', 'interest_id' => 384, 'title' => "Others", 'created_at' => now(), 'updated_at' => now()),
 
+            array('locale' => 'en', 'interest_id' => 385, 'title' => "Favourite Movie", 'created_at' => now(), 'updated_at' => now()),
+
+
             // // Food I love to eat (Refreshments)
             // array('locale' => 'en', 'interest_id' => 385, 'title' => "Coffee", 'created_at' => now(), 'updated_at' => now()),
             // array('locale' => 'en', 'interest_id' => 386, 'title' => "Tea", 'created_at' => now(), 'updated_at' => now()),

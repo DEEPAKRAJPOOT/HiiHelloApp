@@ -9,6 +9,7 @@ use App\Models\Personality;
 use App\Models\ProfileDetail;
 use App\Models\Interest;
 use App\Models\UserInterest;
+use App\Models\Language;
 use Exception;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
@@ -42,12 +43,12 @@ class UsersController extends Controller
         $professions = ProfileDetail::with('profileDetailTransDefault')->where(['attribute'=>'profession','is_active'=>'y'])->get();
         $religions = ProfileDetail::with('profileDetailTransDefault')->where(['attribute' => 'religion','is_active'=>'y'])->get();
         $relationship_status = ProfileDetail::with('profileDetailTransDefault')->where(['attribute'=>'relationship_status','is_active'=>'y'])->get();
-        $you_are_here = ProfileDetail::with('profileDetailTransDefault')->where(['attribute'=>'you_are_here','is_active'=>'y'])->get();
+        $you_are_here = ProfileDetail::with('profileDetailTransDefault')->where(['attribute'=>'i_am_here','is_active'=>'y'])->get();
         $food_preferences = ProfileDetail::with('profileDetailTransDefault')->where(['attribute'=>'food_preference','is_active'=>'y'])->get();
         $drinking = ProfileDetail::with('profileDetailTransDefault')->where(['attribute'=>'drinking','is_active'=>'y'])->get();
         $smoking = ProfileDetail::with('profileDetailTransDefault')->where(['attribute'=>'smoking','is_active'=>'y'])->get();
-        $pets = ProfileDetail::with('profileDetailTransDefault')->where(['attribute'=>'pets','is_active'=>'y'])->get();
-        $star_signs = ProfileDetail::with('profileDetailTransDefault')->where(['attribute'=>'sun_sign','is_active'=>'y'])->get();
+        $pets = ProfileDetail::with('profileDetailTransDefault')->where(['attribute'=>'pet','is_active'=>'y'])->get();
+        $star_signs = ProfileDetail::with('profileDetailTransDefault')->where(['attribute'=>'star_sign','is_active'=>'y'])->get();
         $community = ProfileDetail::with('profileDetailTransDefault')->where(['attribute'=>'community','is_active'=>'y'])->get();
         $travelling = Interest::with(['subInterests.interestTransDefault'])->where(['slug'=>'traveling','is_active'=>'y'])->get();
         $musics = Interest::with(['subInterests.interestTransDefault'])->where(['slug' => 'music','is_active' => 'y'])->get();
@@ -79,6 +80,27 @@ class UsersController extends Controller
         $user['custom_id']   =   getUniqueString('users');
         $user['password']    =   Hash::make(config('utility.default_password'));
         $user->profile_photo = $path;
+
+        // user full name
+        $traslate_data = [];
+        $language_codes = Language::pluck('lang_code')->toArray();
+        if(!empty($request->full_name))
+        {
+            foreach($language_codes as $language_code){
+                $traslate_data[$language_code] =  [ 'full_name' =>  $request->full_name ];
+            }
+            $user->update($traslate_data);
+            $user->is_translated = 'n';
+        }
+
+        if(!empty($request->fav_movie))
+        {
+            foreach($language_codes as $language_code){
+                $traslate_data[$language_code] =  [ 'fav_movie' =>  $request->fav_movie ];
+            }
+            $user->update($traslate_data);
+            $user->is_translated = 'n';
+        }
 
         /* Verification Details */
         $verify_photo  =   $request->verify_photo;
@@ -186,6 +208,7 @@ class UsersController extends Controller
     public function show(User $user)
     {
         $user = User::with([
+            'userTransDefault',
             'country.countryTransDefault','location.locationTransDefault',
             'language','userDetails',
             'interests.interest.interestTransDefault',
@@ -211,12 +234,12 @@ class UsersController extends Controller
         $professions = ProfileDetail::with('profileDetailTransDefault')->where(['attribute'=>'profession','is_active'=>'y'])->get();
         $religions = ProfileDetail::with('profileDetailTransDefault')->where(['attribute' => 'religion','is_active'=>'y'])->get();
         $relationship_status = ProfileDetail::with('profileDetailTransDefault')->where(['attribute'=>'relationship_status','is_active'=>'y'])->get();
-        $you_are_here = ProfileDetail::with('profileDetailTransDefault')->where(['attribute'=>'you_are_here','is_active'=>'y'])->get();
+        $you_are_here = ProfileDetail::with('profileDetailTransDefault')->where(['attribute'=>'i_am_here','is_active'=>'y'])->get();
         $food_preferences = ProfileDetail::with('profileDetailTransDefault')->where(['attribute'=>'food_preference','is_active'=>'y'])->get();
         $drinking = ProfileDetail::with('profileDetailTransDefault')->where(['attribute'=>'drinking','is_active'=>'y'])->get();
         $smoking = ProfileDetail::with('profileDetailTransDefault')->where(['attribute'=>'smoking','is_active'=>'y'])->get();
-        $pets = ProfileDetail::with('profileDetailTransDefault')->where(['attribute'=>'pets','is_active'=>'y'])->get();
-        $star_signs = ProfileDetail::with('profileDetailTransDefault')->where(['attribute'=>'sun_sign','is_active'=>'y'])->get();
+        $pets = ProfileDetail::with('profileDetailTransDefault')->where(['attribute'=>'pet','is_active'=>'y'])->get();
+        $star_signs = ProfileDetail::with('profileDetailTransDefault')->where(['attribute'=>'star_sign','is_active'=>'y'])->get();
         $community = ProfileDetail::with('profileDetailTransDefault')->where(['attribute'=>'community','is_active'=>'y'])->get();
         //user interest
         $user_interest = UserInterest::with('interest')->where('user_id',$user->id)->pluck('interest_id')->toArray();
@@ -458,7 +481,7 @@ class UsersController extends Controller
 
             $records['data'][] = [
                 'id' => $user->id,
-                'full_name' =>  $user->userTransDefault ? $city->userTransDefault->full_name : "",
+                'full_name' =>  $user->userTransDefault ? $user->userTransDefault->full_name : "",
                 'country_code' => $user->country_code,
                 'contact_no' => $user->contact_no ? '<a href="tel:' . $user->contact_no . '" >' . $user->contact_no . '</a>' : 'N/A',
                 'gender' => $user->gender,
