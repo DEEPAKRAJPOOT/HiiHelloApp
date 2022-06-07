@@ -46,7 +46,10 @@ class FilterController extends Controller
                     });
                 }
                 if(!empty($request->fav_movie)){
-                    $users = $users->where('fav_movie', 'like', "%{$request->fav_movie}%");
+                    $fav_movie = $request->fav_movie;
+                    $users = $users->whereHas('userTranslations', function($query) use ($fav_movie){
+                                        $query->where('fav_movie','like', "%{$fav_movie}%");
+                                    }); 
                 }
                 if(!empty($request->interests)){
                     $users = $users->whereHas('interests.interest', function($query) use ($request){
