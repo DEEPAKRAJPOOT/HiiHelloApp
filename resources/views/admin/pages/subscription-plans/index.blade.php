@@ -1,7 +1,7 @@
 @extends('admin.layouts.app')
 
 @push('breadcrumb')
-    {!! Breadcrumbs::render('users_list') !!}
+    {!! Breadcrumbs::render('subscription_plans_list') !!}
 @endpush
 
 @push('extra-css-styles')
@@ -15,19 +15,19 @@
         <div class="card-header">
             <div class="card-title">
                 <span class="card-icon">
-                    <i class="fas fa-users text-primary"></i>
+                    <i class="{{$icon}} text-primary"></i>
                 </span>
                 <h3 class="card-label">{{ $custom_title }}</h3>
             </div>
 
             <div class="card-toolbar">
                 @if (in_array('delete', $permissions))
-                    <a href="{{ route('admin.users.destroy', 0) }}" name="del_select" id="del_select" class="btn btn-sm btn-light-danger font-weight-bolder text-uppercase mr-2 delete_all_link">
+                    <a href="{{ route('admin.subscription-plans.destroy', 0) }}" name="del_select" id="del_select" class="btn btn-sm btn-light-danger font-weight-bolder text-uppercase mr-2 delete_all_link">
                         <i class="far fa-trash-alt"></i> Delete Selected
                     </a>
                 @endif
                 @if (in_array('add', $permissions))
-                    <a href="{{ route('admin.users.create') }}" class="btn btn-sm btn-primary font-weight-bolder text-uppercase">
+                    <a href="{{ route('admin.subscription-plans.create') }}" class="btn btn-sm btn-primary font-weight-bolder text-uppercase">
                         <i class="fas fa-plus"></i>
                         Add {{ $custom_title }}
                     </a>
@@ -36,7 +36,7 @@
         </div>
         <div class="card-body">
             {{--  Datatable Start  --}}
-            <table class="table table-bordered table-hover table-checkable" id="users_table" style="margin-top: 13px !important"></table>
+            <table class="table table-bordered table-hover table-checkable" id="subscription_pan_table" style="margin-top: 13px !important"></table>
             {{--  Datatable End  --}}
         </div>
     </div>
@@ -48,36 +48,32 @@
 <script>
     $(document).ready(function () {
         // datatable
-        oTable = $('#users_table').DataTable({
+        oTable = $('#subscription_pan_table').DataTable({
             responsive: true,
             searchDelay: 500,
             processing: true,
             serverSide: true,
             ajax: {
-                url: "{{ route('admin.users.listing') }}",
+                url: "{{ route('admin.subscription-plans.listing') }}",
                 data: {
-                    columnsDef: ['checkbox', 'country_code', 'contact_no', 'gender', 'active', 'action'],
+                    columnsDef: ['checkbox', 'amount', 'name', 'active', 'action'],
                 },
             },
             columns: [
                 { data: 'checkbox' },
-                { data: 'account_id' },
-                { data: 'country_code' },
-                { data: 'contact_no' },
-                { data: 'full_name' },
-                { data: 'gender' },
+                { data: 'amount' },
+                { data: 'name' },
+                { data: 'is_popular' },
                 { data: 'active' },
                 { data: 'action', responsivePriority: -1 },
             ],
             columnDefs: [
                 // Specify columns titles here...
                 { targets: 0, title: "<center><input type='checkbox' class='all_select'></center>", orderable: false },
-                { targets: 1, title: 'Account Id', orderable: true },
-                { targets: 2, title: 'Country Code', orderable: true },
-                { targets: 3, title: 'Contact Number', orderable: true },
-                { targets: 4, title: 'Name', orderable: false },
-                { targets: 5, title: 'Gender', orderable: true },
-                { targets: 6, title: 'Active', orderable: false },
+                { targets: 1, title: 'Amount', orderable: true },
+                { targets: 2, title: 'Name', orderable: false },
+                { targets: 3, title: 'Popular', orderable: true },
+                { targets: 4, title: 'Active', orderable: false },
                 // Action buttons
                 { targets: -1, title: 'Action',
                 orderable: false },

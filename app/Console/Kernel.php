@@ -34,6 +34,13 @@ class Kernel extends ConsoleKernel
         })->everyMinute();
         // ->everyFiveMinutes();
 
+        // Image Moderation Command
+        $schedule->call(function () {
+            $scheculeCommand = new ImageModeration;
+            $scheculeCommand->handle();
+        })->everyMinute();
+        // ->everyTenMinutes();
+
         // $schedule->command('inspire')->hourly();
     }
 

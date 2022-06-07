@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use App\Models\User;
+use Illuminate\Support\Str;
 
 class GoogleTranslation extends Command
 {
@@ -119,6 +120,12 @@ class GoogleTranslation extends Command
                     ],
                 ];
                 $user->update($transaction_data);
+
+                // Store Account Id
+                if($column == 'full_name' && $language_allowed == 'en'){
+                    $user->account_id = Str::slug($translatedText , "_").'_'.time();
+                }
+
                 $user->save();
                 
                 $message = 'User Id : '.$user->id.' details translatated successfully !!!';

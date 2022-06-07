@@ -33,7 +33,7 @@ class RegisterRequest extends FormRequest
         $phone_codes    =   Country::whereIsActive('y')->pluck('phonecode')->toArray();
 
         return [
-            'full_name'         =>  'required|min:2|max:100',
+            'full_name'         =>  'required|min:4|max:100',
             'email'             =>  'nullable|email|max:150',
             'birth_date'        =>  'required|date|before:'.$min_birth_date,
             'gender'            =>  'required|in:Male,Female',

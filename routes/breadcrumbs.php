@@ -254,6 +254,25 @@ Breadcrumbs::register('dashboard', function ($breadcrumbs) {
 	});
 
 
+	// Subscription Plans -------------------------------------------------------------------------------------------------------------------------------------------------------
+	Breadcrumbs::register('subscription_plans_list', function($breadcrumbs)
+	{
+		$breadcrumbs->parent('dashboard');
+	    $breadcrumbs->push('Subscription Plans', route(Auth::getDefaultDriver().'.subscription-plans.index'));
+	});
+	Breadcrumbs::register('subscription_plans_create', function($breadcrumbs)
+	{
+		$breadcrumbs->parent('subscription_plans_list');
+	    $breadcrumbs->push('Add New Subscription Plan', route(Auth::getDefaultDriver().'.subscription-plans.create'));
+	});
+
+	Breadcrumbs::register('subscription_plans_update', function($breadcrumbs, $id)
+	{
+		$breadcrumbs->parent('subscription_plans_list');
+	    $breadcrumbs->push('Edit Subscription Plan', route(Auth::getDefaultDriver().'.subscription-plans.edit', $id));
+	});
+
+
 	// App Details -------------------------------------------------------------------------------------------------------------------------------------------------------
 	Breadcrumbs::register('app_detail_create', function($breadcrumbs)
 	{
