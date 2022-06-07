@@ -16,26 +16,24 @@ class PushNotificationChannel extends Controller
 
         if( empty($deviceToken) ) return "No device token found!";
         $message = $notification->data;
-        $unReadNotifications = 0;
 
+        $unReadNotifications = 0;
         $n_data = [
-            'title'     =>  $message->title,
-            'body'      =>  $message->message,
+            'title'     =>  $message['title'],
+            'body'      =>  $message['message'],
             'badge'     =>  $unReadNotifications,
         ];
-            
         $data = [
             'id'        =>  $message->id ?? NULL,
             'type'      =>  $message->type ?? "general-notification",
             'image'     =>  $notifiable->profile_photo ? generateURL($notifiable->profile_photo) : "",
         ];
 
-        if ($message->type == 'chat-message') {
-            $data['name']       =   $message->name;
-            $data['profile']    =   $message->profile;
-            $data['room_id']    =   $message->room_id;
+        if ($message['type'] == 'chat-message') {
+            $data['name']       =   $message['name'];
+            $data['profile']    =   $message['profile'];
+            $data['room_id']    =   $message['room_id'];
         }
-
         $send_notification = [
             'priority'  =>  'high',
             'to'        =>  $deviceToken->token,

@@ -8,9 +8,12 @@ use Monolog\Logger;
 use \Sightengine\SightengineClient;
 use Illuminate\Support\Facades\Storage;
 use App\Models\User;
+use App\Http\Traits\FirebaseTrait;
 
 class ImageModeration extends Command
 {
+    use FirebaseTrait;
+
     /**
      * The name and signature of the console command.
      *
@@ -44,8 +47,10 @@ class ImageModeration extends Command
     {
         $message = "No Moderation Image Found.";
         try{
-            $users = User::select('id','profile_photo','is_media_checked')
-                                ->with('userDetails:id,user_id,image')->where('is_media_checked','n')->get();
+            $users = User::select('id','custom_id','profile_photo','is_media_checked')
+                                ->with('userDetails:id,user_id,image')
+                                ->where('is_media_checked','n')
+                                ->get();
 
             if($users->isNotEmpty()){
                 foreach($users as $user){
@@ -86,6 +91,16 @@ class ImageModeration extends Command
 
                     $user->is_media_checked = 'y';
                     $user->save();
+
+                    // Send Notification
+                    $notification = [
+                        'key'           =>  'user_id',
+                        'value'         =>  $user->custom_id,
+                        'title'         =>  trans('api.notify_message.image_moderation.title'),
+                        'message'       =>  trans('api.notify_message.image_moderation.message'),
+                        'type'          =>  config('utility.notification.type.image_moderation'),
+                    ];
+                    $this->directNotify($notification, $user);
                 }
             }
         } catch (\Exception $e) {
@@ -157,6 +172,7 @@ class ImageModeration extends Command
             $iqTrackingLog->error($file, ['error' => $e->getMessage()]);
         }
     }
+
 
     // Information As Per Documentation
     // LINK :: https://sightengine.com/docs/nsfw-detection-model
