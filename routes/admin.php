@@ -73,6 +73,10 @@ Route::group(['namespace' => 'Admin', 'middleware' => ['check_permit','revalidat
 	/* Push Notification */
 	Route::resource('push-notification', 'PushNotificationController');	
 
+	/* Subscription Plans*/
+	Route::get('subscription-plans/listing', 'SubscriptionPlanController@listing')->name('subscription-plans.listing');
+	Route::resource('subscription-plans', 'SubscriptionPlanController');
+
 	/* App Details */
 	Route::resource('app-details', 'AppDetailController');	
 

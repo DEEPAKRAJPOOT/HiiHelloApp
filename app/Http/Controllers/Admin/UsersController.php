@@ -453,7 +453,8 @@ class UsersController extends Controller
 
         if ($search != '') {
             $users->where(function ($query) use ($search) {
-                $query->Where('country_code', 'like', "%{$search}%")
+                $query->Where('account_id', 'like', "%{$search}%")
+                    ->orWhere('country_code', 'like', "%{$search}%")
                     ->orWhere('contact_no', 'like', "%{$search}%")
                     ->orWhere('gender', 'like', "%{$search}%")
                     ->orWhere('interest', 'like', "%{$search}%")
@@ -481,6 +482,7 @@ class UsersController extends Controller
 
             $records['data'][] = [
                 'id' => $user->id,
+                'account_id' => $user->account_id ?? "",
                 'full_name' =>  $user->userTransDefault ? $user->userTransDefault->full_name : "",
                 'country_code' => $user->country_code,
                 'contact_no' => $user->contact_no ? '<a href="tel:' . $user->contact_no . '" >' . $user->contact_no . '</a>' : 'N/A',

@@ -81,7 +81,10 @@ class TwillioController extends Controller
         // Twilio.Device.connect(params); <----- in param object
         // $dial = $response->dial('', ['callerId' => $data["outgoing_caller_id"]]);
 
-        $dial = $response->dial('', array('callerId' => 'client:' . $data["outgoing_caller_id"]));
+        $dial = $response->dial('', array(
+                        'callerId'          =>  'client:' . $data["outgoing_caller_id"],
+                        'answerOnBridge'    =>  true,  // Callback Event For Incoming Call (For Mobile Side)
+                    ));
 
         $client = $dial->client($request->To);
 

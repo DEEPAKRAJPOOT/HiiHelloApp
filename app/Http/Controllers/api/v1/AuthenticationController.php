@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\ { ModelNotFoundException };
 use Illuminate\Support\Facades\ { Storage, Auth, Hash };
 use App\Http\Requests\Api\Authentication\ { LoginRequest, RegisterRequest, SocialLoginRequest };
 use App\Models\ { User, Country, UserDetail, Location, Interest, UserInterest, Language, ProfileDetail, DeviceToken };
+use Illuminate\Support\Str;
 
 class AuthenticationController extends Controller
 {
@@ -112,6 +113,12 @@ class AuthenticationController extends Controller
                         $traslate_data[$language_code] =  [ 'full_name' =>  $request->full_name ];
                     }
                     $user->update($traslate_data);
+
+                    // Store Account Id
+                    if(!empty($request->language) && $request->language == 'en'){
+                        $user->account_id = Str::slug($request->full_name , "_").'_'.time();
+                    }
+
                     $user->is_translated = 'n';
                 }
                 

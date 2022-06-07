@@ -6,6 +6,8 @@ use Illuminate\Console\Command;
 use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
 use \Sightengine\SightengineClient;
+use Illuminate\Support\Facades\Storage;
+use App\Models\User;
 
 class ImageModeration extends Command
 {
@@ -40,65 +42,121 @@ class ImageModeration extends Command
      */
     public function handle()
     {
-        // $message = "No Moderation Image Found.";
-        // try{
-        //     $api_url    =   config('utility.image_moderation.api_url');
-        //     $api_user   =   config('utility.image_moderation.api_user');
-        //     $api_secret =   config('utility.image_moderation.api_secret');
-        //     $models     =   'nudity'; // We can also pass array if we have multiple models
+        $message = "No Moderation Image Found.";
+        try{
+            $users = User::select('id','profile_photo','is_media_checked')
+                                ->with('userDetails:id,user_id,image')->where('is_media_checked','n')->get();
 
-        //     // $image_path = 'http://127.0.0.1:8000/storage/users/profile_photo/CUfeMOfu2B7qFeKgdgfRqIDJmgHpNwOSP3c4i9CW.jpg';
-        //     $image_path = 'http://la.webdevprojects.cloud/hi-hello/storage/users/profile_photo/gXQrpAaROu893nzhuS6uI7JdRFcHcYq2musi2Y7r.jpg';
+            if($users->isNotEmpty()){
+                foreach($users as $user){
+                    $profile_photo = generateURL($user->profile_photo);
 
-        //     $client     =   new \GuzzleHttp\Client();
-        //     $file       =   fopen($image_path, 'r');
-        //     $response   =   $client->request('POST', $api_url, 
-        //                     [
-        //                         'query' => [
-        //                             'api_user'      =>  $api_user,
-        //                             'api_secret'    =>  $api_secret,
-        //                             'models'        =>  $models
-        //                         ],
-        //                         'multipart' => [
-        //                             [
-        //                                 'name'      =>  'media',
-        //                                 'contents'  =>  $file
-        //                             ]
-        //                         ]
-        //                     ]); 
+                    // Main Image
+                    if(!empty($profile_photo)){
+                        $safe_main_image = $this->checkImageModeration($profile_photo);
+                        
+                        // IF NOT SAFE
+                        if($safe_main_image == false){
+                            if( Storage::exists($user->profile_photo) ) { Storage::delete($user->profile_photo); }
+                            $user->profile_photo = NULL;
+                            $user->save();
+                        }
+                        $message = 'User Id : '.$user->id.' images checked successfully !!!';
+                    }
 
-        //     $output = json_decode($response->getBody());
-        //     if($output->status == 'success'){
-        //         if($output->nudity){
-        //             $row            =   $output->nudity->raw;
-        //             $safe           =   $output->nudity->safe;
-        //             $partial        =   $output->nudity->partial;
-        //             $safe_image     =   true;
+                    // Media Images
+                    if($user->userDetails->isNotEmpty()){
+                        foreach($user->userDetails as $user_detail){
+                            if(!empty($user_detail->image)){
+                                $media_photo = generateURL($user_detail->image);
 
-        //             $row_condition      =   $row > $row_value;
-        //             $partial_condition  =   $partial > $partial_value;
-        //             $safe_condition     =   $safe < $safe_value;
+                                if(!empty($media_photo)){
+                                    $safe_media_image = $this->checkImageModeration($media_photo);
+                        
+                                    // IF NOT SAFE
+                                    if($safe_media_image == false){
+                                        if( Storage::exists($user_detail->image) ) { Storage::delete($user_detail->image); }
+                                        $user_detail->delete();
+                                    }
+                                    $message = 'User Id : '.$user->id.' images checked successfully !!!';
+                                }
+                            }
+                        }
+                    }
 
-        //             if($row_condition || $partial_condition || $safe_condition){
-        //                 $safe_image = false;
-        //             }
+                    $user->is_media_checked = 'y';
+                    $user->save();
+                }
+            }
+        } catch (\Exception $e) {
+            // Add error log
+            $file = 'image_moderation';
+            $iqTrackingLog = new Logger($file);
+            $iqTrackingLog->pushHandler(new StreamHandler(storage_path('logs/' . $file . '.log')), Logger::ERROR);
+            $iqTrackingLog->error($file, ['error' => $e->getMessage()]);
+        }
 
-        //             dump($row_condition, $partial_condition , $safe_condition);
-        //             dd("Safe",$safe_image,$row,$safe,$partial);
-        //         }
-        //         dd("output",$output);
-        //     }
-        //     dd("final",$output);
-        // } catch (\Exception $e) {
-        //     // Add error log
-        //     $file = 'image_moderation';
-        //     $iqTrackingLog = new Logger($file);
-        //     $iqTrackingLog->pushHandler(new StreamHandler(storage_path('logs/' . $file . '.log')), Logger::ERROR);
-        //     $iqTrackingLog->error($file, ['error' => $e->getMessage()]);
-        // }
-        // return $message;
+        $this->info($message);
+        return $message;
     }
 
+    function checkImageModeration($image_path)
+    {
+        try{
+            $api_url        =   config('utility.image_moderation.api_url');
+            $api_user       =   config('utility.image_moderation.api_user');
+            $api_secret     =   config('utility.image_moderation.api_secret');
+            $row_value      =   config('utility.image_moderation.row_value');
+            $partial_value  =   config('utility.image_moderation.partial_value');
+            $safe_value     =   config('utility.image_moderation.safe_value');
+            $models         =   'nudity'; // We can also pass array if we have multiple models
+            $safe_image     =   true;
+
+            $client     =   new \GuzzleHttp\Client();
+            $file       =   fopen($image_path, 'r');
+            $response   =   $client->request('POST', $api_url, 
+                            [
+                                'query' => [
+                                    'api_user'      =>  $api_user,
+                                    'api_secret'    =>  $api_secret,
+                                    'models'        =>  $models
+                                ],
+                                'multipart' => [
+                                    [
+                                        'name'      =>  'media',
+                                        'contents'  =>  $file
+                                    ]
+                                ]
+                            ]); 
+
+            $output = json_decode($response->getBody());
+            if($output->status == 'success'){
+                if($output->nudity){
+                    $row            =   $output->nudity->raw;
+                    $safe           =   $output->nudity->safe;
+                    $partial        =   $output->nudity->partial;
+
+                    $row_condition      =   $row > $row_value;
+                    $partial_condition  =   $partial > $partial_value;
+                    $safe_condition     =   $safe < $safe_value;
+
+                    // If Image Is Not Safe
+                    if($row_condition || $partial_condition || $safe_condition){
+                        $safe_image = false;
+                    }
+                }
+            }
+
+            return $safe_image;
+
+        } catch (\Exception $e) {
+            // Add error log
+            $file = 'image_moderation';
+            $iqTrackingLog = new Logger($file);
+            $iqTrackingLog->pushHandler(new StreamHandler(storage_path('logs/' . $file . '.log')), Logger::ERROR);
+            $iqTrackingLog->error($file, ['error' => $e->getMessage()]);
+        }
+    }
 
     // Information As Per Documentation
     // LINK :: https://sightengine.com/docs/nsfw-detection-model

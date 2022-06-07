@@ -273,6 +273,7 @@ class ProfileController extends Controller
                 if(!empty($request->image_path)){
                     if(empty($user->profile_photo)){
                         $user->profile_photo = $request->image_path;
+                        $user->is_media_checked = 'n';
                         $user->save();
                     }else{
                         $count_images = $user->userDetails->whereNotNull('image')->count();
@@ -288,6 +289,9 @@ class ProfileController extends Controller
                         if($new_image->wasRecentlyCreated){
                             $new_image->sequence = $new_sequence;
                             $new_image->save();
+
+                            $user->is_media_checked = 'n';
+                            $user->save();
                         }
                     }
                 }

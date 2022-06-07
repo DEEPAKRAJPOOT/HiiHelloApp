@@ -17,9 +17,9 @@ class CreateSubscriptionPlanTranslationsTable extends Migration
             $table->id();
             $table->string('locale')->index();
 
-            $table->bigInteger('plan_id')->unsigned();
-            $table->unique(['plan_id','locale']);
-            $table->foreign('plan_id')->references('id')->on('subscription_plans')->onDelete('cascade')->onUpdate('cascade');
+            $table->bigInteger('subscription_plan_id')->unsigned();
+            // $table->unique(['subscription_plan_id','locale']);
+            $table->foreign('subscription_plan_id')->references('id')->on('subscription_plans')->onDelete('cascade')->onUpdate('cascade');
 
             $table->string('name')->nullable();
             $table->text('description')->nullable();
