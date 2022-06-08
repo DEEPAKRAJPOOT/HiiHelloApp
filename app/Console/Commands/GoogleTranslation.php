@@ -44,31 +44,35 @@ class GoogleTranslation extends Command
         $apiKey             =   config('utility.google.translate.api_key');
         $message            =   'No details found to translate !!!';
 
-        $users = User::select('id','custom_id','language_id')->with('userTranslations','language')->where('is_translated','n')->get();
+        $users = User::select('id','custom_id','language_id','is_trans_full_name','is_trans_about_me','is_trans_fav_movie')
+                                ->with('userTranslations','language')
+                                ->where('is_trans_full_name','n')->orWhere('is_trans_about_me','n')
+                                ->orWhere('is_trans_fav_movie','n')->get();
 
         if($users->isNotEmpty()){
             foreach($users as $user){
                 if($user->userTranslations->isNotEmpty()){
-
                     $detected_lang = $user->language ? $user->language->lang_code : 'en';
                     // $detected_lang = $user->userTranslations[0] ? $user->userTranslations[0]->locale : $detected_lang;
 
                     if($user->userTranslations[0]){
-                        $full_name = $user->userTranslations[0]->full_name;
-                        $about_me = $user->userTranslations[0]->about_me;
-                        $fav_movie = $user->userTranslations[0]->fav_movie;
+                        $full_name  =   $user->userTranslations[0]->full_name;
+                        $about_me   =   $user->userTranslations[0]->about_me;
+                        $fav_movie  =   $user->userTranslations[0]->fav_movie;
 
-                        if( !empty($full_name) ){
+                        if( !empty($full_name) && $user->is_trans_full_name == 'n'){
                             $message = $this->translateText($apiKey, $language_alloweds, $user, $detected_lang, 'full_name', $full_name );
+                            $user->is_trans_full_name = 'y';
                         }
-                        if( !empty($about_me) ){
+                        if( !empty($about_me) && $user->is_trans_about_me == 'n'){
                             $message = $this->translateText($apiKey, $language_alloweds, $user, $detected_lang, 'about_me', $about_me );
+                            $user->is_trans_about_me = 'y';
                         }
-                        if( !empty($fav_movie) ){
+                        if( !empty($fav_movie) && $user->is_trans_fav_movie == 'n'){
                             $message = $this->translateText($apiKey, $language_alloweds, $user, $detected_lang, 'fav_movie', $fav_movie );
+                            $user->is_trans_fav_movie = 'y';
                         }
 
-                        $user->is_translated = 'y';
                         $user->save();
                     }
                 }
@@ -84,20 +88,20 @@ class GoogleTranslation extends Command
         $message = 'No details found to translate !!!';
 
         // Detect Language
-        // $detect_url = 'https://translation.googleapis.com/language/translate/v2/detect?key=' .$apiKey. '&q='.rawurlencode($text);
-        // $handle = curl_init($detect_url);
-        // curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
-        // $response = curl_exec($handle);
-        // $responseDecoded = json_decode($response, true);
-        // $responseCode = curl_getinfo($handle, CURLINFO_HTTP_CODE);      //Here we fetch the HTTP response code
-        // curl_close($handle);
+        $detect_url = 'https://translation.googleapis.com/language/translate/v2/detect?key=' .$apiKey. '&q='.rawurlencode($text);
+        $handle = curl_init($detect_url);
+        curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
+        $response = curl_exec($handle);
+        $responseDecoded = json_decode($response, true);
+        $responseCode = curl_getinfo($handle, CURLINFO_HTTP_CODE);      //Here we fetch the HTTP response code
+        curl_close($handle);
 
-        // if($responseCode == 200) {
-        //     if($responseDecoded['data'] && $responseDecoded['data']['detections'] && $responseDecoded['data']['detections'][0] && $responseDecoded['data']['detections'][0][0] && $responseDecoded['data']['detections'][0][0]['language']){
+        if($responseCode == 200) {
+            if($responseDecoded['data'] && $responseDecoded['data']['detections'] && $responseDecoded['data']['detections'][0] && $responseDecoded['data']['detections'][0][0] && $responseDecoded['data']['detections'][0][0]['language']){
                 
-        //         $detected_lang = $responseDecoded['data']['detections'][0][0]['language'] ?? $detected_lang;
-        //     }
-        // }
+                $detected_lang = $responseDecoded['data']['detections'][0][0]['language'] ?? $detected_lang;
+            }
+        }
 
         foreach($language_alloweds as $language_allowed){
 
@@ -123,7 +127,7 @@ class GoogleTranslation extends Command
 
                 // Store Account Id
                 if($column == 'full_name' && $language_allowed == 'en'){
-                    $user->account_id = Str::slug($translatedText , "_").'_'.time();
+                    $user->account_id = Str::slug(substr($translatedText, 0, 4), "_").'_'.time();
                 }
 
                 $user->save();

@@ -37,7 +37,7 @@ class ProfileController extends Controller
                         $traslate_data[$language_code] =  [ 'about_me' =>  $request->about_me ];
                     }
                     $user->update($traslate_data);
-                    $user->is_translated = 'n';
+                    $user->is_trans_about_me = 'n';
                 }
 
                 if(!empty($request->fav_movie) && !empty($user->language) ){
@@ -46,7 +46,7 @@ class ProfileController extends Controller
                         $traslate_data[$language_code] =  [ 'fav_movie' =>  $request->fav_movie ];
                     }
                     $user->update($traslate_data);
-                    $user->is_translated = 'n';
+                    $user->is_trans_fav_movie = 'n';
                 }
 
                 if(!empty($request->personality)){
@@ -288,10 +288,8 @@ class ProfileController extends Controller
 
                         if($new_image->wasRecentlyCreated){
                             $new_image->sequence = $new_sequence;
+                            $new_image->is_verified = 'n';
                             $new_image->save();
-
-                            $user->is_media_checked = 'n';
-                            $user->save();
                         }
                     }
                 }
