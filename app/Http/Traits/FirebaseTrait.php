@@ -3,6 +3,7 @@
 namespace App\Http\Traits;
 use App\Models\Notification;
 use App\Models\NotificationStatus;
+use App\Notifications\PushNotification;
 
 trait FirebaseTrait {
 
@@ -58,6 +59,17 @@ trait FirebaseTrait {
 		curl_close($ch);
 		return $result;
 	}
+
+	public function directNotify($notification, $user)
+    {
+        $user->notify(new PushNotification($notification));
+        $response = [
+            'status' => 'success',
+            'message' => 'notification added! successfully'
+        ];
+        return (object) $response;
+    }
+
 
 	// Send push notifications to all users
     public function sendPushNotificationToAll($notification, $users)

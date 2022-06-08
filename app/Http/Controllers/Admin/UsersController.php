@@ -90,7 +90,7 @@ class UsersController extends Controller
                 $traslate_data[$language_code] =  [ 'full_name' =>  $request->full_name ];
             }
             $user->update($traslate_data);
-            $user->is_translated = 'n';
+            $user->is_trans_full_name = 'n';
         }
 
         if(!empty($request->fav_movie))
@@ -99,7 +99,7 @@ class UsersController extends Controller
                 $traslate_data[$language_code] =  [ 'fav_movie' =>  $request->fav_movie ];
             }
             $user->update($traslate_data);
-            $user->is_translated = 'n';
+            $user->is_trans_fav_movie = 'n';
         }
 
         /* Verification Details */

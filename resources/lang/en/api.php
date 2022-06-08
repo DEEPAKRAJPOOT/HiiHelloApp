@@ -147,6 +147,13 @@ return [
         'already_purchased'   =>  'Subscription already purchased.',
     ],
 
+    'notify_message'    =>  [
+        'image_moderation'    =>  [
+            'title'     =>  "You image is removed from the app due to restricted content.",
+            'message'   =>  "Restricted content !!!",
+        ],
+    ],
+
     /* Custom Message */ 
     'attributes' => [
         "field"         =>  "field",

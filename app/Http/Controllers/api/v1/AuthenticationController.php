@@ -116,10 +116,10 @@ class AuthenticationController extends Controller
 
                     // Store Account Id
                     if(!empty($request->language) && $request->language == 'en'){
-                        $user->account_id = Str::slug($request->full_name , "_").'_'.time();
+                        $user->account_id = Str::slug(substr($request->full_name, 0, 4), "_").'_'.time();
                     }
 
-                    $user->is_translated = 'n';
+                    $user->is_trans_full_name = 'n';
                 }
                 
                 // Set Contact Number As Verified
@@ -133,6 +133,7 @@ class AuthenticationController extends Controller
                     }
                     $path = $request->file('profile_photo')->store('users/profile_photo');
                     $user->profile_photo = $path;
+                    $user->is_media_checked = 'n';
                 }
 
                 // Set Default Discover
@@ -324,7 +325,7 @@ class AuthenticationController extends Controller
                         $traslate_data[$language_code] =  [ 'full_name' =>  $request->full_name ];
                     }
                     $user->update($traslate_data);
-                    $user->is_translated = 'n';
+                    $user->is_trans_full_name = 'n';
                 }
 
                 $path = $user->profile_photo;
