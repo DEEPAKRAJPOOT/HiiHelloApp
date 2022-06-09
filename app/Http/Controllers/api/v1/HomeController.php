@@ -51,16 +51,17 @@ class HomeController extends Controller
 
                 $users = $users->with(['interests.interest.interestTranslation','userTranslation','location.locationTranslation'])
                             ->where('id','!=',$auth_id)
-                            ->whereNotNull('profile_photo')         // Must Have Main Photo
-                            ->whereNotIn('id',$blocked)             // Restirct Blocked Profile
-                            ->whereIn('language_id',$languages)     // Languages
-                            ->whereNotIn('id',$disLikes)            // Restirct DisLiked Profile
+                            ->whereNotNull('profile_photo')             // Must Have Main Photo
+                            ->whereNotIn('id',$disLikes)                // Restirct DisLiked Profile
+                            ->whereNotIn('id',$blocked)                 // Restirct Blocked Profile
                             ->whereIsActive('y');
-                               
+                           
                 if($auth_interest != 'Both'){ $users = $users->where('gender',$auth_interest); } // Interested in Gender
 
                 // Apply Discovery Detail
-                $users = $users->where(function ($query)  use ($user) {
+                $users = $users->where(function ($query)  use ($user, $languages) {
+                        $query->orWhereIn('language_id',$languages);   // Languages
+                               
                         if(!empty($user->discover_location_id)){
                             $query->orWhere('location_id',$user->discover_location_id); // Location
                         }
