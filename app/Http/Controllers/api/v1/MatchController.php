@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\ { ModelNotFoundException };
 use App\Http\Requests\Api\General\ { PaginationRequest };
 use App\Http\Requests\Api\Match\ { DeleteMatchRequest, GetMatchRequest };
 use App\Http\Resources\v1\ { MatchResource };
-use App\Models\ { User, Like, ChatRoom, UserInterest };
+use App\Models\ { User, Like, ChatRoom, UserInterest, BlockUser };
 
 class MatchController extends Controller
 {
@@ -26,16 +26,36 @@ class MatchController extends Controller
         $rules = GetMatchRequest::rules();
         if( $this->apiValidator($request->all(), $rules) ) {
             try{
-                $user = $request->user(); $auth_id = $user ? $user->id : NULL;
+                $user   = $request->user(); $auth_id = $user ? $user->id : NULL;
                 $search = $request->search;
-                $default_profile_percentage = 20;
-
-                $find_gender = $user->gender ?  $user->gender == 'Female' ? 'Male' : 'Female'  : 'Female';
-                $auth_interest = $user->interest ? $user->interest == 'Both' ? $find_gender : $user->interest : $find_gender;
                 
-                $auth_age = $user->getAge(); $age_from = $auth_age - 1; $age_to = $auth_age + 1;
-                $interests = UserInterest::whereUserId($auth_id)->whereNotNull('interest_id')->distinct()->pluck('interest_id')->toArray();
+                // Config Details
+                $backup_logic       =   config('utility.profile.match.backup_logic') ?? true;
+                $match_percentage   =   config('utility.profile.match.match_percentage') ?? 20;
+                $age_min_diff       =   config('utility.profile.match.age_min_diff') ?? 1;
+                $age_max_diff       =   config('utility.profile.match.age_max_diff') ?? 1;
 
+                // Gender & It's Interest Details
+                // $find_gender    =   $user->gender ?  $user->gender == 'Female' ? 'Male' : 'Female'  : 'Female';
+                $auth_interest  =   $user->interest ? $user->interest : 'Both';
+                    
+                // Blocked & Interest Details
+                $auth_age   =   $user->getAge(); $age_from = $auth_age - $age_min_diff; $age_to = $auth_age + $age_max_diff;
+                $blocked    =   BlockUser::whereBlockBy($auth_id)->whereNotNull('blocked_to')->distinct()->pluck('blocked_to')->toArray();
+                $interests  =   UserInterest::whereUserId($auth_id)->whereNotNull('interest_id')->distinct()->pluck('interest_id')->toArray();
+
+                // if chat is open then restrict in match profiles
+                $rooms = ChatRoom::where(function ($query) use ($auth_id) {
+                            $query->whereCreatorId($auth_id)->orWhere('participate_id',$auth_id);
+                        });
+                $creators = $rooms->whereNotNull('creator_id')->pluck('creator_id')->toArray();
+                $participants = $rooms->whereNotNull('participate_id')->pluck('participate_id')->toArray();
+
+                $known_profile_ids = array_unique(array_merge($creators, $participants));
+                if (($key = array_search($auth_id, $known_profile_ids)) !== false) { unset($known_profile_ids[$key]);  }
+                $restricted_ids = array_unique(array_merge($blocked, $known_profile_ids));
+
+                // Get users details who likes each others
                 $likes = DB::table('likes')
                             ->join("likes as like", function($q){
                                 $q->on("likes.liker_id", "=", "like.user_id");
@@ -44,25 +64,30 @@ class MatchController extends Controller
                             ->join('users', function($q){ $q->on('users.id',"=", "likes.user_id"); })
                             ->where("likes.liker_id", '=', $auth_id) //to only get users details who likes current user
                             ->where("likes.user_id", '!=', $auth_id)
-                            ->where("users.gender", $find_gender)
+                            // ->where("users.gender", $find_gender) // get details from based on interest so comment for now
                             ->pluck('users.custom_id')->toArray();
 
-                $matches = User::with('userTranslation')
-                        ->where('id','!=',$auth_id)     // Not Own Profile
-                        ->where('gender',$find_gender)  // Gender
-                        ->whereIsActive('y')
+                $matches = User::with('userTranslation:id,locale,user_id,full_name')
+                            ->where('id','!=',$auth_id)                 // Not Own Profile
+                            ->whereNotNull('profile_photo');            // Must Have Main Photo
+                            // ->whereNotIn('id',$blocked)              // Restricted Blocked Profiles
+                            // ->where('gender',$find_gender)           // Gender (Currently Stopped)
+                
+                            if($auth_interest != 'Both'){ $matches = $matches->where('gender',$auth_interest); }    // Interested in Gender
+                            if(count($restricted_ids) > 0){ $matches = $matches->whereNotIn('id',$restricted_ids); } 
+
+                $matches = $matches->whereIsActive('y')
                         // ->where('is_subscribed','y')            // Subscription
                         // ->where('subscription_end_date','>=', \Carbon\Carbon::today()->format('Y-m-d'))
 
                         ->where(function ($query) 
-                            use ($user, $likes, $age_from, $age_to, $auth_interest, $default_profile_percentage, $interests) {
-                            $query->orWhereIn('custom_id',$likes)                           // Someone likes me and I like him/her 
-                                ->orWhere('language_id',$user->language_id)                 // Language
-                                ->orWhere('location_id',$user->location_id)                 // Location
-                                ->orWhereBetween('birth_date',array($age_from,$age_to))     // Age / Birth Date
+                            use ($user, $likes, $age_from, $age_to, $match_percentage, $interests) {
 
-                                // ->orWhere('gender',$auth_interest)                               // Interested in Gender
-                                ->orWhere('profile_percentage','>=',$default_profile_percentage)    // Profile completion
+                            $query->orWhereIn('custom_id',$likes)                                   // Someone likes me and I like him/her 
+                                ->orWhere('language_id',$user->language_id)                         // Language
+                                ->orWhere('location_id',$user->location_id)                         // Location
+                                ->orWhereBetween('birth_date',array($age_from,$age_to))             // Age / Birth Date
+                                ->orWhere('profile_percentage','>=',$match_percentage)              // Profile completion
                                 ->orWhere('verify_status','verified')                               // Verified/Unverified  
                                 ->orWhere('personality_id',$user->personality_id)                   // Personality Type 
 
@@ -82,15 +107,24 @@ class MatchController extends Controller
                                     $q->whereIn('custom_id',$interests);
                                 });
                         });
-
+                        
                 if(!empty($search)){
                     $matches = $matches->whereHas('userTranslations',function ($query_search) use ($search) {
                         $query_search->where('full_name', 'like', "%{$search}%");
                     });
                 }
+                $count = $matches->count();
+
+                // BackUp Pan If No Profile Match
+                if( $count < 1 && $backup_logic == true ){
+                    $matches = User::with('userTranslation:id,locale,user_id,full_name')
+                                    ->where('id','!=',$auth_id)->whereNotNull('profile_photo')->whereIsActive('y');
+                    if($auth_interest != 'Both'){ $matches = $matches->where('gender',$auth_interest); }
+                    if(count($restricted_ids) > 0){ $matches = $matches->whereNotIn('id',$restricted_ids); } 
+                    $count = $matches->count();
+                }
 
                 $matches    = $matches->inRandomOrder();
-                $count      = $matches->count();
                 $matches    = $matches->limit($request->limit ?? config('utility.pagination.limit'))
                                 ->offset($request->offset ?? config('utility.pagination.offset'))
                                 ->get();
