@@ -73,7 +73,6 @@ class AuthenticationController extends Controller
                 if(!empty($request->location)){
                     $location = Location::whereCustomId($request->location)->whereIsActive('y')->firstOrFail();
                     $location_id = $location->id;
-
                 }
                 if(!empty($request->language)){
                     $language = Language::whereLangCode($request->language)->whereIsActive('y')->firstOrFail();

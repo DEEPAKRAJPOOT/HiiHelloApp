@@ -6,10 +6,10 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\ { Request, Response };
 use Illuminate\Database\Eloquent\ { ModelNotFoundException };
 use Illuminate\Support\Facades\ { Auth };
-use App\Http\Requests\Api\User\ { AddLikeRequest };
+use App\Http\Requests\Api\User\ { AddLikeRequest, AddDislikeRequest };
 use App\Http\Requests\Api\General\ { PaginationRequest };
 use App\Http\Resources\v1\ { LikeResource };
-use App\Models\ { Like, User, BlockUser };
+use App\Models\ { Like, User, BlockUser, DisLike };
 
 class LikeController extends Controller
 {
@@ -67,6 +67,62 @@ class LikeController extends Controller
                 };
             } catch (\Exception $e) {
                 $this->storeErrorLog($e,'add_like');
+            }
+        }
+        return $this->returnResponse();
+    }
+
+    // Add New Dislike
+    public function addNewDisLike(Request $request)
+    {
+        $rules = AddDislikeRequest::rules();
+        if( $this->apiValidator($request->all(), $rules) ) {
+            try{
+                $user = User::select('id')->whereCustomId($request->user_id)->whereIsActive('y')->firstOrFail();
+                $block = BlockUser::whereBlockBy($user->id)->whereBlockedTo(Auth::id())->first();
+                
+                if(!$block){
+                    $disLike = DisLike::firstOrCreate([
+                        'user_id'       =>  $user->id,
+                        'dis_liker_id'  =>  Auth::id(),
+                    ],[
+                        'custom_id'     =>  getUniqueString('dis_likes'),
+                    ]);
+
+                    if($disLike->save()){
+                        $this->status = Response::HTTP_OK;
+                        return (['data'  =>  NULL,
+                                'meta' => [
+                                    'url'       =>  url()->current(),
+                                    'api'       =>  $this->getVersion(),
+                                    'language'  =>  app()->getLocale(),
+                                    'message'   =>  trans('api.dis-liked', ['entity' => __("User") ]),
+                                ] ]);
+                    }else{
+                        $this->response['meta']['message']  =   trans('api.not_found',['entity' => __('User')]); 
+                        $this->status = Response::HTTP_NOT_FOUND; 
+                    }
+                }else{
+                    $this->response['meta']['message']  =   trans('api.block.no_action',['entity' => __('Dis-liked')]); 
+                    $this->status = Response::HTTP_NOT_FOUND; 
+                }
+            } catch(ModelNotFoundException $exception) {                
+                switch ($exception->getModel()) {
+                    case 'App\Models\BlockUser':
+                        $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("User")]);
+                        break;
+                    case 'App\Models\User':
+                        $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("User")]);
+                        break;
+                    case 'App\Models\DisLike':
+                        $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("User")]);
+                        break;
+                    default:
+                        $this->response['meta']['message'] = trans('api.went_wrong');
+                        break;
+                };
+            } catch (\Exception $e) {
+                $this->storeErrorLog($e,'add_dis_like');
             }
         }
         return $this->returnResponse();

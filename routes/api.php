@@ -50,7 +50,7 @@ Route::group(['namespace' => 'v1', 'prefix' => 'v1', 'middleware' => 'auth:sanct
     Route::post('logout',[AuthenticationController::class,'logout'])->name('api.user.logout'); 
 
     // Home List
-    Route::post('user/get-list', [HomeController::class,'getUsersList'])->name('api.user.get-list');
+    Route::post('user/get-list', [HomeController::class,'getHomeFeeds'])->name('api.user.get-list');
 
     // User
     Route::post('user/set-full-profile', [ProfileController::class,'setFullProfile'])->name('api.user.set-fill-profile');
@@ -80,8 +80,9 @@ Route::group(['namespace' => 'v1', 'prefix' => 'v1', 'middleware' => 'auth:sanct
     Route::post('user/block-list',[BlockController::class,'blockList'])->name('api.user.block-list');
     Route::post('user/block-unblock',[BlockController::class,'blockUnblockProfile'])->name('api.user.block-unblock');
 
-    // Like
+    // Like / DisLike
     Route::post('user/add-like', [LikeController::class,'addNewLike'])->name('api.user.add-like');
+    Route::post('user/add-dislike', [LikeController::class,'addNewDisLike'])->name('api.user.add-dislike');
     Route::post('user/get-likes', [LikeController::class,'getLikes'])->name('api.user.get-likes');
 
     // Match

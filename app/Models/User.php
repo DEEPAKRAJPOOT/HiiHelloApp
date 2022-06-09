@@ -27,7 +27,7 @@ class User extends Authenticatable implements MustVerifyEmail, TranslatableContr
 
     protected $fillable = [
         'custom_id', 'account_id', 'email', 'country_code', 'contact_no', 'birth_date', 'gender',
-        'interest', 'country_id', 'location_id', 'language_id', 'profile_photo', 'voice', 'voice_answer', 'password',
+        'interest', 'country_id', 'location_id', 'profile_percentage', 'language_id', 'profile_photo', 'voice', 'voice_answer', 'password',
         'is_social_user', 'is_trans_full_name', 'is_trans_about_me', 'is_trans_fav_movie', 
         'is_media_checked', 'is_subscribed', 'subscription_end_date',
         'facebook_id', 'google_id', 'apple_id',
@@ -56,6 +56,10 @@ class User extends Authenticatable implements MustVerifyEmail, TranslatableContr
         $contact_verified_at ? $contact_value = date('Y-m-d H:i:s', strtotime($contact_verified_at)) : $contact_value = "";
         return $contact_value; 
     }
+
+    // public function getCreatedAtAttribute($created_at){ 
+    //     return date('Y-m-d H:i:s', strtotime($created_at));
+    // }
 
     public function userTranslations(){ return $this->hasMany('App\Models\UserTranslation'); }
     public function userTranslation(){ 
@@ -240,6 +244,9 @@ class User extends Authenticatable implements MustVerifyEmail, TranslatableContr
         $percentage = intval(round(($language+$full_name+$birth_date+$location+$interest+$photo_verified+$email_verified+$video_verified+$contact_verified+$main_photo+$photo+$video+$about_me+$voice_prompt+$personality+$relationship_status+$you_are_here+$food_preference+$drinking+$smoking+$pet+$education+$university+$profession+$star_sign+$religion+$community+$fav_movie+$interest_percent)
             *$maximum_points/100));
         
+        $this->profile_percentage = $percentage;
+        $this->save();
+
         return $percentage;
     }
 

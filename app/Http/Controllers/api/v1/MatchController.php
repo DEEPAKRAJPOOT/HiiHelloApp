@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\ { ModelNotFoundException };
 use App\Http\Requests\Api\General\ { PaginationRequest };
 use App\Http\Requests\Api\Match\ { DeleteMatchRequest, GetMatchRequest };
 use App\Http\Resources\v1\ { MatchResource };
-use App\Models\ { User, Like, ChatRoom };
+use App\Models\ { User, Like, ChatRoom, UserInterest, BlockUser };
 
 class MatchController extends Controller
 {
@@ -26,48 +26,108 @@ class MatchController extends Controller
         $rules = GetMatchRequest::rules();
         if( $this->apiValidator($request->all(), $rules) ) {
             try{
-                $auth_id = $request->user() ? $request->user()->id : NULL;
+                $user   = $request->user(); $auth_id = $user ? $user->id : NULL;
                 $search = $request->search;
-
-                // $matches = User::with('userTranslation')->where('id','!=',Auth::id())->whereIsActive('y');
                 
-                $matches = DB::table('likes')
-                    ->join("likes as like", function($q){
-                        $q->on("likes.liker_id", "=", "like.user_id");
-                        $q->on("like.liker_id", "=", "likes.user_id");
-                    })
-                    ->join('users', function($q){
-                        $q->on('users.id',"=", "likes.user_id");
-                    })
-                    ->join('user_translations', function($q){
-                        $q->on("users.id","=", "user_translations.user_id")
-                            ->where("user_translations.locale","=",app()->getLocale());
-                    })
-                    //to only get users details who likes current user
-                    ->where("likes.liker_id", '=', $auth_id)
-                    ->where("likes.user_id", '!=', $auth_id)
-                    ->orderBy('likes.created_at', 'desc')
-                    ->selectRaw("likes.custom_id as custom_id, users.custom_id as user_custom_id,
-                                users.profile_photo as user_profile_photo,
-                                user_translations.full_name as user_full_name,
-                                likes.created_at as created_at");
+                // Config Details
+                $backup_logic       =   config('utility.profile.match.backup_logic') ?? true;
+                $match_percentage   =   config('utility.profile.match.match_percentage') ?? 20;
+                $age_min_diff       =   config('utility.profile.match.age_min_diff') ?? 1;
+                $age_max_diff       =   config('utility.profile.match.age_max_diff') ?? 1;
 
+                // Gender & It's Interest Details
+                // $find_gender    =   $user->gender ?  $user->gender == 'Female' ? 'Male' : 'Female'  : 'Female';
+                $auth_interest  =   $user->interest ? $user->interest : 'Both';
+                    
+                // Blocked & Interest Details
+                $auth_age   =   $user->getAge(); $age_from = $auth_age - $age_min_diff; $age_to = $auth_age + $age_max_diff;
+                $blocked    =   BlockUser::whereBlockBy($auth_id)->whereNotNull('blocked_to')->distinct()->pluck('blocked_to')->toArray();
+                $interests  =   UserInterest::whereUserId($auth_id)->whereNotNull('interest_id')->distinct()->pluck('interest_id')->toArray();
+
+                // if chat is open then restrict in match profiles
+                $rooms = ChatRoom::where(function ($query) use ($auth_id) {
+                            $query->whereCreatorId($auth_id)->orWhere('participate_id',$auth_id);
+                        });
+                $creators = $rooms->whereNotNull('creator_id')->pluck('creator_id')->toArray();
+                $participants = $rooms->whereNotNull('participate_id')->pluck('participate_id')->toArray();
+
+                $known_profile_ids = array_unique(array_merge($creators, $participants));
+                if (($key = array_search($auth_id, $known_profile_ids)) !== false) { unset($known_profile_ids[$key]);  }
+                $restricted_ids = array_unique(array_merge($blocked, $known_profile_ids));
+
+                // Get users details who likes each others
+                $likes = DB::table('likes')
+                            ->join("likes as like", function($q){
+                                $q->on("likes.liker_id", "=", "like.user_id");
+                                $q->on("like.liker_id", "=", "likes.user_id");
+                            })
+                            ->join('users', function($q){ $q->on('users.id',"=", "likes.user_id"); })
+                            ->where("likes.liker_id", '=', $auth_id) //to only get users details who likes current user
+                            ->where("likes.user_id", '!=', $auth_id)
+                            // ->where("users.gender", $find_gender) // get details from based on interest so comment for now
+                            ->pluck('users.custom_id')->toArray();
+
+                $matches = User::with('userTranslation:id,locale,user_id,full_name')
+                            ->where('id','!=',$auth_id)                 // Not Own Profile
+                            ->whereNotNull('profile_photo');            // Must Have Main Photo
+                            // ->whereNotIn('id',$blocked)              // Restricted Blocked Profiles
+                            // ->where('gender',$find_gender)           // Gender (Currently Stopped)
+                
+                            if($auth_interest != 'Both'){ $matches = $matches->where('gender',$auth_interest); }    // Interested in Gender
+                            if(count($restricted_ids) > 0){ $matches = $matches->whereNotIn('id',$restricted_ids); } 
+
+                $matches = $matches->whereIsActive('y')
+                        // ->where('is_subscribed','y')            // Subscription
+                        // ->where('subscription_end_date','>=', \Carbon\Carbon::today()->format('Y-m-d'))
+
+                        ->where(function ($query) 
+                            use ($user, $likes, $age_from, $age_to, $match_percentage, $interests) {
+
+                            $query->orWhereIn('custom_id',$likes)                                   // Someone likes me and I like him/her 
+                                ->orWhere('language_id',$user->language_id)                         // Language
+                                ->orWhere('location_id',$user->location_id)                         // Location
+                                ->orWhereBetween('birth_date',array($age_from,$age_to))             // Age / Birth Date
+                                ->orWhere('profile_percentage','>=',$match_percentage)              // Profile completion
+                                ->orWhere('verify_status','verified')                               // Verified/Unverified  
+                                ->orWhere('personality_id',$user->personality_id)                   // Personality Type 
+
+                                // Basic Details 
+                                ->orWhere('relationship_status_id',$user->relationship_status_id)   // Relationship status
+                                ->orWhere('you_are_here_id',$user->you_are_here_id)                 // I am here for
+                                ->orWhere('food_preference_id',$user->food_preference_id)           // Food Preference
+                                ->orWhere('drinking_id',$user->drinking_id)                         // Drinking
+                                ->orWhere('smoking_id',$user->smoking_id)                           // Smoking
+                                ->orWhere('pet_id',$user->pet_id)                                   // Pet
+                                ->orWhere('education_id',$user->education_id)                       // Education
+                                ->orWhere('university_id',$user->university_id)                     // University/College
+                                ->orWhere('profession_id',$user->profession_id)                     // Profession
+                                ->orWhere('star_sign_id',$user->star_sign_id)                       // Star Sign
+
+                                ->orWhereHas('interests',function($q) use ($interests){             // My Interests
+                                    $q->whereIn('custom_id',$interests);
+                                });
+                        });
+                        
                 if(!empty($search)){
-                    $matches = $matches->where('user_translations.full_name', 'like', "%{$search}%");
+                    $matches = $matches->whereHas('userTranslations',function ($query_search) use ($search) {
+                        $query_search->where('full_name', 'like', "%{$search}%");
+                    });
+                }
+                $count = $matches->count();
 
-                    // $matches = $matches->whereHas('userTranslation',function ($query) use ($search) {
-                    //                  $query->where('full_name', 'like', "%{$search}%");
-                    //             });
-
-                    // $matches = $matches->where(function ($query) use ($search) {
-                    //     $query->where('users.full_name', 'like', "%{$search}%");
-                    // });
+                // BackUp Pan If No Profile Match
+                if( $count < 1 && $backup_logic == true ){
+                    $matches = User::with('userTranslation:id,locale,user_id,full_name')
+                                    ->where('id','!=',$auth_id)->whereNotNull('profile_photo')->whereIsActive('y');
+                    if($auth_interest != 'Both'){ $matches = $matches->where('gender',$auth_interest); }
+                    if(count($restricted_ids) > 0){ $matches = $matches->whereNotIn('id',$restricted_ids); } 
+                    $count = $matches->count();
                 }
 
-                $count = $matches->count();
-                $matches = $matches->limit($request->limit ?? config('utility.pagination.limit'))
-                            ->offset($request->offset ?? config('utility.pagination.offset'))
-                            ->get();
+                $matches    = $matches->inRandomOrder();
+                $matches    = $matches->limit($request->limit ?? config('utility.pagination.limit'))
+                                ->offset($request->offset ?? config('utility.pagination.offset'))
+                                ->get();
 
                 if($matches->isNotEmpty()){
                     $this->status = Response::HTTP_OK;     

@@ -88,9 +88,9 @@ class ChatController extends Controller
 
                 if(!empty($search)){
                     $rooms = $rooms->where(function ($query) use ($search) {
-                                $query->whereHas('creator.userTranslation', function ($q1) use ($search){
+                                $query->whereHas('creator.userTranslations', function ($q1) use ($search){
                                     $q1->where('full_name', 'like', '%'.$search.'%');
-                                })->orWhereHas('participator.userTranslation', function ($q2) use ($search){
+                                })->orWhereHas('participator.userTranslations', function ($q2) use ($search){
                                     $q2->where('full_name', 'like', '%'.$search.'%');
                                 });
                             });

@@ -30,7 +30,7 @@ return [
     'not_empty'     => 'Please select valid :entity',
     'not_available' =>  ':entity is not available',
     'liked'     =>  ':entity liked successfully',
-    'dis-liked'     =>  ':entity is already Dis-liked',
+    'dis-liked'     =>  ':entity Dis-liked successfully',
     'follow'     =>  ':entity followed successfully',
     'unfollow'     =>  ':entity un-followed successfully',
     'already_added'     =>  ':entity already added to cart',
