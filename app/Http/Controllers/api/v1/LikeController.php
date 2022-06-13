@@ -82,7 +82,7 @@ class LikeController extends Controller
                 $block = BlockUser::whereBlockBy($user->id)->whereBlockedTo(Auth::id())->first();
                 
                 if(!$block){
-                    $disLike = DisLike::firstOrCreate([
+                    $disLike = DisLike::updateOrCreate([
                         'user_id'       =>  $user->id,
                         'dis_liker_id'  =>  Auth::id(),
                     ],[
@@ -151,7 +151,7 @@ class LikeController extends Controller
                                 'offset'        =>  $request->offset,
                                 'limit'         =>  $request->limit,
                                 'total'         =>  $count,
-                                'api'           =>  'v.1.0',
+                                'api'           =>  $this->getVersion(),
                                 'url'           =>  url()->current(),
                                 'language'      =>  app()->getLocale(),
                                 'message'       =>  trans('api.list',['entity' => __("Users")]),

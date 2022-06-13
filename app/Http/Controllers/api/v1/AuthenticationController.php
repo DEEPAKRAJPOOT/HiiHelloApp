@@ -32,7 +32,7 @@ class AuthenticationController extends Controller
                                         ->whereContactNo($request->contact_no)->withCount('likes')->firstOrFail();
                     if($user->is_active == 'y'){
                         Auth::login($user);
-                        // Auth::user()->tokens()->delete(); // Logout From All Devices    
+                        Auth::user()->tokens()->delete(); // Logout From All Devices    
 
                         return (new LoginResource($user))
                             ->additional([
