@@ -20,13 +20,24 @@
             <div class="form-group col-md-12">
                 <div class="form-group col-md-12 row" style="margin:15px;">
                     <div class="form-group col-md-6">
-                        <br>
+                        @if ($user->profile_photo)
+                        <div class="symbol symbol-120 mr-5">
+                            <a href="{{ generateURL($user->profile_photo) }}" target="_blank" style="margin: 10px;">
+                                <div class="symbol-label" style="background-image:url({{ generateURL($user->profile_photo)}})"></div>
+                            </a>
+                        </div>
+                        @endif
+
+                        <br><br><br>
                         <label class="control-label"><span class="mendatory" style="font-size: 20px;"></span>
-                            <h4>Basic Information</h4>
-                        </label>
+                            <h1>Basic Information</h1>
+                        </label>    
 
                         <div class="mb-2">
                             <label class="control-label"><span class="mendatory" style="font-size: 20px;"></span>Account Id : <b>@if($user->account_id) {{ $user->account_id }} @else - @endif </b></label>
+                        </div>
+                        <div class="mb-2">
+                            <label class="control-label"><span class="mendatory" style="font-size: 20px;"></span>Profile Percentage : <b>{{ $user->calculateProfilePercent() }} %</b></label>
                         </div>
                         <div class="mb-2">
                             <label class="control-label"><span class="mendatory" style="font-size: 20px;"></span>Full Name : <b>@if($user->userTransDefault) {{ $user->userTransDefault->full_name }} @else - @endif </b></label>
@@ -65,6 +76,13 @@
                             @endif </b></label>
                         </div>
                         <div class="mb-2">
+                            <label class="control-label"><span class="mendatory" style="font-size: 20px;"></span>Voice Answer : <b>@if($user->voice_answer) 
+                                {{ Config::get('utility.profile.voice_message.'. $user->voice_answer) }}
+                            @else
+                                - 
+                            @endif </b></label>
+                        </div>
+                        <div class="mb-2">
                             <label class="control-label"><span class="mendatory" style="font-size: 20px;"></span>Social Login : <b>@if($user->is_social_user) 
                                 {{ $user->is_social_user }}
                             @else
@@ -92,12 +110,26 @@
                                 - 
                             @endif </b></label>
                         </div>
+                        <div class="mb-2">
+                            <label class="control-label"><span class="mendatory" style="font-size: 20px;"></span>Subscribed : <b>@if($user->is_subscribed) 
+                                {{ $user->is_subscribed }}
+                            @else
+                                - 
+                            @endif </b></label>
+                        </div>
+                        <div class="mb-2">
+                            <label class="control-label"><span class="mendatory" style="font-size: 20px;"></span>Subscribed End Date: <b>@if($user->subscription_end_date) 
+                                {{ $user->subscription_end_date }}
+                            @else
+                                - 
+                            @endif </b></label>
+                        </div>
                     </div>
 
                     <div class="form-group col-md-6">
                         <br>
                         <label class="control-label"><span class="mendatory" style="font-size: 20px;"></span>
-                            <h4>Profile Information</h4>
+                            <h1>Profile Information</h1>
                         </label>
                         <div class="mb-2">
                             <label class="control-label">
@@ -200,8 +232,20 @@
                     <div class="form-group col-md-6">
                         <br>
                         <label class="control-label"><span class="mendatory" style="font-size: 20px;"></span>
-                            <h4>Advance Profile Information</h4>
+                            <h1>Advance Profile Information</h1>
                         </label>
+                        <div class="mb-2">
+                            <label class="control-label">
+                                <span class="mendatory" style="font-size: 20px;"></span>Personality : 
+                                <b>
+                                    @if($user->personality && $user->personality->personalityTransDefault)
+                                        {{ $user->personality->personalityTransDefault->title }} 
+                                    @else
+                                        - 
+                                    @endif 
+                                </b>
+                            </label>
+                        </div>
                         <div class="mb-2">
                             <label class="control-label">
                                 <span class="mendatory" style="font-size: 20px;"></span>Education : 
@@ -214,12 +258,48 @@
                                 </b>
                             </label>
                         </div>
+                        <div class="mb-2">
+                            <label class="control-label">
+                                <span class="mendatory" style="font-size: 20px;"></span>University/College : 
+                                <b>
+                                    @if($user->university && $user->university->profileDetailTransDefault)
+                                        {{ $user->university->profileDetailTransDefault->value }} 
+                                    @else
+                                        - 
+                                    @endif 
+                                </b>
+                            </label>
+                        </div>
+                        <div class="mb-2">
+                            <label class="control-label">
+                                <span class="mendatory" style="font-size: 20px;"></span>Profession : 
+                                <b>
+                                    @if($user->profession && $user->profession->profileDetailTransDefault)
+                                        {{ $user->profession->profileDetailTransDefault->value }} 
+                                    @else
+                                        - 
+                                    @endif 
+                                </b>
+                            </label>
+                        </div>
+                        <div class="mb-2">
+                            <label class="control-label">
+                                <span class="mendatory" style="font-size: 20px;"></span>Religion : 
+                                <b>
+                                    @if($user->religion && $user->religion->profileDetailTransDefault)
+                                        {{ $user->religion->profileDetailTransDefault->value }} 
+                                    @else
+                                        - 
+                                    @endif 
+                                </b>
+                            </label>
+                        </div>
                     </div>
 
                     <div class="form-group col-md-6">
                         <br>
                         <label class="control-label"><span class="mendatory" style="font-size: 20px;"></span>
-                            <h4>Multiple Choises</h4>
+                            <h1>Multiple Choises</h1>
                         </label>
                         <div class="mb-2">
                             <label class="control-label">
@@ -257,7 +337,7 @@
                     @endif
 
                     @if($user->userDetails->isNotEmpty())
-                    <div class="form-group col-md-6">
+                    <div class="form-group col-md-12">
                         <div class="row">
                             <div class="col-md-12">
                                 <label class="control-label"><span class="mendatory" style="font-size: 20px;"></span>
@@ -280,6 +360,27 @@
                     </div>
                     @endif
 
+                    @if($user->voice)
+                    <div class="form-group col-md-12">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <label class="control-label"><span class="mendatory" style="font-size: 20px;"></span>
+                                    <h4>My Voice</h4>
+                                </label>
+                                <div class="mb-2">
+                                    @if(generateURL($user->voice))
+                                    <audio controls>
+                                        <source src="{{ generateURL($user->voice) }}" type="audio/ogg">
+                                        <source src="{{ generateURL($user->voice) }}" type="audio/mpeg">
+                                        Your browser does not support the audio element.
+                                    </audio>
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    @endif
+                    
                     <div class="form-group col-md-12">
                         <div class="row">
                             <div class="col-md-12">
