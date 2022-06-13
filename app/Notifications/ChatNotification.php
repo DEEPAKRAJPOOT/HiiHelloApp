@@ -10,7 +10,7 @@ use App\Broadcasting\PushNotificationChannel;
 
 class ChatNotification extends Notification
 {
-    use Queueable;
+    // use Queueable;
     public $data;
 
     /**

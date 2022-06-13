@@ -23,6 +23,7 @@ class FilterController extends Controller
                 $user = $request->user();
                 $auth_id = $user ? $user->id : NULL;
                 $max_interest = config('utility.profile.detail.max_interest') ?? 5;
+                $auth_interest = $user->interest ? $user->interest : 'Both';
 
                 $users = User::select('id','custom_id','birth_date','profile_photo','gender','interest',
                                 'location_id','verify_status','is_active')
@@ -30,6 +31,8 @@ class FilterController extends Controller
                                     'userTranslation','location.locationTranslation'])
                                 ->where('id','!=',$auth_id)->whereIsActive('y');
 
+                if($auth_interest != 'Both'){ $users = $users->where('gender',$auth_interest); }    // Interested in Gender
+                
                 if(!empty($request->relationship_status)){
                     $users = $users->whereHas('relationshipStatus', function($query) use ($request){
                         $query->whereSlug($request->relationship_status);

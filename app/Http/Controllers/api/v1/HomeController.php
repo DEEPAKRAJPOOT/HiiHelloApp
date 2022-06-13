@@ -29,7 +29,7 @@ class HomeController extends Controller
 
                 $blocked    =   BlockUser::whereBlockBy($auth_id)->whereNotNull('blocked_to')->distinct()->pluck('blocked_to')->toArray();
                 $languages  =   UserSetting::whereUserId($auth_id)->whereNotNull('language_id')->distinct()->pluck('language_id')->toArray();
-                $disLikes   =   DisLike::whereDisLikerId($auth_id)->whereDate('created_at',\Carbon\Carbon::today())
+                $disLikes   =   DisLike::whereDisLikerId($auth_id)->whereDate('updated_at',\Carbon\Carbon::today())
                                     ->whereNotNull('user_id')->distinct()->pluck('user_id')->toArray();
 
                 $users = User::query();
@@ -59,7 +59,7 @@ class HomeController extends Controller
                 if($auth_interest != 'Both'){ $users = $users->where('gender',$auth_interest); } // Interested in Gender
 
                 // Apply Discovery Detail
-                $users = $users->where(function ($query)  use ($user, $languages) {
+                /*$users = $users->where(function ($query)  use ($user, $languages) {
                         $query->orWhereIn('language_id',$languages);   // Languages
                                
                         if(!empty($user->discover_location_id)){
@@ -68,7 +68,7 @@ class HomeController extends Controller
                         if(!empty($user->discover_start_age) && !empty($user->discover_end_age)){
                             $query->orWhereBetween('birth_date',array($user->discover_start_age,$user->discover_end_age)); // Age
                         }
-                    });
+                    });*/
 
                 $users = $users->inRandomOrder();
                 $count = $users->count();
