@@ -181,7 +181,7 @@
                     <select type="text" class="form-control @error('personality_id') is-invalid @enderror" id="personality_id" name="personality_id"/>
                         <option value="">Select Personality</option>
                         @foreach($personalities as $personality)
-                        <option {{ $personality->id == $user->personality_id ? 'selected=selected' : '' }} value="{{ $personality->id }}"> {{ $personality->title }}</option>
+                        <option {{ $personality->id == $user->personality_id ? 'selected=selected' : '' }} value="{{ $personality->id }}"> {{ $personality->personalityTransDefault->title }}</option>
                         @endforeach
                     </select>
                     @if ($errors->has('personality_id'))
@@ -196,8 +196,10 @@
                     <label for="university_id">University</label>
                     <select type="text" class="form-control @error('university_id') is-invalid @enderror" id="university_id" name="university_id" spellcheck="false" tabindex="0" />
                         <option value="">Select University</option>
-                        @foreach($university as $collage)
-                        <option {{ $collage->id == $user->university_id ? 'selected=selected' : '' }} value="{{ $collage->id }}"> {{ $collage->profileDetailTransDefault->value }}</option>
+                        @foreach($attributes as $collage)
+                            @if($collage->attribute == 'university_college')
+                                <option {{ $collage->id == $user->university_id ? 'selected=selected' : '' }} value="{{ $collage->id }}"> {{ $collage->profileDetailTransDefault->value }}</option>
+                            @endif
                         @endforeach
                     </select>
                     @if ($errors->has('university_id'))
@@ -212,8 +214,10 @@
                     <label for="education_id">Education</label>
                     <select type="text" class="form-control @error('education_id') is-invalid @enderror" id="education_id" name="education_id" spellcheck="false" tabindex="0" />
                         <option value="">Select Education</option>
-                        @foreach($educations as $education)
-                        <option {{ $education->id == $user->education_id ? 'selected=selected' : '' }} value="{{ $education->id }}"> {{ $education->profileDetailTransDefault->value }}</option>
+                        @foreach($attributes as $education)
+                            @if($education->attribute == 'education')
+                                <option {{ $education->id == $user->education_id ? 'selected=selected' : '' }} value="{{ $education->id }}"> {{ $education->profileDetailTransDefault->value }}</option>
+                            @endif
                         @endforeach
                     </select>
                     @if ($errors->has('education_id'))
@@ -228,8 +232,10 @@
                     <label for="profession_id">Profession</label>
                     <select type="text" class="form-control @error('profession_id') is-invalid @enderror" id="profession_id" name="profession_id" spellcheck="false" tabindex="0" />
                         <option value="">Select Profession</option>
-                        @foreach($professions as $profession)
-                        <option {{ $profession->id == $user->profession_id ? 'selected=selected' : '' }} value="{{ $profession->id }}"> {{ $profession->profileDetailTransDefault->value }}</option>
+                        @foreach($attributes as $profession)
+                            @if($profession->attribute == 'profession')
+                                <option {{ $profession->id == $user->profession_id ? 'selected=selected' : '' }} value="{{ $profession->id }}"> {{ $profession->profileDetailTransDefault->value }}</option>
+                            @endif
                         @endforeach
                     </select>
                     @if ($errors->has('education_id'))
@@ -244,8 +250,10 @@
                     <label for="religion_id">Religion</label>
                     <select type="text" class="form-control @error('religion_id') is-invalid @enderror" id="religion_id" name="religion_id" spellcheck="false" tabindex="0" />
                         <option value="">Select Religion</option>
-                        @foreach($religions as $religion)
-                        <option {{ $religion->id == $user->religion_id ? 'selected=selected' : '' }} value="{{ $religion->id }}"> {{ $religion->profileDetailTransDefault->value }}</option>
+                        @foreach($attributes as $religion)
+                            @if($religion->attribute == 'religion')
+                                <option {{ $religion->id == $user->religion_id ? 'selected=selected' : '' }} value="{{ $religion->id }}"> {{ $religion->profileDetailTransDefault->value }}</option>
+                            @endif
                         @endforeach
                     </select>
                     @if ($errors->has('religion_id'))
@@ -260,8 +268,10 @@
                     <label for="relationship_status_id">Relationship Status</label>
                     <select type="text" class="form-control @error('relationship_status_id') is-invalid @enderror" id="relationship_status_id" name="relationship_status_id" spellcheck="false" tabindex="0" />
                         <option value="">Select Relationship Status</option>
-                        @foreach($relationship_status as $relation)
-                        <option {{ $relation->id == $user->relationship_status_id ? 'selected=selected' : '' }} value="{{ $relation->id }}"> {{ $relation->profileDetailTransDefault->value }}</option>
+                        @foreach($attributes as $relation)
+                            @if($relation->attribute == 'relationship_status')
+                                <option {{ $relation->id == $user->relationship_status_id ? 'selected=selected' : '' }} value="{{ $relation->id }}"> {{ $relation->profileDetailTransDefault->value }}</option>
+                            @endif
                         @endforeach
                     </select>
                     @if ($errors->has('relationship_status_id'))
@@ -276,8 +286,10 @@
                     <label for="you_are_here_id">You Are Here</label>
                     <select type="text" class="form-control @error('you_are_here_id') is-invalid @enderror" id="you_are_here_id" name="you_are_here_id" spellcheck="false" tabindex="0" />
                         <option value="">Select You Are Here</option>
-                        @foreach($you_are_here as $here)
-                        <option {{ $here->id == $user->you_are_here_id ? 'selected=selected' : '' }} value="{{ $here->id }}"> {{ $here->profileDetailTransDefault->value }}</option>
+                        @foreach($attributes as $here)
+                            @if($here->attribute == 'i_am_here')
+                                <option {{ $here->id == $user->you_are_here_id ? 'selected=selected' : '' }} value="{{ $here->id }}"> {{ $here->profileDetailTransDefault->value }}</option>
+                            @endif
                         @endforeach
                     </select>
                     @if ($errors->has('you_are_here_id'))
@@ -292,8 +304,10 @@
                     <label for="food_preference_id">Food Preference</label>
                     <select type="text" class="form-control @error('food_preference_id') is-invalid @enderror" id="food_preference_id" name="food_preference_id" spellcheck="false" tabindex="0" />
                         <option value="">Select Food Preference</option>
-                        @foreach($food_preferences as $food)
-                        <option {{ $food->id == $user->food_preference_id ? 'selected=selected' : '' }} value="{{ $food->id }}"> {{ $food->profileDetailTransDefault->value }}</option>
+                        @foreach($attributes as $food)
+                            @if($food->attribute == 'food_preference')
+                                <option {{ $food->id == $user->food_preference_id ? 'selected=selected' : '' }} value="{{ $food->id }}"> {{ $food->profileDetailTransDefault->value }}</option>
+                            @endif
                         @endforeach
                     </select>
                     @if ($errors->has('food_preference_id'))
@@ -308,8 +322,10 @@
                     <label for="drinking_id">Drinking</label>
                     <select type="text" class="form-control @error('drinking_id') is-invalid @enderror" id="drinking_id" name="drinking_id" spellcheck="false" tabindex="0" />
                         <option value="">Select Drinking</option>
-                        @foreach($drinking as $drink)
-                        <option {{ $drink->id == $user->drinking_id ? 'selected=selected' : '' }} value="{{ $drink->id }}"> {{ $drink->profileDetailTransDefault->value }}</option>
+                        @foreach($attributes as $drink)
+                            @if($drink->attribute == 'drinking')
+                                <option {{ $drink->id == $user->drinking_id ? 'selected=selected' : '' }} value="{{ $drink->id }}"> {{ $drink->profileDetailTransDefault->value }}</option>
+                            @endif
                         @endforeach
                     </select>
                     @if ($errors->has('drinking_id'))
@@ -324,8 +340,10 @@
                     <label for="smoking_id">Smoking</label>
                     <select type="text" class="form-control @error('smoking_id') is-invalid @enderror" id="smoking_id" name="smoking_id" spellcheck="false" tabindex="0" />
                         <option value="">Select Smoking</option>
-                        @foreach($smoking as $smoke)
-                        <option {{ $smoke->id == $user->smoking_id ? 'selected=selected' : '' }} value="{{ $smoke->id }}"> {{ $smoke->profileDetailTransDefault->value }}</option>
+                        @foreach($attributes as $smoke)
+                            @if($smoke->attribute == 'smoking')
+                                <option {{ $smoke->id == $user->smoking_id ? 'selected=selected' : '' }} value="{{ $smoke->id }}"> {{ $smoke->profileDetailTransDefault->value }}</option>
+                            @endif
                         @endforeach
                     </select>
                     @if ($errors->has('smoking_id'))
@@ -340,8 +358,10 @@
                     <label for="pet_id">Pet</label>
                     <select type="text" class="form-control @error('pet_id') is-invalid @enderror" id="pet_id" name="pet_id" spellcheck="false" tabindex="0" />
                         <option value="">Select Pet</option>
-                        @foreach($pets as $pet)
-                        <option {{ $pet->id == $user->pet_id ? 'selected=selected' : '' }} value="{{ $pet->id }}"> {{ $pet->profileDetailTransDefault->title }}</option>
+                        @foreach($attributes as $pet)
+                            @if($pet->attribute == 'pet')
+                                <option {{ $pet->id == $user->pet_id ? 'selected=selected' : '' }} value="{{ $pet->id }}"> {{ $pet->profileDetailTransDefault->title }}</option>
+                            @endif
                         @endforeach
                     </select>
                     @if ($errors->has('pet_id'))
@@ -356,8 +376,10 @@
                     <label for="star_sign_id">Star Sign</label>
                     <select type="text" class="form-control @error('star_sign_id') is-invalid @enderror" id="star_sign_id" name="star_sign_id" spellcheck="false" tabindex="0" />
                         <option value="">Select Star Sign</option>
-                        @foreach($star_signs as $star_sign)
-                        <option {{ $star_sign->id == $user->star_sign_id ? 'selected=selected' : '' }} value="{{ $star_sign->id }}"> {{ $star_sign->profileDetailTransDefault->value }}</option>
+                        @foreach($attributes as $star_sign)
+                            @if($star_sign->attribute == 'star_sign')
+                                <option {{ $star_sign->id == $user->star_sign_id ? 'selected=selected' : '' }} value="{{ $star_sign->id }}"> {{ $star_sign->profileDetailTransDefault->value }}</option>
+                            @endif
                         @endforeach
                     </select>
                     @if ($errors->has('star_sign_id'))
@@ -372,8 +394,10 @@
                     <label for="community_id">Community</label>
                     <select type="text" class="form-control @error('community_id') is-invalid @enderror" id="community_id" name="community_id" spellcheck="false" tabindex="0" />
                         <option value="">Select Community</option>
-                        @foreach($community as $com)
-                        <option {{ $com->id == $user->community_id ? 'selected=selected' : '' }} value="{{ $com->id }}"> {{ $com->profileDetailTransDefault->value }}</option>
+                        @foreach($attributes as $com)
+                            @if($com->attribute == 'community')
+                                <option {{ $com->id == $user->community_id ? 'selected=selected' : '' }} value="{{ $com->id }}"> {{ $com->profileDetailTransDefault->value }}</option>
+                            @endif
                         @endforeach
                     </select>
                     @if ($errors->has('community_id'))
@@ -399,14 +423,16 @@
                     <label for="traveling_id">Idea of Travelling</label>
                     <select type="text" class="form-control @error('traveling_id') is-invalid @enderror" id="traveling_id" name="traveling_id" spellcheck="false" tabindex="0" />
                         <option value="">Select Idea of Travelling</option>
-                        @foreach($travelling as $travel)
-                            @foreach($travel->subInterests as $sub)
-                                @if(in_array($sub->id, $user_interest))
-                                    <option value="{{ $sub->id }}" selected> {{ $sub->interestTransDefault->title }}</option>
-                                @else
-                                    <option value="{{ $sub->id }}"> {{ $sub->interestTransDefault->title }}</option>
-                                @endif
-                            @endforeach
+                        @foreach($interests as $travel)
+                            @if($travel->slug == 'traveling')
+                                @foreach($travel->subInterests as $sub)
+                                    @if(in_array($sub->id, $user_interest))
+                                        <option value="{{ $sub->id }}" selected> {{ $sub->interestTransDefault->title }}</option>
+                                    @else
+                                        <option value="{{ $sub->id }}"> {{ $sub->interestTransDefault->title }}</option>
+                                    @endif
+                                @endforeach
+                            @endif
                         @endforeach
                     </select>
                     @if ($errors->has('traveling_id'))
@@ -421,14 +447,16 @@
                     <label for="music_id">Music</label>
                     <select type="text" class="form-control @error('music_id') is-invalid @enderror" id="music_id" name="music_id" spellcheck="false" tabindex="0" />
                         <option value="">Select Music</option>
-                        @foreach($musics as $music)
-                            @foreach($music->subInterests as $sub_music)
-                                @if(in_array($sub_music->id, $user_interest))
-                                    <option value="{{ $sub_music->id }}" selected> {{ $sub_music->interestTransDefault->title }}</option>
-                                @else
-                                    <option value="{{ $sub_music->id }}"> {{ $sub_music->interestTransDefault->title }}</option>
-                                @endif
-                            @endforeach
+                        @foreach($interests as $music)
+                            @if($music->slug == 'music')
+                                @foreach($music->subInterests as $sub_music)
+                                    @if(in_array($sub_music->id, $user_interest))
+                                        <option value="{{ $sub_music->id }}" selected> {{ $sub_music->interestTransDefault->title }}</option>
+                                    @else
+                                        <option value="{{ $sub_music->id }}"> {{ $sub_music->interestTransDefault->title }}</option>
+                                    @endif
+                                @endforeach
+                            @endif
                         @endforeach
                     </select>
                     @if ($errors->has('music_id'))
@@ -443,14 +471,16 @@
                     <label for="hobbie_id">Hobbies</label>
                     <select type="text" class="form-control @error('hobbie_id') is-invalid @enderror" id="hobbie_id" name="hobbie_id" spellcheck="false" tabindex="0" />
                         <option value="">Select Hobbies</option>
-                        @foreach($hobbies as $hobbie)
-                            @foreach($hobbie->subInterests as $sub_hobbie)
-                                @if(in_array($sub_hobbie->id, $user_interest))
-                                    <option value="{{ $sub_hobbie->id }}" selected> {{ $sub_hobbie->interestTransDefault->title }}</option>
-                                @else
-                                    <option value="{{ $sub_hobbie->id }}"> {{ $sub_hobbie->interestTransDefault->title }}</option>
-                                @endif
-                            @endforeach
+                        @foreach($interests as $hobbie)
+                            @if($hobbie->slug == 'hobbies')
+                                @foreach($hobbie->subInterests as $sub_hobbie)
+                                    @if(in_array($sub_hobbie->id, $user_interest))
+                                        <option value="{{ $sub_hobbie->id }}" selected> {{ $sub_hobbie->interestTransDefault->title }}</option>
+                                    @else
+                                        <option value="{{ $sub_hobbie->id }}"> {{ $sub_hobbie->interestTransDefault->title }}</option>
+                                    @endif
+                                @endforeach
+                            @endif
                         @endforeach
                     </select>
                     @if ($errors->has('hobbie_id'))
@@ -465,14 +495,16 @@
                     <label for="game_id">Childhood Game</label>
                     <select type="text" class="form-control @error('game_id') is-invalid @enderror" id="game_id" name="game_id" spellcheck="false" tabindex="0" />
                         <option value="">Select Childhood Game</option>
-                        @foreach($childhood as $game)
-                            @foreach($game->subInterests as $sub_game)
-                                @if(in_array($sub_game->id, $user_interest))
-                                    <option value="{{ $sub_game->id }}" selected> {{ $sub_game->interestTransDefault->title }}</option>
-                                @else
-                                    <option value="{{ $sub_game->id }}"> {{ $sub_game->interestTransDefault->title }}</option>
-                                @endif
-                            @endforeach
+                        @foreach($interests as $game)
+                            @if($game->slug == 'childhood-game')
+                                @foreach($game->subInterests as $sub_game)
+                                    @if(in_array($sub_game->id, $user_interest))
+                                        <option value="{{ $sub_game->id }}" selected> {{ $sub_game->interestTransDefault->title }}</option>
+                                    @else
+                                        <option value="{{ $sub_game->id }}"> {{ $sub_game->interestTransDefault->title }}</option>
+                                    @endif
+                                @endforeach
+                            @endif
                         @endforeach
                     </select>
                     @if ($errors->has('game_id'))
@@ -487,14 +519,16 @@
                     <label for="sport_id">Sports</label>
                     <select type="text" class="form-control @error('sport_id') is-invalid @enderror" id="sport_id" name="sport_id" spellcheck="false" tabindex="0" />
                         <option value="">Select Sports</option>
-                        @foreach($sports as $sport)
-                            @foreach($sport->subInterests as $sub_sport)
-                                @if(in_array($sub_sport->id, $user_interest))
-                                    <option value="{{ $sub_sport->id }}" selected> {{ $sub_sport->interestTransDefault->title }}</option>
-                                @else
-                                    <option value="{{ $sub_sport->id }}"> {{ $sub_sport->interestTransDefault->title }}</option>
-                                @endif
-                            @endforeach
+                        @foreach($interests as $sport)
+                            @if($sport->slug == 'sports')
+                                @foreach($sport->subInterests as $sub_sport)
+                                    @if(in_array($sub_sport->id, $user_interest))
+                                        <option value="{{ $sub_sport->id }}" selected> {{ $sub_sport->interestTransDefault->title }}</option>
+                                    @else
+                                        <option value="{{ $sub_sport->id }}"> {{ $sub_sport->interestTransDefault->title }}</option>
+                                    @endif
+                                @endforeach
+                            @endif
                         @endforeach
                     </select>
                     @if ($errors->has('sport_id'))
@@ -504,19 +538,45 @@
                     @endif
                 </div>
 
+                {{-- Books --}}
+                <div class="form-group">
+                    <label for="book_id">Books</label>
+                    <select type="text" class="form-control @error('book_id') is-invalid @enderror" id="book_id" name="book_id" spellcheck="false" tabindex="0" />
+                        <option value="">Select Books</option>
+                        @foreach($interests as $book)
+                            @if($book->slug == 'books')
+                                @foreach($book->subInterests as $sub_book)
+                                    @if(in_array($sub_book->id, $user_interest))
+                                        <option value="{{ $sub_book->id }}" selected> {{ $sub_book->interestTransDefault->title }}</option>
+                                    @else
+                                        <option value="{{ $sub_book->id }}"> {{ $sub_book->interestTransDefault->title }}</option>
+                                    @endif
+                                @endforeach
+                            @endif
+                        @endforeach
+                    </select>
+                    @if ($errors->has('book_id'))
+                        <span class="text-danger">
+                            <strong class="form-text">{{ $errors->first('book_id') }}</strong>
+                        </span>
+                    @endif
+                </div>
+
                 {{-- film --}}
                 <div class="form-group">
                     <label for="film_id">Film</label>
                     <select type="text" class="form-control @error('film_id') is-invalid @enderror" id="film_id" name="film_id" spellcheck="false" tabindex="0" />
                         <option value="">Select Films</option>
-                        @foreach($films as $film)
-                            @foreach($film->subInterests as $sub_film)
-                                @if(in_array($sub_film->id, $user_interest))
-                                    <option value="{{ $sub_film->id }}" selected> {{ $sub_film->interestTransDefault->title }}</option>
-                                @else
-                                    <option value="{{ $sub_film->id }}"> {{ $sub_film->interestTransDefault->title }}</option>
-                                @endif
-                            @endforeach
+                        @foreach($interests as $film)
+                            @if($film->slug == 'film')
+                                @foreach($film->subInterests as $sub_film)
+                                    @if(in_array($sub_film->id, $user_interest))
+                                        <option value="{{ $sub_film->id }}" selected> {{ $sub_film->interestTransDefault->title }}</option>
+                                    @else
+                                        <option value="{{ $sub_film->id }}"> {{ $sub_film->interestTransDefault->title }}</option>
+                                    @endif
+                                @endforeach
+                            @endif
                         @endforeach
                     </select>
                     @if ($errors->has('film_id'))
@@ -531,14 +591,16 @@
                     <label for="actor_id">Select Gender</label>
                     <select type="text" class="form-control @error('actor_id') is-invalid @enderror" id="actor_id" name="actor_id" spellcheck="false" tabindex="0" />
                         <option value="">Select Gender</option>
-                        @foreach($actors as $actor)
-                            @foreach($actor->subInterests as $sub_actor)
-                                @if(in_array($sub_actor->id,$user_interest))
-                                    <option value="{{ $sub_actor->id }}" selected> {{ $sub_actor->interestTransDefault->title }}</option>
-                                @else
-                                    <option value="{{ $sub_actor->id }}"> {{ $sub_actor->interestTransDefault->title }}</option>
-                                @endif
-                            @endforeach
+                        @foreach($interests as $actor)
+                            @if($actor->slug == 'actors')
+                                @foreach($actor->subInterests as $sub_actor)
+                                    @if(in_array($sub_actor->id,$user_interest))
+                                        <option value="{{ $sub_actor->id }}" selected> {{ $sub_actor->interestTransDefault->title }}</option>
+                                    @else
+                                        <option value="{{ $sub_actor->id }}"> {{ $sub_actor->interestTransDefault->title }}</option>
+                                    @endif
+                                @endforeach
+                            @endif
                         @endforeach
                     </select>
                     @if ($errors->has('actor_id'))
@@ -553,16 +615,18 @@
                     <label for="depend_id">Favourite Actors/Actress</label>
                     <select type="text" class="form-control @error('depend_id') is-invalid @enderror" id="depend_id" name="depend_id" />
                     <option value="">Select Films</option>
-                    @foreach($actors as $actor)
-                        @foreach($actor->subInterests as $sub_actor)
-                            @foreach($sub_actor->subInterests as $sub_gender)
-                                @if(in_array($sub_gender->id,$user_interest))
-                                    <option value="{{ $sub_gender->id }}" selected> {{ $sub_gender->interestTransDefault->title }}</option>
-                                @else
-                                    <option value="{{ $sub_gender->id }}"> {{ $sub_gender->interestTransDefault->title }}</option>
-                                @endif
+                    @foreach($interests as $actor)
+                        @if($actor->slug == 'actors')
+                            @foreach($actor->subInterests as $sub_actor)
+                                @foreach($sub_actor->subInterests as $sub_gender)
+                                    @if(in_array($sub_gender->id,$user_interest))
+                                        <option value="{{ $sub_gender->id }}" selected> {{ $sub_gender->interestTransDefault->title }}</option>
+                                    @else
+                                        <option value="{{ $sub_gender->id }}"> {{ $sub_gender->interestTransDefault->title }}</option>
+                                    @endif
+                                @endforeach
                             @endforeach
-                        @endforeach
+                        @endif
                     @endforeach
                     </select>
                     @if ($errors->has('depend_id'))
@@ -577,14 +641,16 @@
                     <label for="singer_male_id">Select Gender</label>
                     <select type="text" class="form-control @error('singer_male_id') is-invalid @enderror" id="singer_male_id" name="singer_male_id" spellcheck="false" tabindex="0" />
                         <option value="">Select Gender</option>
-                        @foreach($singers as $singer)
-                            @foreach($singer->subInterests as $sub_singer)
-                                @if(in_array($sub_singer->id,$user_interest))
-                                    <option {{ $sub_singer->id == $user_interest->interest->parent_id ? 'selected=selected' : '' }} value="{{ $sub_singer->id }}" selected> {{ $sub_singer->interestTransDefault->title }}</option>
-                                @else
-                                    <option value="{{ $sub_singer->id }}"> {{ $sub_singer->interestTransDefault->title }}</option>
-                                @endif
-                            @endforeach
+                        @foreach($interests as $singer)
+                            @if($singer->slug == 'singers')
+                                @foreach($singer->subInterests as $sub_singer)
+                                    @if(in_array($sub_singer->id,$user_interest))
+                                        <option {{ $sub_singer->id == $user_interest->interest->parent_id ? 'selected=selected' : '' }} value="{{ $sub_singer->id }}" selected> {{ $sub_singer->interestTransDefault->title }}</option>
+                                    @else
+                                        <option value="{{ $sub_singer->id }}"> {{ $sub_singer->interestTransDefault->title }}</option>
+                                    @endif
+                                @endforeach
+                            @endif
                         @endforeach
                     </select>
                     @if ($errors->has('singer_male_id'))
@@ -599,16 +665,18 @@
                     <label for="singer_id">Favourite Singer (Male/Female)</label>
                     <select type="text" class="form-control @error('singer_id') is-invalid @enderror" id="singer_id" name="singer_id" />
                     <option value="">Select Films</option>
-                    @foreach($singers as $singer)
-                        @foreach($singer->subInterests as $sub_singer)
-                            @foreach($sub_singer->subInterests as $sub_gender)
-                                @if(in_array($sub_gender->id,$user_interest))
-                                    <option value="{{ $sub_gender->id }}" selected> {{ $sub_gender->interestTransDefault->title }}</option>
-                                @else
-                                    <option value="{{ $sub_gender->id }}"> {{ $sub_gender->interestTransDefault->title }}</option>
-                                @endif
+                    @foreach($interests as $singer)
+                        @if($singer->slug == 'singers')
+                            @foreach($singer->subInterests as $sub_singer)
+                                @foreach($sub_singer->subInterests as $sub_gender)
+                                    @if(in_array($sub_gender->id,$user_interest))
+                                        <option value="{{ $sub_gender->id }}" selected> {{ $sub_gender->interestTransDefault->title }}</option>
+                                    @else
+                                        <option value="{{ $sub_gender->id }}"> {{ $sub_gender->interestTransDefault->title }}</option>
+                                    @endif
+                                @endforeach
                             @endforeach
-                        @endforeach
+                        @endif
                     @endforeach
                     </select>
                     @if ($errors->has('singer_id'))
@@ -623,14 +691,16 @@
                     <label for="food_id">Favourite Food</label>
                     <select type="text" class="form-control @error('food_id') is-invalid @enderror" id="food_id" name="food_id" spellcheck="false" tabindex="0" />
                         <option value="">Select Food</option>
-                        @foreach($foods as $food)
-                            @foreach($food->subInterests as $sub_food)
-                                @if(in_array($sub_food->id,$user_interest))
-                                    <option value="{{ $sub_food->id }}" selected> {{ $sub_food->interestTransDefault->title }}</option>
-                                @else
-                                    <option value="{{ $sub_food->id }}"> {{ $sub_food->interestTransDefault->title }}</option>
-                                @endif
-                            @endforeach
+                        @foreach($interests as $food)
+                            @if($food->slug == 'food')
+                                @foreach($food->subInterests as $sub_food)
+                                    @if(in_array($sub_food->id,$user_interest))
+                                        <option value="{{ $sub_food->id }}" selected> {{ $sub_food->interestTransDefault->title }}</option>
+                                    @else
+                                        <option value="{{ $sub_food->id }}"> {{ $sub_food->interestTransDefault->title }}</option>
+                                    @endif
+                                @endforeach
+                            @endif
                         @endforeach
                     </select>
                     @if ($errors->has('food_id'))

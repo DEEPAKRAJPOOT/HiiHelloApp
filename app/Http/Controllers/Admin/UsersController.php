@@ -36,31 +36,10 @@ class UsersController extends Controller
      */
     public function create()
     {
-        //personality
-        $personalities = Personality::where('is_active','y')->get();
-        $university = ProfileDetail::where(['attribute'=>'university_college','is_active'=>'y'])->get();
-        $educations = ProfileDetail::with(['profileDetailTransDefault'])->where(['attribute'=>'education','is_active'=>'y'])->get(); 
-        $professions = ProfileDetail::with('profileDetailTransDefault')->where(['attribute'=>'profession','is_active'=>'y'])->get();
-        $religions = ProfileDetail::with('profileDetailTransDefault')->where(['attribute' => 'religion','is_active'=>'y'])->get();
-        $relationship_status = ProfileDetail::with('profileDetailTransDefault')->where(['attribute'=>'relationship_status','is_active'=>'y'])->get();
-        $you_are_here = ProfileDetail::with('profileDetailTransDefault')->where(['attribute'=>'i_am_here','is_active'=>'y'])->get();
-        $food_preferences = ProfileDetail::with('profileDetailTransDefault')->where(['attribute'=>'food_preference','is_active'=>'y'])->get();
-        $drinking = ProfileDetail::with('profileDetailTransDefault')->where(['attribute'=>'drinking','is_active'=>'y'])->get();
-        $smoking = ProfileDetail::with('profileDetailTransDefault')->where(['attribute'=>'smoking','is_active'=>'y'])->get();
-        $pets = ProfileDetail::with('profileDetailTransDefault')->where(['attribute'=>'pet','is_active'=>'y'])->get();
-        $star_signs = ProfileDetail::with('profileDetailTransDefault')->where(['attribute'=>'star_sign','is_active'=>'y'])->get();
-        $community = ProfileDetail::with('profileDetailTransDefault')->where(['attribute'=>'community','is_active'=>'y'])->get();
-        $travelling = Interest::with(['subInterests.interestTransDefault'])->where(['slug'=>'traveling','is_active'=>'y'])->get();
-        $musics = Interest::with(['subInterests.interestTransDefault'])->where(['slug' => 'music','is_active' => 'y'])->get();
-        $books = Interest::with(['subInterests.interestTransDefault'])->where(['slug' => 'books', 'is_active' => 'y'])->get();
-        $films = Interest::with(['subInterests.interestTransDefault'])->where(['slug' => 'film', 'is_active' => 'y'])->get();
-        $hobbies = Interest::with(['subInterests.interestTransDefault'])->where(['slug' => 'hobbies','is_active' => 'y'])->get();
-        $childhood = Interest::with(['subInterests.interestTransDefault'])->where(['slug' => 'childhood-game','is_active' => 'y'])->get();
-        $sports = Interest::with(['subInterests.interestTransDefault'])->where(['slug' => 'sports','is_active' => 'y'])->get();
-        $actors = Interest::with(['subInterests.interestTransDefault'])->where(['slug' => 'actors', 'is_active' => 'y'])->get();
-        $singers = Interest::with(['subInterests.interestTransDefault'])->where(['slug' => 'singers', 'is_active' => 'y'])->get();
-        $foods = Interest::with(['subInterests.interestTransDefault'])->where(['slug' => 'food', 'is_active' => 'y'])->get();
-        return view('admin.pages.users.create',compact('personalities','university','educations','professions','religions','relationship_status','you_are_here','food_preferences','drinking','smoking','pets','star_signs','community','travelling','musics','books','films','hobbies','childhood','sports','actors','singers','foods'))->with(['custom_title' => 'User']);
+        $personalities = Personality::with('personalityTransDefault')->where('is_active','y')->get();
+        $attributes = ProfileDetail::with(['profileDetailTransDefault'])->where(['is_active'=>'y'])->get();
+        $interests = Interest::with(['subInterests.interestTransDefault'])->where(['is_active'=>'y'])->get();
+        return view('admin.pages.users.create',compact('personalities','interests','attributes'))->with(['custom_title' => 'User']);
     }
 
     /**
@@ -228,32 +207,12 @@ class UsersController extends Controller
      */
     public function edit(User $user)
     {
-        $personalities = Personality::where('is_active','y')->get();
-        $university = ProfileDetail::with('profileDetailTransDefault')->where(['attribute'=>'university_college','is_active'=>'y'])->get();
-        $educations = ProfileDetail::with('profileDetailTransDefault')->where(['attribute'=>'education','is_active'=>'y'])->get(); 
-        $professions = ProfileDetail::with('profileDetailTransDefault')->where(['attribute'=>'profession','is_active'=>'y'])->get();
-        $religions = ProfileDetail::with('profileDetailTransDefault')->where(['attribute' => 'religion','is_active'=>'y'])->get();
-        $relationship_status = ProfileDetail::with('profileDetailTransDefault')->where(['attribute'=>'relationship_status','is_active'=>'y'])->get();
-        $you_are_here = ProfileDetail::with('profileDetailTransDefault')->where(['attribute'=>'i_am_here','is_active'=>'y'])->get();
-        $food_preferences = ProfileDetail::with('profileDetailTransDefault')->where(['attribute'=>'food_preference','is_active'=>'y'])->get();
-        $drinking = ProfileDetail::with('profileDetailTransDefault')->where(['attribute'=>'drinking','is_active'=>'y'])->get();
-        $smoking = ProfileDetail::with('profileDetailTransDefault')->where(['attribute'=>'smoking','is_active'=>'y'])->get();
-        $pets = ProfileDetail::with('profileDetailTransDefault')->where(['attribute'=>'pet','is_active'=>'y'])->get();
-        $star_signs = ProfileDetail::with('profileDetailTransDefault')->where(['attribute'=>'star_sign','is_active'=>'y'])->get();
-        $community = ProfileDetail::with('profileDetailTransDefault')->where(['attribute'=>'community','is_active'=>'y'])->get();
+        $personalities = Personality::with('personalityTransDefault')->where('is_active','y')->get();
+        $attributes = ProfileDetail::with(['profileDetailTransDefault'])->where(['is_active'=>'y'])->get();
         //user interest
         $user_interest = UserInterest::with('interest')->where('user_id',$user->id)->pluck('interest_id')->toArray();
-        $travelling = Interest::with(['subInterests.interestTransDefault'])->where(['slug'=>'traveling','is_active'=>'y'])->get();
-        $musics = Interest::with(['subInterests.interestTransDefault'])->where(['slug' => 'music','is_active' => 'y'])->get();
-        $books = Interest::with(['subInterests.interestTransDefault'])->where(['slug' => 'books', 'is_active' => 'y'])->get();
-        $films = Interest::with(['subInterests.interestTransDefault'])->where(['slug' => 'film', 'is_active' => 'y'])->get();
-        $hobbies = Interest::with(['subInterests.interestTransDefault'])->where(['slug' => 'hobbies','is_active' => 'y'])->get();
-        $childhood = Interest::with(['subInterests.interestTransDefault'])->where(['slug' => 'childhood-game','is_active' => 'y'])->get();
-        $sports = Interest::with(['subInterests.interestTransDefault'])->where(['slug' => 'sports','is_active' => 'y'])->get();
-        $actors = Interest::with(['subInterests.interestTransDefault'])->where(['slug' => 'actors', 'is_active' => 'y'])->get();
-        $singers = Interest::with(['subInterests.interestTransDefault'])->where(['slug' => 'singers', 'is_active' => 'y'])->get();
-        $foods = Interest::with(['subInterests.interestTransDefault'])->where(['slug' => 'food', 'is_active' => 'y'])->get();
-        return view('admin.pages.users.edit', compact('user','personalities','university','educations','professions','religions','relationship_status','you_are_here','food_preferences','drinking','smoking','pets','star_signs','community','travelling','musics','books','films','hobbies','childhood','sports','actors','singers','foods','user_interest'))->with(['custom_title' => 'Users']);
+        $interests = Interest::with(['subInterests.interestTransDefault'])->where(['is_active'=>'y'])->get();
+        return view('admin.pages.users.edit', compact('user','personalities','user_interest','interests','attributes'))->with(['custom_title' => 'Users']);
     }
 
     /**
@@ -313,82 +272,127 @@ class UsersController extends Controller
                     $user->video_verified_at = NULL;
                 }
 
+                $not_to_delete_product = array();
+
                 if(!empty($request->traveling_id)){
+                    $custom_id = getUniqueString('user_interests');
                     UserInterest::updateOrCreate(
                         [
                           'user_id'  => $user->id,
                           'interest_id' => $request->traveling_id,  
                         ],
                         [
-                            'custom_id' => getUniqueString('user_interests'),
+                            'custom_id' => $custom_id,
                         ]);
+                   $not_to_delete_product[] = $custom_id;
                 }
 
                 if(!empty($request->music_id)){
-                    UserInterest::create(
-                        ['custom_id' => getUniqueString('user_interests'),
-                          'user_id'  => $user->id,
-                          'interest_id' => $request->music_id,  
+                    $custom_id = getUniqueString('user_interests');
+                    UserInterest::updateOrCreate(
+                        [
+                            'user_id' => $user->id,
+                            'interest_id' => $request->music_id,  
+                        ],
+                        [
+                            'custom_id' => $custom_id,
                         ]);
+                    $not_to_delete_product[] = $custom_id;
                 }
 
                 if(!empty($request->hobbie_id)){
-                    UserInterest::create(
-                        ['custom_id' => getUniqueString('user_interests'),
-                          'user_id'  => $user->id,
-                          'interest_id' => $request->hobbie_id,  
+                    $custom_id = getUniqueString('user_interests');
+                    UserInterest::updateOrCreate(
+                        [
+                            'user_id'  => $user->id,
+                            'interest_id' => $request->hobbie_id,
+                        ],
+                        [
+                            'custom_id' => $custom_id,  
                         ]);
+                    $not_to_delete_product[] = $custom_id;
                 }
 
                 if(!empty($request->game_id)){
-                    UserInterest::create(
-                        ['custom_id' => getUniqueString('user_interests'),
-                          'user_id'  => $user->id,
-                          'interest_id' => $request->game_id,  
+                    $custom_id = getUniqueString('user_interests');
+                    UserInterest::updateOrCreate(
+                        [
+                            'user_id'  => $user->id,
+                            'interest_id' => $request->game_id,  
+                        ],
+                        [
+                            'custom_id' => $custom_id,
                         ]);
+                    $not_to_delete_product[] = $custom_id;
                 }
 
                 if(!empty($request->sport_id)){
-                    UserInterest::create(
-                        ['custom_id' => getUniqueString('user_interests'),
-                          'user_id'  => $user->id,
-                          'interest_id' => $request->sport_id,  
+                    $custom_id = getUniqueString('user_interests');
+                    UserInterest::updateOrCreate(
+                        [
+                            'user_id'  => $user->id,
+                            'interest_id' => $request->sport_id,
+                        ],
+                        [
+                            'custom_id' => $custom_id, 
                         ]);
+                    $not_to_delete_product[] = $custom_id;
                 }
 
                 if(!empty($request->film_id)){
-                    UserInterest::create(
-                        ['custom_id' => getUniqueString('user_interests'),
-                          'user_id'  => $user->id,
-                          'interest_id' => $request->film_id,  
+                    $custom_id = getUniqueString('user_interests');
+                    UserInterest::updateOrCreate(
+                        [
+                            'user_id'  => $user->id,
+                            'interest_id' => $request->film_id,
+                        ],
+                        [ 
+                            'custom_id' => $custom_id, 
                         ]);
+                    $not_to_delete_product[] = $custom_id;
                 }
 
                 if(!empty($request->depend_id)){
-                    UserInterest::create(
-                        ['custom_id' => getUniqueString('user_interests'),
-                          'user_id'  => $user->id,
-                          'interest_id' => $request->depend_id,  
+                    $custom_id = getUniqueString('user_interests');
+                    UserInterest::updateOrCreate(
+                        [
+                           'user_id'  => $user->id, 
+                           'interest_id' => $request->depend_id,
+                        ],
+                        [ 
+                            
+                            'custom_id' => $custom_id,   
                         ]);
+                    $not_to_delete_product[] = $custom_id;
                 }
 
                 if(!empty($request->singer_id)){
-                    UserInterest::create(
-                        ['custom_id' => getUniqueString('user_interests'),
-                          'user_id'  => $user->id,
-                          'interest_id' => $request->singer_id,  
+                    $custom_id = getUniqueString('user_interests');
+                    UserInterest::updateOrCreate(
+                        [
+                           'user_id'  => $user->id, 
+                           'interest_id' => $request->singer_id,
+                        ],
+                        [ 
+                            'custom_id' => $custom_id,    
                         ]);
+                    $not_to_delete_product[] = $custom_id;
                 }
 
                 if(!empty($request->food_id)){
-                    UserInterest::create(
-                        ['custom_id' => getUniqueString('user_interests'),
-                          'user_id'  => $user->id,
-                          'interest_id' => $request->food_id,  
+                    $custom_id = getUniqueString('user_interests');
+                    UserInterest::updateOrCreate(
+                        [
+                            'user_id'  => $user->id,
+                            'interest_id' => $request->food_id, 
+                        ],
+                        [ 
+                            'custom_id' => $custom_id, 
                         ]);
+                    $not_to_delete_product[] = $custom_id;
                 }
-
-                // dd($request->all());
+                
+                UserInterest::where('user_id',$user->id)->whereNotIn('custom_id',$not_to_delete_product)->delete();
 
                 if( $user->save() ) {
                     DB::commit();
