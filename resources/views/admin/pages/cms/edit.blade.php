@@ -167,12 +167,12 @@ $(document).ready(function () {
         }
     });
     $('#frmEditcms').submit(function (e) {
-      if(summernoteElement.summernote('isEmpty')) {
-        $('#description-error').remove();
-        $('<span class="text-danger" id="description-error"><strong class="form-text">The description field is required.</strong></span>').insertAfter('.note-editor');
-        e.preventDefault();
-        return false;
-      }else {
+      // if(summernoteElement.summernote('isEmpty')) {
+      //   $('#description-error').remove();
+      //   $('<span class="text-danger" id="description-error"><strong class="form-text">The description field is required.</strong></span>').insertAfter('.note-editor');
+      //   e.preventDefault();
+      //   return false;
+      // }else {
         if ($(this).valid()) {
             addOverlay();
             $("input[type=submit], input[type=button], button[type=submit]").prop("disabled", "disabled");
@@ -180,7 +180,7 @@ $(document).ready(function () {
         } else {
             return false;
         }
-      }
+      // }
     });
 
     //tell the validator to ignore Summernote elements

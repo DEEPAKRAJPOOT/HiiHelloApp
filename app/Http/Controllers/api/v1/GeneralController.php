@@ -50,6 +50,10 @@ class GeneralController extends Controller
                     'minimum'    =>  '1.0',
                 ],
             ],
+            'common_age'    =>  [
+                'min_age'   =>  config('utility.profile.common_age.min_age'),
+                'max_age'   =>  config('utility.profile.common_age.max_age'),
+            ],
             'updates'   =>  [
                 'countries'     =>  $country ? $country->updated_at : "",
                 'cms_page'      =>  $cms_page ? $cms_page->updated_at : "",
@@ -186,7 +190,8 @@ class GeneralController extends Controller
         if( $this->apiValidator($request->all(), $rules) ) {
             try{
                 $search = $request->search;
-                $locations = Location::with('locationTranslation')->orderBy('is_active');
+                $locations = Location::with('locationTranslation');
+                        // ->orderBy('is_active');
                 if(!empty($search)){
                     $locations = $locations->whereHas('locationTranslation', function ($query) use ($search) {
                                     $query->where('name', 'like', "%{$search}%");

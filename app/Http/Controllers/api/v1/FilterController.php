@@ -34,28 +34,28 @@ class FilterController extends Controller
                 if($auth_interest != 'Both'){ $users = $users->where('gender',$auth_interest); }    // Interested in Gender
                 
                 if(!empty($request->relationship_status)){
-                    $users = $users->whereHas('relationshipStatus', function($query) use ($request){
+                    $users = $users->orWhereHas('relationshipStatus', function($query) use ($request){
                         $query->whereSlug($request->relationship_status);
                     });
                 }
                 if(!empty($request->personality)){
-                    $users = $users->whereHas('personality', function($query) use ($request){
+                    $users = $users->orWhereHas('personality', function($query) use ($request){
                         $query->whereCustomId($request->personality);
                     });
                 }
                 if(!empty($request->star_sign)){
-                    $users = $users->whereHas('starSign', function($query) use ($request){
+                    $users = $users->orWhereHas('starSign', function($query) use ($request){
                         $query->whereSlug($request->star_sign);
                     });
                 }
                 if(!empty($request->fav_movie)){
                     $fav_movie = $request->fav_movie;
-                    $users = $users->whereHas('userTranslations', function($query) use ($fav_movie){
+                    $users = $users->orWhereHas('userTranslations', function($query) use ($fav_movie){
                                         $query->where('fav_movie','like', "%{$fav_movie}%");
                                     }); 
                 }
                 if(!empty($request->interests)){
-                    $users = $users->whereHas('interests.interest', function($query) use ($request){
+                    $users = $users->orWhereHas('interests.interest', function($query) use ($request){
                         $query->whereIn('custom_id',$request->interests);
                     });
                 }

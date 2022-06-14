@@ -66,7 +66,7 @@ class HomeController extends Controller
                             $query->orWhere('location_id',$user->discover_location_id); // Location
                         }
                         if(!empty($user->discover_start_age) && !empty($user->discover_end_age)){
-                            $query->orWhereBetween('birth_date',array($user->discover_start_age,$user->discover_end_age)); // Age
+                            $query->orWhereBetween('birth_date',array($user->discover_start_age,$user   discover_end_age)); // Age
                         }
                     });*/
 

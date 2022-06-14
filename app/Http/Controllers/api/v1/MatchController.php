@@ -124,7 +124,7 @@ class MatchController extends Controller
                     $count = $matches->count();
                 }
 
-                $matches    = $matches->inRandomOrder();
+                $matches    = $matches->latest();
                 $matches    = $matches->limit($request->limit ?? config('utility.pagination.limit'))
                                 ->offset($request->offset ?? config('utility.pagination.offset'))
                                 ->get();
