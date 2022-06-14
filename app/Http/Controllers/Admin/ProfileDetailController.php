@@ -4,9 +4,11 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Response;
 use App\Models\ProfileDetail;
 use App\Models\Language;
 use App\Http\Requests\Admin\ProfileDetailRequest;
+use File;
 
 class ProfileDetailController extends Controller
 {
@@ -203,5 +205,102 @@ class ProfileDetailController extends Controller
             ];
         }
         return $records;
+    }
+
+    public function csvUpload(Request $request)
+    {
+        @set_time_limit(0);
+        $file = NULL;
+        $status = false;
+        $counter = 0;
+        $message = "No new profile details found";
+        if( $request->has('csvFile') ) {
+            $path = $request->file('csvFile');
+            // Open File
+                $handle = fopen($path,'r');
+                if( $handle !== false ) {
+                    $readLine = fgetcsv($handle,1000,',');
+                    while ( ($readLine = fgetcsv($handle,1000,',')) !== false ) {
+                            
+                        if( !empty($readLine[0]) && !empty($readLine[1]) && !empty($readLine[2])) {
+                                
+                            $slug = str_slug($readLine[1]);
+                            $data = [
+                                'slug'          =>  $slug,
+                                'attribute'     =>  $readLine[0],
+                                'type'          =>  'string',
+                                'en'    =>  [
+                                    'value'     =>  $readLine[1].' - '.$readLine[2],
+                                ],
+                            ];
+
+                            $profile_detail = ProfileDetail::where('slug', "like", "%{$slug}%")->first();
+                            if($profile_detail){
+                                $profile_detail->update($data);
+                            }else{
+                                $profile_detail = ProfileDetail::create($data);
+                            }
+                            $profile_detail->save();
+
+                            if( $profile_detail->wasRecentlyCreated )
+                            $counter++;
+                        }
+                    }
+                    $status = true;
+                } else {
+                    $message = "Unable to read file, please upload proper file.";
+                }
+        }
+        if( $status = true && $counter >= 1) {
+            $title = 'profile detail';
+            if( $counter >= 2 )
+                $title = 'profile details';
+            flash($title.' added successfully!')->success();
+        } else {
+            flash($message)->important();
+        }
+        return redirect(route('admin.profile-details.index')); 
+    }
+
+    //SAMPLE CSV DOWNLOAD
+    public function sampleCsvDownload(Request $request)
+    {
+        $data = [
+            [
+                'Attribute'         =>  'university_college',
+                'Institute Name'    =>  'JAWAHARLAL DARDA INSTITUTE OF ENGINEERING & TECHNOLOGY',
+                'State'             =>  'Maharashtra',
+            ],
+            [
+                'Attribute'         =>  'university_college',
+                'Institute Name'    =>  'PRIYADARSHINI BHAGWATI  COLLEGE OF ENGINEERING',
+                'State'             =>  'Maharashtra',
+            ],
+            [
+                'Attribute'         =>  'university_college',
+                'Institute Name'    =>  'Y. B. PATIL POLYTECHNIC',
+                'State'             =>  'Maharashtra',
+            ],
+        ];
+           
+        if (!File::exists(public_path()."/files")) {
+            File::makeDirectory(public_path() . "/files");
+        }
+
+        $filename = public_path('files/'."sample_profile_details.csv");
+        $handle   = fopen($filename, 'w+');
+        fputcsv($handle, array('Attribute', 'Institute Name', 'State'));
+
+        foreach($data as $row) {
+            fputcsv($handle, array(
+                $row['Attribute'], $row['Institute Name'], $row['State']));
+        }
+        fclose($handle);
+
+        $headers = array(
+            'Content-Type' => 'text/csv',
+        );
+
+        return Response::download($filename, 'sample_profile_details.csv', $headers);
     }
 }

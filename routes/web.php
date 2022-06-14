@@ -32,6 +32,9 @@ Route::get('/email/verify/{id}/{hash}', function (Request $request, $id) {
     return redirect(route('home'));
 })->name('verification.verify');
 
+// Profile Details CSV Upload (Admin Side)
+Route::post('profile-details/csv-upload','Admin\ProfileDetailController@csvUpload')->name('admin.profile-details.csv-upload');
+Route::get('profile-details/sample-csv-download','Admin\ProfileDetailController@sampleCsvDownload')->name('admin.profile-details.sample-csv-download');
 
 /* CMS Pages */
   Route::get('about-us', 'FrontendPagesController@about')->name('about.us');
