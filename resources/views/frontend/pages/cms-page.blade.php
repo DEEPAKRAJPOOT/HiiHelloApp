@@ -59,7 +59,9 @@
                 @if(generateURL($page->file))
                 <div class="row">
                     <div class="col-md-6">
-                        <h4>{{ $title }}</h4>
+                        {{--
+                        <!-- <h4>{{ $title }}</h4> -->
+                        --}}
                         {!! $page->getDescription() !!}
                     </div>
                     <div class="col-md-6">
@@ -69,7 +71,9 @@
                     </div>
                 </div>
                 @else
-                    <h2>{{ $title }}</h2>
+                {{--
+                    <!-- <h2>{{ $title }}</h2>  -->
+                --}}
                     {!! $page->getDescription() !!}
                 @endif
             </article>
