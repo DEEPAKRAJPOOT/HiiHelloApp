@@ -232,5 +232,7 @@ return [
         "facebook_id"           =>  "फेसबुक आईडी",
         "google_id"             =>  "गूगल आईडी",
         "apple_id"              =>  "ऐप्पल आईडी",
+        "latitude"              =>  "अक्षांश",
+        "longitude"             =>  "देशान्तर",
     ], 
 ];

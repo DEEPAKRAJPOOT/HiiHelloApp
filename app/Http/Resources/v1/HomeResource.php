@@ -24,6 +24,7 @@ class HomeResource extends JsonResource
             'profile_photo'     =>  generateURL($this->profile_photo) ?? "",
             'flags'             =>  [
                 'verified_staus'   =>  $this->getVerifiedStatus(),
+                'distance'         =>  $this->distance ?? 0,
             ],
         ];
     }

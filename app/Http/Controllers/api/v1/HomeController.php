@@ -23,9 +23,9 @@ class HomeController extends Controller
             try{
                 $user = $request->user();
                 $auth_id = $user ? $user->id : NULL;
-                $max_interest = config('utility.profile.detail.max_interest') ?? 5;
+                // $max_interest = config('utility.profile.detail.max_interest') ?? 5;
                 $auth_interest = $user->interest ? $user->interest : 'Both';
-                // $radius = $user->discover_distance; $latitude = $user->latitude; $longitude = $user->longitude; 
+                $radius = $user->discover_distance; $latitude = $user->latitude; $longitude = $user->longitude; 
 
                 $blocked    =   BlockUser::whereBlockBy($auth_id)->whereNotNull('blocked_to')->distinct()->pluck('blocked_to')->toArray();
                 $languages  =   UserSetting::whereUserId($auth_id)->whereNotNull('language_id')->distinct()->pluck('language_id')->toArray();
@@ -34,52 +34,48 @@ class HomeController extends Controller
 
                 $users = User::query();
 
-                // if(!empty($radius) && !empty($latitude) && !empty($longitude)){
-                //     $users = $users->select('id','custom_id','birth_date','profile_photo','gender','interest',
-                //                 'location_id','verify_status','is_active'
-                //                 ,DB::raw("3959 * acos(cos(radians(" . $latitude . ")) 
-                //                     * cos(radians(users.latitude)) 
-                //                     * cos(radians(users.longitude) - radians(" . $longitude . ")) 
-                //                     + sin(radians(" .$latitude. ")) 
-                //                     * sin(radians(users.latitude))) AS distance"))
-                //                 ->having("distance", "<=", $radius);
-                //                 // ->orderBy('distance');
-                // }else{
+                if(!empty($radius) && !empty($latitude) && !empty($longitude)){
                     $users = $users->select('id','custom_id','birth_date','profile_photo','gender','interest',
-                            'location_id','verify_status','is_active');
-                // }
+                                'location_id','language_id','verify_status','is_active'
+                                ,DB::raw("3959 * acos(cos(radians(" . $latitude . ")) 
+                                    * cos(radians(users.latitude)) 
+                                    * cos(radians(users.longitude) - radians(" . $longitude . ")) 
+                                    + sin(radians(" .$latitude. ")) 
+                                    * sin(radians(users.latitude))) AS distance"))
+                                ->having("distance", "<=", $radius);
+                                // ->orderBy('distance');
+                }else{
+                    $users = $users->select('id','custom_id','birth_date','profile_photo','gender','interest',
+                            'location_id','language_id','verify_status','is_active');
+                }
 
                 $users = $users->with(['interests.interest.interestTranslation','userTranslation','location.locationTranslation'])
-                            ->where('id','!=',$auth_id)
-                            ->whereNotNull('profile_photo')             // Must Have Main Photo
-                            ->whereNotIn('id',$disLikes)                // Restirct DisLiked Profile
-                            ->whereNotIn('id',$blocked)                 // Restirct Blocked Profile
-                            ->whereIsActive('y');
-                           
-                if($auth_interest != 'Both'){ $users = $users->where('gender',$auth_interest); } // Interested in Gender
+                        ->where(function ($query)  use ($user, $auth_id, $auth_interest, $disLikes, $blocked, $languages) {
+                            $query->where('id','!=',$auth_id)->whereNotNull('profile_photo')->whereIsActive('y');
+
+                            if($auth_interest != 'Both'){ $query->where('gender',$auth_interest); }     // Interested in Gender
+                            if(count($disLikes) > 0){ $query->whereNotIn('id',$disLikes); }             // Restirct DisLiked Profile
+                            if(count($blocked) > 0){ $query->whereNotIn('id',$blocked); }               // Restirct Blocked Profile
+                        });
 
                 // Apply Discovery Detail
-                /*$users = $users->where(function ($query)  use ($user, $languages) {
-                        $query->orWhereIn('language_id',$languages);   // Languages
-                               
-                        if(!empty($user->discover_location_id)){
-                            $query->orWhere('location_id',$user->discover_location_id); // Location
-                        }
+                $users = $users->where(function ($query)  use ($user, $languages) {
+                        if(count($languages) > 0){ $query->orWhereIn('language_id',$languages);}      // Languages
+                        if(!empty($user->discover_location_id)){ $query->orWhere('location_id',$user->discover_location_id); }  // Location
                         if(!empty($user->discover_start_age) && !empty($user->discover_end_age)){
-                            $query->orWhereBetween('birth_date',array($user->discover_start_age,$user   discover_end_age)); // Age
-                        }
-                    });*/
+                            $query->orWhereBetween('birth_date',array($user->discover_start_age,$user->discover_end_age)); // Age
+                        }   
+                    });
 
                 $users = $users->inRandomOrder();
                 $count = $users->count();
                 $users = $users->limit($request->limit ?? config('utility.pagination.limit'))
                             ->offset($request->offset ?? config('utility.pagination.offset'))
-                            ->get()
-                            ->map(function($map) use ($max_interest){
-                                $map['interests'] =  $map->interests->sortBy('desc')->take($max_interest);
-                                return $map;
-                            });
-
+                            ->get();
+                            // ->map(function($map) use ($max_interest){
+                            //     $map['interests'] =  $map->interests->sortBy('desc')->take($max_interest);
+                            //     return $map;
+                            // });
                 if($users->isNotEmpty()){
                     return (HomeResource::collection($users))->additional([
                         'meta' => [
