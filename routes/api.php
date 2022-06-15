@@ -57,6 +57,7 @@ Route::group(['namespace' => 'v1', 'prefix' => 'v1', 'middleware' => 'auth:sanct
     Route::post('user/set-interest', [ProfileController::class,'setInterest'])->name('api.user.set-interest');
     Route::post('user/set-media', [ProfileController::class,'setMedia'])->name('api.user.set-media');
     Route::post('user/profile-report',[UserController::class,'storeProfileReport'])->name('api.user.profile-report');
+    Route::post('user/set-latlong',[UserController::class,'storeLatLong'])->name('api.user.set-latlong');
 
     // Filter
     Route::post('user/profile-filters', [FilterController::class,'getUsersByFilter'])->name('api.user.profile-filters');

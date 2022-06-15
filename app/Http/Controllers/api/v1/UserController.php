@@ -7,7 +7,7 @@ use Illuminate\Http\ { Request, Response };
 use Illuminate\Database\Eloquent\ { ModelNotFoundException };
 use Illuminate\Support\Facades\ { Storage, DB, Auth };
 use App\Http\Resources\v1\ { UserProfile, UserDetailResource, MyProfile };
-use App\Http\Requests\Api\User\ { ProfileRequest, ProfileReportRequest };
+use App\Http\Requests\Api\User\ { ProfileRequest, ProfileReportRequest, SetLatLongRequest };
 use App\Http\Requests\Api\Authentication\ { DeleteAccountRequest };
 use App\Http\Requests\Api\General\ { PaginationRequest };
 use App\Models\ { User, Location, ProfileReport };
@@ -227,6 +227,40 @@ class UserController extends Controller
                 };
             } catch (\Exception $e) {
                 $this->storeErrorLog($e,'delete_account');
+            }
+        }
+        return $this->returnResponse();
+    }
+
+    // Store Latitude & Longitude Of User
+    public function storeLatLong(Request $request)
+    {
+        $rules = SetLatLongRequest::rules();
+        if( $this->apiValidator($request->all(), $rules) ) {
+            try{
+                $user = $request->user();
+                $user->latitude = $request->latitude;
+                $user->longitude = $request->longitude;
+                $user->save(); 
+                return ([
+                    'data'  =>  NULL,
+                    'meta' => [
+                        'url'       =>  url()->current(),
+                        'api'       =>  $this->getVersion(),
+                        'language'  =>  app()->getLocale(),
+                        'message'   =>  trans('api.add', ['entity' => __('Current location')]),
+                    ] ]);
+            } catch(ModelNotFoundException $exception) {                
+                switch ($exception->getModel()) {
+                    case 'App\Models\User':
+                        $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("User")]);
+                        break;
+                    default:
+                        $this->response['meta']['message'] = trans('api.went_wrong');
+                        break;
+                };
+            } catch (\Exception $e) {
+                $this->storeErrorLog($e,'store_latlong');
             }
         }
         return $this->returnResponse();

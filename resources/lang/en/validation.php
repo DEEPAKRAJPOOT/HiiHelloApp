@@ -247,5 +247,7 @@ return [
         "facebook_id"           =>  "facebook id",
         "google_id"             =>  "google id",
         "apple_id"              =>  "apple id",
+        "latitude"              =>  "latitude",
+        "longitude"             =>  "longitude",
     ],
 ];
