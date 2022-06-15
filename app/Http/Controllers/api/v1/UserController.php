@@ -233,7 +233,7 @@ class UserController extends Controller
     }
 
     // Store Latitude & Longitude Of User
-    public function storeLanLong(Request $request)
+    public function storeLatLong(Request $request)
     {
         $rules = SetLatLongRequest::rules();
         if( $this->apiValidator($request->all(), $rules) ) {
