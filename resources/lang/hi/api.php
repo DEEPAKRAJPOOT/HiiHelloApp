@@ -146,6 +146,10 @@ return [
     'subscription'    =>  [
         'already_purchased'   =>  'सदस्यता पहले ही खरीदी जा चुकी है।',
     ],
+    'chat_room'  =>  [
+        'delete'        =>  'चैट सत्र हटाया गया',
+        'not_found'     =>  'चैट सत्र नहीं मिला',
+    ],
 
     /* Custom Message */   
     'attributes' => [

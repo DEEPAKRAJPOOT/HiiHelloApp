@@ -146,12 +146,9 @@ return [
     'subscription'    =>  [
         'already_purchased'   =>  'Subscription already purchased.',
     ],
-
-    'notify_message'    =>  [
-        'image_moderation'    =>  [
-            'title'     =>  "You image is removed from the app due to restricted content.",
-            'message'   =>  "Restricted content !!!",
-        ],
+    'chat_room'  =>  [
+        'delete'        =>  'Chat Session Deleted',
+        'not_found'     =>  'Chat Session Not Found',
     ],
 
     /* Custom Message */ 
