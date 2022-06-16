@@ -187,8 +187,8 @@ class ImageModeration extends Command
         $notification = [
             'key'           =>  'user_id',
             'value'         =>  $user->custom_id,
-            'title'         =>  trans('api.notify_message.image_moderation.title'),
-            'message'       =>  trans('api.notify_message.image_moderation.message'),
+            'title'         =>  config('utility.notification.notify_message.image_moderation.title'),
+            'message'       =>  config('utility.notification.notify_message.image_moderation.message'),
             'type'          =>  config('utility.notification.type.image_moderation'),
         ];
 

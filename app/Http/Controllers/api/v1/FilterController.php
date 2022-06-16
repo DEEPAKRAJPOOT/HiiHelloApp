@@ -4,6 +4,7 @@ namespace App\Http\Controllers\api\v1;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\ { Request, Response };
+use Illuminate\Support\Facades\ { DB };
 use Illuminate\Database\Eloquent\ { ModelNotFoundException };
 use App\Http\Requests\Api\User\ { ProfileFilterRequest };
 use App\Http\Resources\v1\ { HomeResource };
@@ -24,43 +25,54 @@ class FilterController extends Controller
                 $auth_id = $user ? $user->id : NULL;
                 $max_interest = config('utility.profile.detail.max_interest') ?? 5;
                 $auth_interest = $user->interest ? $user->interest : 'Both';
+                $radius = $user->discover_distance; $latitude = $user->latitude; $longitude = $user->longitude; 
 
                 $users = User::select('id','custom_id','birth_date','profile_photo','gender','interest',
-                                'location_id','verify_status','is_active')
-                                ->with(['interests','interests.interest.interestTranslation',
-                                    'userTranslation','location.locationTranslation'])
-                                ->where('id','!=',$auth_id)->whereIsActive('y');
+                            'location_id','language_id','verify_status','is_active',
+                            DB::raw("3959 * acos(cos(radians(" . $latitude . ")) 
+                                    * cos(radians(users.latitude)) 
+                                    * cos(radians(users.longitude) - radians(" . $longitude . ")) 
+                                    + sin(radians(" .$latitude. ")) 
+                                    * sin(radians(users.latitude))) AS distance"))
+                            ->with(['interests','interests.interest.interestTranslation',
+                                'userTranslation','location.locationTranslation'])
+                            ->where(function ($query)  use ($auth_id, $auth_interest) {
+                                $query->where('id','!=',$auth_id)->whereIsActive('y');
 
-                if($auth_interest != 'Both'){ $users = $users->where('gender',$auth_interest); }    // Interested in Gender
+                                if($auth_interest != 'Both'){ $query->where('gender',$auth_interest); }    // Interested in Gender
+                            });
                 
-                if(!empty($request->relationship_status)){
-                    $users = $users->orWhereHas('relationshipStatus', function($query) use ($request){
-                        $query->whereSlug($request->relationship_status);
-                    });
-                }
-                if(!empty($request->personality)){
-                    $users = $users->orWhereHas('personality', function($query) use ($request){
-                        $query->whereCustomId($request->personality);
-                    });
-                }
-                if(!empty($request->star_sign)){
-                    $users = $users->orWhereHas('starSign', function($query) use ($request){
-                        $query->whereSlug($request->star_sign);
-                    });
-                }
-                if(!empty($request->fav_movie)){
-                    $fav_movie = $request->fav_movie;
-                    $users = $users->orWhereHas('userTranslations', function($query) use ($fav_movie){
-                                        $query->where('fav_movie','like', "%{$fav_movie}%");
-                                    }); 
-                }
-                if(!empty($request->interests)){
-                    $users = $users->orWhereHas('interests.interest', function($query) use ($request){
-                        $query->whereIn('custom_id',$request->interests);
-                    });
-                }
+                $users = $users->where(function ($query_filter)  use ($request) {
+                    if(!empty($request->relationship_status)){
+                        $query_filter->orWhereHas('relationshipStatus', function($query_relation) use ($request){
+                            $query_relation->whereSlug($request->relationship_status);
+                        });
+                    }
+                    if(!empty($request->personality)){
+                        $query_filter->orWhereHas('personality', function($query_personality) use ($request){
+                            $query_personality->whereCustomId($request->personality);
+                        });
+                    }
+                    if(!empty($request->star_sign)){
+                        $query_filter->orWhereHas('starSign', function($query_star_sign) use ($request){
+                            $query_star_sign->whereSlug($request->star_sign);
+                        });
+                    }
+                    if(!empty($request->fav_movie)){
+                        $fav_movie = $request->fav_movie;
+                        $query_filter->orWhereHas('userTranslations', function($query_fav_movie) use ($fav_movie){
+                                            $query_fav_movie->where('fav_movie','like', "%{$fav_movie}%");
+                                        }); 
+                    }
+                    if(!empty($request->interests)){
+                        $query_filter->orWhereHas('interests.interest', function($query_interests) use ($request){
+                            $query_interests->whereIn('custom_id',$request->interests);
+                        });
+                    }
+                });
 
-                $users = $users->inRandomOrder();
+                // $users = $users->inRandomOrder();
+                $users = $users->orderBy('distance');
                 $count = $users->count();
                 $users = $users->limit($request->limit ?? config('utility.pagination.limit'))
                                 ->offset($request->offset ?? config('utility.pagination.offset'))

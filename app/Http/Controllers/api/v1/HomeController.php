@@ -21,7 +21,7 @@ class HomeController extends Controller
         $rules = PaginationRequest::rules();
         if( $this->apiValidator($request->all(), $rules) ) {
             try{
-                $user = $request->user();
+                $user = $request->user(); $nearBy = array();
                 $auth_id = $user ? $user->id : NULL;
                 // $max_interest = config('utility.profile.detail.max_interest') ?? 5;
                 $auth_interest = $user->interest ? $user->interest : 'Both';
@@ -32,34 +32,33 @@ class HomeController extends Controller
                 $disLikes   =   DisLike::whereDisLikerId($auth_id)->whereDate('updated_at',\Carbon\Carbon::today())
                                     ->whereNotNull('user_id')->distinct()->pluck('user_id')->toArray();
 
-                $users = User::query();
+                $users = User::select('id','custom_id','birth_date','profile_photo','gender','interest',
+                                'location_id','language_id','verify_status','is_active')
+                            ->with(['interests.interest.interestTranslation','userTranslation','location.locationTranslation'])
+                            ->where(function ($query)  use ($auth_id, $auth_interest, $disLikes, $blocked) {
+                                $query->where('id','!=',$auth_id)->whereNotNull('profile_photo')->whereIsActive('y');
+
+                                if($auth_interest != 'Both'){ $query->where('gender',$auth_interest); }     // Interested in Gender
+                                if(count($disLikes) > 0){ $query->whereNotIn('id',$disLikes); }             // Restirct DisLiked Profile
+                                if(count($blocked) > 0){ $query->whereNotIn('id',$blocked); }               // Restirct Blocked Profile
+                            });
 
                 if(!empty($radius) && !empty($latitude) && !empty($longitude)){
-                    $users = $users->select('id','custom_id','birth_date','profile_photo','gender','interest',
+                    $nearBy = $users->select('id','custom_id','birth_date','profile_photo','gender','interest',
                                 'location_id','language_id','verify_status','is_active'
                                 ,DB::raw("3959 * acos(cos(radians(" . $latitude . ")) 
                                     * cos(radians(users.latitude)) 
                                     * cos(radians(users.longitude) - radians(" . $longitude . ")) 
                                     + sin(radians(" .$latitude. ")) 
                                     * sin(radians(users.latitude))) AS distance"))
-                                ->having("distance", "<=", $radius);
+                                ->having("distance", "<=", $radius)
                                 // ->orderBy('distance');
-                }else{
-                    $users = $users->select('id','custom_id','birth_date','profile_photo','gender','interest',
-                            'location_id','language_id','verify_status','is_active');
+                                ->pluck('users.id')->toArray();
                 }
 
-                $users = $users->with(['interests.interest.interestTranslation','userTranslation','location.locationTranslation'])
-                        ->where(function ($query)  use ($user, $auth_id, $auth_interest, $disLikes, $blocked, $languages) {
-                            $query->where('id','!=',$auth_id)->whereNotNull('profile_photo')->whereIsActive('y');
-
-                            if($auth_interest != 'Both'){ $query->where('gender',$auth_interest); }     // Interested in Gender
-                            if(count($disLikes) > 0){ $query->whereNotIn('id',$disLikes); }             // Restirct DisLiked Profile
-                            if(count($blocked) > 0){ $query->whereNotIn('id',$blocked); }               // Restirct Blocked Profile
-                        });
-
                 // Apply Discovery Detail
-                $users = $users->where(function ($query)  use ($user, $languages) {
+                $users = $users->where(function ($query)  use ($user, $nearBy, $languages) {
+                        if(count($nearBy) > 0){ $query->orWhereIn('id',$nearBy); }     // Distance 
                         if(count($languages) > 0){ $query->orWhereIn('language_id',$languages);}      // Languages
                         if(!empty($user->discover_location_id)){ $query->orWhere('location_id',$user->discover_location_id); }  // Location
                         if(!empty($user->discover_start_age) && !empty($user->discover_end_age)){

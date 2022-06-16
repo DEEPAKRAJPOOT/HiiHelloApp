@@ -215,12 +215,12 @@ class ChatController extends Controller
                         'url'       =>  url()->current(),
                         'api'       =>  $this->getVersion(),
                         'language'  =>  app()->getLocale(),
-                        'message'   =>  trans('api.delete', ['entity' =>  __('Chat room')]),
+                        'message'   =>  trans('api.chat_room.delete'),
                     ] ]);
             } catch(ModelNotFoundException $exception) {                
                 switch ($exception->getModel()) {
                     case 'App\Models\ChatRoom':
-                        $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("Chat room")]);
+                        $this->response['meta']['message'] = trans('api.chat_room.not_found');
                         break;
                     default:
                         $this->response['meta']['message'] = trans('api.went_wrong');

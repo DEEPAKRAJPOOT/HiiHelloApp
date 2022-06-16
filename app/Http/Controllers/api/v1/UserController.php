@@ -24,7 +24,7 @@ class UserController extends Controller
         if( $this->apiValidator($request->all(), $rules) ) {
             try{
                 $auth_id = $request->user() ? $request->user()->id : NULL;
-                $max_interest = config('utility.profile.detail.max_interest') ?? 5;
+                // $max_interest = config('utility.profile.detail.max_interest') ?? 5;
 
                 $user = User::select('id','custom_id','birth_date','location_id',
                             'profile_photo','voice','voice_answer',
@@ -32,9 +32,10 @@ class UserController extends Controller
                             'relationship_status_id','you_are_here_id','food_preference_id','drinking_id','smoking_id',
                             'pet_id','star_sign_id','community_id','is_active')
                         ->with([
-                            'interests' => function($query) use ($max_interest) {
-                                $query->latest()->take($max_interest); 
-                            },
+                            // 'interests' => function($query) use ($max_interest) {
+                            //     $query->latest()->take($max_interest); 
+                            // },
+                            'interests',
                             'userTranslation','userDetails','interests.interest.interestTranslation',
                             'interests.interest.parentInterest','interests.interest.masterInterest',
                             'location.locationTranslation','personality.personalityTranslation',
