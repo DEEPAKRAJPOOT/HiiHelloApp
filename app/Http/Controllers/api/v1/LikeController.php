@@ -10,6 +10,7 @@ use App\Http\Requests\Api\User\ { AddLikeRequest, AddDislikeRequest };
 use App\Http\Requests\Api\General\ { PaginationRequest };
 use App\Http\Resources\v1\ { LikeResource };
 use App\Models\ { Like, User, BlockUser, DisLike };
+use App\Jobs\ { NotificationJob };
 
 class LikeController extends Controller
 {
@@ -22,9 +23,10 @@ class LikeController extends Controller
         $rules = AddLikeRequest::rules();
         if( $this->apiValidator($request->all(), $rules) ) {
             try{
-                $user = User::select('id')->whereCustomId($request->user_id)->whereIsActive('y')->firstOrFail();
+                $user = User::whereCustomId($request->user_id)->whereIsActive('y')->firstOrFail();
                 $block = BlockUser::whereBlockBy($user->id)->whereBlockedTo(Auth::id())->first();
-                
+                $userName = $request->user() && $request->user()->full_name ? $request->user()->full_name : "Someone";
+
                 if(!$block){
                     $like = Like::firstOrCreate([
                         'user_id'       =>  $user->id,
@@ -34,6 +36,33 @@ class LikeController extends Controller
                     ]);
 
                     if($like->save()){
+                        if($like->wasRecentlyCreated){
+                            $matched = Like::select('id')->whereUserId(Auth::id())->whereLikerId($user->id)->first();
+                            if($matched){
+                                $title = trans('api.notify_message.new_match.title',['entity' => $userName]);
+                                $message = trans('api.notify_message.new_match.message');
+                                $type = config('utility.notification.type.new_match');
+                            }else{
+                                $title = trans('api.notify_message.add_like.title',['entity' => $userName]);
+                                $message = trans('api.notify_message.add_like.message');
+                                $type = config('utility.notification.type.add_like');
+                            }
+                            $notification = [
+                                'custom_id'     =>  getUniqueString('notifications'),
+                                'key'           =>  'user_id',
+                                'value'         =>  $like->liker_id,
+                                'user_id'       =>  $user->id,
+                                'title'         =>  $title,
+                                'message'       =>  $message,
+                                'image'         =>  '',
+                                'type'          =>  $type,
+                            ];
+                            
+                            // Notify
+                            $notificationJob = new NotificationJob($notification, $user);
+                            dispatch($notificationJob);
+                        }
+
                         $this->status = Response::HTTP_OK;
                         return (['data'  =>  NULL,
                                 'meta' => [
