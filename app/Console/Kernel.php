@@ -31,9 +31,9 @@ class Kernel extends ConsoleKernel
         $schedule->call(function () {
             $scheculeCommand = new GoogleTranslation;
             $scheculeCommand->handle();
-        })->everyMinute();
-        // ->everyFiveMinutes();
-
+        })->everyFiveMinutes();
+        // ->everyMinute();
+        
         // Image Moderation Command
         $schedule->call(function () {
             $scheculeCommand = new ImageModeration;
