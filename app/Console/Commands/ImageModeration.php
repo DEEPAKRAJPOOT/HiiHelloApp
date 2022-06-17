@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Storage;
 use App\Models\User;
 use App\Models\UserDetail;
 use App\Http\Traits\FirebaseTrait;
+use App\Jobs\NotificationJob;
 
 class ImageModeration extends Command
 {
@@ -185,14 +186,19 @@ class ImageModeration extends Command
     // Send Notification
     function sendImageAlertNotification($user){
         $notification = [
+            'custom_id'     =>  getUniqueString('notifications'),
             'key'           =>  'user_id',
             'value'         =>  $user->custom_id,
-            'title'         =>  config('utility.notification.notify_message.image_moderation.title'),
-            'message'       =>  config('utility.notification.notify_message.image_moderation.message'),
+            'user_id'       =>  $user->id,
+            'image'         =>  '',
+            'title'         =>  trans('api.notify_message.image_moderation.title'),
+            'message'       =>  trans('api.notify_message.image_moderation.message'),
             'type'          =>  config('utility.notification.type.image_moderation'),
         ];
 
-        $this->directNotify($notification, $user);
+        // Notify
+        $notificationJob = new NotificationJob($notification, $user);
+        dispatch($notificationJob);
     }
 
 

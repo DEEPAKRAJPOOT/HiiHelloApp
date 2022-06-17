@@ -151,6 +151,21 @@ return [
         'not_found'     =>  'Chat Session Not Found',
     ],
 
+    'notify_message'    =>  [
+        'image_moderation'    =>  [
+            'title'     =>  "You image is removed from the app due to restricted content.",
+            'message'   =>  "Please upload images as per our guidlines.",
+        ],
+        'add_like'    =>  [
+            'title'     =>  ":entity liked your profile.",
+            'message'   =>  "",
+        ],
+        'new_match'    =>  [
+            'title'     =>  ":entity matched with your profile.",
+            'message'   =>  "",
+        ],
+    ],
+
     /* Custom Message */ 
     'attributes' => [
         "field"         =>  "field",

@@ -60,17 +60,6 @@ trait FirebaseTrait {
 		return $result;
 	}
 
-	public function directNotify($notification, $user)
-    {
-        $user->notify(new PushNotification($notification));
-        $response = [
-            'status' => 'success',
-            'message' => 'notification added! successfully'
-        ];
-        return (object) $response;
-    }
-
-
 	// Send push notifications to all users
     public function sendPushNotificationToAll($notification, $users)
     {        

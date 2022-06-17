@@ -35,7 +35,7 @@ class ChatMessage extends Model
         }
         return [
             'title'     =>  $full_name,
-            'type'      =>  'chat-message',
+            'type'      =>  config('utility.notification.type.chat_message'),
             'id'        =>  $chatMessage->custom_id,
             'room_id'   =>  $chatMessage->room ? $chatMessage->room->custom_id : "",
             'name'      =>  $full_name,

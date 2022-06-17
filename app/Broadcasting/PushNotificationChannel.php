@@ -19,20 +19,21 @@ class PushNotificationChannel extends Controller
 
         $unReadNotifications = 0;
         $n_data = [
-            'title'     =>  $message->title,
-            'body'      =>  $message->message,
+            'title'     =>  $message['title'],
+            'body'      =>  $message['message'],
             'badge'     =>  $unReadNotifications,
         ];
+
         $data = [
-            'id'        =>  $message->id ?? NULL,
-            'type'      =>  $message->type ?? "general-notification",
-            'image'     =>  $notifiable->profile_photo ? generateURL($notifiable->profile_photo) : "",
+            'id'        =>  $message['id'] ?? NULL,
+            'type'      =>  $message['type'] ?? "general-notification",
+            'image'     =>  $notifiable['profile_photo'] ? generateURL($notifiable['profile_photo']) : "",
         ];
 
-        if ($message->type == 'chat-message') {
-            $data['name']       =   $message->name;
-            $data['profile']    =   $message->profile;
-            $data['room_id']    =   $message->room_id;
+        if ($message['type'] == config('utility.notification.type.chat_message')) {
+            $data['name']       =   $message['name'];
+            $data['profile']    =   $message['profile'];
+            $data['room_id']    =   $message['room_id'];
         }
         $send_notification = [
             'priority'  =>  'high',
@@ -40,7 +41,7 @@ class PushNotificationChannel extends Controller
             'sound'     =>  'default',
         ];
 
-        if( $deviceToken->type == 'android' ) {
+        if( $deviceToken['type'] == 'android' ) {
             $n_data = array_merge($n_data, $data);
             $send_notification['data'] = $n_data;
         } else {
