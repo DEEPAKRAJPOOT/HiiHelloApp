@@ -21,9 +21,7 @@ class HomeController extends Controller
         $rules = PaginationRequest::rules();
         if( $this->apiValidator($request->all(), $rules) ) {
             try{
-                $user = $request->user(); $nearBy = array();
-                $auth_id = $user ? $user->id : NULL;
-                // $max_interest = config('utility.profile.detail.max_interest') ?? 5;
+                $user = $request->user(); $auth_id = $user ? $user->id : NULL;
                 $auth_interest = $user->interest ? $user->interest : 'Both';
                 $radius = $user->discover_distance; $latitude = $user->latitude; $longitude = $user->longitude; 
 
@@ -33,48 +31,37 @@ class HomeController extends Controller
                                     ->whereNotNull('user_id')->distinct()->pluck('user_id')->toArray();
 
                 $users = User::select('id','custom_id','birth_date','profile_photo','gender','interest',
-                                'location_id','language_id','verify_status','is_active')
-                            ->with(['interests.interest.interestTranslation','userTranslation','location.locationTranslation'])
-                            ->where(function ($query)  use ($auth_id, $auth_interest, $disLikes, $blocked) {
-                                $query->where('id','!=',$auth_id)->whereNotNull('profile_photo')->whereIsActive('y');
+                        'location_id','language_id','verify_status','is_active'
+                        ,DB::raw("3959 * 1.609344 * acos(cos(radians(" . $latitude . ")) 
+                        * cos(radians(users.latitude)) 
+                        * cos(radians(users.longitude) - radians(" . $longitude . ")) 
+                        + sin(radians(" .$latitude. ")) 
+                        * sin(radians(users.latitude))) AS distance"))
+                        // ->having("distance", "<=", $radius)
+                        ->orderBy('distance')
+                        ->with(['interests.interest.interestTranslation','userTranslation','location.locationTranslation'])
+                        ->where(function ($query)  use ($auth_id, $auth_interest, $disLikes, $blocked) {
+                            $query->where('id','!=',$auth_id)->whereNotNull('profile_photo')->whereIsActive('y');
 
-                                if($auth_interest != 'Both'){ $query->where('gender',$auth_interest); }     // Interested in Gender
-                                if(count($disLikes) > 0){ $query->whereNotIn('id',$disLikes); }             // Restirct DisLiked Profile
-                                if(count($blocked) > 0){ $query->whereNotIn('id',$blocked); }               // Restirct Blocked Profile
-                            });
+                            if($auth_interest != 'Both'){ $query->where('gender',$auth_interest); }     // Interested in Gender
+                            if(count($disLikes) > 0){ $query->whereNotIn('id',$disLikes); }             // Restirct DisLiked Profile
+                            if(count($blocked) > 0){ $query->whereNotIn('id',$blocked); }               // Restirct Blocked Profile
+                        });
 
-                if(!empty($radius) && !empty($latitude) && !empty($longitude)){
-                    $nearBy = $users->select('id','custom_id','birth_date','profile_photo','gender','interest',
-                                'location_id','language_id','verify_status','is_active'
-                                ,DB::raw("3959 * acos(cos(radians(" . $latitude . ")) 
-                                    * cos(radians(users.latitude)) 
-                                    * cos(radians(users.longitude) - radians(" . $longitude . ")) 
-                                    + sin(radians(" .$latitude. ")) 
-                                    * sin(radians(users.latitude))) AS distance"))
-                                ->having("distance", "<=", $radius)
-                                // ->orderBy('distance');
-                                ->pluck('users.id')->toArray();
-                }
-
-                // Apply Discovery Detail
-                $users = $users->where(function ($query)  use ($user, $nearBy, $languages) {
-                        if(count($nearBy) > 0){ $query->orWhereIn('id',$nearBy); }     // Distance 
-                        if(count($languages) > 0){ $query->orWhereIn('language_id',$languages);}      // Languages
+                // Discovery
+                $users = $users->where(function ($query)  use ($user, $languages) {
+                        if(count($languages) > 0){ $query->orWhereIn('language_id',$languages);}        // Languages
                         if(!empty($user->discover_location_id)){ $query->orWhere('location_id',$user->discover_location_id); }  // Location
                         if(!empty($user->discover_start_age) && !empty($user->discover_end_age)){
                             $query->orWhereBetween('birth_date',array($user->discover_start_age,$user->discover_end_age)); // Age
                         }   
                     });
 
-                $users = $users->inRandomOrder();
                 $count = $users->count();
                 $users = $users->limit($request->limit ?? config('utility.pagination.limit'))
                             ->offset($request->offset ?? config('utility.pagination.offset'))
                             ->get();
-                            // ->map(function($map) use ($max_interest){
-                            //     $map['interests'] =  $map->interests->sortBy('desc')->take($max_interest);
-                            //     return $map;
-                            // });
+                            
                 if($users->isNotEmpty()){
                     return (HomeResource::collection($users))->additional([
                         'meta' => [
