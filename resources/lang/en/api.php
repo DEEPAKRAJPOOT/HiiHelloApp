@@ -158,11 +158,11 @@ return [
         ],
         'add_like'    =>  [
             'title'     =>  "Hi Hello",
-            'message'   =>  ":entity liked your profile.",
+            'message'   =>  "Someone liked your profile.",
         ],
         'new_match'    =>  [
             'title'     =>  "Hi Hello",
-            'message'   =>  ":entity matched with your profile.",
+            'message'   =>  "Someone matched with your profile.",
         ],
     ],
 
