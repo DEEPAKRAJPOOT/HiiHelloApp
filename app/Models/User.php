@@ -243,9 +243,11 @@ class User extends Authenticatable implements MustVerifyEmail, TranslatableContr
 
         $percentage = intval(round(($language+$full_name+$birth_date+$location+$interest+$photo_verified+$email_verified+$video_verified+$contact_verified+$main_photo+$photo+$video+$about_me+$voice_prompt+$personality+$relationship_status+$you_are_here+$food_preference+$drinking+$smoking+$pet+$education+$university+$profession+$star_sign+$religion+$community+$fav_movie+$interest_percent)
             *$maximum_points/100));
-        
-        $this->profile_percentage = $percentage;
-        $this->save();
+            
+        if($percentage != $this->profile_percentage){
+            $this->profile_percentage = $percentage;
+            $this->save();
+        }
 
         return $percentage;
     }

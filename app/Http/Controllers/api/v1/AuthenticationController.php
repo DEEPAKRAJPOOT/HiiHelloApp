@@ -28,7 +28,8 @@ class AuthenticationController extends Controller
             $checksumDetails = $this->validateCheckSum($request->security_token, $request->contact_no);
             if( $checksumDetails->validate ) {
                 try {
-                    $user = User::with(['userTranslation','userDetails','language','location.locationTranslation','interests'])
+                    $user = User::with(['userTranslation','userDetails','interests.interest.interestTranslation',
+                                    'language','location.locationTranslation'])
                                         ->whereContactNo($request->contact_no)->withCount('likes')->firstOrFail();
                     if($user->is_active == 'y'){
                         Auth::login($user);

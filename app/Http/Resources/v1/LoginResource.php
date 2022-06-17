@@ -27,6 +27,7 @@ class LoginResource extends JsonResource
             'gender'            =>  $this->gender ?? "",
             'interest'          =>  $this->interest ?? "",
             'location'          =>  new LocationResource($this->location),
+            'interests'         =>  HomeInterestResource::collection($this->interests),
             'language'          =>  new LanguageResource($this->language),
             'profile_photo'     =>  generateURL($this->profile_photo) ?? "",
             'media' =>  [
