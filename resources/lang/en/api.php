@@ -153,16 +153,16 @@ return [
 
     'notify_message'    =>  [
         'image_moderation'    =>  [
-            'title'     =>  "You image is removed from the app due to restricted content.",
-            'message'   =>  "Please upload images as per our guidlines.",
+            'title'     =>  "Hi Hello",
+            'message'   =>  "You image is removed from the app due to restricted content. Please upload images as per our guidlines.",
         ],
         'add_like'    =>  [
-            'title'     =>  ":entity liked your profile.",
-            'message'   =>  "",
+            'title'     =>  "Hi Hello",
+            'message'   =>  ":entity liked your profile.",
         ],
         'new_match'    =>  [
-            'title'     =>  ":entity matched with your profile.",
-            'message'   =>  "",
+            'title'     =>  "Hi Hello",
+            'message'   =>  ":entity matched with your profile.",
         ],
     ],
 
