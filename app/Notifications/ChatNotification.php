@@ -6,11 +6,11 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
-use App\Broadcasting\PushNotificationChannel;
+use App\Broadcasting\ChatNotificationChannel;
 
 class ChatNotification extends Notification
 {
-    // use Queueable;
+    use Queueable;
     public $data;
 
     /**
@@ -31,7 +31,7 @@ class ChatNotification extends Notification
      */
     public function via($notifiable)
     {
-        return [PushNotificationChannel::class];
+        return [ChatNotificationChannel::class];
     }
 
     /**

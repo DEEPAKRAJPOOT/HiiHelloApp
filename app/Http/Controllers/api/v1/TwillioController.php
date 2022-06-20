@@ -4,8 +4,8 @@ namespace App\Http\Controllers\api\v1;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\ { Request, Response };
-use App\Http\Requests\Api\Twillio\ { CreateApiKeyRequest, OutgoingAppSidRequest, CreateAccessTokenRequest, GetCallLogRequest, StoreCallLogRequest };
-use App\Http\Resources\v1\ { TwillioApiKey, TwillioAccessToken, CallLogResource };
+use App\Http\Requests\Api\Twillio\ { CreateApiKeyRequest, OutgoingAppSidRequest, CreateAccessTokenRequest, GetCallLogRequest, StoreCallLogRequest, GetReceiverDetailRequest };
+use App\Http\Resources\v1\ { TwillioApiKey, TwillioAccessToken, CallLogResource, CallReceiverResource };
 use Illuminate\Database\Eloquent\ { ModelNotFoundException };
 use Twilio\Rest\ { Client };
 use Twilio\Jwt\ { AccessToken };
@@ -182,6 +182,41 @@ class TwillioController extends Controller
                 };
             } catch (\Exception $e) {
                 $this->storeErrorLog($e,'store_call_log');
+            }
+        }
+        return $this->returnResponse();
+    }
+
+    /**
+     * Get Call Receiver Details Before call initiate
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function getReceiverDetail(Request $request)
+    {
+        $rules = GetReceiverDetailRequest::rules();
+        if( $this->apiValidator($request->all(), $rules) ) {
+            try{
+                $user = User::select('id','custom_id','gender','is_subscribed','subscription_end_date')
+                            ->whereCustomId($request->user_id)->whereIsActive('y')->firstOrFail();
+
+                $this->status = Response::HTTP_OK;
+                return (new CallReceiverResource($user))
+                        ->additional([
+                            'meta' => [
+                                'message'   =>  trans('api.list', ['entity' => __("User") ]),
+                            ] ]);
+            } catch(ModelNotFoundException $exception) {                
+                switch ($exception->getModel()) {
+                    case 'App\Models\User':
+                        $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("User")]);
+                        break;
+                    default:
+                        $this->response['meta']['message'] = trans('api.went_wrong');
+                        break;
+                };
+            } catch (\Exception $e) {
+                $this->storeErrorLog($e,'get_receiver_detail');
             }
         }
         return $this->returnResponse();
