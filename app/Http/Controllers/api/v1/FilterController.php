@@ -23,7 +23,7 @@ class FilterController extends Controller
             try{
                 $user = $request->user();
                 $auth_id = $user ? $user->id : NULL;
-                $max_interest = config('utility.profile.detail.max_interest') ?? 5;
+                // $max_interest = config('utility.profile.detail.max_interest') ?? 5;
                 $auth_interest = $user->interest ? $user->interest : 'Both';
                 $radius = $user->discover_distance; $latitude = $user->latitude; $longitude = $user->longitude; 
 
@@ -76,11 +76,11 @@ class FilterController extends Controller
                 $count = $users->count();
                 $users = $users->limit($request->limit ?? config('utility.pagination.limit'))
                                 ->offset($request->offset ?? config('utility.pagination.offset'))
-                                ->get()
-                                ->map(function($map) use ($max_interest){
-                                    $map['interests'] =  $map->interests->sortBy('desc')->take($max_interest);
-                                    return $map;
-                                });
+                                ->get();
+                                // ->map(function($map) use ($max_interest){
+                                //     $map['interests'] =  $map->interests->sortBy('desc')->take($max_interest);
+                                //     return $map;
+                                // });
 
                 if($users->isNotEmpty()){
                     return (HomeResource::collection($users))->additional([

@@ -44,6 +44,9 @@ Route::group(['namespace' => 'v1', 'prefix' => 'v1'], function () {
     
     // Send Chat Notification
     Route::post('chat/send-push/{chatmessage}/{message?}', [ChatController::class,'sendChatPush'])->name('chat.send-push');
+
+    // Twillio Receiver Detail
+    Route::post('twillio/receiver-detail',[TwillioController::class,'getReceiverDetail'])->name('api.twillio.receiver-detail');
 });
 
 Route::group(['namespace' => 'v1', 'prefix' => 'v1', 'middleware' => 'auth:sanctum'], function () {
@@ -99,9 +102,9 @@ Route::group(['namespace' => 'v1', 'prefix' => 'v1', 'middleware' => 'auth:sanct
     Route::post('payment/varify-signature',[PaymentController::class,'verifySignature'])->name('api.payment.varify-signature');
 
     // Twillio Call
-    Route::post('/twillio/create-access-token',[TwillioController::class,'createAccessToken'])->name('api.twillio.create-access-token');
-    Route::post('/twillio/get-call-log',[TwillioController::class,'getCallLog'])->name('api.twillio.get-call-log');
-    Route::post('/twillio/store-call-log',[TwillioController::class,'storeCallLog'])->name('api.twillio.store-call-log');
+    Route::post('twillio/create-access-token',[TwillioController::class,'createAccessToken'])->name('api.twillio.create-access-token');
+    Route::post('twillio/get-call-log',[TwillioController::class,'getCallLog'])->name('api.twillio.get-call-log');
+    Route::post('twillio/store-call-log',[TwillioController::class,'storeCallLog'])->name('api.twillio.store-call-log');
 
     // Socket Chat
     Route::post('chat/create-room', [ChatController::class,'createRoom'])->name('chat.create-room');
