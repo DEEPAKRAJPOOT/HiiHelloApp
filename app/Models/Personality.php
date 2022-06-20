@@ -13,7 +13,7 @@ class Personality extends Model implements TranslatableContract
 
     public function getRouteKeyName(){ return 'custom_id'; }
 
-    protected $fillable = ['custom_id', 'image'];
+    protected $fillable = ['custom_id', 'image', 'is_trans_title', 'is_trans_description'];
 
     protected $translatedAttributes = ['title', 'description'];
 

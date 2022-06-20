@@ -6,6 +6,8 @@ use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 use App\Console\Commands\ImageModeration;
 use App\Console\Commands\GoogleTranslation;
+use App\Console\Commands\BirthDayWish;
+use App\Console\Commands\NotifySubScriptionExpire;
 
 class Kernel extends ConsoleKernel
 {
@@ -17,6 +19,8 @@ class Kernel extends ConsoleKernel
     protected $commands = [
         ImageModeration::class,
         GoogleTranslation::class,
+        BirthDayWish::class,
+        NotifySubScriptionExpire::class,
     ];
 
     /**
@@ -40,6 +44,18 @@ class Kernel extends ConsoleKernel
             $scheculeCommand->handle();
         })->everyMinute();
         // ->everyTenMinutes();
+
+        // Birthday Wise At Every Night 12 AM
+        $schedule->call(function () {
+            $scheculeCommand = new BirthDayWish;
+            $scheculeCommand->handle();
+        })->dailyAt();
+
+        // Subscription Expirt Notification At Every Night 8 AM
+        $schedule->call(function () {
+            $scheculeCommand = new NotifySubScriptionExpire;
+            $scheculeCommand->handle();
+        })->dailyAt('08:00');
 
         // $schedule->command('inspire')->hourly();
     }

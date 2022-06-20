@@ -13,7 +13,7 @@ class ProfileDetail extends Model implements TranslatableContract
 
     public function getRouteKeyName(){ return 'slug'; }
 
-    protected $fillable = ['id', 'slug', 'attribute', 'type'];
+    protected $fillable = ['id', 'slug', 'attribute', 'type', 'is_trans_value'];
 
     protected $translatedAttributes = ['value'];
 
