@@ -44,40 +44,46 @@ class GoogleTranslation extends Command
         $apiKey             =   config('utility.google.translate.api_key');
         $message            =   'No details found to translate !!!';
 
-        $users = User::select('id','custom_id','language_id','is_trans_full_name','is_trans_about_me','is_trans_fav_movie')
+        // $users = User::select('id','custom_id','language_id','is_trans_full_name','is_trans_about_me','is_trans_fav_movie')
+        //                         ->with('userTranslations','language')
+        //                         ->where('is_trans_full_name','n')->orWhere('is_trans_about_me','n')
+        //                         ->orWhere('is_trans_fav_movie','n')->get();
+
+        User::select('id','custom_id','language_id','is_trans_full_name','is_trans_about_me','is_trans_fav_movie')
                                 ->with('userTranslations','language')
                                 ->where('is_trans_full_name','n')->orWhere('is_trans_about_me','n')
-                                ->orWhere('is_trans_fav_movie','n')->get();
+                                ->orWhere('is_trans_fav_movie','n')
+                                ->chunk(100, function($users) use ($language_alloweds, $apiKey, $message) {
+            if($users->isNotEmpty()){
+                foreach($users as $user){
+                    if($user->userTranslations->isNotEmpty()){
+                        $detected_lang = $user->language ? $user->language->lang_code : 'en';
+                        // $detected_lang = $user->userTranslations[0] ? $user->userTranslations[0]->locale : $detected_lang;
 
-        if($users->isNotEmpty()){
-            foreach($users as $user){
-                if($user->userTranslations->isNotEmpty()){
-                    $detected_lang = $user->language ? $user->language->lang_code : 'en';
-                    // $detected_lang = $user->userTranslations[0] ? $user->userTranslations[0]->locale : $detected_lang;
+                        if($user->userTranslations[0]){
+                            $full_name  =   $user->userTranslations[0]->full_name;
+                            $about_me   =   $user->userTranslations[0]->about_me;
+                            $fav_movie  =   $user->userTranslations[0]->fav_movie;
 
-                    if($user->userTranslations[0]){
-                        $full_name  =   $user->userTranslations[0]->full_name;
-                        $about_me   =   $user->userTranslations[0]->about_me;
-                        $fav_movie  =   $user->userTranslations[0]->fav_movie;
+                            if( !empty($full_name) && $user->is_trans_full_name == 'n'){
+                                $message = $this->translateText($apiKey, $language_alloweds, $user, $detected_lang, 'full_name', $full_name );
+                                $user->is_trans_full_name = 'y';
+                            }
+                            if( !empty($about_me) && $user->is_trans_about_me == 'n'){
+                                $message = $this->translateText($apiKey, $language_alloweds, $user, $detected_lang, 'about_me', $about_me );
+                                $user->is_trans_about_me = 'y';
+                            }
+                            if( !empty($fav_movie) && $user->is_trans_fav_movie == 'n'){
+                                $message = $this->translateText($apiKey, $language_alloweds, $user, $detected_lang, 'fav_movie', $fav_movie );
+                                $user->is_trans_fav_movie = 'y';
+                            }
 
-                        if( !empty($full_name) && $user->is_trans_full_name == 'n'){
-                            $message = $this->translateText($apiKey, $language_alloweds, $user, $detected_lang, 'full_name', $full_name );
-                            $user->is_trans_full_name = 'y';
+                            $user->save();
                         }
-                        if( !empty($about_me) && $user->is_trans_about_me == 'n'){
-                            $message = $this->translateText($apiKey, $language_alloweds, $user, $detected_lang, 'about_me', $about_me );
-                            $user->is_trans_about_me = 'y';
-                        }
-                        if( !empty($fav_movie) && $user->is_trans_fav_movie == 'n'){
-                            $message = $this->translateText($apiKey, $language_alloweds, $user, $detected_lang, 'fav_movie', $fav_movie );
-                            $user->is_trans_fav_movie = 'y';
-                        }
-
-                        $user->save();
                     }
                 }
             }
-        }
+        });
 
         $this->info($message);
         return $message;

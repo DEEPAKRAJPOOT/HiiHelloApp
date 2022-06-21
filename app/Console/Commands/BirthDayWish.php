@@ -41,26 +41,29 @@ class BirthDayWish extends Command
     {
         $message = 'No birthday wishes found !!!';
 
-        $users = User::select('id','custom_id')->with('deviceToken')->whereBirthDate(\Carbon\Carbon::today()->format('Y-m-d'))->get();
-        if($users->isNotEmpty()){
-            foreach($users as $user){
-                $notification = [
-                    'custom_id'     =>  getUniqueString('notifications'),
-                    'key'           =>  'user_id',
-                    'value'         =>  $user->id,
-                    'user_id'       =>  $user->id,
-                    'title'         =>  trans('api.notify_message.profile_birthday.title'),
-                    'message'       =>  trans('api.notify_message.profile_birthday.message'),
-                    'image'         =>  '',
-                    'type'          =>  config('utility.notification.type.profile_birthday'),
-                ];
+        User::select('id','custom_id')->with('deviceToken')
+                ->whereBirthDate(\Carbon\Carbon::today()->format('Y-m-d'))
+                ->chunk(100, function($users) {
+            if($users->isNotEmpty()){
+                foreach($users as $user){
+                    $notification = [
+                        'custom_id'     =>  getUniqueString('notifications'),
+                        'key'           =>  'user_id',
+                        'value'         =>  $user->id,
+                        'user_id'       =>  $user->id,
+                        'title'         =>  trans('api.notify_message.profile_birthday.title'),
+                        'message'       =>  trans('api.notify_message.profile_birthday.message'),
+                        'image'         =>  '',
+                        'type'          =>  config('utility.notification.type.profile_birthday'),
+                    ];
 
-                // Notify
-                $notificationJob = new NotificationJob($notification, $user);
-                dispatch($notificationJob);
+                    // Notify
+                    $notificationJob = new NotificationJob($notification, $user);
+                    dispatch($notificationJob);
+                }
+                $message = 'birthday greetings notified successfully.';
             }
-            $message = 'birthday greetings notified successfully.';
-        }
+        });
 
         $this->info($message);
         return $message;
