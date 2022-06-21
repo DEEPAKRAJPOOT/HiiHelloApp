@@ -99,38 +99,79 @@ class Controller extends BaseController
 
     public function getLangStoreData($request){
         $actual_data = $data = $lang_codes = $columns = [];
+        $default_lang_code = config('utility.default_lang_code');
+        $language_alloweds = ['en', 'hi', 'ta', 'mr', 'bn', 'gu', 'kn', 'ml', 'or', 'pa', 'te'];
+
         foreach($request->all() as $key => $req_data){
             if($req_data){
                 $lang_code = $this->getLangCodeFromField($key);
-                if($lang_code){
-                    if(!in_array($lang_code,$lang_codes)){
-                        array_push($lang_codes, $lang_code);
+
+                if(!in_array($lang_code,$lang_codes)){
+                    array_push($lang_codes, $lang_code);
+                }
+                $column = $this->getColumnNameFromField($key);
+
+                if($column){
+                    if(!in_array($column,$columns)){
+                        array_push($columns, $column);
                     }
-                    $column = $this->getColumnNameFromField($key);
-                    if($column){
-                        if(!in_array($column,$columns)){
-                            array_push($columns, $column);
-                        }
-                        $data[$lang_code][$column] = $req_data; 
-                    }
+                    $data[$lang_code][$column] = $req_data; 
                 }
             }
         }
+
         if(count($data) > 0){
-            foreach($lang_codes as $lang_code){
+            foreach($language_alloweds as $language_allowed){
                 foreach($columns as $column){
-                    if(array_key_exists($lang_code,$data)){
-                        if(array_key_exists($column,$data[$lang_code])){
-                            $actual_data[$lang_code][$column] = $data[$lang_code][$column];
+                    if(array_key_exists($language_allowed,$data)){
+                        if(array_key_exists($column,$data[$language_allowed])){
+                            $actual_data[$language_allowed][$column] = $data[$language_allowed][$column];
                         }else{
-                            $actual_data[$lang_code][$column] = null;
+                            $actual_data[$language_allowed][$column] = NULL;
                         }
+                    }else{
+                        $actual_data[$language_allowed] = $data[$default_lang_code];
                     }
                 }
             }
         }
         return $actual_data;
     }
+
+    // public function getLangStoreData($request){
+    //     $actual_data = $data = $lang_codes = $columns = [];
+    //     foreach($request->all() as $key => $req_data){
+    //         if($req_data){
+    //             $lang_code = $this->getLangCodeFromField($key);
+    //             if($lang_code){
+    //                 if(!in_array($lang_code,$lang_codes)){
+    //                     array_push($lang_codes, $lang_code);
+    //                 }
+    //                 $column = $this->getColumnNameFromField($key);
+    //                 if($column){
+    //                     if(!in_array($column,$columns)){
+    //                         array_push($columns, $column);
+    //                     }
+    //                     $data[$lang_code][$column] = $req_data; 
+    //                 }
+    //             }
+    //         }
+    //     }
+    //     if(count($data) > 0){
+    //         foreach($lang_codes as $lang_code){
+    //             foreach($columns as $column){
+    //                 if(array_key_exists($lang_code,$data)){
+    //                     if(array_key_exists($column,$data[$lang_code])){
+    //                         $actual_data[$lang_code][$column] = $data[$lang_code][$column];
+    //                     }else{
+    //                         $actual_data[$lang_code][$column] = null;
+    //                     }
+    //                 }
+    //             }
+    //         }
+    //     }
+    //     return $actual_data;
+    // }
 
     public function DTFilters($request)
     {

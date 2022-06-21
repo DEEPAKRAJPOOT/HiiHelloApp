@@ -164,6 +164,22 @@ return [
             'title'     =>  "Hi Hello",
             'message'   =>  "Someone matched with your profile.",
         ],
+        'profile_verified'    =>  [
+            'title'     =>  "Hi Hello",
+            'message'   =>  "Your profile verification is completed succesfully.",
+        ],
+        'profile_not_verified'    =>  [
+            'title'     =>  "Hi Hello",
+            'message'   =>  "Please verify your profile. It’s easy and you’ll be likely to get more matches!",
+        ],
+        'profile_birthday'    =>  [
+            'title'     =>  "Hi Hello",
+            'message'   =>  "Hi Hello is wishing you a very happy birthday.",
+        ],
+        'subscription_expire'    =>  [
+            'title'     =>  "Hi Hello",
+            'message'   =>  "Your subscription will expire soon. Please subscribe to continue our best features.",
+        ],
     ],
 
     /* Custom Message */ 

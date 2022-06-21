@@ -13,7 +13,7 @@ class Location extends Model implements TranslatableContract
 
     public function getRouteKeyName(){ return 'custom_id'; }
 
-    protected $fillable = ['custom_id'];
+    protected $fillable = ['custom_id', 'is_trans_name'];
 
     protected $translatedAttributes = ['name'];
 

@@ -19,7 +19,7 @@ return [
         'gu',       //  Gujarati        =>  ગુજરાતી
         'kn',       //  Kannada         =>  ಕನ್ನಡ
         'ml',       //  Malayalam       =>  മലയാളം
-        'bho',      //  Bhojpuri        =>  भोजपुरी
+        'or',       //  Oriya           =>  ଓଡ଼ିଆ
         'pa',       //  Punjabi         =>  पंजाबी
         'te',       //  Telugu          =>  తెలుగు
         // 'es' => [

@@ -19,6 +19,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use App\Jobs\NotificationJob;
 
 class UsersController extends Controller
 {
@@ -304,6 +305,9 @@ class UsersController extends Controller
                 }
                 return response()->json($content);
             } else {
+                $verify_notify = false;
+                if($user->verify_status == 'under_review'){ $verify_notify = true;  }
+
                 $path = $user->profile_photo; $not_to_delete_product = array();
 
                 //request has remove_profie_photo then delete user image
@@ -485,6 +489,33 @@ class UsersController extends Controller
                 UserInterest::where('user_id',$user->id)->whereNotIn('custom_id',$not_to_delete_product)->delete();
 
                 $user->profile_percentage = $user->calculateProfilePercent();
+
+                if($verify_notify && $user->verify_status != 'under_review'){
+                    if($user->verify_status == 'verified'){
+                        $title = trans('api.notify_message.profile_verified.title');
+                        $message = trans('api.notify_message.profile_verified.message');
+                        $type = config('utility.notification.type.profile_verified');
+                    }else{
+                        $title = trans('api.notify_message.profile_not_verified.title');
+                        $message = trans('api.notify_message.profile_not_verified.message');
+                        $type = config('utility.notification.type.profile_not_verified');
+                    }
+
+                    $notification = [
+                        'custom_id'     =>  getUniqueString('notifications'),
+                        'key'           =>  'user_id',
+                        'value'         =>  $user->id,
+                        'user_id'       =>  $user->id,
+                        'title'         =>  $title,
+                        'message'       =>  $message,
+                        'image'         =>  '',
+                        'type'          =>  $type,
+                    ];
+                            
+                    // Notify
+                    $notificationJob = new NotificationJob($notification, $user);
+                    dispatch($notificationJob);
+                }
 
                 if( $user->save() ) {
                     DB::commit();
