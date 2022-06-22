@@ -3,6 +3,7 @@
 namespace App\Http\Resources\v1;
 
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\Auth;
 
 class MyProfile extends JsonResource
 {
@@ -28,6 +29,7 @@ class MyProfile extends JsonResource
             'language'          =>  new LanguageResource($this->language),
             'interests'         =>  UserInterestResource::collection($this->interests),
             'profile_photo'     =>  generateURL($this->profile_photo) ?? "",
+            'subscription'      =>  new SubscriptionResource($this->subscription),
             'my_things'         =>  [
                 'relationship_status'   =>  new ProfileDetailResource($this->relationshipStatus),
                 'i_am_here'             =>  new ProfileDetailResource($this->youAreHere),
@@ -67,11 +69,21 @@ class MyProfile extends JsonResource
 
     public function with($request)
     {
+        $is_subscribed = false;
+        $subscription_end_date = "";
+        if( !Auth::guest() ) {
+            if( Auth::user()->is_subscribed == 'y' && Auth::user()->subscription_end_date >= \Carbon\Carbon::today()->format('Y-m-d') ){
+                $is_subscribed = true;
+            }
+            $subscription_end_date = Auth::user()->subscription_end_date ?? "";
+        }
         return [
             'meta' => [ 
-                'api'               =>  'v.1.0',
-                'url'               =>  url()->current(),
-                'language'          =>  app()->getLocale(),
+                'api'                       =>  'v.1.0',
+                'url'                       =>  url()->current(),
+                'language'                  =>  app()->getLocale(),
+                'is_subscribed'             =>  $is_subscribed,
+                'subscription_end_date'     =>  $subscription_end_date,
             ],
         ];
     }
