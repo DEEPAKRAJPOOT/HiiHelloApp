@@ -165,7 +165,7 @@ class UserController extends Controller
     {
         try{
             $user = User::with([
-                    'userTranslation','userDetails',
+                    'userTranslation','userDetails','subscription.subscriptionPlan.subscriptionPlanTranslation',
                     'interests.interest.interestTranslation',
                     'interests.interest.parentInterest','interests.interest.masterInterest',
                     'location.locationTranslation','language',

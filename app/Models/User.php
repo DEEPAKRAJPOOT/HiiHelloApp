@@ -79,6 +79,7 @@ class User extends Authenticatable implements MustVerifyEmail, TranslatableContr
 
     public function userSettings(){ return $this->hasMany('App\Models\UserSetting','user_id','id'); }
     public function discoveryLocation(){ return $this->belongsTo('App\Models\Location','discover_location_id'); }
+    public function subscription() { return $this->hasOne('App\Models\Subscription')->latest(); }
 
     public function likes(){ return $this->hasMany('App\Models\Like','user_id','id'); }
     public function interests(){ return $this->hasMany('App\Models\UserInterest'); }
