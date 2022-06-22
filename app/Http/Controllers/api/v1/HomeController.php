@@ -30,7 +30,8 @@ class HomeController extends Controller
                 $disLikes   =   DisLike::whereDisLikerId($auth_id)->whereDate('updated_at',\Carbon\Carbon::today())
                                     ->whereNotNull('user_id')->distinct()->pluck('user_id')->toArray();
 
-                $users = User::select('id','custom_id','birth_date','profile_photo','gender','interest',
+                if( !empty($radius) && !empty($latitude) && !empty($longitude)){
+                    $users = User::select('id','custom_id','birth_date','profile_photo','gender','interest',
                         'location_id','language_id','verify_status','is_active'
                         ,DB::raw("3959 * 1.609344 * acos(cos(radians(" . $latitude . ")) 
                         * cos(radians(users.latitude)) 
@@ -38,15 +39,20 @@ class HomeController extends Controller
                         + sin(radians(" .$latitude. ")) 
                         * sin(radians(users.latitude))) AS distance"))
                         // ->having("distance", "<=", $radius)
-                        ->orderBy('distance')
-                        ->with(['interests.interest.interestTranslation','userTranslation','location.locationTranslation'])
-                        ->where(function ($query)  use ($auth_id, $auth_interest, $disLikes, $blocked) {
-                            $query->where('id','!=',$auth_id)->whereNotNull('profile_photo')->whereIsActive('y');
+                        ->orderBy('distance');
+                }else{
+                    $users = User::select('id','custom_id','birth_date','profile_photo','gender','interest',
+                    'location_id','language_id','verify_status','is_active');
+                }
 
-                            if($auth_interest != 'Both'){ $query->where('gender',$auth_interest); }     // Interested in Gender
-                            if(count($disLikes) > 0){ $query->whereNotIn('id',$disLikes); }             // Restirct DisLiked Profile
-                            if(count($blocked) > 0){ $query->whereNotIn('id',$blocked); }               // Restirct Blocked Profile
-                        });
+                $users = $users->with(['interests.interest.interestTranslation','userTranslation','location.locationTranslation'])
+                    ->where(function ($query)  use ($auth_id, $auth_interest, $disLikes, $blocked) {
+                        $query->where('id','!=',$auth_id)->whereNotNull('profile_photo')->whereIsActive('y');
+
+                        if($auth_interest != 'Both'){ $query->where('gender',$auth_interest); }     // Interested in Gender
+                        if(count($disLikes) > 0){ $query->whereNotIn('id',$disLikes); }             // Restirct DisLiked Profile
+                        if(count($blocked) > 0){ $query->whereNotIn('id',$blocked); }               // Restirct Blocked Profile
+                    });
 
                 // Discovery
                 $users = $users->where(function ($query)  use ($user, $languages) {
@@ -68,12 +74,14 @@ class HomeController extends Controller
                             'limit'     =>  $request->limit,
                             'offset'    =>  $request->offset,
                             'total'     =>  $count,
+                            'is_swipe_allow'    =>  $user->isSwipeAllow(),
                             'url'       =>  url()->current(),
                             'api'       =>  $this->getVersion(),
                             'language'  =>  app()->getLocale(),
                             'message'   =>  trans('api.list', ['entity' => __('Users')]),
                         ] ]);
                 }else{
+                    $this->response['meta']['is_swipe_allow'] = $user->isSwipeAllow();
                     $this->response['meta']['message']  =   trans('api.not_found',['entity' => __('Users')]); 
                     $this->status = Response::HTTP_NOT_FOUND;     
                 }
@@ -87,7 +95,7 @@ class HomeController extends Controller
                         break;
                 };
             } catch (\Exception $e) {
-                $this->storeErrorLog($e,'get_users_list');
+                $this->storeErrorLog($e,'get_home_feed');
             }
         }
         return $this->returnResponse();

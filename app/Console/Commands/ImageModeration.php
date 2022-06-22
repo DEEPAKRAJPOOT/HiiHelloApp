@@ -49,70 +49,74 @@ class ImageModeration extends Command
     {
         $message = "No Moderation Image Found.";
         try{
-            $users = User::select('id','custom_id','profile_photo','is_media_checked')->where('is_media_checked','n')->get();
+            User::select('id','custom_id','profile_photo','is_media_checked')
+                    ->where('is_media_checked','n')
+                    ->chunk(100, function($users) {
+                if($users->isNotEmpty()){
+                    foreach($users as $user){
+                        $profile_photo = generateURL($user->profile_photo);
 
-            if($users->isNotEmpty()){
-                foreach($users as $user){
-                    $profile_photo = generateURL($user->profile_photo);
+                        // Main Image
+                        if(!empty($profile_photo)){
+                            $safe_main_image = $this->checkImageModeration($profile_photo);
+                                    
+                            // IF NOT SAFE
+                            if($safe_main_image == false){
+                                if( Storage::exists($user->profile_photo) ) { Storage::delete($user->profile_photo); }
+                                $user->profile_photo = NULL;
+                                $user->is_media_checked = 'y';
+                                $user->save();
 
-                    // Main Image
-                    if(!empty($profile_photo)){
-                        $safe_main_image = $this->checkImageModeration($profile_photo);
-                            
-                        // IF NOT SAFE
-                        if($safe_main_image == false){
-                            if( Storage::exists($user->profile_photo) ) { Storage::delete($user->profile_photo); }
-                            $user->profile_photo = NULL;
+                                // Notify User
+                                $this->sendImageAlertNotification($user);
+                            }
                             $user->is_media_checked = 'y';
                             $user->save();
 
-                            // Notify User
-                            $this->sendImageAlertNotification($user);
+                            $message = 'User Id : '.$user->id.' main image checked successfully !!!';
                         }
-                        $user->is_media_checked = 'y';
-                        $user->save();
-
-                        $message = 'User Id : '.$user->id.' main image checked successfully !!!';
                     }
                 }
-            }
+            });
 
-            $media_images = UserDetail::select('id','user_id','image','is_verified')
-                                        ->with('user:id,custom_id,profile_photo')
-                                        ->whereNotNull('image')->where('is_verified','n')->get();
-            if($media_images->isNotEmpty()){
-                $need_to_notify = false;
+            UserDetail::select('id','user_id','image','is_verified')
+                    ->with('user:id,custom_id,profile_photo')
+                    ->whereNotNull('image')
+                    ->where('is_verified','n')
+                    ->chunk(100, function($media_images) {
+                if($media_images->isNotEmpty()){
+                    $need_to_notify = false;
 
-                foreach($media_images as $media_image){ 
-                    if(!empty($media_image->image)){
-                        $media_photo = generateURL($media_image->image);
-                        $user_id = $media_image->user ? $media_image->user->id : "";
+                    foreach($media_images as $media_image){ 
+                        if(!empty($media_image->image)){
+                            $media_photo = generateURL($media_image->image);
+                            $user_id = $media_image->user ? $media_image->user->id : "";
 
-                        if(!empty($media_photo)){
-                            $safe_media_image = $this->checkImageModeration($media_photo);
-                
-                            if($safe_media_image == true){
-                                $media_image->is_verified = 'y';
-                                $media_image->save();
-                            }else{
-                                // IF NOT SAFE
-                                if( Storage::exists($media_image->image) ) { Storage::delete($media_image->image); }
-                                $media_image->delete();
+                            if(!empty($media_photo)){
+                                $safe_media_image = $this->checkImageModeration($media_photo);
+                    
+                                if($safe_media_image == true){
+                                    $media_image->is_verified = 'y';
+                                    $media_image->save();
+                                }else{
+                                    // IF NOT SAFE
+                                    if( Storage::exists($media_image->image) ) { Storage::delete($media_image->image); }
+                                    $media_image->delete();
 
-                                $need_to_notify = true;
+                                    $need_to_notify = true;
+                                }
+
+                                $message = 'User Id : '.$user_id.' media images checked successfully !!!';
                             }
-
-                            $message = 'User Id : '.$user_id.' media images checked successfully !!!';
                         }
                     }
+                    
+                    // Notify User
+                    if($need_to_notify && $media_image->user){
+                        $this->sendImageAlertNotification($media_image->user);
+                    }
                 }
-                
-                // Notify User
-                if($need_to_notify && $media_image->user){
-                    $this->sendImageAlertNotification($media_image->user);
-                }
-            }
-
+            });
         } catch (\Exception $e) {
             // Add error log
             $file = 'image_moderation';

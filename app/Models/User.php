@@ -28,7 +28,7 @@ class User extends Authenticatable implements MustVerifyEmail, TranslatableContr
     protected $fillable = [
         'custom_id', 'account_id', 'email', 'country_code', 'contact_no', 'birth_date', 'gender',
         'interest', 'country_id', 'location_id', 'profile_percentage', 'language_id', 'profile_photo', 'voice', 'voice_answer', 'password',
-        'is_social_user', 'is_trans_full_name', 'is_trans_about_me', 'is_trans_fav_movie', 
+        'swipe_count', 'is_social_user', 'is_trans_full_name', 'is_trans_about_me', 'is_trans_fav_movie', 
         'is_media_checked', 'is_subscribed', 'subscription_end_date',
         'facebook_id', 'google_id', 'apple_id',
         'personality_id', 'university_id', 'profession_id',
@@ -179,6 +179,20 @@ class User extends Authenticatable implements MustVerifyEmail, TranslatableContr
         $status = "pending";
         if(!empty($this->contact_verified_at)){ $status = "verified"; }
         return $status;
+    }
+
+    public function addSwipeCount(){
+        $count = $this->swipe_count + 1;
+        $this->swipe_count = $count;
+        $this->save();
+        return $count;
+    }
+
+    public function isSwipeAllow(){
+        $daily_swipe_limit = config('utility.profile.swipe.daily_limit');
+        $is_swipe_allow = true;
+        if($this->swipe_count >= $daily_swipe_limit){ $is_swipe_allow = false; }
+        return $is_swipe_allow;
     }
 
 

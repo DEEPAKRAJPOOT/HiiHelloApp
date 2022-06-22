@@ -47,102 +47,105 @@ class GoogleTransForAdmin extends Command
         $apiKey             =   config('utility.google.translate.api_key');
         $message            =   'No admin details found to translate !!!';
 
-        $personalities = Personality::with('personalityTranslations')->get();
-        $interests = Interest::with('interestTranslations')->get();
-        $locations = Location::with('locationTranslations')->get();
-        $profile_details = ProfileDetail::with('profileDetailTranslations')->get();
+        Personality::with('personalityTranslations')->chunk(100, function($personalities) use ($default_lang_code, $language_alloweds, $apiKey, $message) {
+            if($personalities->isNotEmpty()){
+                foreach($personalities as $personality){
+                    if($personality->personalityTranslations->isNotEmpty()){
 
-        if($personalities->isNotEmpty()){
-            foreach($personalities as $personality){
-                if($personality->personalityTranslations->isNotEmpty()){
+                        if($personality->personalityTranslations[0]){
+                            $title          =   $personality->personalityTranslations[0]->title;
+                            $description    =   $personality->personalityTranslations[0]->description;
+                            $detected_lang  =   $personality->personalityTranslations[0] ? $personality->personalityTranslations[0]->locale : $default_lang_code;
 
-                    if($personality->personalityTranslations[0]){
-                        $title          =   $personality->personalityTranslations[0]->title;
-                        $description    =   $personality->personalityTranslations[0]->description;
-                        $detected_lang  =   $personality->personalityTranslations[0] ? $personality->personalityTranslations[0]->locale : $default_lang_code;
-
-                        if( !empty($title) && $personality->is_trans_title == 'n'){
-                            $success = $this->translateText($apiKey, $language_alloweds, $personality, $detected_lang, 'title', $title );
-                            if($success){ 
-                                $personality->is_trans_title = 'y'; 
-                                $message = 'Personality details translatated successfully !!!';
+                            if( !empty($title) && $personality->is_trans_title == 'n'){
+                                $success = $this->translateText($apiKey, $language_alloweds, $personality, $detected_lang, 'title', $title );
+                                if($success){ 
+                                    $personality->is_trans_title = 'y'; 
+                                    $message = 'Personality details translatated successfully !!!';
+                                }
                             }
-                        }
-                        if( !empty($description) && $personality->is_trans_description == 'n'){
-                            $success = $this->translateText($apiKey, $language_alloweds, $personality, $detected_lang, 'description', $description );
-                            if($success){
-                                $personality->is_trans_description = 'y'; 
-                                $message = 'Personality details translatated successfully !!!';
+                            if( !empty($description) && $personality->is_trans_description == 'n'){
+                                $success = $this->translateText($apiKey, $language_alloweds, $personality, $detected_lang, 'description', $description );
+                                if($success){
+                                    $personality->is_trans_description = 'y'; 
+                                    $message = 'Personality details translatated successfully !!!';
+                                }
                             }
+                            $personality->save();
                         }
-                        $personality->save();
                     }
                 }
             }
-        }
+        });
 
-        if($interests->isNotEmpty()){
-            foreach($interests as $interest){
-                if($interest->interestTranslations->isNotEmpty()){
+        Interest::with('interestTranslations')->chunk(100, function($interests) use ($default_lang_code, $language_alloweds, $apiKey, $message) {
+            if($interests->isNotEmpty()){
+                foreach($interests as $interest){
+                    if($interest->interestTranslations->isNotEmpty()){
 
-                    if($interest->interestTranslations[0]){
-                        $title          =   $interest->interestTranslations[0]->title;
-                        $detected_lang  =   $interest->interestTranslations[0] ? $interest->interestTranslations[0]->locale : $default_lang_code;
+                        if($interest->interestTranslations[0]){
+                            $title          =   $interest->interestTranslations[0]->title;
+                            $detected_lang  =   $interest->interestTranslations[0] ? $interest->interestTranslations[0]->locale : $default_lang_code;
 
-                        if( !empty($title) && $interest->is_trans_title == 'n'){
-                            $success = $this->translateText($apiKey, $language_alloweds, $interest, $detected_lang, 'title', $title );
-                            if($success){ 
-                                $interest->is_trans_title = 'y'; 
-                                $message = 'Interest details translatated successfully !!!';
+                            if( !empty($title) && $interest->is_trans_title == 'n'){
+                                $success = $this->translateText($apiKey, $language_alloweds, $interest, $detected_lang, 'title', $title );
+                                if($success){ 
+                                    $interest->is_trans_title = 'y'; 
+                                    $message = 'Interest details translatated successfully !!!';
+                                }
                             }
+                            $interest->save();
                         }
-                        $interest->save();
                     }
                 }
             }
-        }
+        });
 
-        if($locations->isNotEmpty()){
-            foreach($locations as $location){
-                if($location->locationTranslations->isNotEmpty()){
+        Location::with('locationTranslations')->chunk(100, function($locations) use ($default_lang_code, $language_alloweds, $apiKey, $message) {
+            if($locations->isNotEmpty()){
+                foreach($locations as $location){
+                    if($location->locationTranslations->isNotEmpty()){
 
-                    if($location->locationTranslations[0]){
-                        $name           =   $location->locationTranslations[0]->name;
-                        $detected_lang  =   $location->locationTranslations[0] ? $location->locationTranslations[0]->locale : $default_lang_code;
+                        if($location->locationTranslations[0]){
+                            $name           =   $location->locationTranslations[0]->name;
+                            $detected_lang  =   $location->locationTranslations[0] ? $location->locationTranslations[0]->locale : $default_lang_code;
 
-                        if( !empty($name) && $location->is_trans_name == 'n'){
-                            $success = $this->translateText($apiKey, $language_alloweds, $location, $detected_lang, 'name', $name );
-                            if($success){ 
-                                $location->is_trans_name = 'y'; 
-                                $message = 'Location details translatated successfully !!!';
+                            if( !empty($name) && $location->is_trans_name == 'n'){
+                                $success = $this->translateText($apiKey, $language_alloweds, $location, $detected_lang, 'name', $name );
+                                if($success){ 
+                                    $location->is_trans_name = 'y'; 
+                                    $message = 'Location details translatated successfully !!!';
+                                }
                             }
+                            $location->save();
                         }
-                        $location->save();
                     }
                 }
             }
-        }
+        });
 
-        if($profile_details->isNotEmpty()){
-            foreach($profile_details as $profile_detail){
-                if($profile_detail->profileDetailTranslations->isNotEmpty()){
+        ProfileDetail::with('profileDetailTranslations')->offset('1000')->chunk(100, function($profile_details) use ($default_lang_code, $language_alloweds, $apiKey, $message) {
+            if($profile_details->isNotEmpty()){
+                foreach($profile_details as $profile_detail){
+                    if($profile_detail->profileDetailTranslations->isNotEmpty()){
 
-                    if($profile_detail->profileDetailTranslations[0]){
-                        $value          =   $profile_detail->profileDetailTranslations[0]->value;
-                        $detected_lang  =   $profile_detail->profileDetailTranslations[0] ? $profile_detail->profileDetailTranslations[0]->locale : $default_lang_code;
+                        if($profile_detail->profileDetailTranslations[0]){
+                            $value          =   $profile_detail->profileDetailTranslations[0]->value;
+                            $detected_lang  =   $profile_detail->profileDetailTranslations[0] ? $profile_detail->profileDetailTranslations[0]->locale : $default_lang_code;
 
-                        if( !empty($value) && $profile_detail->is_trans_value == 'n'){
-                            $success = $this->translateText($apiKey, $language_alloweds, $profile_detail, $detected_lang, 'value', $value );
-                            if($success){ 
-                                $profile_detail->is_trans_value = 'y'; 
-                                $message = 'Profile Section details translatated successfully !!!';
+                            if( !empty($value) && $profile_detail->is_trans_value == 'n'){
+                                $success = $this->translateText($apiKey, $language_alloweds, $profile_detail, $detected_lang, 'value', $value );
+                                if($success){ 
+                                    $profile_detail->is_trans_value = 'y'; 
+                                    $message = 'Profile Section details translatated successfully !!!';
+                                }
                             }
+                            $profile_detail->save();
                         }
-                        $profile_detail->save();
                     }
                 }
             }
-        }
+        });
 
         $this->info($message);
         return $message;

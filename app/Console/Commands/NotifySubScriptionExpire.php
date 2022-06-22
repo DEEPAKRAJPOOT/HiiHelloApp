@@ -42,29 +42,30 @@ class NotifySubScriptionExpire extends Command
         $message = 'No subscription expired details found !!!';
         $days = config('utility.notification.other.sub_expire_notify_days');
 
-        $users = User::select('id','custom_id','subscription_end_date')->with('deviceToken')
-                        ->whereNotNull('subscription_end_date')
-                        ->where('subscription_end_date',\Carbon\Carbon::today()->addDays($days)->format('Y-m-d'))
-                        ->get();
-        if($users->isNotEmpty()){
-            foreach($users as $user){
-                $notification = [
-                    'custom_id'     =>  getUniqueString('notifications'),
-                    'key'           =>  'user_id',
-                    'value'         =>  $user->id,
-                    'user_id'       =>  $user->id,
-                    'title'         =>  trans('api.notify_message.subscription_expire.title'),
-                    'message'       =>  trans('api.notify_message.subscription_expire.message'),
-                    'image'         =>  '',
-                    'type'          =>  config('utility.notification.type.subscription_expire'),
-                ];
+        User::select('id','custom_id','subscription_end_date')->with('deviceToken')
+                ->whereNotNull('subscription_end_date')
+                ->where('subscription_end_date',\Carbon\Carbon::today()->addDays($days)->format('Y-m-d'))     
+                ->chunk(100, function($users) use ($message) {
+            if($users->isNotEmpty()){
+                foreach($users as $user){
+                    $notification = [
+                        'custom_id'     =>  getUniqueString('notifications'),
+                        'key'           =>  'user_id',
+                        'value'         =>  $user->id,
+                        'user_id'       =>  $user->id,
+                        'title'         =>  trans('api.notify_message.subscription_expire.title'),
+                        'message'       =>  trans('api.notify_message.subscription_expire.message'),
+                        'image'         =>  '',
+                        'type'          =>  config('utility.notification.type.subscription_expire'),
+                    ];
 
-                // Notify
-                $notificationJob = new NotificationJob($notification, $user);
-                dispatch($notificationJob);
+                    // Notify
+                    $notificationJob = new NotificationJob($notification, $user);
+                    dispatch($notificationJob);
+                }
+                $message = 'Subscription expired notified successfully.';
             }
-            $message = 'Subscription expired notified successfully.';
-        }
+        });
 
         $this->info($message);
         return $message;
