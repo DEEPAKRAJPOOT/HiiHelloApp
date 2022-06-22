@@ -8,6 +8,7 @@ use App\Console\Commands\ImageModeration;
 use App\Console\Commands\GoogleTranslation;
 use App\Console\Commands\BirthDayWish;
 use App\Console\Commands\NotifySubScriptionExpire;
+use App\Console\Commands\RenewSwipeLimit;
 
 class Kernel extends ConsoleKernel
 {
@@ -21,6 +22,7 @@ class Kernel extends ConsoleKernel
         GoogleTranslation::class,
         BirthDayWish::class,
         NotifySubScriptionExpire::class,
+        RenewSwipeLimit::class,
     ];
 
     /**
@@ -56,6 +58,12 @@ class Kernel extends ConsoleKernel
             $scheculeCommand = new NotifySubScriptionExpire;
             $scheculeCommand->handle();
         })->dailyAt('08:00');
+
+        // Users Daily Swipe Limit Renew
+        $schedule->call(function () {
+            $scheculeCommand = new RenewSwipeLimit;
+            $scheculeCommand->handle();
+        })->dailyAt();
 
         // $schedule->command('inspire')->hourly();
     }

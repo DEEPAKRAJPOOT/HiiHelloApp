@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\ { Storage };
 use App\Http\Requests\Api\User\ { UploadVerifyDetailRequest, EmailVerifyRequest, VerifyContactRequest };
 use App\Http\Resources\v1\ { VerificationResource };
 use App\Models\ { User };
+use App\Jobs\ { NotificationJob };
 
 class VerificationController extends Controller
 {
@@ -113,8 +114,8 @@ class VerificationController extends Controller
     {
         $rules = EmailVerifyRequest::rules();
         if( $this->apiValidator($request->all(), $rules) ) {
+            $user = $request->user();
             try{
-                $user = $request->user();
                 if(!empty($user->email) && $user->email != $request->email){
                     $this->response['meta']['message']  =   trans('api.invalid', ['entity' => __("email")]);
                     $this->status = Response::HTTP_NOT_FOUND; 
@@ -144,8 +145,22 @@ class VerificationController extends Controller
                         'language'  =>  app()->getLocale(),
                         'message'   =>  trans('api.link_sent', ['entity' => __('Verification email')]),
                 ] ]);
-
             } catch (\Exception $e) {
+                $notification = [
+                    'custom_id'     =>  getUniqueString('notifications'),
+                    'key'           =>  'user_id',
+                    'value'         =>  $user->id,
+                    'user_id'       =>  $user->id,
+                    'title'         =>  trans('api.notify_message.verify_fail_email.title'),
+                    'message'       =>  trans('api.notify_message.verify_fail_email.message'),
+                    'image'         =>  '',
+                    'type'          =>  config('utility.notification.type.verify_fail_email'),
+                ];
+                        
+                // Notify
+                $notificationJob = new NotificationJob($notification, $user);
+                dispatch($notificationJob);
+
                 $this->response['meta']['message'] = trans('api.link_not_send');
                 $this->storeErrorLog($e,'verify_email');
             }

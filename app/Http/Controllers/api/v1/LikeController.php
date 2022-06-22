@@ -31,6 +31,7 @@ class LikeController extends Controller
                     // Manage Swipes
                     $auth_user->addSwipeCount();
                     $is_swipe_allow = $auth_user->isSwipeAllow();
+                    if( $is_swipe_allow == false){ $auth_user->notifySwipeAlert(); } 
 
                     $like = Like::firstOrCreate([
                         'user_id'       =>  $user->id,
@@ -44,13 +45,12 @@ class LikeController extends Controller
                         if($matched){ $is_matched = true; }
 
                         if($like->wasRecentlyCreated){
-                            $userName = $auth_user && $auth_user->full_name ? $auth_user->full_name : "Someone";
                             if($matched){
-                                $title = trans('api.notify_message.new_match.title',['entity' => $userName]);
+                                $title = trans('api.notify_message.new_match.title');
                                 $message = trans('api.notify_message.new_match.message');
                                 $type = config('utility.notification.type.new_match');
                             }else{
-                                $title = trans('api.notify_message.add_like.title',['entity' => $userName]);
+                                $title = trans('api.notify_message.add_like.title');
                                 $message = trans('api.notify_message.add_like.message');
                                 $type = config('utility.notification.type.add_like');
                             }
@@ -125,6 +125,7 @@ class LikeController extends Controller
                     // Manage Swipes
                     $auth_user->addSwipeCount();
                     $is_swipe_allow = $auth_user->isSwipeAllow();
+                    if( $is_swipe_allow == false){ $auth_user->notifySwipeAlert(); } 
 
                     $disLike = DisLike::updateOrCreate([
                         'user_id'       =>  $user->id,

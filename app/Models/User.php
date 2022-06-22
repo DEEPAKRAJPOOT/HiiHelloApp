@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\ { DB, Auth };
 use Laravel\Sanctum\HasApiTokens;
 use App\Models\Like;
 use Carbon\Carbon;
+use App\Jobs\NotificationJob;
 
 class User extends Authenticatable implements MustVerifyEmail, TranslatableContract
 {
@@ -196,6 +197,22 @@ class User extends Authenticatable implements MustVerifyEmail, TranslatableContr
         return $is_swipe_allow;
     }
 
+    public function notifySwipeAlert(){
+        $notification = [
+            'custom_id'     =>  getUniqueString('notifications'),
+            'key'           =>  'user_id',
+            'value'         =>  $this->id,
+            'user_id'       =>  $this->id,
+            'title'         =>  trans('api.notify_message.swipe_alert.title'),
+            'message'       =>  trans('api.notify_message.swipe_alert.message'),
+            'image'         =>  '',
+            'type'          =>  config('utility.notification.type.swipe_alert'),
+        ];
+                
+        // Notify
+        $notificationJob = new NotificationJob($notification, $this);
+        dispatch($notificationJob);
+    }
 
     /**
      * Calculation Profile Completion In Percentage
