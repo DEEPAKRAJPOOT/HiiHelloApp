@@ -161,7 +161,7 @@ class PaymentController extends Controller
                     DB::commit();
 
                     // Notify
-                    $subscription->notifyubScriptionPurchase('success');
+                    $subscription->notifySubScriptionPurchase('success');
 
                     // Add Payment success log
                     $transaction_data = json_decode($transaction, true);
@@ -192,7 +192,7 @@ class PaymentController extends Controller
                     $subscription->save();
 
                     // Notify
-                    $subscription->notifyubScriptionPurchase('fail');
+                    $subscription->notifySubScriptionPurchase('fail');
                 }
                 if($transaction){
                     $transaction->update(['status' => 'fail']);

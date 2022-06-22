@@ -16,7 +16,7 @@ class Subscription extends Model
     public function subscriptionPlan(){ return $this->belongsTo('App\Models\SubscriptionPlan','plan_id','id'); }
     public function user(){ return $this->belongsTo('App\Models\User'); }
 
-    public function notifyubScriptionPurchase($status){
+    public function notifySubScriptionPurchase($status){
         if($this->user){
             if($status == 'success'){
                 $title      =   trans('api.notify_message.subscription_success.title');
