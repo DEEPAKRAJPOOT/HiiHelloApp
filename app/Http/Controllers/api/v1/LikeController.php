@@ -23,21 +23,28 @@ class LikeController extends Controller
         $rules = AddLikeRequest::rules();
         if( $this->apiValidator($request->all(), $rules) ) {
             try{
-                $user = User::whereCustomId($request->user_id)->whereIsActive('y')->firstOrFail();
-                $block = BlockUser::whereBlockBy($user->id)->whereBlockedTo(Auth::id())->first();
-                $userName = $request->user() && $request->user()->full_name ? $request->user()->full_name : "Someone";
-
+                $auth_user = $request->user(); $is_matched = false; 
+                $user = User::whereCustomId($request->user_id)->where('id','!=',$auth_user->id)->whereIsActive('y')->firstOrFail();
+                $block = BlockUser::whereBlockBy($user->id)->whereBlockedTo($auth_user->id)->first();
+                
                 if(!$block){
+                    // Manage Swipes
+                    $auth_user->addSwipeCount();
+                    $is_swipe_allow = $auth_user->isSwipeAllow();
+
                     $like = Like::firstOrCreate([
                         'user_id'       =>  $user->id,
-                        'liker_id'      =>  Auth::id(),
+                        'liker_id'      =>  $auth_user->id,
                     ],[
                         'custom_id'     =>  getUniqueString('likes'),
                     ]);
 
                     if($like->save()){
+                        $matched = Like::select('id')->whereUserId($auth_user->id)->whereLikerId($user->id)->first();
+                        if($matched){ $is_matched = true; }
+
                         if($like->wasRecentlyCreated){
-                            $matched = Like::select('id')->whereUserId(Auth::id())->whereLikerId($user->id)->first();
+                            $userName = $auth_user && $auth_user->full_name ? $auth_user->full_name : "Someone";
                             if($matched){
                                 $title = trans('api.notify_message.new_match.title',['entity' => $userName]);
                                 $message = trans('api.notify_message.new_match.message');
@@ -57,14 +64,17 @@ class LikeController extends Controller
                                 'image'         =>  '',
                                 'type'          =>  $type,
                             ];
-                            
+                                
                             // Notify
                             $notificationJob = new NotificationJob($notification, $user);
                             dispatch($notificationJob);
                         }
 
                         $this->status = Response::HTTP_OK;
-                        return (['data'  =>  NULL,
+                        return (['data'  =>  [
+                                    'is_matched'        =>  $is_matched,
+                                    'is_swipe_allow'    =>  $is_swipe_allow,
+                                ],
                                 'meta' => [
                                     'url'       =>  url()->current(),
                                     'api'       =>  $this->getVersion(),
@@ -107,10 +117,15 @@ class LikeController extends Controller
         $rules = AddDislikeRequest::rules();
         if( $this->apiValidator($request->all(), $rules) ) {
             try{
+                $auth_user = $request->user();
                 $user = User::select('id')->whereCustomId($request->user_id)->whereIsActive('y')->firstOrFail();
                 $block = BlockUser::whereBlockBy($user->id)->whereBlockedTo(Auth::id())->first();
                 
                 if(!$block){
+                    // Manage Swipes
+                    $auth_user->addSwipeCount();
+                    $is_swipe_allow = $auth_user->isSwipeAllow();
+
                     $disLike = DisLike::updateOrCreate([
                         'user_id'       =>  $user->id,
                         'dis_liker_id'  =>  Auth::id(),
@@ -120,7 +135,7 @@ class LikeController extends Controller
 
                     if($disLike->save()){
                         $this->status = Response::HTTP_OK;
-                        return (['data'  =>  NULL,
+                        return (['data'  => [ 'is_swipe_allow'    =>  $is_swipe_allow ],
                                 'meta' => [
                                     'url'       =>  url()->current(),
                                     'api'       =>  $this->getVersion(),
