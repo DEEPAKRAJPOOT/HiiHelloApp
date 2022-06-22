@@ -159,6 +159,10 @@ class PaymentController extends Controller
                     $user->save();
 
                     DB::commit();
+
+                    // Notify
+                    $subscription->notifyubScriptionPurchase('success');
+
                     // Add Payment success log
                     $transaction_data = json_decode($transaction, true);
                     $file = 'payment_' . $user->id;
@@ -186,11 +190,15 @@ class PaymentController extends Controller
                 if($subscription){
                     $subscription->update(['payment_date' => NULL, 'status' => 'unpaid']);
                     $subscription->save();
+
+                    // Notify
+                    $subscription->notifyubScriptionPurchase('fail');
                 }
                 if($transaction){
                     $transaction->update(['status' => 'fail']);
                     $transaction->save();
                 }
+
                 $file = 'payment_' . $user->id;
                 $this->storeErrorLog($e,$file,$e->getMessage());
             }

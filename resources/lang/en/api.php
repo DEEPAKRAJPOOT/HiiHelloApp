@@ -154,31 +154,51 @@ return [
     'notify_message'    =>  [
         'image_moderation'    =>  [
             'title'     =>  "Hi Hello",
-            'message'   =>  "You image is removed from the app due to restricted content. Please upload images as per our guidlines.",
+            'message'   =>  "Your photo is removed from Hi Hello profile as it does not adhere to community guidelines",
         ],
         'add_like'    =>  [
             'title'     =>  "Hi Hello",
-            'message'   =>  "Someone liked your profile.",
+            'message'   =>  "Someone liked you in Hi Hello",
         ],
         'new_match'    =>  [
             'title'     =>  "Hi Hello",
-            'message'   =>  "Someone matched with your profile.",
+            'message'   =>  "Match is wating for you in Hi Hello",
         ],
         'profile_verified'    =>  [
             'title'     =>  "Hi Hello",
-            'message'   =>  "Your profile verification is completed succesfully.",
+            'message'   =>  "Your profile verification is complete",
         ],
         'profile_not_verified'    =>  [
             'title'     =>  "Hi Hello",
-            'message'   =>  "Please verify your profile. It’s easy and you’ll be likely to get more matches!",
-        ],
-        'profile_birthday'    =>  [
-            'title'     =>  "Hi Hello",
-            'message'   =>  "Hi Hello is wishing you a very happy birthday.",
+            'message'   =>  "Verifiy your profile to enjoy Hi Hello services",
         ],
         'subscription_expire'    =>  [
             'title'     =>  "Hi Hello",
-            'message'   =>  "Your subscription will expire soon. Please subscribe to continue our best features.",
+            'message'   =>  "Your Hi Hello Membership is expiring soon. Renew now.",
+        ],
+        'swipe_alert'    =>  [
+            'title'     =>  "Hi Hello",
+            'message'   =>  "Your daily swipe limit is over. Upgrade to continue.",
+        ],
+        'verify_fail_email'    =>  [
+            'title'     =>  "Hi Hello",
+            'message'   =>  "Your email verification is not completed. Retry again.",
+        ],
+        'verify_fail_photo'    =>  [
+            'title'     =>  "Hi Hello",
+            'message'   =>  "Your photo verification has failed. Retry again.",
+        ],
+        'verify_fail_video'    =>  [
+            'title'     =>  "Hi Hello",
+            'message'   =>  "Your video verification has failed. Retry again.",
+        ],
+        'subscription_success'    =>  [
+            'title'     =>  "Hi Hello",
+            'message'   =>  "You have successfully subscribed to Hi Hello membership",
+        ],
+        'subscription_fail'    =>  [
+            'title'     =>  "Hi Hello",
+            'message'   =>  "Your subscription renewal has failed. Please retry.",
         ],
     ],
 

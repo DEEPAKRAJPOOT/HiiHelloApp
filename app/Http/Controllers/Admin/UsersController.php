@@ -305,8 +305,10 @@ class UsersController extends Controller
                 }
                 return response()->json($content);
             } else {
-                $verify_notify = false;
+                $verify_notify = $verify_photo_notify = $verify_video_notify = false; 
                 if($user->verify_status == 'under_review'){ $verify_notify = true;  }
+                if($user->verify_photo_status != 'unverified'){ $verify_photo_notify = true;  }
+                if($user->verify_video_status != 'unverified'){ $verify_video_notify = true;  }
 
                 $path = $user->profile_photo; $not_to_delete_product = array();
 
@@ -490,34 +492,71 @@ class UsersController extends Controller
 
                 $user->profile_percentage = $user->calculateProfilePercent();
 
-                if($verify_notify && $user->verify_status != 'under_review'){
-                    if($user->verify_status == 'verified'){
-                        $title = trans('api.notify_message.profile_verified.title');
-                        $message = trans('api.notify_message.profile_verified.message');
-                        $type = config('utility.notification.type.profile_verified');
-                    }else{
-                        $title = trans('api.notify_message.profile_not_verified.title');
-                        $message = trans('api.notify_message.profile_not_verified.message');
-                        $type = config('utility.notification.type.profile_not_verified');
+                if( $user->save() ) {
+                    // Notify Profile Verification
+                    if($verify_notify && $user->verify_status != 'under_review'){
+                        if($user->verify_status == 'verified'){
+                            $title = trans('api.notify_message.profile_verified.title');
+                            $message = trans('api.notify_message.profile_verified.message');
+                            $type = config('utility.notification.type.profile_verified');
+                        }else{
+                            $title = trans('api.notify_message.profile_not_verified.title');
+                            $message = trans('api.notify_message.profile_not_verified.message');
+                            $type = config('utility.notification.type.profile_not_verified');
+                        }
+
+                        $notification = [
+                            'custom_id'     =>  getUniqueString('notifications'),
+                            'key'           =>  'user_id',
+                            'value'         =>  $user->id,
+                            'user_id'       =>  $user->id,
+                            'title'         =>  $title,
+                            'message'       =>  $message,
+                            'image'         =>  '',
+                            'type'          =>  $type,
+                        ];
+                                
+                        // Notify
+                        $notificationJob = new NotificationJob($notification, $user);
+                        dispatch($notificationJob);
                     }
 
-                    $notification = [
-                        'custom_id'     =>  getUniqueString('notifications'),
-                        'key'           =>  'user_id',
-                        'value'         =>  $user->id,
-                        'user_id'       =>  $user->id,
-                        'title'         =>  $title,
-                        'message'       =>  $message,
-                        'image'         =>  '',
-                        'type'          =>  $type,
-                    ];
-                            
-                    // Notify
-                    $notificationJob = new NotificationJob($notification, $user);
-                    dispatch($notificationJob);
-                }
+                    // Notify Photo
+                    if($verify_photo_notify && $user->verify_photo_status == 'unverified'){
+                        $notification = [
+                            'custom_id'     =>  getUniqueString('notifications'),
+                            'key'           =>  'user_id',
+                            'value'         =>  $user->id,
+                            'user_id'       =>  $user->id,
+                            'title'         =>  trans('api.notify_message.verify_fail_photo.title'),
+                            'message'       =>  trans('api.notify_message.verify_fail_photo.message'),
+                            'image'         =>  '',
+                            'type'          =>  config('utility.notification.type.verify_fail_photo'),
+                        ];
+                                
+                        // Notify
+                        $notificationJob = new NotificationJob($notification, $user);
+                        dispatch($notificationJob);
+                    }
 
-                if( $user->save() ) {
+                    // Notify Video
+                    if($verify_video_notify && $user->verify_video_status == 'unverified'){
+                        $notification = [
+                            'custom_id'     =>  getUniqueString('notifications'),
+                            'key'           =>  'user_id',
+                            'value'         =>  $user->id,
+                            'user_id'       =>  $user->id,
+                            'title'         =>  trans('api.notify_message.verify_fail_video.title'),
+                            'message'       =>  trans('api.notify_message.verify_fail_video.message'),
+                            'image'         =>  '',
+                            'type'          =>  config('utility.notification.type.verify_fail_video'),
+                        ];
+                                
+                        // Notify
+                        $notificationJob = new NotificationJob($notification, $user);
+                        dispatch($notificationJob);
+                    }
+
                     DB::commit();
                     flash('User details updated successfully!')->success();
                 } else {

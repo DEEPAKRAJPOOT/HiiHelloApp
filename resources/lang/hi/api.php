@@ -151,6 +151,57 @@ return [
         'not_found'     =>  'चैट सत्र नहीं मिला',
     ],
 
+    'notify_message'    =>  [
+        'image_moderation'    =>  [
+            'title'     =>  "Hi Hello",
+            'message'   =>  "Your photo is removed from Hi Hello profile as it does not adhere to community guidelines",
+        ],
+        'add_like'    =>  [
+            'title'     =>  "Hi Hello",
+            'message'   =>  "Someone liked you in Hi Hello",
+        ],
+        'new_match'    =>  [
+            'title'     =>  "Hi Hello",
+            'message'   =>  "Match is wating for you in Hi Hello",
+        ],
+        'profile_verified'    =>  [
+            'title'     =>  "Hi Hello",
+            'message'   =>  "Your profile verification is complete",
+        ],
+        'profile_not_verified'    =>  [
+            'title'     =>  "Hi Hello",
+            'message'   =>  "Verifiy your profile to enjoy Hi Hello services",
+        ],
+        'subscription_expire'    =>  [
+            'title'     =>  "Hi Hello",
+            'message'   =>  "Your Hi Hello Membership is expiring soon. Renew now.",
+        ],
+        'swipe_alert'    =>  [
+            'title'     =>  "Hi Hello",
+            'message'   =>  "Your daily swipe limit is over. Upgrade to continue.",
+        ],
+        'verify_fail_email'    =>  [
+            'title'     =>  "Hi Hello",
+            'message'   =>  "Your email verification is not completed. Retry again.",
+        ],
+        'verify_fail_photo'    =>  [
+            'title'     =>  "Hi Hello",
+            'message'   =>  "Your photo verification has failed. Retry again.",
+        ],
+        'verify_fail_video'    =>  [
+            'title'     =>  "Hi Hello",
+            'message'   =>  "Your video verification has failed. Retry again.",
+        ],
+        'subscription_success'    =>  [
+            'title'     =>  "Hi Hello",
+            'message'   =>  "You have successfully subscribed to Hi Hello membership",
+        ],
+        'subscription_fail'    =>  [
+            'title'     =>  "Hi Hello",
+            'message'   =>  "Your subscription renewal has failed. Please retry.",
+        ],
+    ],
+
     /* Custom Message */   
     'attributes' => [
         "field"         =>  "विशेषता",
