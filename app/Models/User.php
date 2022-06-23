@@ -109,12 +109,15 @@ class User extends Authenticatable implements MustVerifyEmail, TranslatableContr
     public function getVerifiedStatus(){ return $this->verify_status; }
 
     public function countChats(){ 
-       return ChatRoom::whereHas('chatMessages',  function ($query) {
-                $query->where('status','!=' ,'read');
+        return ChatRoom::whereHas('chatMessages',  function ($query) {
+                $query->where('status','!=' ,'read')
+                       ->where('receiver_id',$this->id);
             })
             ->whereIsActive('y')
-            ->whereCreatorId($this->id)
-            ->orWhere('participate_id',$this->id)->count();
+            ->where(function ($query) {
+                $query->whereCreatorId($this->id)
+                    ->orWhere('participate_id',$this->id);
+            })->count();
     }
 
     public function getProfileImages(){
