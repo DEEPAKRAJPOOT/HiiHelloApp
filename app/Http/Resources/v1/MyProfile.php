@@ -60,9 +60,9 @@ class MyProfile extends JsonResource
                 'profile_setuped'       =>  $this->isProfileSetuped(),
                 'profile_percentage'    =>  $this->calculateProfilePercent(),
                 'verified_staus'        =>  $this->getVerifiedStatus(),
-                'likes'                 =>  $this->likes_count ?? 0,
-                'matches'               =>  $this->countMatches(),
-                'chats'                 =>  $this->countChats(),
+                'likes'                 =>  $this->like_count ?? 0,
+                'matches'               =>  $this->match_count ?? 0,
+                'chats'                 =>  $this->countChats() ?? 0,
             ],
         ];
     }

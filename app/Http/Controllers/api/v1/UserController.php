@@ -27,7 +27,7 @@ class UserController extends Controller
                 // $max_interest = config('utility.profile.detail.max_interest') ?? 5;
 
                 $user = User::select('id','custom_id','birth_date','location_id',
-                            'profile_photo','voice','voice_answer',
+                            'profile_photo','voice','voice_answer', 'swipe_count', 'gender', 'subscription_end_date',
                             'personality_id','education_id','university_id','profession_id','religion_id',
                             'relationship_status_id','you_are_here_id','food_preference_id','drinking_id','smoking_id',
                             'pet_id','star_sign_id','community_id','is_active')
@@ -177,7 +177,6 @@ class UserController extends Controller
                     'smoking.profileDetailTranslation','pet.profileDetailTranslation',
                     'starSign.profileDetailTranslation','community.profileDetailTranslation',
                     ])
-                    ->withCount('likes')
                     ->whereId(Auth::id())->firstOrFail();
 
             return (new MyProfile($user))
