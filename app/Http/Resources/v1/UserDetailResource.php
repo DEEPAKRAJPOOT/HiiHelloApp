@@ -3,6 +3,7 @@
 namespace App\Http\Resources\v1;
 
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\Auth;
 
 class UserDetailResource extends JsonResource
 {
@@ -57,8 +58,12 @@ class UserDetailResource extends JsonResource
 
     public function with($request)
     {
+        $auth_user = Auth::user();
+        $is_swipe_allow = $auth_user ? $auth_user->isSwipeAllow() : false;
+
         return [
             'meta' => [ 
+                'is_swipe_allow'    =>  $is_swipe_allow,
                 'api'               =>  'v.1.0',
                 'url'               =>  url()->current(),
                 'language'          =>  app()->getLocale(),

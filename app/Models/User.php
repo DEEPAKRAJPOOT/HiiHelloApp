@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Illuminate\Support\Facades\ { DB, Auth };
+use Illuminate\Support\Facades\Auth;
 use Laravel\Sanctum\HasApiTokens;
 use App\Models\Like;
 use Carbon\Carbon;
@@ -29,7 +29,8 @@ class User extends Authenticatable implements MustVerifyEmail, TranslatableContr
     protected $fillable = [
         'custom_id', 'account_id', 'email', 'country_code', 'contact_no', 'birth_date', 'gender',
         'interest', 'country_id', 'location_id', 'profile_percentage', 'language_id', 'profile_photo', 'voice', 'voice_answer', 'password',
-        'swipe_count', 'is_social_user', 'is_trans_full_name', 'is_trans_about_me', 'is_trans_fav_movie', 
+        'swipe_count', 'like_count', 'match_count',
+        'is_social_user', 'is_trans_full_name', 'is_trans_about_me', 'is_trans_fav_movie', 
         'is_media_checked', 'is_subscribed', 'subscription_end_date',
         'facebook_id', 'google_id', 'apple_id',
         'personality_id', 'university_id', 'profession_id',
@@ -106,23 +107,14 @@ class User extends Authenticatable implements MustVerifyEmail, TranslatableContr
 
     public function getAge(){ return \Carbon\Carbon::parse($this->birth_date)->diff(\Carbon\Carbon::now())->y; }
     public function getVerifiedStatus(){ return $this->verify_status; }
-    public function countMatches(){
-        return DB::table('likes')
-            ->join("likes as like", function($q){
-                $q->on("likes.liker_id", "=", "like.user_id");
-                $q->on("like.liker_id", "=", "likes.user_id");
-            })
-            ->join('users', function($q){
-                $q->on('users.id',"=", "likes.user_id");
-            })
-            //to only get users details who likes current user
-            ->where("likes.liker_id", '=', $this->id)
-            ->where("likes.user_id", '!=', $this->id)
-            ->count();
-    }
+
     public function countChats(){ 
-        return ChatRoom::whereHas('chatMessages')->whereIsActive('y')->whereCreatorId($this->id)
-                ->orWhere('participate_id',$this->id)->count();
+       return ChatRoom::whereHas('chatMessages',  function ($query) {
+                $query->where('status','!=' ,'read');
+            })
+            ->whereIsActive('y')
+            ->whereCreatorId($this->id)
+            ->orWhere('participate_id',$this->id)->count();
     }
 
     public function getProfileImages(){

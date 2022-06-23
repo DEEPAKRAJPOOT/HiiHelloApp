@@ -42,7 +42,8 @@ class BirthDayWish extends Command
         $message = 'No birthday wishes found !!!';
 
         // User::select('id','custom_id')->with('deviceToken')
-        //         ->whereBirthDate(\Carbon\Carbon::today()->format('Y-m-d'))
+        //         ->whereMonth('birth_date', '=', \Carbon\Carbon::now()->format('m'))
+        //         ->whereDay('birth_date', '=', \Carbon\Carbon::now()->format('d'))
         //         ->chunk(100, function($users) {
         //     if($users->isNotEmpty()){
         //         foreach($users as $user){

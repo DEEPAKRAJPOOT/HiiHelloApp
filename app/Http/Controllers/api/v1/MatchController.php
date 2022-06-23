@@ -28,6 +28,9 @@ class MatchController extends Controller
             try{
                 $user   = $request->user(); $auth_id = $user ? $user->id : NULL;
                 $search = $request->search;
+
+                $user->match_count = 0; // Reset Match Count
+                $user->save();
                 
                 // Config Details
                 $backup_logic       =   config('utility.profile.match.backup_logic') ?? true;

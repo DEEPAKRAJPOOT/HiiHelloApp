@@ -30,16 +30,13 @@ class AuthenticationController extends Controller
                 try {
                     $user = User::with(['userTranslation','userDetails','interests.interest.interestTranslation',
                                     'language','location.locationTranslation'])
-                                        ->whereContactNo($request->contact_no)->withCount('likes')->firstOrFail();
+                                        ->whereContactNo($request->contact_no)->firstOrFail();
                     if($user->is_active == 'y'){
                         Auth::login($user);
                         Auth::user()->tokens()->delete(); // Logout From All Devices    
 
                         return (new LoginResource($user))
                             ->additional([
-                                'data' => [ 'flags' =>  [
-                                    'matches'   =>  $user->countMatches(), 'chats'  =>  $user->countChats(),
-                                ] ], 
                                 'meta' => [
                                     'message'           =>  trans('api.login'),
                                     'auth_token'        =>  $user->createToken(config('utility.token'))->plainTextToken,
@@ -336,7 +333,6 @@ class AuthenticationController extends Controller
 
                 $user->profile_photo = $path;
                 $user->save();
-                $user = User::withCount('likes')->findOrFail($user->id);
                 return (new UserProfile($user))
                     ->additional([
                     'meta' => [

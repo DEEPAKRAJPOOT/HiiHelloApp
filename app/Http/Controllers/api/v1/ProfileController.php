@@ -115,7 +115,7 @@ class ProfileController extends Controller
                             ->withCount(['blockedTos' => function ($query) use ($auth_id) {
                                 $query->whereBlockBy($auth_id);
                             }])
-                            ->withCount('likes')->whereId($user->id)->firstOrFail();
+                            ->whereId($user->id)->firstOrFail();
 
                 return (new UserFullProfile($user))
                         ->additional(['meta'  => [
