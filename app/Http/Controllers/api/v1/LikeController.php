@@ -47,6 +47,7 @@ class LikeController extends Controller
 
                             $matched = Like::select('id')->whereUserId($auth_user->id)->whereLikerId($user->id)->first();
                             if($matched){
+                                $auth_user->increment('match_count');
                                 $user->increment('match_count');
                                 $is_matched = true;
 
