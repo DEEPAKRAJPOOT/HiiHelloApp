@@ -333,7 +333,6 @@ class AuthenticationController extends Controller
 
                 $user->profile_photo = $path;
                 $user->save();
-                $user = User::withCount('likes')->findOrFail($user->id);
                 return (new UserProfile($user))
                     ->additional([
                     'meta' => [
