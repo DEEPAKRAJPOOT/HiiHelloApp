@@ -193,25 +193,33 @@ class User extends Authenticatable implements MustVerifyEmail, TranslatableContr
     public function isSwipeAllow(){
         $daily_swipe_limit = config('utility.profile.swipe.daily_limit');
         $is_swipe_allow = true;
-        if($this->swipe_count >= $daily_swipe_limit){ $is_swipe_allow = false; }
+        
+        if( $this->swipe_count >= $daily_swipe_limit
+            &&  $this->gender != 'Female'
+            &&  $this->subscription_end_date <= \Carbon\Carbon::today()->format('Y-m-d')
+        ){ $is_swipe_allow = false; }
+
         return $is_swipe_allow;
     }
 
     public function notifySwipeAlert(){
-        $notification = [
-            'custom_id'     =>  getUniqueString('notifications'),
-            'key'           =>  'user_id',
-            'value'         =>  $this->id,
-            'user_id'       =>  $this->id,
-            'title'         =>  trans('api.notify_message.swipe_alert.title'),
-            'message'       =>  trans('api.notify_message.swipe_alert.message'),
-            'image'         =>  '',
-            'type'          =>  config('utility.notification.type.swipe_alert'),
-        ];
-                
-        // Notify
-        $notificationJob = new NotificationJob($notification, $this);
-        dispatch($notificationJob);
+        $daily_swipe_limit = config('utility.profile.swipe.daily_limit');
+        if( $this->swipe_count == $daily_swipe_limit) {
+            $notification = [
+                'custom_id'     =>  getUniqueString('notifications'),
+                'key'           =>  'user_id',
+                'value'         =>  $this->id,
+                'user_id'       =>  $this->id,
+                'title'         =>  trans('api.notify_message.swipe_alert.title'),
+                'message'       =>  trans('api.notify_message.swipe_alert.message'),
+                'image'         =>  '',
+                'type'          =>  config('utility.notification.type.swipe_alert'),
+            ];
+                    
+            // Notify
+            $notificationJob = new NotificationJob($notification, $this);
+            dispatch($notificationJob);
+        }
     }
 
     /**

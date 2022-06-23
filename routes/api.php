@@ -3,7 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Middleware\CheckApiLanguage;
-use App\Http\Controllers\api\v1\ { AuthenticationController, GeneralController, UserController, LikeController, TwillioController, ChatController, MatchController, SearchController, BlockController, VerificationController, ProfileController, DiscoveryController, FilterController, HomeController, PaymentController };
+use App\Http\Controllers\api\v1\ { AuthenticationController, GeneralController, UserController, LikeController, TwillioController, ChatController, MatchController, SearchController, BlockController, VerificationController, ProfileController, DiscoveryController, FilterController, HomeController, PaymentController, SmsController };
 
 /*
 |--------------------------------------------------------------------------
@@ -105,6 +105,8 @@ Route::group(['namespace' => 'v1', 'prefix' => 'v1', 'middleware' => 'auth:sanct
     Route::post('twillio/create-access-token',[TwillioController::class,'createAccessToken'])->name('api.twillio.create-access-token');
     Route::post('twillio/get-call-log',[TwillioController::class,'getCallLog'])->name('api.twillio.get-call-log');
     Route::post('twillio/store-call-log',[TwillioController::class,'storeCallLog'])->name('api.twillio.store-call-log');
+
+    Route::post('twillio-sms/send-sms',[SmsController::class,'sendSMS'])->name('api.twillio-sms.send-sms');
 
     // Socket Chat
     Route::post('chat/create-room', [ChatController::class,'createRoom'])->name('chat.create-room');

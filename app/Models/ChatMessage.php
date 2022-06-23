@@ -38,6 +38,7 @@ class ChatMessage extends Model
             'type'      =>  config('utility.notification.type.chat_message'),
             'id'        =>  $chatMessage->custom_id,
             'room_id'   =>  $chatMessage->room ? $chatMessage->room->custom_id : "",
+            'user_id'   =>  $account ? $account->custom_id : "",
             'name'      =>  $full_name,
             'profile'   =>  generateURL($account->profile_photo),
             'message'   =>  $message,
