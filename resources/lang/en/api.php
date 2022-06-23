@@ -45,6 +45,7 @@ return [
     'max_referred' => 'This referrel code cannot be used',
     'generated'  =>  ':entity generated successfully',
     'apply_success' =>  ':entity applied succesfully',
+    'swipe_over' =>  'Your daily swipe limit is over. Upgrade to continue.',
 
     /* Login Messages */
     'login_fail' => 'These credentials do not match our records',

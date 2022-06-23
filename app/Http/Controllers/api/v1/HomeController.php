@@ -22,68 +22,76 @@ class HomeController extends Controller
         if( $this->apiValidator($request->all(), $rules) ) {
             try{
                 $user = $request->user(); $auth_id = $user ? $user->id : NULL;
-                $auth_interest = $user->interest ? $user->interest : 'Both';
-                $radius = $user->discover_distance; $latitude = $user->latitude; $longitude = $user->longitude; 
+                $is_swipe_allow = $user->isSwipeAllow();
 
-                $blocked    =   BlockUser::whereBlockBy($auth_id)->whereNotNull('blocked_to')->distinct()->pluck('blocked_to')->toArray();
-                $languages  =   UserSetting::whereUserId($auth_id)->whereNotNull('language_id')->distinct()->pluck('language_id')->toArray();
-                $disLikes   =   DisLike::whereDisLikerId($auth_id)->whereDate('updated_at',\Carbon\Carbon::today())
-                                    ->whereNotNull('user_id')->distinct()->pluck('user_id')->toArray();
+                if($is_swipe_allow){
+                    $auth_interest = $user->interest ? $user->interest : 'Both';
+                    $radius = $user->discover_distance; $latitude = $user->latitude; $longitude = $user->longitude; 
 
-                if( !empty($radius) && !empty($latitude) && !empty($longitude)){
-                    $users = User::select('id','custom_id','birth_date','profile_photo','gender','interest',
-                        'location_id','language_id','verify_status','is_active'
-                        ,DB::raw("3959 * 1.609344 * acos(cos(radians(" . $latitude . ")) 
-                        * cos(radians(users.latitude)) 
-                        * cos(radians(users.longitude) - radians(" . $longitude . ")) 
-                        + sin(radians(" .$latitude. ")) 
-                        * sin(radians(users.latitude))) AS distance"))
-                        // ->having("distance", "<=", $radius)
-                        ->orderBy('distance');
+                    $blocked    =   BlockUser::whereBlockBy($auth_id)->whereNotNull('blocked_to')->distinct()->pluck('blocked_to')->toArray();
+                    $languages  =   UserSetting::whereUserId($auth_id)->whereNotNull('language_id')->distinct()->pluck('language_id')->toArray();
+                    $disLikes   =   DisLike::whereDisLikerId($auth_id)->whereDate('updated_at',\Carbon\Carbon::today())
+                                        ->whereNotNull('user_id')->distinct()->pluck('user_id')->toArray();
+
+                    if( !empty($radius) && !empty($latitude) && !empty($longitude)){
+                        $users = User::select('id','custom_id','birth_date','profile_photo','gender','interest',
+                            'location_id','language_id','verify_status','is_active'
+                            ,DB::raw("3959 * 1.609344 * acos(cos(radians(" . $latitude . ")) 
+                            * cos(radians(users.latitude)) 
+                            * cos(radians(users.longitude) - radians(" . $longitude . ")) 
+                            + sin(radians(" .$latitude. ")) 
+                            * sin(radians(users.latitude))) AS distance"))
+                            // ->having("distance", "<=", $radius)
+                            ->orderBy('distance');
+                    }else{
+                        $users = User::select('id','custom_id','birth_date','profile_photo','gender','interest',
+                        'location_id','language_id','verify_status','is_active');
+                    }
+
+                    $users = $users->with(['interests.interest.interestTranslation','userTranslation','location.locationTranslation'])
+                        ->where(function ($query)  use ($auth_id, $auth_interest, $disLikes, $blocked) {
+                            $query->where('id','!=',$auth_id)->whereNotNull('profile_photo')->whereIsActive('y');
+
+                            if($auth_interest != 'Both'){ $query->where('gender',$auth_interest); }     // Interested in Gender
+                            if(count($disLikes) > 0){ $query->whereNotIn('id',$disLikes); }             // Restirct DisLiked Profile
+                            if(count($blocked) > 0){ $query->whereNotIn('id',$blocked); }               // Restirct Blocked Profile
+                        });
+
+                    // Discovery
+                    $users = $users->where(function ($query)  use ($user, $languages) {
+                            if(count($languages) > 0){ $query->orWhereIn('language_id',$languages);}        // Languages
+                            if(!empty($user->discover_location_id)){ $query->orWhere('location_id',$user->discover_location_id); }  // Location
+                            if(!empty($user->discover_start_age) && !empty($user->discover_end_age)){
+                                $query->orWhereBetween('birth_date',array($user->discover_start_age,$user->discover_end_age)); // Age
+                            }   
+                        });
+
+                    $count = $users->count();
+                    $users = $users->limit($request->limit ?? config('utility.pagination.limit'))
+                                ->offset($request->offset ?? config('utility.pagination.offset'))
+                                ->get();
+                                
+                    if($users->isNotEmpty()){
+                        return (HomeResource::collection($users))->additional([
+                            'meta' => [
+                                'limit'     =>  $request->limit,
+                                'offset'    =>  $request->offset,
+                                'total'     =>  $count,
+                                'is_swipe_allow'    =>  $is_swipe_allow,
+                                'url'       =>  url()->current(),
+                                'api'       =>  $this->getVersion(),
+                                'language'  =>  app()->getLocale(),
+                                'message'   =>  trans('api.list', ['entity' => __('Users')]),
+                            ] ]);
+                    }else{
+                        $this->response['meta']['is_swipe_allow'] = $is_swipe_allow;
+                        $this->response['meta']['message']  =   trans('api.not_found',['entity' => __('Users')]); 
+                        $this->status = Response::HTTP_NOT_FOUND;     
+                    }
                 }else{
-                    $users = User::select('id','custom_id','birth_date','profile_photo','gender','interest',
-                    'location_id','language_id','verify_status','is_active');
-                }
-
-                $users = $users->with(['interests.interest.interestTranslation','userTranslation','location.locationTranslation'])
-                    ->where(function ($query)  use ($auth_id, $auth_interest, $disLikes, $blocked) {
-                        $query->where('id','!=',$auth_id)->whereNotNull('profile_photo')->whereIsActive('y');
-
-                        if($auth_interest != 'Both'){ $query->where('gender',$auth_interest); }     // Interested in Gender
-                        if(count($disLikes) > 0){ $query->whereNotIn('id',$disLikes); }             // Restirct DisLiked Profile
-                        if(count($blocked) > 0){ $query->whereNotIn('id',$blocked); }               // Restirct Blocked Profile
-                    });
-
-                // Discovery
-                $users = $users->where(function ($query)  use ($user, $languages) {
-                        if(count($languages) > 0){ $query->orWhereIn('language_id',$languages);}        // Languages
-                        if(!empty($user->discover_location_id)){ $query->orWhere('location_id',$user->discover_location_id); }  // Location
-                        if(!empty($user->discover_start_age) && !empty($user->discover_end_age)){
-                            $query->orWhereBetween('birth_date',array($user->discover_start_age,$user->discover_end_age)); // Age
-                        }   
-                    });
-
-                $count = $users->count();
-                $users = $users->limit($request->limit ?? config('utility.pagination.limit'))
-                            ->offset($request->offset ?? config('utility.pagination.offset'))
-                            ->get();
-                            
-                if($users->isNotEmpty()){
-                    return (HomeResource::collection($users))->additional([
-                        'meta' => [
-                            'limit'     =>  $request->limit,
-                            'offset'    =>  $request->offset,
-                            'total'     =>  $count,
-                            'is_swipe_allow'    =>  $user->isSwipeAllow(),
-                            'url'       =>  url()->current(),
-                            'api'       =>  $this->getVersion(),
-                            'language'  =>  app()->getLocale(),
-                            'message'   =>  trans('api.list', ['entity' => __('Users')]),
-                        ] ]);
-                }else{
-                    $this->response['meta']['is_swipe_allow'] = $user->isSwipeAllow();
-                    $this->response['meta']['message']  =   trans('api.not_found',['entity' => __('Users')]); 
-                    $this->status = Response::HTTP_NOT_FOUND;     
+                    $this->response['meta']['is_swipe_allow'] = $is_swipe_allow;
+                    $this->response['meta']['message']  =   trans('api.swipe_over'); 
+                    $this->status = Response::HTTP_FORBIDDEN;     
                 }
             } catch(ModelNotFoundException $exception) {                
                 switch ($exception->getModel()) {

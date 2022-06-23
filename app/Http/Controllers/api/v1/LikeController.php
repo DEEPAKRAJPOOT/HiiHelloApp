@@ -41,11 +41,10 @@ class LikeController extends Controller
                     ]);
 
                     if($like->save()){
-                        $matched = Like::select('id')->whereUserId($auth_user->id)->whereLikerId($user->id)->first();
-                        if($matched){ $is_matched = true; }
-
                         if($like->wasRecentlyCreated){
+                            $matched = Like::select('id')->whereUserId($auth_user->id)->whereLikerId($user->id)->first();
                             if($matched){
+                                $is_matched = true;
                                 $title = trans('api.notify_message.new_match.title');
                                 $message = trans('api.notify_message.new_match.message');
                                 $type = config('utility.notification.type.new_match');

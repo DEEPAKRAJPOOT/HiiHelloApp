@@ -34,6 +34,7 @@ class ChatNotificationChannel extends Controller
             $data['name']       =   $message->name;
             $data['profile']    =   $message->profile;
             $data['room_id']    =   $message->room_id;
+            $data['user_id']    =   $message->user_id;
         }
         $send_notification = [
             'priority'  =>  'high',
