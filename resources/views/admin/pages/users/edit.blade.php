@@ -925,8 +925,8 @@
                             <option value="verified">Verified</option>
                             <option value="unverified" selected>UnVerified</option>
                         @else
-                            <option value="" selected>Select Verification Status</option>
-                            <option value="under_review" selected>Under Review</option>
+                            <option value="pending" selected>Select Verification Status</option>
+                            <option value="under_review">Under Review</option>
                             <option value="verified">Verified</option>
                             <option value="unverified">UnVerified</option>
                         @endif

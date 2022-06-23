@@ -135,6 +135,7 @@ class VerificationController extends Controller
                 /* Send Verification */    
                 $user->sendEmailVerificationNotification();
                 $user->verify_email_send = 'y';
+                $user->verify_status = 'under_review';
                 $user->save();
                 
                 return ([
