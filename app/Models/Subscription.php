@@ -6,10 +6,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Model;
 use App\Jobs\NotificationJob;
+use App\Http\Traits\TwillioSmsTrait;
 
 class Subscription extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, SoftDeletes, TwillioSmsTrait;
 
     protected $fillable = ['custom_id', 'user_id', 'plan_id', 'months', 'amount', 'start_date', 'end_date', 'payment_date', 'status'];
 
@@ -44,4 +45,23 @@ class Subscription extends Model
            dispatch($notificationJob);
         }
     }
+
+    public function sendSubScriptionPurchaseSMS($type)
+    {
+        if($this->user && !empty($this->user->country_code) && !empty($this->user->contact_no)){
+            $phone_number   =   '+'.$this->user->country_code.''.$this->user->contact_no;
+            $userName       =   $this->user->userTranslation ? $this->user->userTranslation->full_name : "";
+            
+            if($type == 'renew'){
+                $message = trans('api.sms.message.subscription_renew', ['entity' => $userName]);
+            }elseif($type == 'new'){
+                $message = trans('api.sms.message.subscription_purchase', ['entity' => $userName]);
+            }else{
+                $message = trans('api.sms.message.subscription_purchase', ['entity' => $userName]);
+            }
+            
+            return TwillioSmsTrait::sendSMS($phone_number, $message);
+        }
+    }
+
 }

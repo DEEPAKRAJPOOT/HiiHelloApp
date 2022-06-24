@@ -14,10 +14,11 @@ use Laravel\Sanctum\HasApiTokens;
 use App\Models\Like;
 use Carbon\Carbon;
 use App\Jobs\NotificationJob;
+use App\Http\Traits\TwillioSmsTrait;
 
 class User extends Authenticatable implements MustVerifyEmail, TranslatableContract
 {
-    use HasApiTokens, Notifiable, SoftDeletes, Translatable;
+    use HasApiTokens, Notifiable, SoftDeletes, Translatable, TwillioSmsTrait;
 
     /**
      * The attributes that are mass assignable.
@@ -215,6 +216,31 @@ class User extends Authenticatable implements MustVerifyEmail, TranslatableContr
             $notificationJob = new NotificationJob($notification, $this);
             dispatch($notificationJob);
         }
+    }
+
+    public function sendWelcomeSms(){
+        $status = false;
+        if(!empty($this->country_code) && !empty($this->contact_no)){
+            $phone_number   =   '+'.$this->country_code.''.$this->contact_no;
+            $message        =   trans('api.sms.message.welcome');
+
+            return TwillioSmsTrait::sendSMS($phone_number, $message);
+            $status = true;
+        }
+        return $status;
+    }
+
+    public function sendBirthDayWishSMS(){
+        $status = false;
+        if(!empty($this->country_code) && !empty($this->contact_no)){
+            $phone_number   =   '+'.$this->country_code.''.$this->contact_no;
+            $userName       =   $this->userTranslation ? $this->userTranslation->full_name : "";
+            $message        =   trans('api.sms.message.birthday', ['entity' => $userName]);
+
+            return TwillioSmsTrait::sendSMS($phone_number, $message);
+            $status = true;
+        }
+        return $status;
     }
 
     /**

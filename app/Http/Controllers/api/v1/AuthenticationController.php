@@ -119,9 +119,9 @@ class AuthenticationController extends Controller
                     $user->is_trans_full_name = 'n';
                 }
                 
-                // Set Contact Number As Verified
-                if($user->wasRecentlyCreated && !empty($user->contact_no)){
-                    $user->contact_verified_at = \Carbon\Carbon::now(); 
+                if($user->wasRecentlyCreated && !empty($user->country_code) && !empty($user->contact_no)){
+                    $user->contact_verified_at = \Carbon\Carbon::now();  // Set Contact Number As Verified
+                    $user->sendWelcomeSms(); // Send Welcome SMS
                 }
 
                 if( !empty($request->profile_photo) ) {

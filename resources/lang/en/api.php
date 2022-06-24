@@ -202,6 +202,14 @@ return [
             'message'   =>  "Your subscription renewal has failed. Please retry.",
         ],
     ],
+    'sms'   =>  [
+        'message'   =>  [
+            'welcome'   =>  "Welcome to the loving Hi Hello community. Time to search for your Dil Ka Connection at Hi Hello with loads of fun and verified profiles.",
+            'subscription_purchase'     =>  "Namaste :entity thank you for upgrading your account with Hi Hello. Go ahead and explore exclusive In-App features customised for you.",
+            'subscription_renew'    =>  "Namaste :entity thank you for renewing your subscription with Hi Hello account. Continue to enjoy Hi Hello services designed for you.",
+            'birthday'    =>  "Hi :entity We wish you Happy Bday from the entire Hi Hello community. Have a fun filled day and awesome year ahead.",
+        ],
+    ],
 
     /* Custom Message */ 
     'attributes' => [

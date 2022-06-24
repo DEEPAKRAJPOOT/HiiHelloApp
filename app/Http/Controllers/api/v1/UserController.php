@@ -10,7 +10,7 @@ use App\Http\Resources\v1\ { UserProfile, UserDetailResource, MyProfile };
 use App\Http\Requests\Api\User\ { ProfileRequest, ProfileReportRequest, SetLatLongRequest };
 use App\Http\Requests\Api\Authentication\ { DeleteAccountRequest };
 use App\Http\Requests\Api\General\ { PaginationRequest };
-use App\Models\ { User, Location, ProfileReport };
+use App\Models\ { User, Location, ProfileReport, NotificationStatus };
 
 class UserController extends Controller
 {
@@ -262,6 +262,26 @@ class UserController extends Controller
             } catch (\Exception $e) {
                 $this->storeErrorLog($e,'store_latlong');
             }
+        }
+        return $this->returnResponse();
+    }
+
+    // Update Notification Status Of User
+    public function readNotifications(Request $request)
+    {
+        try {
+            NotificationStatus::whereUserId(Auth::id())->update(['is_read' => 'y']);
+            $this->status = Response::HTTP_OK;
+            $this->response['meta']['message']  =   trans('api.update',['entity' => __("Notification")]); 
+        } catch(ModelNotFoundException $exception) {
+            switch ($exception->getModel()) {
+                case 'App\Models\NotificationStatus':
+                    $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("Notification")]);
+                    break;
+                default:
+                    $this->response['meta']['message'] = trans('api.went_wrong');
+                    break;
+            };
         }
         return $this->returnResponse();
     }
