@@ -17,11 +17,12 @@ class ChatNotificationChannel extends Controller
 
         if( empty($deviceToken) ) return "No device token found!";
         $message = $notification->data;
+        $badge = NotificationStatus::whereUserId($notifiable->id)->whereIsRead('n')->count() + $notifiable->chat_count;
 
         $n_data = [
             'title'     =>  $message->title,
             'body'      =>  $message->message,
-            'badge'     =>  NotificationStatus::whereUserId($notifiable->id)->whereIsRead('n')->count(),
+            'badge'     =>  $badge,
         ];
 
         $data = [

@@ -46,8 +46,9 @@ class PushNotificationController extends Controller
                 'title'         =>  $title,
                 'message'       =>  $request->message,
                 'image'         =>  '',
-                'type'          =>  'notification',
+                'type'          =>  config('utility.notification.type.send_by_admin'),
             ];
+                
             $this->sendPushNotificationToAll($notification, $users);
             
             flash('Push Notification Send successfully!')->success();
