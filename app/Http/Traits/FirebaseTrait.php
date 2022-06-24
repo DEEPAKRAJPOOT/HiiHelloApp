@@ -82,8 +82,8 @@ trait FirebaseTrait {
         $data = [
             'key'           =>  $dbNotification->key ?? "",
             'value'         =>  $dbNotification->value ?? "",
+            'type'  		=>  $dbNotification->type,
             'user_id'       =>  $dbNotification->user_id,
-            'type'          =>  $dbNotification->type,
             'image_url'     =>  $dbNotification->image ? generateURL($dbNotification->image) : "",
         ];
         $url = "https://fcm.googleapis.com/fcm/send";
@@ -97,7 +97,7 @@ trait FirebaseTrait {
                 'notification'      =>  [
                     'title' =>  $dbNotification->title,
                     'body'  =>  str_limit($dbNotification->message, 50),
-                    'badge' =>  0,
+                    // 'badge' =>  0,
                     'sound' =>  'default'
                 ],
             ];
@@ -119,7 +119,8 @@ trait FirebaseTrait {
                 'notification'      =>  [
                     'title'     =>  $dbNotification->title,
                     'body'      =>  str_limit($dbNotification->message, 50),
-                    'badge'     =>  0,
+            		'type'  	=>  $dbNotification->type,
+                    // 'badge'     =>  0,
                     'image'     =>  $dbNotification->image ? generateURL($dbNotification->image) : "",
                 ],
             ];
