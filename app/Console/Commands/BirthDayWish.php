@@ -41,30 +41,19 @@ class BirthDayWish extends Command
     {
         $message = 'No birthday wishes found !!!';
 
-        // User::select('id','custom_id')->with('deviceToken')
-        //         ->whereMonth('birth_date', '=', \Carbon\Carbon::now()->format('m'))
-        //         ->whereDay('birth_date', '=', \Carbon\Carbon::now()->format('d'))
-        //         ->chunk(100, function($users) {
-        //     if($users->isNotEmpty()){
-        //         foreach($users as $user){
-        //             $notification = [
-        //                 'custom_id'     =>  getUniqueString('notifications'),
-        //                 'key'           =>  'user_id',
-        //                 'value'         =>  $user->id,
-        //                 'user_id'       =>  $user->id,
-        //                 'title'         =>  trans('api.notify_message.profile_birthday.title'),
-        //                 'message'       =>  trans('api.notify_message.profile_birthday.message'),
-        //                 'image'         =>  '',
-        //                 'type'          =>  config('utility.notification.type.profile_birthday'),
-        //             ];
-
-        //             // Notify
-        //             $notificationJob = new NotificationJob($notification, $user);
-        //             dispatch($notificationJob);
-        //         }
-        //         $message = 'birthday greetings notified successfully.';
-        //     }
-        // });
+        User::select('id','custom_id','country_code','contact_no')->with(['userTranslation','deviceToken'])
+                ->whereMonth('birth_date', '=', \Carbon\Carbon::now()->format('m'))
+                ->whereDay('birth_date', '=', \Carbon\Carbon::now()->format('d'))
+                ->chunk(100, function($users) {
+            if($users->isNotEmpty()){
+                foreach($users as $user){
+                    $status = $user->sendBirthDayWishSMS();
+                    if($status){
+                        $message = 'birthday greetings notified successfully.';
+                    }
+                }
+            }
+        });
 
         $this->info($message);
         return $message;

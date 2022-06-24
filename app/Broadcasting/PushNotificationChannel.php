@@ -5,6 +5,7 @@ namespace App\Broadcasting;
 use App\Http\Controllers\Controller;
 use App\Http\Traits\FirebaseTrait;
 use Illuminate\Notifications\Notification;
+use App\Models\NotificationStatus;
 use App\Models\User;
 
 class PushNotificationChannel extends Controller
@@ -17,11 +18,10 @@ class PushNotificationChannel extends Controller
         if( empty($deviceToken) ) return "No device token found!";
         $message = $notification->data;
 
-        $unReadNotifications = 0;
         $n_data = [
             'title'     =>  $message['title'],
             'body'      =>  $message['message'],
-            'badge'     =>  $unReadNotifications,
+            'badge'     =>  NotificationStatus::whereUserId($notifiable->id)->whereIsRead('n')->count(),
         ];
 
         $data = [

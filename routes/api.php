@@ -3,7 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Middleware\CheckApiLanguage;
-use App\Http\Controllers\api\v1\ { AuthenticationController, GeneralController, UserController, LikeController, TwillioController, ChatController, MatchController, SearchController, BlockController, VerificationController, ProfileController, DiscoveryController, FilterController, HomeController, PaymentController, SmsController };
+use App\Http\Controllers\api\v1\ { AuthenticationController, GeneralController, UserController, LikeController, TwillioController, ChatController, MatchController, SearchController, BlockController, VerificationController, ProfileController, DiscoveryController, FilterController, HomeController, PaymentController };
 
 /*
 |--------------------------------------------------------------------------
@@ -106,8 +106,6 @@ Route::group(['namespace' => 'v1', 'prefix' => 'v1', 'middleware' => 'auth:sanct
     Route::post('twillio/get-call-log',[TwillioController::class,'getCallLog'])->name('api.twillio.get-call-log');
     Route::post('twillio/store-call-log',[TwillioController::class,'storeCallLog'])->name('api.twillio.store-call-log');
 
-    Route::post('twillio-sms/send-sms',[SmsController::class,'sendSMS'])->name('api.twillio-sms.send-sms');
-
     // Socket Chat
     Route::post('chat/create-room', [ChatController::class,'createRoom'])->name('chat.create-room');
     Route::post('chat/get-rooms', [ChatController::class,'getChatRooms'])->name('chat.get-rooms'); 
@@ -116,6 +114,7 @@ Route::group(['namespace' => 'v1', 'prefix' => 'v1', 'middleware' => 'auth:sanct
 
     // Device Token
     Route::post('user/add-device-token', [GeneralController::class,'storeDeviceToken'])->name('api.user.add-device-token');
+    Route::post('notification/update-status',[UserController::class,'readNotifications'])->name('api.notification.update-status');
 
     // AWS S3 STORAGE
     Route::post('aws/generate-url', [GeneralController::class,'generateAwsUrl'])->name('aws.generate-url');

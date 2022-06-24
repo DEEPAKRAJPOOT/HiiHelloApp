@@ -163,6 +163,14 @@ class PaymentController extends Controller
                     // Notify
                     $subscription->notifySubScriptionPurchase('success');
 
+                    $subscription_type = 'new'; // New Purchase
+                    $renew_count = Subscription::withTrashed()->whereUserId($user->id)
+                                    ->whereNotIn('status',['incomplete','incomplete_expired','unpaid'])->count();
+                    if($renew_count > 0){
+                        $subscription_type = 'renew';   // Renew Subscription
+                    }
+                    $subscription->sendSubScriptionPurchaseSMS($subscription_type);   
+
                     // Add Payment success log
                     $transaction_data = json_decode($transaction, true);
                     $file = 'payment_' . $user->id;
