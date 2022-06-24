@@ -16,6 +16,7 @@ class AddLikeAndMatchCountToUsersTable extends Migration
         Schema::table('users', function (Blueprint $table) {
             $table->integer('like_count')->nullable()->default(0)->after('swipe_count');
             $table->integer('match_count')->nullable()->default(0)->after('like_count');
+            $table->integer('chat_count')->nullable()->default(0)->after('match_count');
         });
     }
 
@@ -27,7 +28,7 @@ class AddLikeAndMatchCountToUsersTable extends Migration
     public function down()
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->dropColumn(['like_count', 'match_count']);
+            $table->dropColumn(['like_count', 'match_count', 'chat_count']);
         });
     }
 }

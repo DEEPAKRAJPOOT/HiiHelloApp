@@ -270,7 +270,11 @@ class UserController extends Controller
     public function readNotifications(Request $request)
     {
         try {
-            NotificationStatus::whereUserId(Auth::id())->update(['is_read' => 'y']);
+            $user = $request->user();
+            $user->chat_count = 0;
+            $user->save();
+            NotificationStatus::whereUserId($user->id)->update(['is_read' => 'y']);
+            
             $this->status = Response::HTTP_OK;
             $this->response['meta']['message']  =   trans('api.update',['entity' => __("Notification")]); 
         } catch(ModelNotFoundException $exception) {
