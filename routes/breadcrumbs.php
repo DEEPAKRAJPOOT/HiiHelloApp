@@ -273,6 +273,30 @@ Breadcrumbs::register('dashboard', function ($breadcrumbs) {
 	});
 
 
+	// Subscription list ------------------------------------------------------------------
+	Breadcrumbs::register('subscription_list', function($breadcrumbs)
+	{
+		$breadcrumbs->parent('dashboard');
+	    $breadcrumbs->push('Subscription List', route(Auth::getDefaultDriver().'.subscription-lists.index'));
+	});
+
+	Breadcrumbs::register('subscription_view', function($breadcrumbs,$id)
+	{
+		$breadcrumbs->parent('subscription_list');
+		$breadcrumbs->push('Subscription View', route('admin.subscription-lists.show', $id));
+	});
+	//Transaction List -------------------------------------------------------------------------------------
+	Breadcrumbs::register('transaction_list', function($breadcrumbs)
+	{
+		$breadcrumbs->parent('dashboard');
+	    $breadcrumbs->push('Transaction List', route(Auth::getDefaultDriver().'.transaction-lists.index'));
+	});
+
+	Breadcrumbs::register('transaction_view', function($breadcrumbs,$id)
+	{
+		$breadcrumbs->parent('transaction_list');
+		$breadcrumbs->push('Transaction View', route('admin.transaction-lists.show', $id));
+	});
 	// App Details -------------------------------------------------------------------------------------------------------------------------------------------------------
 	Breadcrumbs::register('app_detail_create', function($breadcrumbs)
 	{

@@ -160,7 +160,7 @@ class SectionsTableSeeder extends Seeder
                     'updated_at'    => \Carbon\Carbon::now(),
                 ],
                 [
-                    'name'          =>  'Subscription Plans',
+                    'name'          =>  'Subscription',
                     'icon'          =>  'fas fa-rupee-sign',
                     'image'         =>  '',
                     'icon_type'     =>  'font-awesome',

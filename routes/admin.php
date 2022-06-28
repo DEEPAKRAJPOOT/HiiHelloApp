@@ -1,38 +1,38 @@
 <?php
 Route::group(['middleware' => ['revalidate']], function () {
-	Route::get('/home',function(){
+	Route::get('/home', function () {
 		return redirect(route('admin.dashboard.index'));
 	})->name('home');
 
-    // Profile
-		Route::get('profile/', 'Admin\PagesController@profile')->name('profile-view');
-		Route::post('profile/update', 'Admin\PagesController@updateProfile')->name('profile.update');
-	    Route::put('change/password', 'Admin\PagesController@updatePassword')->name('update-password');
+	// Profile
+	Route::get('profile/', 'Admin\PagesController@profile')->name('profile-view');
+	Route::post('profile/update', 'Admin\PagesController@updateProfile')->name('profile.update');
+	Route::put('change/password', 'Admin\PagesController@updatePassword')->name('update-password');
 
 	// Quick Link
 	Route::get('quickLink', 'Admin\PagesController@quickLink')->name('quickLink');
 	Route::post('link/update', 'Admin\PagesController@updateQuickLink')->name('update-quickLink');
 });
 
-Route::group(['namespace' => 'Admin', 'middleware' => ['check_permit','revalidate']], function () {
+Route::group(['namespace' => 'Admin', 'middleware' => ['check_permit', 'revalidate']], function () {
 
 	/* Dashboard */
-	Route::get('/','PagesController@dashboard')->name('dashboard.index');
+	Route::get('/', 'PagesController@dashboard')->name('dashboard.index');
 	Route::get('/dashboard', 'PagesController@dashboard')->name('dashboard.index');
 
 	/* User */
 	Route::get('users/listing', 'UsersController@listing')->name('users.listing');
-	Route::post('user/actor-list','UsersController@getActorList')->name('user.actor-list');
-	Route::post('user/singer-list','UsersController@getSingerList')->name('user.singer-list');
-	Route::resource('users','UsersController');
+	Route::post('user/actor-list', 'UsersController@getActorList')->name('user.actor-list');
+	Route::post('user/singer-list', 'UsersController@getSingerList')->name('user.singer-list');
+	Route::resource('users', 'UsersController');
 
 	/* Role Management */
 	Route::get('roles/listing', 'AdminController@listing')->name('roles.listing');
-	Route::resource('roles','AdminController');
+	Route::resource('roles', 'AdminController');
 
 	/* Passions Management */
 	Route::get('passions/listing', 'PassionController@listing')->name('passions.listing');
-	Route::resource('passions','PassionController');
+	Route::resource('passions', 'PassionController');
 
 	/* Country Management*/
 	Route::get('countries/listing', 'CountryController@listing')->name('countries.listing');
@@ -71,14 +71,25 @@ Route::group(['namespace' => 'Admin', 'middleware' => ['check_permit','revalidat
 	Route::resource('cities', 'CityController');
 
 	/* Push Notification */
-	Route::resource('push-notification', 'PushNotificationController');	
+	Route::resource('push-notification', 'PushNotificationController');
 
 	/* Subscription Plans*/
 	Route::get('subscription-plans/listing', 'SubscriptionPlanController@listing')->name('subscription-plans.listing');
 	Route::resource('subscription-plans', 'SubscriptionPlanController');
 
+	/*subscription listing */
+	Route::get('subscription-lists/listing', 'SubscriptionListController@listing')->name('subscription-lists.listing');
+	Route::get('subscription-lists', 'SubscriptionListController@index')->name('subscription-lists.index');
+	Route::get('subscription-lists-show/{sub}', 'SubscriptionListController@show')->name('subscription-lists.show');
+	
+	/* transaction Listing */
+	Route::get('transaction-lists/listing', 'TrasactionListController@listing')->name('transaction-lists.listing');
+	Route::get('transaction-lists', 'TrasactionListController@index')->name('transaction-lists.index');
+	Route::get('transaction-lists-show/{tran}', 'TrasactionListController@show')->name('transaction-lists.show');
+	
+
 	/* App Details */
-	Route::resource('app-details', 'AppDetailController');	
+	Route::resource('app-details', 'AppDetailController');
 
 	/* CMS Management*/
 	Route::get('pages/listing', 'CmsPagesController@listing')->name('pages.listing');
@@ -87,7 +98,6 @@ Route::group(['namespace' => 'Admin', 'middleware' => ['check_permit','revalidat
 	/* Site Configuration */
 	Route::get('settings', 'PagesController@showSetting')->name('settings.index');
 	Route::post('change-setting', 'PagesController@changeSetting')->name('settings.change-setting');
-
 });
 
 //User Exception
@@ -98,10 +108,10 @@ Route::get('active-deactive-users-chart', 'Admin\ChartController@getActiveDeacti
 
 Route::post('check-email', 'UtilityController@checkEmail')->name('check.email');
 Route::post('check-contact', 'UtilityController@checkContact')->name('check.contact');
-Route::get('api-translate','UtilityController@translate');
+Route::get('api-translate', 'UtilityController@translate');
 
-Route::post('summernote-image-upload','Admin\SummernoteController@imageUpload')->name('summernote.imageUpload');
-Route::post('summernote-media-image','Admin\SummernoteController@mediaDelete')->name('summernote.mediaDelete');
+Route::post('summernote-image-upload', 'Admin\SummernoteController@imageUpload')->name('summernote.imageUpload');
+Route::post('summernote-media-image', 'Admin\SummernoteController@mediaDelete')->name('summernote.mediaDelete');
 
 Route::post('check-title', 'UtilityController@checkTitle')->name('check.title');
 Route::post('profile/check-password', 'UtilityController@profilecheckpassword')->name('profile.check-password');
