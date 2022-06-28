@@ -16,6 +16,8 @@ class NotificationJob implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
     protected $notification, $user;
 
+    public $tries = 5;
+
     /**
      * Create a new job instance.
      *
