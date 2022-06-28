@@ -37,21 +37,20 @@ class Kernel extends ConsoleKernel
         $schedule->call(function () {
             $scheculeCommand = new GoogleTranslation;
             $scheculeCommand->handle();
-        })->everyFiveMinutes();
-        // ->everyMinute();
+        })->everyMinute();
         
         // Image Moderation Command
         $schedule->call(function () {
             $scheculeCommand = new ImageModeration;
             $scheculeCommand->handle();
         })->everyMinute();
-        // ->everyTenMinutes();
+        // ->everyFiveMinutes();
 
         // Birthday Wise At Every Night 12 AM
         $schedule->call(function () {
             $scheculeCommand = new BirthDayWish;
             $scheculeCommand->handle();
-        })->dailyAt();
+        })->daily();
 
         // Subscription Expirt Notification At Every Night 8 AM
         $schedule->call(function () {
@@ -63,7 +62,7 @@ class Kernel extends ConsoleKernel
         $schedule->call(function () {
             $scheculeCommand = new RenewSwipeLimit;
             $scheculeCommand->handle();
-        })->dailyAt();
+        })->daily();
 
         // $schedule->command('inspire')->hourly();
     }
