@@ -90,7 +90,7 @@ class TrasactionListController extends Controller
     {
         extract($this->DTFilters($request->all()));
         $records = [];
-        $TransactionLists = Transaction::with(['subscriptionPlan', 'user'])->orderBy($sort_column, $sort_order);
+        $TransactionLists = Transaction::with(['subscriptionPlan', 'user','user.userTranslations','subscriptionPlan.subscriptionPlanTranslations'])->orderBy($sort_column, $sort_order);
 
         if ($search != '') {
             $TransactionLists->where(function ($query) use ($search, $TransactionLists) {
@@ -103,7 +103,7 @@ class TrasactionListController extends Controller
                     ->orWhereHas('user.userTranslations', function ($query) use ($search) {
                         $query->where('full_name', 'like', "%{$search}%");
                     })
-                    ->orWhereHas('subscriptionPlan.subscriptionPlanTranslation', function ($query) use ($search) {
+                    ->orWhereHas('subscriptionPlan.subscriptionPlanTranslations', function ($query) use ($search) {
                         $query->where('name', 'like', "%{$search}%");
                     });
             });
@@ -114,9 +114,7 @@ class TrasactionListController extends Controller
         $records['recordsTotal'] = $count;
         $records['recordsFiltered'] = $count;
         $records['data'] = [];
-        // dd("hii");
         $TransactionLists = $TransactionLists->offset($offset)->limit($limit)->orderBy($sort_column, $sort_order);
-        // dd($TransactionLists);
         $TransactionLists = $TransactionLists->get();
 
         foreach ($TransactionLists as $TransactionList) {
@@ -126,10 +124,9 @@ class TrasactionListController extends Controller
             ];
             $records['data'][] = [
                 'id' => $TransactionList->id,
-                'account_id' => $TransactionList->user->account_id,
+                'account_id' => $TransactionList->user ? $TransactionList->user->account_id : '',
                 'user_id' =>  $TransactionList->user->userTransDefault ? $TransactionList->user->userTransDefault->full_name : "",
                 'plan_id' => $TransactionList->subscriptionPlan->subscriptionPlanTranslation ? $TransactionList->subscriptionPlan->subscriptionPlanTranslation->name : "N/A",
-                // 'months' => $subscriptionPlan->months,
                 'razorpay_order_id' => $TransactionList->razorpay_order_id,
                 'amount' => $TransactionList->amount,
                 'status' => $TransactionList->status,

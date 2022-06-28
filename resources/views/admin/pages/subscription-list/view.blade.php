@@ -25,13 +25,7 @@
                             </label>
                             <div class="mb-2">
 
-                                @if ($sub->user->profile_photo)
-                                    @php
-                                    //    $a =  generateURL($sub->user->profile_photo);
-                                    //    dd($sub->user->profile_photo);
-                                        // dd($sub->user->profile_photo);
-                                    @endphp
-                                    {{-- <span>User Image</span> --}}
+                                @if ($sub->user && $sub->user->profile_photo)
                                     <div class="symbol symbol-120 mr-5">
                                         <a href="{{ generateURL($sub->user->profile_photo) }}" target="_blank"
                                             style="margin: 10px;">

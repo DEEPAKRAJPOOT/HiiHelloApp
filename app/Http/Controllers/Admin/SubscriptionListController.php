@@ -93,7 +93,7 @@ class SubscriptionListController extends Controller
     {
         extract($this->DTFilters($request->all()));
         $records = [];
-        $subscriptionPlans = Subscription::with(['subscriptionPlan', 'user', 'user.userTranslations'])->orderBy($sort_column, $sort_order);
+        $subscriptionPlans = Subscription::with(['subscriptionPlan', 'user', 'user.userTranslations','subscriptionPlan.subscriptionPlanTranslations'])->orderBy($sort_column, $sort_order);
 
         if ($search != '') {
             $subscriptionPlans->where(function ($query) use ($search) {
@@ -106,15 +106,9 @@ class SubscriptionListController extends Controller
                     ->orWhereHas('user.userTranslations', function ($query) use ($search) {
                         $query->where('full_name', 'like', "%{$search}%");
                     })
-                    ->orWhereHas('subscriptionPlan.subscriptionPlanTranslation', function ($query) use ($search) {
+                    ->orWhereHas('subscriptionPlan.subscriptionPlanTranslations', function ($query) use ($search) {
                         $query->where('name', 'like', "%{$search}%");
                     });
-                // ->orWhereHas('user.userTranslations', function ($query) use ($search) {
-                //     $query->where('full_name', 'like', "%{$search}%");
-                // });
-                // ->orWhereHas($subscriptionPlans->subscriptionPlanTranslation, function ($query) use ($search) {
-                //     $query->where('name', 'like', "%{$search}%");
-                // });
 
             });
         }
@@ -134,10 +128,9 @@ class SubscriptionListController extends Controller
                 'class' => '',
                 'id' => $subscriptionPlan->custom_id,
             ];
-            // dd("hiii");
             $records['data'][] = [
                 'id' => $subscriptionPlan->id,
-                'account_id' => $subscriptionPlan->user->account_id,
+                'account_id' => $subscriptionPlan->user ? $subscriptionPlan->user->account_id : "",
                 'user_id' =>  $subscriptionPlan->user->userTransDefault ? $subscriptionPlan->user->userTransDefault->full_name : "N/A",
                 'plan_id' => $subscriptionPlan->subscriptionPlan->subscriptionPlanTranslation ? $subscriptionPlan->subscriptionPlan->subscriptionPlanTranslation->name : "N/A",
                 'months' => $subscriptionPlan->months,

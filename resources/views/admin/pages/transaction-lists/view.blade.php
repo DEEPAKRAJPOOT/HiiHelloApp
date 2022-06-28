@@ -26,8 +26,7 @@
 
                             <div class="mb-2">
 
-                                @if ($tran->user->profile_photo)
-                                    {{-- <span>User Image</span> --}}
+                                @if ($tran->user && $tran->user->profile_photo)
                                     <div class="symbol symbol-120 mr-5">
                                         <a href="{{ generateURL($tran->user->profile_photo) }}" target="_blank"
                                             style="margin: 10px;">
@@ -101,10 +100,10 @@
                                     </b></label>
                             </div>
                             <div class="mb-2">
-                                <label class="control-label"><span class="mendatory" style="font-size: 20px;"></span>Transaction Date : <b>
+                                <label class="control-label"><span class="mendatory"
+                                        style="font-size: 20px;"></span>Transaction Date : <b>
                                         @if ($tran->created_at)
-                                            {{ date('Y-m-d', strtotime($tran->created_at));
-                                            }}
+                                            {{ date('Y-m-d', strtotime($tran->created_at)) }}
                                         @else
                                             -
                                         @endif

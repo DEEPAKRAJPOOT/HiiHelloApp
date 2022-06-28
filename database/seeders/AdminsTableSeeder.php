@@ -15,10 +15,7 @@ class AdminsTableSeeder extends Seeder
      */
     public function run()
     {
-        Schema::disableForeignKeyConstraints();
-        Admin::truncate();
-        Schema::enableForeignKeyConstraints();
-
+        
         $admins = [
             'full_name' => 'Admin',
             'email' => "admin@admin.com",
