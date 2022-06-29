@@ -122,26 +122,11 @@ class SubscriptionListController extends Controller
         $subscriptionPlans = $subscriptionPlans->get();
 
         foreach ($subscriptionPlans as $subscriptionPlan) {
-            
-            if ($subscriptionPlan->user) {
-                $account_id  = $subscriptionPlan->user->account_id ?? "";
-                $user_id  = $subscriptionPlan->user->userTransDefault ? $subscriptionPlan->user->userTransDefault->full_name : "N/A";
-            } else {
-                $account_id = "";
-                $user_id = "";
-            }
-
-            if ($subscriptionPlan->subscriptionPlan) {
-                $plan_id =  $subscriptionPlan->subscriptionPlan->subscriptionPlanTranslation ? $subscriptionPlan->subscriptionPlan->subscriptionPlanTranslation->name : "N/A";
-            } else {
-                $plan_id = "";
-            }
-
             $records['data'][] = [
                 'id' => $subscriptionPlan->id,
-                'account_id' => $account_id,
-                'user_id' => $user_id,
-                'plan_id' => $plan_id,
+                'account_id' => $subscriptionPlan->user ? ($subscriptionPlan->user->account_id ?? "") : "",
+                'user_id' => $subscriptionPlan->user ? ($subscriptionPlan->user->userTransDefault ? $subscriptionPlan->user->userTransDefault->full_name : "N/A") : "",
+                'plan_id' => $subscriptionPlan->subscriptionPlan ? ($subscriptionPlan->subscriptionPlan->subscriptionPlanTranslation ? $subscriptionPlan->subscriptionPlan->subscriptionPlanTranslation->name : "N/A") : "",
                 'months' => $subscriptionPlan->months,
                 'amount' => $subscriptionPlan->amount,
                 'status' => $subscriptionPlan->status,

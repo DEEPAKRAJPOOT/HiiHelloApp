@@ -118,25 +118,12 @@ class TrasactionListController extends Controller
         $TransactionLists = $TransactionLists->get();
 
         foreach ($TransactionLists as $TransactionList) {
-           
-            if ($TransactionList->user) {
-                $user_id = $TransactionList->user->userTransDefault ? $TransactionList->user->userTransDefault->full_name : "";
-                $account_id = $TransactionList->user->account_id ?? "";
-            } else {
-                $user_id = "";
-                $account_id = "";
-            }
 
-            if ($TransactionList->subscriptionPlan) {
-                $plan_id = $TransactionList->subscriptionPlan->subscriptionPlanTranslation ? $TransactionList->subscriptionPlan->subscriptionPlanTranslation->name : "N/A";
-            } else {
-                $plan_id = "";
-            }
             $records['data'][] = [
                 'id' => $TransactionList->id,
-                'account_id' => $account_id,
-                'user_id' =>  $user_id,
-                'plan_id' => $plan_id,
+                'account_id' =>  $TransactionList->user ? ($TransactionList->user->account_id ?? "") :  "",
+                'user_id' =>  $TransactionList->user ? ($TransactionList->user->userTransDefault ? $TransactionList->user->userTransDefault->full_name : "") : "",
+                'plan_id' => $TransactionList->subscriptionPlan ? ($TransactionList->subscriptionPlan->subscriptionPlanTranslation ? $TransactionList->subscriptionPlan->subscriptionPlanTranslation->name : "N/A") : "",
                 'razorpay_order_id' => $TransactionList->razorpay_order_id,
                 'amount' => $TransactionList->amount,
                 'status' => $TransactionList->status,
