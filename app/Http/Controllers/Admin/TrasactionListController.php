@@ -46,10 +46,10 @@ class TrasactionListController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show(Transaction $tran)
+    public function show(Transaction $transaction_list)
     {
         // dd($tran);
-        return view('admin.pages.transaction-lists.view', compact('tran'))->with(['custom_title' => 'Trasaction']);
+        return view('admin.pages.transaction-lists.view', ["tran" => $transaction_list])->with(['custom_title' => 'Trasaction']);
     }
 
     /**
@@ -90,7 +90,7 @@ class TrasactionListController extends Controller
     {
         extract($this->DTFilters($request->all()));
         $records = [];
-        $TransactionLists = Transaction::with(['subscriptionPlan', 'user','user.userTranslations','subscriptionPlan.subscriptionPlanTranslations'])->orderBy($sort_column, $sort_order);
+        $TransactionLists = Transaction::with(['subscriptionPlan', 'user', 'user.userTranslations', 'subscriptionPlan.subscriptionPlanTranslations'])->orderBy($sort_column, $sort_order);
 
         if ($search != '') {
             $TransactionLists->where(function ($query) use ($search, $TransactionLists) {
@@ -118,15 +118,25 @@ class TrasactionListController extends Controller
         $TransactionLists = $TransactionLists->get();
 
         foreach ($TransactionLists as $TransactionList) {
-            $params = [
-                'class' => '',
-                'id' => $TransactionList->custom_id,
-            ];
+           
+            if ($TransactionList->user) {
+                $user_id = $TransactionList->user->userTransDefault ? $TransactionList->user->userTransDefault->full_name : "";
+                $account_id = $TransactionList->user->account_id ?? "";
+            } else {
+                $user_id = "";
+                $account_id = "";
+            }
+
+            if ($TransactionList->subscriptionPlan) {
+                $plan_id = $TransactionList->subscriptionPlan->subscriptionPlanTranslation ? $TransactionList->subscriptionPlan->subscriptionPlanTranslation->name : "N/A";
+            } else {
+                $plan_id = "";
+            }
             $records['data'][] = [
                 'id' => $TransactionList->id,
-                'account_id' => $TransactionList->user ? $TransactionList->user->account_id : '',
-                'user_id' =>  $TransactionList->user->userTransDefault ? $TransactionList->user->userTransDefault->full_name : "",
-                'plan_id' => $TransactionList->subscriptionPlan->subscriptionPlanTranslation ? $TransactionList->subscriptionPlan->subscriptionPlanTranslation->name : "N/A",
+                'account_id' => $account_id,
+                'user_id' =>  $user_id,
+                'plan_id' => $plan_id,
                 'razorpay_order_id' => $TransactionList->razorpay_order_id,
                 'amount' => $TransactionList->amount,
                 'status' => $TransactionList->status,

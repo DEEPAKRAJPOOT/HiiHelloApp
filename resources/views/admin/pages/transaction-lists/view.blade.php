@@ -50,7 +50,7 @@
                             <div class="mb-2">
                                 <label class="control-label"><span class="mendatory" style="font-size: 20px;"></span>Full
                                     Name : <b>
-                                        @if ($tran->user_id)
+                                        @if ($tran->user && $tran->user->userTransDefault)
                                             {{ $tran->user->userTransDefault ? $tran->user->userTransDefault->full_name : 'N/A' }}
                                         @else
                                             -
@@ -60,7 +60,7 @@
                             <div class="mb-2">
                                 <label class="control-label"><span class="mendatory" style="font-size: 20px;"></span>Account
                                     Id : <b>
-                                        @if ($tran->user->account_id)
+                                        @if ($tran->user &&  $tran->user->account_id)
                                             {{ $tran->user->account_id }}
                                         @else
                                             -
@@ -70,7 +70,7 @@
                             <div class="mb-2">
                                 <label class="control-label"><span class="mendatory" style="font-size: 20px;"></span>Email:
                                     <b>
-                                        @if ($tran->user->email)
+                                        @if ($tran->user &&  $tran->user->email)
                                             {{ $tran->user->email }}
                                         @else
                                             -

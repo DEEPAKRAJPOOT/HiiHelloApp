@@ -49,10 +49,9 @@ class SubscriptionListController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show(Subscription $sub)
+    public function show(Subscription $subscription_list)
     {
-        // dd($sub);
-        return view('admin.pages.subscription-list.view', compact('sub'))->with(['custom_title' => 'Subscription']);
+        return view('admin.pages.subscription-list.view', ["sub" => $subscription_list])->with(['custom_title' => 'Subscription']);
     }
 
     /**
@@ -93,7 +92,7 @@ class SubscriptionListController extends Controller
     {
         extract($this->DTFilters($request->all()));
         $records = [];
-        $subscriptionPlans = Subscription::with(['subscriptionPlan', 'user', 'user.userTranslations','subscriptionPlan.subscriptionPlanTranslations'])->orderBy($sort_column, $sort_order);
+        $subscriptionPlans = Subscription::with(['subscriptionPlan', 'user', 'user.userTranslations', 'subscriptionPlan.subscriptionPlanTranslations'])->orderBy($sort_column, $sort_order);
 
         if ($search != '') {
             $subscriptionPlans->where(function ($query) use ($search) {
@@ -109,7 +108,6 @@ class SubscriptionListController extends Controller
                     ->orWhereHas('subscriptionPlan.subscriptionPlanTranslations', function ($query) use ($search) {
                         $query->where('name', 'like', "%{$search}%");
                     });
-
             });
         }
 
@@ -124,15 +122,26 @@ class SubscriptionListController extends Controller
         $subscriptionPlans = $subscriptionPlans->get();
 
         foreach ($subscriptionPlans as $subscriptionPlan) {
-            $params = [
-                'class' => '',
-                'id' => $subscriptionPlan->custom_id,
-            ];
+            
+            if ($subscriptionPlan->user) {
+                $account_id  = $subscriptionPlan->user->account_id ?? "";
+                $user_id  = $subscriptionPlan->user->userTransDefault ? $subscriptionPlan->user->userTransDefault->full_name : "N/A";
+            } else {
+                $account_id = "";
+                $user_id = "";
+            }
+
+            if ($subscriptionPlan->subscriptionPlan) {
+                $plan_id =  $subscriptionPlan->subscriptionPlan->subscriptionPlanTranslation ? $subscriptionPlan->subscriptionPlan->subscriptionPlanTranslation->name : "N/A";
+            } else {
+                $plan_id = "";
+            }
+
             $records['data'][] = [
                 'id' => $subscriptionPlan->id,
-                'account_id' => $subscriptionPlan->user ? $subscriptionPlan->user->account_id : "",
-                'user_id' =>  $subscriptionPlan->user->userTransDefault ? $subscriptionPlan->user->userTransDefault->full_name : "N/A",
-                'plan_id' => $subscriptionPlan->subscriptionPlan->subscriptionPlanTranslation ? $subscriptionPlan->subscriptionPlan->subscriptionPlanTranslation->name : "N/A",
+                'account_id' => $account_id,
+                'user_id' => $user_id,
+                'plan_id' => $plan_id,
                 'months' => $subscriptionPlan->months,
                 'amount' => $subscriptionPlan->amount,
                 'status' => $subscriptionPlan->status,

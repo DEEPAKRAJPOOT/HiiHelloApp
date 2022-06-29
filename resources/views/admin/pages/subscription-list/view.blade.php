@@ -40,7 +40,7 @@
                             <div class="mb-2">
                                 <label class="control-label"><span class="mendatory" style="font-size: 20px;"></span>Full
                                     Name : <b>
-                                        @if ($sub->user_id)
+                                        @if ($sub->user && $sub->user->userTransDefault)
                                             {{ $sub->user->userTransDefault ? $sub->user->userTransDefault->full_name : 'N/A' }}
                                         @else
                                             -
@@ -51,7 +51,7 @@
                             <div class="mb-2">
                                 <label class="control-label"><span class="mendatory" style="font-size: 20px;"></span>Account
                                     Id : <b>
-                                        @if ($sub->user->account_id)
+                                        @if ($sub->user && $sub->user->account_id)
                                             {{ $sub->user->account_id }}
                                         @else
                                             -
@@ -61,7 +61,7 @@
                             <div class="mb-2">
                                 <label class="control-label"><span class="mendatory" style="font-size: 20px;"></span>Email:
                                     <b>
-                                        @if ($sub->user->email)
+                                        @if ($sub->user && $sub->user->email)
                                             {{ $sub->user->email }}
                                         @else
                                             -
