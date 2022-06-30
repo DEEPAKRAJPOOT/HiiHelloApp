@@ -19,13 +19,8 @@
             <div class="profile-content">
                 <div class="form-group col-md-12">
                     <div class="form-group col-md-12 row" style="margin:15px;">
-                        <div class="form-group col-md-6">
-                            <label class="control-label"><span class="mendatory" style="font-size: 20px;"></span>
-                                <h1>User Transaction Information</h1>
-                            </label>
-
+                        <div class="form-group col-md-12">
                             <div class="mb-2">
-
                                 @if ($tran->user && $tran->user->profile_photo)
                                     <div class="symbol symbol-120 mr-5">
                                         <a href="{{ generateURL($tran->user->profile_photo) }}" target="_blank"
@@ -36,16 +31,6 @@
                                         </a>
                                     </div>
                                 @endif
-                            </div>
-                            <div class="mb-2">
-                                <label class="control-label"><span class="mendatory" style="font-size: 20px;"></span>Razor
-                                    Pay Order Id : <b>
-                                        @if ($tran->razorpay_order_id)
-                                            {{ $tran->razorpay_order_id }}
-                                        @else
-                                            -
-                                        @endif
-                                    </b></label>
                             </div>
                             <div class="mb-2">
                                 <label class="control-label"><span class="mendatory" style="font-size: 20px;"></span>Full
@@ -78,6 +63,16 @@
                                     </b></label>
                             </div>
                             <div class="mb-2">
+                                <label class="control-label"><span class="mendatory" style="font-size: 20px;"></span>Plan:
+                                    <b>
+                                        @if ($tran->subscriptionPlan && $tran->subscriptionPlan->subscriptionPlanTransDefault)
+                                            {{ $tran->subscriptionPlan->subscriptionPlanTransDefault->name }}
+                                        @else
+                                            -
+                                        @endif
+                                    </b></label>
+                            </div>
+                            <div class="mb-2">
                                 <label class="control-label"><span class="mendatory" style="font-size: 20px;"></span>Amount
                                     : <b>
                                         @if ($tran->amount)
@@ -87,8 +82,46 @@
                                         @endif
                                     </b></label>
                             </div>
-
-
+                            <div class="mb-2">
+                                <label class="control-label"><span class="mendatory" style="font-size: 20px;"></span>Month
+                                    : <b>
+                                        @if ($tran->subscriptionPlan && $tran->subscriptionPlan->months)
+                                            {{ $tran->subscriptionPlan->months }}
+                                        @else
+                                            -
+                                        @endif
+                                    </b></label>
+                            </div>
+                            <div class="mb-2">
+                                <label class="control-label"><span class="mendatory" style="font-size: 20px;"></span>Razor
+                                    Pay Order Id : <b>
+                                        @if ($tran->razorpay_order_id)
+                                            {{ $tran->razorpay_order_id }}
+                                        @else
+                                            -
+                                        @endif
+                                    </b></label>
+                            </div>
+                            <div class="mb-2">
+                                <label class="control-label"><span class="mendatory" style="font-size: 20px;"></span>Razor
+                                    Pay Payment Id : <b>
+                                        @if ($tran->razorpay_payment_id)
+                                            {{ $tran->razorpay_payment_id }}
+                                        @else
+                                            -
+                                        @endif
+                                    </b></label>
+                            </div>
+                            <div class="mb-4">
+                                <label class="control-label"><span class="mendatory" style="font-size: 20px;"></span>Razor
+                                    Pay Signature : <b>
+                                        @if ($tran->razorpay_signature)
+                                            {{ $tran->razorpay_signature }}
+                                        @else
+                                            -
+                                        @endif
+                                    </b></label>
+                            </div>
                             <div class="mb-2">
                                 <label class="control-label"><span class="mendatory" style="font-size: 20px;"></span>Status
                                     : <b>
@@ -110,9 +143,7 @@
                                     </b></label>
                             </div>
                         </div>
-
                     </div>
-                    <br><br>
                 </div>
             </div>
         </div>

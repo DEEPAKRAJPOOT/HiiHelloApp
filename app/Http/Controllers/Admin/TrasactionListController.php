@@ -15,29 +15,7 @@ class TrasactionListController extends Controller
      */
     public function index()
     {
-        //
         return view('admin.pages.transaction-lists.index')->with(['custom_title' => 'Transaction List']);
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function store(Request $request)
-    {
-        //
     }
 
     /**
@@ -46,51 +24,18 @@ class TrasactionListController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show(Transaction $transaction_list)
+    public function show($custom_id)
     {
-        // dd($tran);
+        $transaction_list = Transaction::with(['user','user.userTransDefault','subscriptionPlan.subscriptionPlanTransDefault'])
+                    ->whereCustomId($custom_id)->firstOrFail();
         return view('admin.pages.transaction-lists.view', ["tran" => $transaction_list])->with(['custom_title' => 'Trasaction']);
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function edit($id)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy($id)
-    {
-        //
     }
 
     public function listing(Request $request)
     {
         extract($this->DTFilters($request->all()));
         $records = [];
-        $TransactionLists = Transaction::with(['subscriptionPlan', 'user', 'user.userTranslations', 'subscriptionPlan.subscriptionPlanTranslations'])->orderBy($sort_column, $sort_order);
+        $TransactionLists = Transaction::with(['subscriptionPlan', 'user', 'user.userTransDefault', 'subscriptionPlan.subscriptionPlanTranslation'])->orderBy($sort_column, $sort_order);
 
         if ($search != '') {
             $TransactionLists->where(function ($query) use ($search, $TransactionLists) {

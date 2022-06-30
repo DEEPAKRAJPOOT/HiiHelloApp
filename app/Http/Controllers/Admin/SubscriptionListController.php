@@ -23,27 +23,6 @@ class SubscriptionListController extends Controller
     }
 
     /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function store(Request $request)
-    {
-        //
-    }
-
-    /**
      * Display the specified resource.
      *
      * @param  int  $id
@@ -51,48 +30,18 @@ class SubscriptionListController extends Controller
      */
     public function show(Subscription $subscription_list)
     {
+        $subscription_list = Subscription::with(['user','user.userTransDefault',
+                    'subscriptionPlan','subscriptionPlan.subscriptionPlanTransDefault'])
+                    ->whereId($subscription_list->id)->firstOrFail();
         return view('admin.pages.subscription-list.view', ["sub" => $subscription_list])->with(['custom_title' => 'Subscription']);
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function edit($id)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy($id)
-    {
-        //
     }
 
     public function listing(Request $request)
     {
         extract($this->DTFilters($request->all()));
         $records = [];
-        $subscriptionPlans = Subscription::with(['subscriptionPlan', 'user', 'user.userTranslations', 'subscriptionPlan.subscriptionPlanTranslations'])->orderBy($sort_column, $sort_order);
+        $subscriptionPlans = Subscription::with(['subscriptionPlan', 'subscriptionPlan.subscriptionPlanTranslation',
+            'user', 'user.userTransDefault'])->orderBy($sort_column, $sort_order);
 
         if ($search != '') {
             $subscriptionPlans->where(function ($query) use ($search) {

@@ -20,11 +20,7 @@
                 <div class="form-group col-md-12">
                     <div class="form-group col-md-12 row" style="margin:15px;">
                         <div class="form-group col-md-6">
-                            <label class="control-label"><span class="mendatory" style="font-size: 20px;"></span>
-                                <h1>Subscription Information</h1>
-                            </label>
                             <div class="mb-2">
-
                                 @if ($sub->user && $sub->user->profile_photo)
                                     <div class="symbol symbol-120 mr-5">
                                         <a href="{{ generateURL($sub->user->profile_photo) }}" target="_blank"
@@ -69,10 +65,30 @@
                                     </b></label>
                             </div>
                             <div class="mb-2">
+                                <label class="control-label"><span class="mendatory" style="font-size: 20px;"></span>Plan:
+                                    <b>
+                                        @if ($sub->subscriptionPlan && $sub->subscriptionPlan->subscriptionPlanTransDefault)
+                                            {{ $sub->subscriptionPlan->subscriptionPlanTransDefault->name }}
+                                        @else
+                                            -
+                                        @endif
+                                    </b></label>
+                            </div>
+                            <div class="mb-2">
                                 <label class="control-label"><span class="mendatory" style="font-size: 20px;"></span>Amount
                                     : <b>
                                         @if ($sub->amount)
                                             {{ $sub->amount }}
+                                        @else
+                                            -
+                                        @endif
+                                    </b></label>
+                            </div>
+                            <div class="mb-2">
+                                <label class="control-label"><span class="mendatory" style="font-size: 20px;"></span>Month
+                                    : <b>
+                                        @if ($sub->months)
+                                            {{ $sub->months }}
                                         @else
                                             -
                                         @endif
@@ -109,16 +125,6 @@
                                     </b></label>
                             </div>
                             <div class="mb-2">
-                                <label class="control-label"><span class="mendatory" style="font-size: 20px;"></span>Mohnth
-                                    : <b>
-                                        @if ($sub->months)
-                                            {{ $sub->months }}
-                                        @else
-                                            -
-                                        @endif
-                                    </b></label>
-                            </div>
-                            <div class="mb-2">
                                 <label class="control-label"><span class="mendatory" style="font-size: 20px;"></span>Status
                                     : <b>
                                         @if ($sub->status)
@@ -129,9 +135,7 @@
                                     </b></label>
                             </div>
                         </div>
-
                     </div>
-                    <br><br>
                 </div>
             </div>
         </div>
