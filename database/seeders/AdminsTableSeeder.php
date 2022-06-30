@@ -15,6 +15,7 @@ class AdminsTableSeeder extends Seeder
      */
     public function run()
     {
+        
         $admins = [
             'full_name' => 'Admin',
             'email' => "admin@admin.com",

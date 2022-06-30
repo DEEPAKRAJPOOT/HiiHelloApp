@@ -50,15 +50,21 @@ function getPermissions($user_type = 'normal')
                 'permissions' => 'access,add'
             ],
             15 =>[ // Subscription Plans
-                'permissions' => 'access,add,edit,delete'
+                'permissions' => 'access,add,edit,delete,view'
             ],
-            16 =>[ // App Details
-                'permissions' => 'access,add'
+            16 =>[ // Subscription listing
+                'permissions' => 'access,view'
             ],
-            17 =>[ //CMS Pages
+            17 =>[ //Trasaction Listing
+                'permissions' => 'access,view'
+            ],
+            18 =>[ // App Details
+                'permissions' => 'access,add,view'
+            ],
+            19 =>[ //CMS Pages
                 'permissions' => 'access,edit'
             ],
-            18 =>[ //Site Configurations
+            20 =>[ //Site Configurations
                 'permissions' => 'access'
             ],
         ];
