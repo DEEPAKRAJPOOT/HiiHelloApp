@@ -272,12 +272,11 @@ Breadcrumbs::register('dashboard', function ($breadcrumbs) {
 	    $breadcrumbs->push('Edit Subscription Plan', route(Auth::getDefaultDriver().'.subscription-plans.edit', $id));
 	});
 
-
-	// Subscription list ------------------------------------------------------------------
+	// Subscriptions ------------------------------------------------------------------
 	Breadcrumbs::register('subscription_list', function($breadcrumbs)
 	{
 		$breadcrumbs->parent('dashboard');
-	    $breadcrumbs->push('Subscription List', route(Auth::getDefaultDriver().'.subscription-lists.index'));
+	    $breadcrumbs->push('Subscriptions', route(Auth::getDefaultDriver().'.subscription-lists.index'));
 	});
 
 	Breadcrumbs::register('subscription_view', function($breadcrumbs,$id)
@@ -285,11 +284,12 @@ Breadcrumbs::register('dashboard', function ($breadcrumbs) {
 		$breadcrumbs->parent('subscription_list');
 		$breadcrumbs->push('Subscription View', route('admin.subscription-lists.show', $id));
 	});
-	//Transaction List -------------------------------------------------------------------------------------
+
+	//Transactions -------------------------------------------------------------------------------------
 	Breadcrumbs::register('transaction_list', function($breadcrumbs)
 	{
 		$breadcrumbs->parent('dashboard');
-	    $breadcrumbs->push('Transaction List', route(Auth::getDefaultDriver().'.transaction-lists.index'));
+	    $breadcrumbs->push('Transactions', route(Auth::getDefaultDriver().'.transaction-lists.index'));
 	});
 
 	Breadcrumbs::register('transaction_view', function($breadcrumbs,$id)
@@ -297,6 +297,7 @@ Breadcrumbs::register('dashboard', function ($breadcrumbs) {
 		$breadcrumbs->parent('transaction_list');
 		$breadcrumbs->push('Transaction View', route('admin.transaction-lists.show', $id));
 	});
+
 	// App Details -------------------------------------------------------------------------------------------------------------------------------------------------------
 	Breadcrumbs::register('app_detail_create', function($breadcrumbs)
 	{

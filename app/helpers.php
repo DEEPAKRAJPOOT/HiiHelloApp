@@ -52,10 +52,10 @@ function getPermissions($user_type = 'normal')
             15 =>[ // Subscription Plans
                 'permissions' => 'access,add,edit,delete,view'
             ],
-            16 =>[ // Subscription listing
+            16 =>[ // Subscriptions
                 'permissions' => 'access,view'
             ],
-            17 =>[ //Trasaction Listing
+            17 =>[ //Trasactions
                 'permissions' => 'access,view'
             ],
             18 =>[ // App Details

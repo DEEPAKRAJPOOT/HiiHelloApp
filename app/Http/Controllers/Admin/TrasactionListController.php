@@ -15,7 +15,7 @@ class TrasactionListController extends Controller
      */
     public function index()
     {
-        return view('admin.pages.transaction-lists.index')->with(['custom_title' => 'Transaction List']);
+        return view('admin.pages.transaction-lists.index')->with(['custom_title' => 'Transactions']);
     }
 
     /**
@@ -26,19 +26,19 @@ class TrasactionListController extends Controller
      */
     public function show($custom_id)
     {
-        $transaction_list = Transaction::with(['user','user.userTransDefault','subscriptionPlan.subscriptionPlanTransDefault'])
+        $transaction = Transaction::with(['user','user.userTransDefault','subscriptionPlan.subscriptionPlanTransDefault'])
                     ->whereCustomId($custom_id)->firstOrFail();
-        return view('admin.pages.transaction-lists.view', ["tran" => $transaction_list])->with(['custom_title' => 'Trasaction']);
+        return view('admin.pages.transaction-lists.view', ["tran" => $transaction])->with(['custom_title' => 'Trasaction']);
     }
 
     public function listing(Request $request)
     {
         extract($this->DTFilters($request->all()));
         $records = [];
-        $TransactionLists = Transaction::with(['subscriptionPlan', 'user', 'user.userTransDefault', 'subscriptionPlan.subscriptionPlanTranslation'])->orderBy($sort_column, $sort_order);
+        $transactions = Transaction::with(['subscriptionPlan', 'user', 'user.userTransDefault', 'subscriptionPlan.subscriptionPlanTranslation'])->orderBy($sort_column, $sort_order);
 
         if ($search != '') {
-            $TransactionLists->where(function ($query) use ($search, $TransactionLists) {
+            $transactions->where(function ($query) use ($search, $transactions) {
                 $query->where('amount', 'like', "%{$search}%")
                     ->orWhere('status', 'like', "%{$search}%")
                     ->orWhere('razorpay_order_id', 'like', "%{$search}%")
@@ -54,25 +54,24 @@ class TrasactionListController extends Controller
             });
         }
 
-        $count = $TransactionLists->count();
-
+        $count = $transactions->count();
         $records['recordsTotal'] = $count;
         $records['recordsFiltered'] = $count;
         $records['data'] = [];
-        $TransactionLists = $TransactionLists->offset($offset)->limit($limit)->orderBy($sort_column, $sort_order);
-        $TransactionLists = $TransactionLists->get();
 
-        foreach ($TransactionLists as $TransactionList) {
+        $transactions = $transactions->offset($offset)->limit($limit)->orderBy($sort_column, $sort_order);
+        $transactions = $transactions->get();
 
+        foreach ($transactions as $transaction) {
             $records['data'][] = [
-                'id' => $TransactionList->id,
-                'account_id' =>  $TransactionList->user ? ($TransactionList->user->account_id ?? "") :  "",
-                'user_id' =>  $TransactionList->user ? ($TransactionList->user->userTransDefault ? $TransactionList->user->userTransDefault->full_name : "") : "",
-                'plan_id' => $TransactionList->subscriptionPlan ? ($TransactionList->subscriptionPlan->subscriptionPlanTranslation ? $TransactionList->subscriptionPlan->subscriptionPlanTranslation->name : "N/A") : "",
-                'razorpay_order_id' => $TransactionList->razorpay_order_id,
-                'amount' => $TransactionList->amount,
-                'status' => $TransactionList->status,
-                'action' => view('admin.layouts.includes.actions')->with(['custom_title' => 'Subscription Lists', 'id' => $TransactionList->custom_id], $TransactionList)->render(),
+                'id' => $transaction->id,
+                'account_id' =>  $transaction->user ? ($transaction->user->account_id ?? "") :  "",
+                'user_id' =>  $transaction->user ? ($transaction->user->userTransDefault ? $transaction->user->userTransDefault->full_name : "") : "",
+                'plan_id' => $transaction->subscriptionPlan ? ($transaction->subscriptionPlan->subscriptionPlanTranslation ? $transaction->subscriptionPlan->subscriptionPlanTranslation->name : "N/A") : "",
+                'razorpay_order_id' => $transaction->razorpay_order_id,
+                'amount' => $transaction->amount,
+                'status' => $transaction->status,
+                'action' => view('admin.layouts.includes.actions')->with(['custom_title' => 'Subscriptions', 'id' => $transaction->custom_id], $transaction)->render(),
 
             ];
         }

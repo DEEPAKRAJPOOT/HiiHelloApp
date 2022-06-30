@@ -17,9 +17,7 @@ class SubscriptionListController extends Controller
      */
     public function index()
     {
-        return view('admin.pages.subscription-list.index')->with(['custom_title' => 'Subscription List']);
-
-        //
+        return view('admin.pages.subscription-list.index')->with(['custom_title' => 'Subscriptions']);
     }
 
     /**
@@ -28,23 +26,23 @@ class SubscriptionListController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show(Subscription $subscription_list)
+    public function show($custom_id)
     {
-        $subscription_list = Subscription::with(['user','user.userTransDefault',
-                    'subscriptionPlan','subscriptionPlan.subscriptionPlanTransDefault'])
-                    ->whereId($subscription_list->id)->firstOrFail();
-        return view('admin.pages.subscription-list.view', ["sub" => $subscription_list])->with(['custom_title' => 'Subscription']);
+        $subscription = Subscription::with(['user','user.userTransDefault',
+                'subscriptionPlan','subscriptionPlan.subscriptionPlanTransDefault'])
+                ->whereCustomId($custom_id)->firstOrFail();
+        return view('admin.pages.subscription-list.view', ["sub" => $subscription])->with(['custom_title' => 'Subscription']);
     }
 
     public function listing(Request $request)
     {
         extract($this->DTFilters($request->all()));
         $records = [];
-        $subscriptionPlans = Subscription::with(['subscriptionPlan', 'subscriptionPlan.subscriptionPlanTranslation',
+        $subscriptions = Subscription::with(['subscriptionPlan', 'subscriptionPlan.subscriptionPlanTranslation',
             'user', 'user.userTransDefault'])->orderBy($sort_column, $sort_order);
 
         if ($search != '') {
-            $subscriptionPlans->where(function ($query) use ($search) {
+            $subscriptions->where(function ($query) use ($search) {
                 $query->where('months', 'like', "%{$search}%")
                     ->orWhere('amount', 'like', "%{$search}%")
                     ->orWhere('status', 'like', "%{$search}%")
@@ -60,26 +58,24 @@ class SubscriptionListController extends Controller
             });
         }
 
-        $count = $subscriptionPlans->count();
-
+        $count = $subscriptions->count();
         $records['recordsTotal'] = $count;
         $records['recordsFiltered'] = $count;
         $records['data'] = [];
 
-        $subscriptionPlans = $subscriptionPlans->offset($offset)->limit($limit)->orderBy($sort_column, $sort_order);
+        $subscriptions = $subscriptions->offset($offset)->limit($limit)->orderBy($sort_column, $sort_order);
+        $subscriptions = $subscriptions->get();
 
-        $subscriptionPlans = $subscriptionPlans->get();
-
-        foreach ($subscriptionPlans as $subscriptionPlan) {
+        foreach ($subscriptions as $subscription) {
             $records['data'][] = [
-                'id' => $subscriptionPlan->id,
-                'account_id' => $subscriptionPlan->user ? ($subscriptionPlan->user->account_id ?? "") : "",
-                'user_id' => $subscriptionPlan->user ? ($subscriptionPlan->user->userTransDefault ? $subscriptionPlan->user->userTransDefault->full_name : "N/A") : "",
-                'plan_id' => $subscriptionPlan->subscriptionPlan ? ($subscriptionPlan->subscriptionPlan->subscriptionPlanTranslation ? $subscriptionPlan->subscriptionPlan->subscriptionPlanTranslation->name : "N/A") : "",
-                'months' => $subscriptionPlan->months,
-                'amount' => $subscriptionPlan->amount,
-                'status' => $subscriptionPlan->status,
-                'action' => view('admin.layouts.includes.actions')->with(['custom_title' => 'Subscription Lists', 'id' => $subscriptionPlan->custom_id], $subscriptionPlan)->render(),
+                'id' => $subscription->id,
+                'account_id' => $subscription->user ? ($subscription->user->account_id ?? "") : "",
+                'user_id' => $subscription->user ? ($subscription->user->userTransDefault ? $subscription->user->userTransDefault->full_name : "N/A") : "",
+                'plan_id' => $subscription->subscriptionPlan ? ($subscription->subscriptionPlan->subscriptionPlanTranslation ? $subscription->subscriptionPlan->subscriptionPlanTranslation->name : "N/A") : "",
+                'months' => $subscription->months,
+                'amount' => $subscription->amount,
+                'status' => $subscription->status,
+                'action' => view('admin.layouts.includes.actions')->with(['custom_title' => 'Subscriptions', 'id' => $subscription->custom_id], $subscription)->render(),
 
             ];
         }
