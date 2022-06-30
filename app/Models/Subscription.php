@@ -15,14 +15,8 @@ class Subscription extends Model
     protected $fillable = ['custom_id', 'user_id', 'plan_id', 'months', 'amount', 'start_date', 'end_date', 'payment_date', 'status'];
     public function getRouteKeyName(){ return 'custom_id'; }
 
-    public function subscriptionPlan()
-    {
-        return $this->belongsTo('App\Models\SubscriptionPlan', 'plan_id', 'id');
-    }
-    public function user()
-    {
-        return $this->belongsTo('App\Models\User');
-    }
+    public function subscriptionPlan(){ return $this->belongsTo('App\Models\SubscriptionPlan', 'plan_id', 'id'); }
+    public function user(){ return $this->belongsTo('App\Models\User'); }
 
     public function notifySubScriptionPurchase($status)
     {

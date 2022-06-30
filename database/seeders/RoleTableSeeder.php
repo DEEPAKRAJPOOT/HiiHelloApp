@@ -247,7 +247,7 @@ class RoleTableSeeder extends Seeder
                 ],
                 [
                     'section_id'                =>  15,
-                    'title'                     =>  'Subscripiton List',
+                    'title'                     =>  'Subscripitons',
                     'route'                     =>  'admin.subscription-lists.index',
                     'params'                    =>  '',
                     'icon'                      =>  'fa fa-rupee-sign',
@@ -262,7 +262,7 @@ class RoleTableSeeder extends Seeder
                 ],
                 [
                     'section_id'                =>  15,
-                    'title'                     =>  'Transaction List',
+                    'title'                     =>  'Transactions',
                     'route'                     =>  'admin.transaction-lists.index',
                     'params'                    =>  '',
                     'icon'                      =>  'fa fa-rupee-sign',

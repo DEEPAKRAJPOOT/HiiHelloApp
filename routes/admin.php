@@ -77,14 +77,13 @@ Route::group(['namespace' => 'Admin', 'middleware' => ['check_permit', 'revalida
 	Route::get('subscription-plans/listing', 'SubscriptionPlanController@listing')->name('subscription-plans.listing');
 	Route::resource('subscription-plans', 'SubscriptionPlanController');
 
-	/*subscription listing */
+	/*subscriptions */
 	Route::get('subscription-lists/listing', 'SubscriptionListController@listing')->name('subscription-lists.listing');
 	Route::resource('subscription-lists', 'SubscriptionListController');
 	
-	/* transaction Listing */
+	/* transaction */
 	Route::get('transaction-lists/listing', 'TrasactionListController@listing')->name('transaction-lists.listing');
 	Route::resource('transaction-lists', 'TrasactionListController');
-	
 
 	/* App Details */
 	Route::resource('app-details', 'AppDetailController');
