@@ -6,13 +6,11 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
 use App\Models\User;
-use App\Models\BlockUser;
 use Tests\InitialiseUserTrait;
 
-class BlockTest extends TestCase
+class DiscoveryTest extends TestCase
 {
     use InitialiseUserTrait;
-
     /**
      * A basic feature test example.
      *
@@ -29,43 +27,46 @@ class BlockTest extends TestCase
         $this->withHeader('x-language', config('utility.default_lang_code'));
     }
 
-    public function test_block_list_successfully()
-    {
-        $user = User::firstOrFail();
-        $this->setUserToken($user);
-        $block_user = BlockUser::whereBlockBy($user)->latest();
-        $this->postJson(route('api.user.block-list'),[])
-        // ->assertStatus(404)
-        ->assertJsonStructure([
-            'meta' => [ 'api','url','message' ],
-        ]);
-    }
-
-    public function test_block_unblock_validation()
+    public function test_set_discovery_detail_validation()
     {
         $user = User::firstOrFail();
         $this->setUserToken($user);
 
-        $this->postJson(route('api.user.block-unblock'))
+        $this->postJson(route('api.discovery.set-detail'))
         ->assertStatus(412)
         ->assertJsonStructure([
             'data', 'meta' => [ 'api','url','message' ],
         ]);
     }
 
-    public function test_block_unblock_successfully()
+    public function test_set_discovery_detail_successfully()
     {
-        // $user = User::firstOrFail();
-        $user = $this->createUser();
+        $user = User::firstOrFail();
         $this->setUserToken($user);
         $data = [
-            'user_id' => '4d1Ol3mp43zBcEavnqHR',
-            'status' => 'unblock',
+            'distance' => 100,
+            'start_age' => 20,
+            'end_age' => 25,
+            'interest' => 'Female',
+            'location' => 'IpQiFcIwk7Qo3x79FzlF',
+            'languages[0]' => 'en',
+            'languages[1]' => 'hi',
         ];
-        $this->postJson(route('api.user.block-unblock'),$data)
+        $this->postJson(route('api.discovery.set-detail'),$data)
         ->assertStatus(200)
         ->assertJsonStructure([
             'data', 'meta' => [ 'api','url','message' ],
         ]);
     }
+
+    // public function test_get_discovery_detail_successfully()
+    // {
+    //     $user = User::firstOrFail();
+    //     $this->setUserToken($user);
+    //     $this->postJson(route('api.discovery.set-detail'))
+    //     ->assertStatus(200)
+    //     ->assertJsonStructure([
+    //         'data', 'meta' => [ 'api','url','message' ],
+    //     ]);
+    // }
 }

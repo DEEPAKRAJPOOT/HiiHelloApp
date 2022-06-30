@@ -7,6 +7,7 @@ use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
 use App\Models\User;
 use Tests\InitialiseUserTrait;
+use Illuminate\Http\UploadedFile;
 
 class VerificationTest extends TestCase
 {
@@ -40,18 +41,83 @@ class VerificationTest extends TestCase
         ]);
     }
 
-    // public function test_upload_verify_detail_successfully()
+    public function test_upload_verify_detail_successfully()
+    {
+        $user = User::firstOrFail();
+        $this->setUserToken($user);
+        $data = [
+            'type' => 'image',
+            'file' => UploadedFile::fake()->image('org_1.jpg'),
+        ];
+        $this->postJson(route('api.verify.upload-detail'),$data)
+        ->assertStatus(200)
+        ->assertJsonStructure([
+            'data', 'meta' => [ 'api','url','message' ],
+        ]);
+    }
+
+    public function test_verify_contact_validation()
+    {
+        $user = User::firstOrFail();
+        $this->setUserToken($user);
+
+        $this->postJson(route('api.verify.contact-no'))
+        ->assertStatus(412)
+        ->assertJsonStructure([
+            'data', 'meta' => [ 'api','url','message' ],
+        ]);
+    }
+
+    // public function test_verify_contact_successfully()
     // {
     //     $user = User::firstOrFail();
     //     $this->setUserToken($user);
     //     $data = [
-    //         'type' => 'image',
-    //         'file' => 'jpeg',
+    //         'country_code' => '93',
+    //         'contact_no' => $user->contact_no,
     //     ];
-    //     dd($this->postJson(route('api.verify.upload-detail'),$data));
+    //     dd($data);
+    //     dd($this->postJson(route('api.verify.contact-no'),$data));
     //     // ->assertStatus(200)
     //     // ->assertJsonStructure([
     //     //     'data', 'meta' => [ 'api','url','message' ],
     //     // ]);
     // }
+
+    public function test_verify_email_validation()
+    {
+        $user = User::firstOrFail();
+        $this->setUserToken($user);
+
+        $this->postJson(route('api.verify.verify-email'))
+        ->assertStatus(412)
+        ->assertJsonStructure([
+            'data', 'meta' => [ 'api','url','message' ],
+        ]);
+    }
+
+    public function test_verify_email_successfully()
+    {
+        $user = User::firstOrFail();
+        $this->setUserToken($user);
+        $data = [
+            'email' => $user->email,
+        ];
+        $this->postJson(route('api.verify.verify-email'),$data)
+        // ->assertStatus(200)
+        ->assertJsonStructure([
+            'data', 'meta' => [ 'api','url','message' ],
+        ]);
+    }
+
+    public function test_verify_details_successfully()
+    {
+        $user = User::firstOrFail();
+        $this->setUserToken($user);
+        $this->postJson(route('api.verify.get-details'))
+        ->assertStatus(200)
+        ->assertJsonStructure([
+            'data', 'meta' => [ 'api','url','message' ],
+        ]);
+    }
 }
