@@ -5,7 +5,7 @@ namespace App\Http\Controllers\api\v1;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\ { Request, Response };
 use Illuminate\Database\Eloquent\ { ModelNotFoundException };
-use Illuminate\Support\Facades\ { Auth };
+use Illuminate\Support\Facades\ { Auth, DB };
 use App\Http\Requests\Api\User\ { AddLikeRequest, AddDislikeRequest };
 use App\Http\Requests\Api\General\ { PaginationRequest };
 use App\Http\Resources\v1\ { LikeResource };
@@ -25,7 +25,9 @@ class LikeController extends Controller
             try{
                 $auth_user = $request->user(); $is_matched = false; 
                 $user = User::whereCustomId($request->user_id)->where('id','!=',$auth_user->id)->whereIsActive('y')->firstOrFail();
-                $block = BlockUser::whereBlockBy($user->id)->whereBlockedTo($auth_user->id)->first();
+                $auth_id = $auth_user->id; $user_id = $user->id;
+
+                $block = BlockUser::whereBlockBy($user_id)->whereBlockedTo($auth_id)->first();
                         
                 // Manage Swipes
                 $auth_user->addSwipeCount();
@@ -33,19 +35,21 @@ class LikeController extends Controller
                 if( $is_swipe_allow == false){ $auth_user->notifySwipeAlert(); } 
 
                 if(!$block){
-                    
                     $like = Like::firstOrCreate([
-                        'user_id'       =>  $user->id,
-                        'liker_id'      =>  $auth_user->id,
+                        'user_id'       =>  $user_id,
+                        'liker_id'      =>  $auth_id,
                     ],[
                         'custom_id'     =>  getUniqueString('likes'),
                     ]);
+
+                    // Remove From DisLikes
+                    DisLike::whereUserId($user_id)->whereDisLikerId($auth_id)->delete();
 
                     if($like->save()){
                         if($like->wasRecentlyCreated){
                             $user->increment('like_count');
 
-                            $matched = Like::select('id')->whereUserId($auth_user->id)->whereLikerId($user->id)->first();
+                            $matched = Like::select('id')->whereUserId($auth_id)->whereLikerId($user_id)->first();
                             if($matched){
                                 $auth_user->increment('match_count');
                                 $user->increment('match_count');
@@ -63,7 +67,7 @@ class LikeController extends Controller
                                 'custom_id'     =>  getUniqueString('notifications'),
                                 'key'           =>  'user_id',
                                 'value'         =>  $like->liker_id,
-                                'user_id'       =>  $user->id,
+                                'user_id'       =>  $user_id,
                                 'title'         =>  $title,
                                 'message'       =>  $message,
                                 'image'         =>  '',
@@ -123,22 +127,32 @@ class LikeController extends Controller
         $rules = AddDislikeRequest::rules();
         if( $this->apiValidator($request->all(), $rules) ) {
             try{
-                $auth_user = $request->user();
+                $auth_user = $request->user(); 
                 $user = User::select('id')->whereCustomId($request->user_id)->whereIsActive('y')->firstOrFail();
-                $block = BlockUser::whereBlockBy($user->id)->whereBlockedTo(Auth::id())->first();
-                    
-                 // Manage Swipes
+                $auth_id = $auth_user->id; $user_id = $user->id;
+
+                $block = BlockUser::whereBlockBy($user_id)->whereBlockedTo($auth_id)->first();
+                
+                // Manage Swipes
                 $auth_user->addSwipeCount();
                 $is_swipe_allow = $auth_user->isSwipeAllow();
                 if( $is_swipe_allow == false){ $auth_user->notifySwipeAlert(); } 
 
                 if(!$block){
                     $disLike = DisLike::updateOrCreate([
-                        'user_id'       =>  $user->id,
-                        'dis_liker_id'  =>  Auth::id(),
+                        'user_id'       =>  $user_id,
+                        'dis_liker_id'  =>  $auth_id,
                     ],[
                         'custom_id'     =>  getUniqueString('dis_likes'),
                     ]);
+
+                    // Remove From Likes
+                    Like::whereUserId($auth_id)->whereLikerId($user_id)
+                        ->orWhere(function ($query) use ($user_id, $auth_id){
+                            $query->whereUserId($user_id)
+                                ->whereLikerId($auth_id);
+                        })
+                        ->delete();
 
                     if($disLike->save()){
                         $this->status = Response::HTTP_OK;
@@ -186,14 +200,28 @@ class LikeController extends Controller
         $rules = PaginationRequest::rules();
         if( $this->apiValidator($request->all(), $rules) ) {
             try{
-                $user = $request->user();
+                $user = $request->user(); $user_id = $user->id;
                 $user->like_count = 0; // Reset Like Count
                 $user->save();
+
+                $match_users = DB::table('likes')
+                    ->join("likes as like", function($q){
+                        $q->on("likes.liker_id", "=", "like.user_id");
+                        $q->on("like.liker_id", "=", "likes.user_id");
+                    })
+                    ->join('users', function($q){
+                        $q->on('users.id',"=", "likes.user_id");
+                    })
+                    //to only get users details who likes current user
+                    ->where("likes.liker_id", '=', $user_id)
+                    ->where("likes.user_id", '!=', $user_id)
+                    ->pluck('users.id')->toArray();
 
                 $likes = Like::with(['likerUser:id,custom_id,birth_date,profile_photo,location_id,is_active',
                                     'likerUser.userTranslation','likerUser.location.locationTranslation'])
                                 ->whereHas('likerUser')
-                                ->where('user_id',$user->id)
+                                ->where('user_id',$user_id)
+                                ->whereNotIn('liker_id',$match_users)
                                 ->latest();
                 $count = $likes->count();
                 $likes = $likes->limit($request->limit ?? config('utility.pagination.limit'))
