@@ -237,16 +237,20 @@
 
             {{-- Personality --}}
             <div class="form-group">
-                <label for="personality_id">Personality Type</label>
-                <select type="text" class="form-control @error('personality_id') is-invalid @enderror" id="personality_id" name="personality_id"/>
+                <label for="personalities[]">Personality Type</label>
+                <select type="text" class="form-control @error('personalities[]') is-invalid @enderror" id="personality_id" name="personalities[]" multiple="multiple" />
                     <option value="">Select Personality</option>
                     @foreach($personalities as $personality)
-                    <option {{ $personality->id == $user->personality_id ? 'selected=selected' : '' }} value="{{ $personality->id }}"> {{ $personality->personalityTransDefault->title }}</option>
+                        @if(in_array($personality->id, $user_personality))
+                            <option value="{{ $personality->id }}" selected> {{ $personality->personalityTransDefault->title }}</option>
+                        @else
+                            <option value="{{ $personality->id }}"> {{ $personality->personalityTransDefault->title }}</option>
+                        @endif
                     @endforeach
                 </select>
-                @if ($errors->has('personality_id'))
+                @if ($errors->has('personalities[]'))
                     <span class="text-danger">
-                        <strong class="form-text">{{ $errors->first('personality_id') }}</strong>
+                        <strong class="form-text">{{ $errors->first('personalities[]') }}</strong>
                     </span>
                 @endif
             </div>
@@ -1033,7 +1037,7 @@ $(document).ready(function () {
                 not_empty: false,
                 extension: "jpg|jpeg|png",
             },
-            personality_id: {
+            'personalities[]': {
                 required: false,
                 not_empty: true,
             },
@@ -1204,7 +1208,7 @@ $(document).ready(function () {
                 minlength:"@lang('validation.min.string',['attribute'=>'about us','min'=>3])",
                 maxlength:"@lang('validation.max.string',['attribute'=>'about us','max'=>1000])",
             },
-            personality_id: {
+            'personalities[]': {
                 required: "@lang('validation.required',['attribute'=>'personality'])",
                 not_empty: "@lang('validation.not_empty',['attribute'=>'personality'])",
             },

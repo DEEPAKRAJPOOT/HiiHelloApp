@@ -34,7 +34,7 @@ class User extends Authenticatable implements MustVerifyEmail, TranslatableContr
         'is_social_user', 'is_trans_full_name', 'is_trans_about_me', 'is_trans_fav_movie', 
         'is_media_checked', 'is_subscribed', 'subscription_end_date',
         'facebook_id', 'google_id', 'apple_id',
-        'personality_id', 'university_id', 'profession_id',
+        'university_id', 'profession_id',
         'relationship_status_id', 'you_are_here_id', 'food_preference_id',
         'drinking_id', 'smoking_id', 'pet_id', 'star_sign_id', 
         'religion_id', 'community_id', 'education_id',
@@ -91,7 +91,7 @@ class User extends Authenticatable implements MustVerifyEmail, TranslatableContr
     public function userCommunication(){ return $this->hasOne('App\Models\UserCommunication', 'user_id'); }
 
     // Basic
-    public function personality(){ return $this->hasOne('App\Models\Personality','id','personality_id','id'); }
+    public function personalities(){ return $this->hasMany('App\Models\UserPersonality'); }
     public function education(){ return $this->hasOne('App\Models\ProfileDetail','id','education_id'); }
     public function university(){ return $this->hasOne('App\Models\ProfileDetail','id','university_id'); }
     public function profession(){ return $this->hasOne('App\Models\ProfileDetail','id','profession_id'); }
@@ -281,7 +281,7 @@ class User extends Authenticatable implements MustVerifyEmail, TranslatableContr
         // Basic Details
         $about_me              =  !empty($about_me) ? config('utility.profile.percent.about_me') : 0;
         $voice_prompt          =  !empty($this->voice) ? config('utility.profile.percent.voice_prompt') : 0;
-        $personality           =  !empty($this->personality_id) ? config('utility.profile.percent.personality') : 0;
+        $personality           =  ($this->personalities->count() > 0) ? config('utility.profile.percent.personality') : 0;
         $relationship_status   =  !empty($this->relationship_status_id) ? config('utility.profile.percent.relationship_status') : 0;
         $you_are_here          =  !empty($this->you_are_here_id) ? config('utility.profile.percent.you_are_here') : 0;
         $food_preference       =  !empty($this->food_preference_id) ? config('utility.profile.percent.food_preference') : 0;

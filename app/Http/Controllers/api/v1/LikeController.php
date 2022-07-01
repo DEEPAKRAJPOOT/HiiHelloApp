@@ -200,9 +200,16 @@ class LikeController extends Controller
         $rules = PaginationRequest::rules();
         if( $this->apiValidator($request->all(), $rules) ) {
             try{
-                $user = $request->user(); $user_id = $user->id;
+                $user = $request->user(); $user_id = $user->id; $is_subscribed = false; $subscription_end_date = "";
                 $user->like_count = 0; // Reset Like Count
                 $user->save();
+
+                if( !Auth::guest() ) {
+                    if( Auth::user()->is_subscribed == 'y' && Auth::user()->subscription_end_date >= \Carbon\Carbon::today()->format('Y-m-d') ){
+                        $is_subscribed = true;
+                    }
+                    $subscription_end_date = Auth::user()->subscription_end_date ?? "";
+                }
 
                 $match_users = DB::table('likes')
                     ->join("likes as like", function($q){
@@ -231,15 +238,17 @@ class LikeController extends Controller
                 if($likes->isNotEmpty()){
                     return (LikeResource::collection($likes))
                         ->additional([
-                            'meta' => [
-                                'offset'        =>  $request->offset,
-                                'limit'         =>  $request->limit,
-                                'total'         =>  $count,
-                                'api'           =>  $this->getVersion(),
-                                'url'           =>  url()->current(),
-                                'language'      =>  app()->getLocale(),
-                                'message'       =>  trans('api.list',['entity' => __("Users")]),
-                            ] ]);     
+                        'meta' => [
+                            'offset'        =>  $request->offset,
+                            'limit'         =>  $request->limit,
+                            'total'         =>  $count,
+                            'api'           =>  $this->getVersion(),
+                            'url'           =>  url()->current(),
+                            'language'      =>  app()->getLocale(),
+                            'is_subscribed' =>  $is_subscribed,
+                            'subscription_end_date'     =>  $subscription_end_date,
+                            'message'       =>  trans('api.list',['entity' => __("Users")]),
+                        ] ]);     
                 }else{
                     $this->response['meta']['message']  =   trans('api.not_found', ['entity' => __("Users")]);   
                     $this->status = Response::HTTP_NOT_FOUND;     

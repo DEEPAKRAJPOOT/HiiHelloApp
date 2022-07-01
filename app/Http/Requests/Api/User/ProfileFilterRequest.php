@@ -29,7 +29,7 @@ class ProfileFilterRequest extends FormRequest
         $personality_ids = $interest_ids = array();
         $profile_details = ProfileDetail::whereIsActive('y')->pluck('slug')->toArray();
 
-        if(!empty($request->personality) || $request->has('personality')){ 
+        if(!empty($request->personalities) || $request->has('personalities')){ 
             $personality_ids = Personality::whereIsActive('y')->pluck('custom_id')->toArray(); 
         }
         if(!empty($request->interests) || $request->has('interests')){ 
@@ -41,10 +41,10 @@ class ProfileFilterRequest extends FormRequest
             'offset'                    =>  'nullable|numeric',
 
             'relationship_status'       =>  'nullable|in:'.implode(',', $profile_details),
-            'personality'               =>  'nullable|in:'.implode(',', $personality_ids),
             'star_sign'                 =>  'nullable|in:'.implode(',', $profile_details),
             'fav_movie'                 =>  'nullable|min:1|max:250',
-            
+
+            'personalities'             =>  'nullable|array|in:'.implode(',', $personality_ids),
             'interests'                 =>  'nullable|array',
             'interests.*'               =>  'nullable|in:'.implode(',', $interest_ids),
         ];

@@ -8,7 +8,7 @@ use App\Http\Requests\Api\User\ { FullProfileRequest, SetInterestRequest, SetMed
 use Illuminate\Database\Eloquent\ { ModelNotFoundException };
 use Illuminate\Support\Facades\ { Storage, Auth };
 use App\Http\Resources\v1\ { UserFullProfile, UserInterestResource, MediaResource };
-use App\Models\ { User, UserDetail, Interest, UserInterest, ProfileDetail, Personality, Language };
+use App\Models\ { User, UserDetail, Interest, UserInterest, ProfileDetail, Personality, Language, UserPersonality };
 
 class ProfileController extends Controller
 {
@@ -49,10 +49,6 @@ class ProfileController extends Controller
                     $user->is_trans_fav_movie = 'n';
                 }
 
-                if(!empty($request->personality)){
-                    $personality = Personality::select('id')->whereCustomId($request->personality)->whereIsActive('y')->firstOrFail();
-                    $user->personality_id = $personality->id;
-                }
                 if(!empty($request->university_college)){
                     $university_college = ProfileDetail::select('id')->whereSlug($request->university_college)->whereIsActive('y')->firstOrFail();
                     $user->university_id = $university_college->id;
@@ -101,6 +97,29 @@ class ProfileController extends Controller
                     $education = ProfileDetail::select('id')->whereSlug($request->education)->whereIsActive('y')->firstOrFail();
                     $user->education_id = $education->id;
                 }
+
+                // Remove Personality
+                if(!empty($request->remove_personalities)){
+                    $remove_personalities = $request->remove_personalities;
+
+                    UserPersonality::whereUserId($user->id)
+                        ->whereHas('personality',function($query) use ($remove_personalities){
+                            $query->whereIn('custom_id',$remove_personalities);
+                        })->delete();
+                }
+
+                // Store Personality
+                if(!empty($request->personalities)){
+                    $personality_ids = Personality::whereIn('custom_id',$request->personalities)->whereIsActive('y')->pluck('id')->toArray();
+                    foreach($personality_ids as $personality_id){
+                        UserPersonality::updateOrCreate([
+                            'user_id'           =>  $user->id,
+                            'personality_id'    =>  $personality_id,
+                        ],[
+                            'custom_id'         =>  getUniqueString('user_personalities'),
+                        ]);
+                    }
+                }  
                 $user->save();
 
                 $user = User::with(['userTranslation','location.locationTranslation','language',
@@ -111,6 +130,7 @@ class ProfileController extends Controller
                                 'foodPreference.profileDetailTranslation','drinking.profileDetailTranslation',
                                 'smoking.profileDetailTranslation','pet.profileDetailTranslation',
                                 'starSign.profileDetailTranslation','community.profileDetailTranslation',
+                                'personalities.personality.personalityTranslation'
                             ])
                             ->withCount(['blockedTos' => function ($query) use ($auth_id) {
                                 $query->whereBlockBy($auth_id);

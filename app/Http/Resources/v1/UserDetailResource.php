@@ -36,7 +36,7 @@ class UserDetailResource extends JsonResource
                 'community'             =>  new ProfileDetailResource($this->community),
             ],
             'my_basics'         =>  [
-                'personality'           =>  new PersonalityResource($this->personality),
+                'personalities'         =>  UserPersonalityResource::collection($this->personalities),
                 'education'             =>  new ProfileDetailResource($this->education),
                 'university_college'    =>  new ProfileDetailResource($this->university),
                 'profession'            =>  new ProfileDetailResource($this->profession),
