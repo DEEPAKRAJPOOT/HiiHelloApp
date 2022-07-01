@@ -123,7 +123,7 @@ class ProfileController extends Controller
                 $user->save();
 
                 $user = User::with(['userTranslation','location.locationTranslation','language',
-                                'personality.personalityTranslation','education.profileDetailTranslation',
+                                'education.profileDetailTranslation',
                                 'university.profileDetailTranslation','profession.profileDetailTranslation',
                                 'religion.profileDetailTranslation',
                                 'relationshipStatus.profileDetailTranslation','youAreHere.profileDetailTranslation',
