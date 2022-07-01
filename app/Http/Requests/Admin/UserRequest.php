@@ -54,7 +54,7 @@ class UserRequest extends FormRequest
             'about_me'                  =>  'nullable|min:3|max:1000',
             'fav_movie'                 =>  'nullable|min:1|max:250',
 
-            'personality_id'            =>  'nullable|in:'.implode(',', $personality_ids),
+            'personalities'             =>  'nullable|array|in:'.implode(',', $personality_ids),
             'education_id'              =>  'nullable',
             'university_id'             =>  'nullable',
             'profession_id'             =>  'nullable',

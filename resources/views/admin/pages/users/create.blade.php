@@ -227,8 +227,8 @@
 
             {{-- Personality --}}
             <div class="form-group">
-                <label for="personality_id">Personality Type</label>
-                <select type="text" class="form-control @error('personality_id') is-invalid @enderror" id="personality_id" name="personality_id" spellcheck="false" tabindex="0" />
+                <label for="personalities[]">Personality Type</label>
+                <select type="text" class="form-control @error('personalities[]') is-invalid @enderror" id="personality_id" name="personalities[]" spellcheck="false" tabindex="0" multiple="multiple" />
                     <option value="">Select Personality</option>
                     @foreach($personalities as $personality)
                         @if($personality->personalityTransDefault)
@@ -236,9 +236,9 @@
                         @endif
                     @endforeach
                 </select>
-                @if ($errors->has('personality_id'))
+                @if ($errors->has('personalities[]'))
                     <span class="text-danger">
-                        <strong class="form-text">{{ $errors->first('personality_id') }}</strong>
+                        <strong class="form-text">{{ $errors->first('personalities[]') }}</strong>
                     </span>
                 @endif
             </div>
@@ -780,7 +780,7 @@ $(document).ready(function () {
                 required: true,
                 not_empty: true,
             },
-            personality_id: {
+            'personalities[]': {
                 required: false,
                 not_empty: true,
             },
@@ -932,7 +932,7 @@ $(document).ready(function () {
                 minlength:"@lang('validation.min.string',['attribute'=>'about us','min'=>3])",
                 maxlength:"@lang('validation.max.string',['attribute'=>'about us','max'=>1000])",
             },
-            personality_id: {
+            'personalities[]': {
                 required: "@lang('validation.required',['attribute'=>'personality'])",
                 not_empty: "@lang('validation.not_empty',['attribute'=>'personality'])",
             },

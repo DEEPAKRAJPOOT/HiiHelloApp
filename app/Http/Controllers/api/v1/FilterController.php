@@ -51,9 +51,9 @@ class FilterController extends Controller
                                 $query_relation->whereSlug($request->relationship_status);
                             });
                         }
-                        if(!empty($request->personality)){
-                            $query_filter->orWhereHas('personality', function($query_personality) use ($request){
-                                $query_personality->whereCustomId($request->personality);
+                        if(!empty($request->personalities)){
+                            $query_filter->orWhereHas('personalities.personality', function($query_personality) use ($request){
+                                $query_personality->whereIn('custom_id',$request->personalities);
                             });
                         }
                         if(!empty($request->star_sign)){

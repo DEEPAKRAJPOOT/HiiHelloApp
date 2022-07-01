@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\ { ModelNotFoundException };
 use App\Http\Requests\Api\General\ { PaginationRequest };
 use App\Http\Requests\Api\Match\ { DeleteMatchRequest, GetMatchRequest };
 use App\Http\Resources\v1\ { MatchResource };
-use App\Models\ { User, Like, ChatRoom, UserInterest, BlockUser, UnMatch };
+use App\Models\ { User, Like, ChatRoom, UserInterest, BlockUser, UnMatch, UserPersonality };
 
 class MatchController extends Controller
 {
@@ -48,6 +48,7 @@ class MatchController extends Controller
                 $unmatched  =   UnMatch::whereUnmatchBy($auth_id)->whereNotNull('unmatch_to')->distinct()->pluck('unmatch_to')->toArray();
                 $blocked    =   BlockUser::whereBlockBy($auth_id)->whereNotNull('blocked_to')->distinct()->pluck('blocked_to')->toArray();
                 $interests  =   UserInterest::whereUserId($auth_id)->whereNotNull('interest_id')->distinct()->pluck('interest_id')->toArray();
+                $personalities  =   UserPersonality::whereUserId($auth_id)->whereNotNull('personality_id')->distinct()->pluck('personality_id')->toArray();
 
                 // if chat is open then restrict in match profiles
                 $rooms = ChatRoom::where(function ($query) use ($auth_id) {
@@ -85,7 +86,7 @@ class MatchController extends Controller
                         // ->where('subscription_end_date','>=', \Carbon\Carbon::today()->format('Y-m-d'))
 
                         ->where(function ($query) 
-                            use ($user, $likes, $age_from, $age_to, $match_percentage, $interests) {
+                            use ($user, $likes, $age_from, $age_to, $match_percentage, $interests, $personalities) {
 
                             $query->orWhereIn('custom_id',$likes)                                   // Someone likes me and I like him/her 
                                 ->orWhere('language_id',$user->language_id)                         // Language
@@ -93,7 +94,10 @@ class MatchController extends Controller
                                 ->orWhereBetween('birth_date',array($age_from,$age_to))             // Age / Birth Date
                                 ->orWhere('profile_percentage','>=',$match_percentage)              // Profile completion
                                 ->orWhere('verify_status','verified')                               // Verified/Unverified  
-                                ->orWhere('personality_id',$user->personality_id)                   // Personality Type 
+
+                                ->orWhereHas('personalities',function($q) use ($personalities){     // Personality Type 
+                                    $q->whereIn('personality_id',$personalities);
+                                })
 
                                 // Basic Details 
                                 ->orWhere('relationship_status_id',$user->relationship_status_id)   // Relationship status
@@ -108,7 +112,7 @@ class MatchController extends Controller
                                 ->orWhere('star_sign_id',$user->star_sign_id)                       // Star Sign
 
                                 ->orWhereHas('interests',function($q) use ($interests){             // My Interests
-                                    $q->whereIn('custom_id',$interests);
+                                    $q->whereIn('interest_id',$interests);
                                 });
                         });
                         

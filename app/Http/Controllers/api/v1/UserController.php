@@ -28,7 +28,7 @@ class UserController extends Controller
 
                 $user = User::select('id','custom_id','birth_date','location_id',
                             'profile_photo','voice','voice_answer', 'swipe_count', 'gender', 'subscription_end_date',
-                            'personality_id','education_id','university_id','profession_id','religion_id',
+                            'education_id','university_id','profession_id','religion_id',
                             'relationship_status_id','you_are_here_id','food_preference_id','drinking_id','smoking_id',
                             'pet_id','star_sign_id','community_id','is_active')
                         ->with([
@@ -45,6 +45,7 @@ class UserController extends Controller
                             'foodPreference.profileDetailTranslation','drinking.profileDetailTranslation',
                             'smoking.profileDetailTranslation','pet.profileDetailTranslation',
                             'starSign.profileDetailTranslation','community.profileDetailTranslation',
+                            'personalities.personality.personalityTranslation'
                         ])
                         ->withCount(['blockedTos' => function ($query) use ($auth_id) {
                             $query->whereBlockBy($auth_id);
@@ -176,6 +177,7 @@ class UserController extends Controller
                     'foodPreference.profileDetailTranslation','drinking.profileDetailTranslation',
                     'smoking.profileDetailTranslation','pet.profileDetailTranslation',
                     'starSign.profileDetailTranslation','community.profileDetailTranslation',
+                    'personalities.personality.personalityTranslation'
                     ])
                     ->whereId(Auth::id())->firstOrFail();
 

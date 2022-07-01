@@ -9,6 +9,7 @@ use App\Models\Personality;
 use App\Models\ProfileDetail;
 use App\Models\Interest;
 use App\Models\UserInterest;
+use App\Models\UserPersonality;
 use App\Models\Language;
 use App\Models\Location;
 use App\Models\Country;
@@ -138,6 +139,18 @@ class UsersController extends Controller
             $user->discover_start_age   = config('utility.profile.detail.discover_start_age');
             $user->discover_end_age     = config('utility.profile.detail.discover_end_age');
 
+            /* User Personality */
+            if(!empty($request->personalities)){
+                foreach($request->personalities as $personality_id){
+                    UserPersonality::updateOrCreate([
+                      'user_id'         => $user->id,
+                      'personality_id'  => $personality_id,  
+                    ],[
+                        'custom_id'     => getUniqueString('user_personalities'),
+                    ]);
+                }
+            }
+
             /* User Interest */
             if(!empty($request->traveling_id)){
                 foreach($request->traveling_id as $traveling){
@@ -247,15 +260,16 @@ class UsersController extends Controller
     public function show(User $user)
     {
         $user = User::with([
-            'userTranslation','userTransDefault','userDetails','personality.personalityTransDefault',
+            'userTranslation','userTransDefault','userDetails',
             'country.countryTransDefault','location.locationTransDefault','language',
             'interests.interest.interestTransDefault','religion.profileDetailTransDefault',
             'relationshipStatus.profileDetailTransDefault','youAreHere.profileDetailTransDefault',
             'foodPreference.profileDetailTransDefault','drinking.profileDetailTransDefault',
             'smoking.profileDetailTransDefault','starSign.profileDetailTransDefault',
             'religion.profileDetailTransDefault','community.profileDetailTransDefault',
-            'personality.personalityTransDefault','education.profileDetailTransDefault',
+            'education.profileDetailTransDefault',
             'university.profileDetailTransDefault','profession.profileDetailTransDefault',
+            'personalities.personality.personalityTransDefault'
             ])->whereId($user->id)->firstOrFail();
         return view('admin.pages.users.view',compact('user'))->with(['custom_title' => 'User']);
     }
@@ -279,7 +293,8 @@ class UsersController extends Controller
 
         //user interest
         $user_interest = UserInterest::where('user_id',$user->id)->pluck('interest_id')->toArray();
-        return view('admin.pages.users.edit', compact('user','personalities','user_interest','interests','attributes','countries','locations','languages'))->with(['custom_title' => 'Users']);
+        $user_personality = UserPersonality::where('user_id',$user->id)->pluck('personality_id')->toArray();
+        return view('admin.pages.users.edit', compact('user','user_personality','personalities','user_interest','interests','attributes','countries','locations','languages'))->with(['custom_title' => 'Users']);
     }
 
     /**
@@ -310,7 +325,7 @@ class UsersController extends Controller
                 if($user->verify_photo_status != 'unverified'){ $verify_photo_notify = true;  }
                 if($user->verify_video_status != 'unverified'){ $verify_video_notify = true;  }
 
-                $path = $user->profile_photo; $not_to_delete_product = array();
+                $path = $user->profile_photo; $not_to_delete_interest = $not_to_delete_personality = array();
 
                 //request has remove_profie_photo then delete user image
                 if( $request->has('remove_profie_photo') ){
@@ -387,6 +402,21 @@ class UsersController extends Controller
                     $user->video_verified_at = NULL;
                 }
 
+                 /* User Personality */
+                if(!empty($request->personalities)){
+                    foreach($request->personalities as $personality_id){
+                        $custom_id = getUniqueString('user_personalities');
+                        UserPersonality::updateOrCreate([
+                              'user_id'         => $user->id,
+                              'personality_id'  => $personality_id,  
+                            ],[
+                                'custom_id'     => $custom_id,
+                            ]);
+                       $not_to_delete_personality[] = $custom_id;
+                    }
+                }
+                UserPersonality::where('user_id',$user->id)->whereNotIn('custom_id',$not_to_delete_personality)->delete();
+
                 /* User Interest */
                 if(!empty($request->traveling_id)){
                     foreach($request->traveling_id as $traveling){
@@ -397,7 +427,7 @@ class UsersController extends Controller
                             ],[
                                 'custom_id' => $custom_id,
                             ]);
-                       $not_to_delete_product[] = $custom_id;
+                       $not_to_delete_interest[] = $custom_id;
                     }
                 }
 
@@ -410,7 +440,7 @@ class UsersController extends Controller
                             ],[
                                 'custom_id' => $custom_id,
                             ]);
-                        $not_to_delete_product[] = $custom_id;
+                        $not_to_delete_interest[] = $custom_id;
                     }
                 }
                 if(!empty($request->hobbie_id)){
@@ -422,7 +452,7 @@ class UsersController extends Controller
                             ],[
                                 'custom_id' => $custom_id,  
                             ]);
-                        $not_to_delete_product[] = $custom_id;
+                        $not_to_delete_interest[] = $custom_id;
                     }
                 }
                 if(!empty($request->game_id)){
@@ -434,7 +464,7 @@ class UsersController extends Controller
                             ],[
                                 'custom_id' => $custom_id,
                             ]);
-                        $not_to_delete_product[] = $custom_id;
+                        $not_to_delete_interest[] = $custom_id;
                     }
                 }
                 if(!empty($request->sport_id)){
@@ -446,7 +476,7 @@ class UsersController extends Controller
                             ],[
                                 'custom_id' => $custom_id, 
                             ]);
-                        $not_to_delete_product[] = $custom_id;
+                        $not_to_delete_interest[] = $custom_id;
                     }
                 }
                 if(!empty($request->food_id)){
@@ -458,7 +488,7 @@ class UsersController extends Controller
                             ],[ 
                                 'custom_id' => $custom_id, 
                             ]);
-                        $not_to_delete_product[] = $custom_id;
+                        $not_to_delete_interest[] = $custom_id;
                     }
                 }
                 if(!empty($request->depend_id)){
@@ -471,7 +501,7 @@ class UsersController extends Controller
                                 
                                 'custom_id' => $custom_id,   
                             ]);
-                        $not_to_delete_product[] = $custom_id;
+                        $not_to_delete_interest[] = $custom_id;
                     }
                 }
 
@@ -484,11 +514,11 @@ class UsersController extends Controller
                             ],[ 
                                 'custom_id' => $custom_id,    
                             ]);
-                        $not_to_delete_product[] = $custom_id;
+                        $not_to_delete_interest[] = $custom_id;
                     }
                 }
                 
-                UserInterest::where('user_id',$user->id)->whereNotIn('custom_id',$not_to_delete_product)->delete();
+                UserInterest::where('user_id',$user->id)->whereNotIn('custom_id',$not_to_delete_interest)->delete();
 
                 $user->profile_percentage = $user->calculateProfilePercent();
 

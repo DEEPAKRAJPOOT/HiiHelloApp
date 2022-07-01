@@ -30,7 +30,7 @@ class FullProfileRequest extends FormRequest
         $personality_ids = array();
         $profile_details = ProfileDetail::whereIsActive('y')->pluck('slug')->toArray();
 
-        if(!empty($request->personality) || $request->has('personality')){ 
+        if(!empty($request->personalities) || $request->has('personalities') || !empty($request->remove_personalities) || $request->has('remove_personalities')){ 
             $personality_ids = Personality::whereIsActive('y')->pluck('custom_id')->toArray(); 
         }
 
@@ -39,7 +39,9 @@ class FullProfileRequest extends FormRequest
             'about_me'                  =>  'nullable|min:3|max:1000',
             'fav_movie'                 =>  'nullable|min:1|max:250',
 
-            'personality'               =>  'nullable|in:'.implode(',', $personality_ids),
+            'personalities'             =>  'nullable|array|in:'.implode(',', $personality_ids), // Multiple
+            'remove_personalities'      =>  'nullable|array|in:'.implode(',', $personality_ids), // Multiple
+
             'education'                 =>  'nullable|in:'.implode(',', $profile_details),
             'university_college'        =>  'nullable|in:'.implode(',', $profile_details),
             'profession'                =>  'nullable|in:'.implode(',', $profile_details),

@@ -238,8 +238,12 @@
                             <label class="control-label">
                                 <span class="mendatory" style="font-size: 20px;"></span>Personality : 
                                 <b>
-                                    @if($user->personality && $user->personality->personalityTransDefault)
-                                        {{ $user->personality->personalityTransDefault->title }} 
+                                    @if($user->personalities->isNotEmpty())
+                                        @foreach($user->personalities as $key =>  $user_personality)
+                                            @if($key == 0 && $user_personality->personality && $user_personality->personality->personalityTransDefault)
+                                                {{ $user_personality->personality->personalityTransDefault->title }} 
+                                            @endif
+                                        @endforeach
                                     @else
                                         - 
                                     @endif 
