@@ -1,7 +1,7 @@
 <?php
 
 return [
-    'required_all' => 'બધી જરૂરી કિંમત ભરો.',
+    'required_all' => 'બધી જરૂરી જાણકારી ભરો.',
     'not_found' => ':entity મળ્યું નથી.',
     'success' => 'સફળતા',
     'something' => 'કંઈક ખોટું થયું !',
