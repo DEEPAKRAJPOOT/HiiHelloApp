@@ -86,6 +86,7 @@ class DiscoveryController extends Controller
                                 'userSettings.language:id,custom_id,language,lang_code,hint',
                             ])
                             ->whereId(Auth::id())->firstOrFail();
+                            
             return (new DiscoveryResource($user))
                 ->additional([
                     'meta' => [

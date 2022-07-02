@@ -21,7 +21,7 @@ class UserTest extends TestCase
     {
         parent::setUp();
 
-        $this->truncateTables($this->usersTable);
+        // $this->truncateTables($this->usersTable);
         // $this->setAuthenticatedToken('users');
         // $this->withHeader('Authorization', 'Bearer ' . $this->token);
         $this->withHeader('Content-Type', 'application/json');
