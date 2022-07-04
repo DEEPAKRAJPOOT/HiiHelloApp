@@ -3,7 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Middleware\CheckApiLanguage;
-use App\Http\Controllers\api\v1\ { AuthenticationController, GeneralController, UserController, LikeController, TwillioController, ChatController, MatchController, SearchController, BlockController, VerificationController, ProfileController, DiscoveryController, FilterController, HomeController, PaymentController };
+use App\Http\Controllers\api\v1\ { AuthenticationController, GeneralController, UserController, LikeController, TwillioController, ChatController, MatchController, SearchController, BlockController, VerificationController, ProfileController, DiscoveryController, FilterController, HomeController, PaymentController, SubscriptionController };
 
 /*
 |--------------------------------------------------------------------------
@@ -27,6 +27,7 @@ Route::group(['namespace' => 'v1', 'prefix' => 'v1'], function () {
     Route::post('get/countries',[GeneralController::class,'getCountries'])->name('api.get-countries');
     Route::post('get/cms-pages',[GeneralController::class,'getCmsPages'])->name('api.get-cms-pages');
     Route::post('get/locations',[GeneralController::class,'getLocations'])->name('api.get-locations');
+    Route::post('get/locations-trans',[GeneralController::class,'getLocationsTrans'])->name('api.get-locations-trans');
     Route::post('get/interests',[GeneralController::class,'getInterests'])->name('api.get-interests');
     Route::post('get/personalities',[GeneralController::class,'getPersonalities'])->name('api.get-personalities');
     Route::post('get/faqs',[GeneralController::class,'getFaqs'])->name('api.get-faqs');
@@ -101,13 +102,16 @@ Route::group(['namespace' => 'v1', 'prefix' => 'v1', 'middleware' => 'auth:sanct
     Route::post('payment/create-order',[PaymentController::class,'createOrder'])->name('api.payment.create-order');
     Route::post('payment/varify-signature',[PaymentController::class,'verifySignature'])->name('api.payment.varify-signature');
 
+    // subscription 
+    Route::post('subscriptions/ios',[SubscriptionController::class,'iosDetails']);
+
     // Twillio Call
     Route::post('twillio/create-access-token',[TwillioController::class,'createAccessToken'])->name('api.twillio.create-access-token');
     Route::post('twillio/get-call-log',[TwillioController::class,'getCallLog'])->name('api.twillio.get-call-log');
     Route::post('twillio/store-call-log',[TwillioController::class,'storeCallLog'])->name('api.twillio.store-call-log');
 
     // Socket Chat
-    Route::post('chat/create-room', [ChatController::class,'createRoom'])->name('chat.create-room');
+    Route::post('chat/create-room', [ChatController::class,'createChatRoom'])->name('chat.create-room');
     Route::post('chat/get-rooms', [ChatController::class,'getChatRooms'])->name('chat.get-rooms'); 
     Route::post('chat/delete-room', [ChatController::class,'deleteChatRoom'])->name('chat.delete-room');
     Route::post('chat/get-messages', [ChatController::class,'getChatMessages'])->name('chat.get-messages');
