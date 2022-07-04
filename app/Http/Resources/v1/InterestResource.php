@@ -22,6 +22,7 @@ class InterestResource extends JsonResource
             'level'                 =>  $this->level ?? 0,
             'sub_interests_count'   =>  $this->sub_interests_count ?? 0,
             'is_required'           =>  $this->is_required ?? "",
+            'is_active'             =>  $this->is_active ?? "",
         ];
         return parent::toArray($request);
     }

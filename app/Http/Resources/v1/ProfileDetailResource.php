@@ -19,6 +19,7 @@ class ProfileDetailResource extends JsonResource
             'attribute'     =>  $this->attribute,
             'type'          =>  $this->type,
             'value'         =>  $this->profileDetailTranslation ? $this->profileDetailTranslation->value : "",
+            'is_active'     =>  $this->is_active,
         ];
         return parent::toArray($request);
     }

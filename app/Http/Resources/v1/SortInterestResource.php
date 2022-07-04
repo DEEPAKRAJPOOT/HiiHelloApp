@@ -17,6 +17,7 @@ class SortInterestResource extends JsonResource
         return [
             'id'        =>  $this->custom_id ?? "",
             'title'     =>  $this->interestTranslation ? $this->interestTranslation->title : "",
+            'is_active' =>  $this->is_active,
         ];
         return parent::toArray($request);
     }
