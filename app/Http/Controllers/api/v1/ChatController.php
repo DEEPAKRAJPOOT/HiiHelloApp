@@ -17,28 +17,33 @@ class ChatController extends Controller
     public function getVersion(){ return $this->version; }
 
     // Create New Chat Room 
-    public function createRoom(Request $request)
+    public function createChatRoom(Request $request)
     {
         $rules = CreateRoomRequest::rules();
         if( $this->apiValidator($request->all(), $rules) ) {
             try{
-                $user = $request->user();
-                $participant = User::whereIsActive('y')->whereCustomId($request->participant_id)->firstOrFail();
-                $room = ChatRoom::whereCreatorId($participant->id)->whereParticipateId($user->id)->first();
-                if(!$room){ 
-                    $room = ChatRoom::whereCreatorId($user->id)->whereParticipateId($participant->id)->first();
-                    if(!$room){
-                        $room = ChatRoom::firstOrCreate([
-                            'creator_id'        =>  $user->id,
-                            'participate_id'    =>  $participant->id,
-                        ],[ 
-                            'custom_id'         =>  getUniqueString('chat_rooms'),
-                        ]);
-                    }
-                };
+                $user = $request->user(); $auth_id = $user ? $user->id : NULL;
+                $participant = User::whereCustomId($request->participant_id)->whereIsActive('y')->firstOrFail();
+                $participant_id = $participant ? $participant->id : NULL;
+
+                $chat_room = ChatRoom::with(['creator.userTranslation','participator.userTranslation','latestMessage.sender'])
+                        ->where(function ($query) use ($auth_id,$participant_id) {
+                            $query->whereCreatorId($auth_id)->where('participate_id',$participant_id);
+                        })->orWhere(function ($query) use ($auth_id,$participant_id) {
+                            $query->whereCreatorId($participant_id)->where('participate_id',$auth_id);
+                        })->first();
+
+                if(empty($chat_room)){
+                    $chat_room = ChatRoom::firstOrCreate([
+                        'creator_id'        =>  $auth_id,
+                        'participate_id'    =>  $participant_id,
+                    ],[ 
+                        'custom_id'         =>  getUniqueString('chat_rooms'),
+                    ]);
+                }
 
                 $this->status = Response::HTTP_OK;     
-                return (new ChatRoomResource($room))->additional([
+                return (new ChatRoomResource($chat_room))->additional([
                     'meta'  =>  [
                         'message'   =>  trans('api.save', ['entity' =>  __('Chat room')]),
                     ]

@@ -34,7 +34,7 @@ trait TwillioSmsTrait {
                 //     )
                 // );
                 ->create($phone_number, // to
-                        ["body" => $message, "from" => $phone_number]
+                        ["body" => $message, "from" => $twilio_number]
                   );
             $status = true;
         } catch (\Exception $e) {

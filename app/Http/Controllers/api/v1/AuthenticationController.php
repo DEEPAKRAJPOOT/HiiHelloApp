@@ -29,8 +29,8 @@ class AuthenticationController extends Controller
             if( $checksumDetails->validate ) {
                 try {
                     $user = User::with(['userTranslation','userDetails','interests.interest.interestTranslation',
-                                    'language','location.locationTranslation'])
-                                        ->whereContactNo($request->contact_no)->firstOrFail();
+                                'language','location.locationTranslation'])
+                                ->whereContactNo($request->contact_no)->firstOrFail();
                     if($user->is_active == 'y'){
                         Auth::login($user);
                         Auth::user()->tokens()->delete(); // Logout From All Devices    
@@ -92,7 +92,6 @@ class AuthenticationController extends Controller
                         'contact_no'            =>  $request->contact_no ?? NULL,
                     ],[
                         'custom_id'             =>  getUniqueString('users'),
-                        // 'full_name'             =>  $request->full_name ?? NULL,
                         'birth_date'            =>  $request->birth_date ?? NULL,
                         'gender'                =>  $request->gender ?? NULL,
                         'interest'              =>  $request->interest ?? NULL,
@@ -115,7 +114,6 @@ class AuthenticationController extends Controller
                     if(!empty($request->language) && $request->language == 'en'){
                         $user->account_id = Str::slug(substr($request->full_name, 0, 4), "_").'_'.time();
                     }
-
                     $user->is_trans_full_name = 'n';
                 }
                 
@@ -134,9 +132,9 @@ class AuthenticationController extends Controller
                 }
 
                 // Set Default Discover
-                $user->discover_distance    = config('utility.profile.detail.discover_distance');
-                $user->discover_start_age   = config('utility.profile.detail.discover_start_age');
-                $user->discover_end_age     = config('utility.profile.detail.discover_end_age');
+                $user->discover_distance    =   config('utility.profile.detail.discover_distance');
+                $user->discover_start_age   =   config('utility.profile.detail.discover_start_age');
+                $user->discover_end_age     =   config('utility.profile.detail.discover_end_age');
 
                 if($user->save()){
                     $user = User::with(['userTranslation','interests','userDetails','location.locationTranslation','language'])
@@ -360,17 +358,14 @@ class AuthenticationController extends Controller
     {
         try {
             $user = User::whereId(Auth::id())->firstOrFail();
-            // Device Token Delets
-            DeviceToken::whereUserId($user->id)->delete();
+            DeviceToken::whereUserId($user->id)->delete();  // Device Token Delete
+            auth()->user()->tokens()->delete();  // Auth Token Revoke
 
-            // Auth Token Revoke
-            auth()->user()->tokens()->delete();
-            
             $this->status = Response::HTTP_OK;
             $this->response['meta']['message'] = trans('api.logout');
         } catch(ModelNotFoundException $exception) {
             switch ($exception->getModel()) {
-                case 'App\User':
+                case 'App\Models\User':
                     $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("User")]);
                     break;
                 default:

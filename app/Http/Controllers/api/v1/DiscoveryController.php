@@ -79,13 +79,13 @@ class DiscoveryController extends Controller
     {
         try{
             $user = User::select('id','custom_id','interest','discover_distance','discover_start_age',
-                                'discover_end_age','discover_location_id')
-                            ->with(['discoveryLocation:id,custom_id,is_active',
-                                'discoveryLocation.locationTranslation:id,locale,location_id,name',
-                                'userSettings:id,custom_id,user_id,language_id',
-                                'userSettings.language:id,custom_id,language,lang_code,hint',
-                            ])
-                            ->whereId(Auth::id())->firstOrFail();
+                        'discover_end_age','discover_location_id')
+                    ->with(['discoveryLocation:id,custom_id,is_active',
+                        'discoveryLocation.locationTranslation:id,locale,location_id,name',
+                        'userSettings:id,custom_id,user_id,language_id',
+                        'userSettings.language:id,custom_id,language,lang_code,hint',
+                    ])
+                    ->whereId(Auth::id())->firstOrFail();
                             
             return (new DiscoveryResource($user))
                 ->additional([

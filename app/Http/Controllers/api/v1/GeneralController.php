@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\ { Request, Response };
 use Illuminate\Support\Facades\ { Storage };
 use Illuminate\Database\Eloquent\ { ModelNotFoundException };
-use App\Http\Resources\v1\ { LanguageResource, CmsResource, CountryResource, LocationResource, InterestResource, FaqResource, ProfileDetailResource, PersonalityResource };
+use App\Http\Resources\v1\ { LanguageResource, CmsResource, CountryResource, LocationResource, InterestResource, FaqResource, ProfileDetailResource, PersonalityResource, LocationTransResource };
 use App\Http\Requests\Api\General\ { PaginationRequest, LocationRequest, ProfileDetailRequest, InterestRequest };
 use App\Http\Requests\Api\User\ { AddDeviceTokenRequest };
 use App\Models\ { Language, CmsPage, Country, Location, Interest, Faq, DeviceToken, ProfileDetail, AppDetail, Personality };
@@ -19,11 +19,11 @@ class GeneralController extends Controller
     // Get App Status
     public function appStatus()
     {
-        $country    =   Country::select('updated_at')->orderBy('updated_at', 'DESC')->first();
-        $cms_page   =   CmsPage::select('updated_at')->orderBy('updated_at', 'DESC')->first();
-        $location   =   Location::select('updated_at')->orderBy('updated_at', 'DESC')->first();
-        $attributes =   ProfileDetail::whereIsActive('y')->distinct()->pluck('attribute')->toArray();
-        $app_details =  AppDetail::all();
+        $country        =   Country::select('updated_at')->orderBy('updated_at', 'DESC')->first();
+        $cms_page       =   CmsPage::select('updated_at')->orderBy('updated_at', 'DESC')->first();
+        $location       =   Location::select('updated_at')->orderBy('updated_at', 'DESC')->first();
+        $attributes     =   ProfileDetail::whereIsActive('y')->distinct()->pluck('attribute')->toArray();
+        $app_details    =   AppDetail::all();
 
         $verification_data = [];
         if($app_details->isNotEmpty()){
@@ -43,11 +43,11 @@ class GeneralController extends Controller
             'version'   =>  [
                 'ios'       =>  [
                     'latest'    =>  '1.0',
-                    'minimum'    =>  '1.0',
+                    'minimum'   =>  '1.0',
                 ],
                 'android'   =>  [
                     'latest'    =>  '1.0',
-                    'minimum'    =>  '1.0',
+                    'minimum'   =>  '1.0',
                 ],
             ],
             'common_age'    =>  [
@@ -191,11 +191,11 @@ class GeneralController extends Controller
             try{
                 $search = $request->search;
                 $locations = Location::with('locationTranslation');
-                        // ->orderBy('is_active');
+                
                 if(!empty($search)){
                     $locations = $locations->whereHas('locationTranslation', function ($query) use ($search) {
-                                    $query->where('name', 'like', "%{$search}%");
-                                });
+                                $query->where('name', 'like', "%{$search}%");
+                            });
                 }
                 $count = $locations->count();
                 $locations = $locations->limit($request->limit ?? config('utility.pagination.limit'))
@@ -227,6 +227,55 @@ class GeneralController extends Controller
                 };
             } catch (\Exception $e) {
                 $this->storeErrorLog($e,'get_locations');
+            }
+        }
+        return $this->returnResponse();
+    }
+
+    // Get Locations List In All Languages
+    public function getLocationsTrans(Request $request)
+    {
+        $rules = LocationRequest::rules();
+        if( $this->apiValidator($request->all(), $rules) ) {
+            try{
+                $search = $request->search;
+                $locations = Location::with('locationTranslations')->whereHas('locationTranslations');
+                
+                if(!empty($search)){
+                    $locations = $locations->whereHas('locationTranslations', function ($query) use ($search) {
+                                $query->where('name', 'like', "%{$search}%");
+                            });
+                }
+                $count = $locations->count();
+                $locations = $locations->limit($request->limit ?? config('utility.pagination.limit'))
+                            ->offset($request->offset ?? config('utility.pagination.offset'))
+                            ->get();
+                if($locations->isNotEmpty()){
+                    return (LocationTransResource::collection($locations))->additional([
+                        'meta' => [
+                            'limit'     =>  $request->limit,
+                            'offset'    =>  $request->offset,
+                            'total'     =>  $count,
+                            'url'       =>  url()->current(),
+                            'api'       =>  $this->getVersion(),
+                            'language'  =>  app()->getLocale(),
+                            'message'   =>  trans('api.list', ['entity' => __('Locations')]),
+                        ] ]);
+                }else{
+                    $this->response['meta']['message']  =   trans('api.not_found',['entity' => __('Locations')]); 
+                    $this->status = Response::HTTP_NOT_FOUND;     
+                }
+            } catch(ModelNotFoundException $exception) {                
+                switch ($exception->getModel()) {
+                    case 'App\Models\Location':
+                        $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("Locations")]);
+                        break;
+                    default:
+                        $this->response['meta']['message'] = trans('api.went_wrong');
+                        break;
+                };
+            } catch (\Exception $e) {
+                $this->storeErrorLog($e,'get_locations_trans');
             }
         }
         return $this->returnResponse();
@@ -313,6 +362,7 @@ class GeneralController extends Controller
             try{
                 $personalities = Personality::with('personalityTranslation')->whereIsActive('y');
                 $count = $personalities->count();
+
                 $personalities = $personalities->limit($request->limit ?? config('utility.pagination.limit'))
                             ->offset($request->offset ?? config('utility.pagination.offset'))
                             ->get();
@@ -356,6 +406,7 @@ class GeneralController extends Controller
             try{
                 $faqs = Faq::with('faqTranslation')->whereIsActive('y');
                 $count = $faqs->count();
+                
                 $faqs = $faqs->limit($request->limit ?? config('utility.pagination.limit'))
                             ->offset($request->offset ?? config('utility.pagination.offset'))
                             ->get();
