@@ -25,10 +25,11 @@ class AddDislikeRequest extends FormRequest
      */
     public function rules()
     {
-        $user_ids = User::where('id','!=',Auth::id())->whereIsActive('y')->pluck('custom_id')->toArray();
+        // $user_ids = User::where('id','!=',Auth::id())->whereIsActive('y')->pluck('custom_id')->toArray();
 
         return  [
-            'user_id'      =>  'required|in:'.implode(',', $user_ids),
+            // 'user_id'      =>  'required|in:'.implode(',', $user_ids),
+            'user_id'      =>  'required|max:250',
         ];
     }
 }

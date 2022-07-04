@@ -19,6 +19,7 @@ class PersonalityResource extends JsonResource
             'image'         =>  generateURL($this->image),
             'title'         =>  $this->personalityTranslation ? $this->personalityTranslation->title : "",
             'description'   =>  $this->personalityTranslation ? $this->personalityTranslation->description : "",
+            'is_active'     =>  $this->is_active,
         ];
         return parent::toArray($request);
     }
