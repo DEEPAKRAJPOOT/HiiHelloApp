@@ -38,7 +38,7 @@ class SubscriptionController extends Controller
                 $response = fireCURL($url, 'POST', json_encode($data));
                 if( !empty($response->latest_receipt_info)  ) {
                     $latest_receipt_info = $response->latest_receipt_info;
-                    $paymetDetails = end($latest_receipt_info);
+                    $paymetDetails = current($latest_receipt_info);
                                     
                     // Update Details
                     $new_subscription_start_date = \Carbon\Carbon::today()->format('Y-m-d');
