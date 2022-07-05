@@ -33,13 +33,14 @@ class SubscriptionController extends Controller
                 $data   =   [
                     'password'      =>  config('utility.in_app.ios_password'),
                     'receipt-data'  =>  $request->receipt_data,
+                    'exclude-old-transactions'   => true,  // For getting Single latest_receipt_info details
                 ];
 
                 $response = fireCURL($url, 'POST', json_encode($data));
                 if( !empty($response->latest_receipt_info)  ) {
                     $latest_receipt_info = $response->latest_receipt_info;
                     $paymetDetails = current($latest_receipt_info);
-                                    
+                            
                     // Update Details
                     $new_subscription_start_date = \Carbon\Carbon::today()->format('Y-m-d');
                     if( $user->subscription_end_date >= $new_subscription_start_date ) {
