@@ -10,7 +10,11 @@ class Transaction extends Model
 {
     use HasFactory, SoftDeletes;
 
-    protected $fillable = ['custom_id', 'user_id', 'plan_id', 'subscription_id', 'razorpay_order_id', 'razorpay_payment_id', 'razorpay_signature', 'amount', 'status'];
+    protected $fillable = ['custom_id', 'email', 'user_id', 'plan_id', 'subscription_id', 'payment_type',
+        'razorpay_order_id', 'razorpay_payment_id', 'razorpay_signature',
+        'transaction_id', 'original_transaction_id', 'web_order_line_item_id', 'purchase_date', 'original_purchase_date',
+        'subscription_end_date', 'receipt_data', 'in_app_ownership_type', 'subscription_group_identifier',
+        'amount', 'status'];
     
     public function getRouteKeyName(){ return 'custom_id'; }
     

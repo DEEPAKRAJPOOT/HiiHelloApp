@@ -117,6 +117,10 @@ return [
             'fail'      =>  'Your payment failed.',
         ],
     ],
+    'ios_payment'   =>  [
+        'success'   =>  'Your payment was successful.',
+        'fail'      =>  'Your payment failed.',
+    ],
 
     'verified'    =>  "Your :entity has been successfully verified.",
     'already_verified'    =>  "Your :entity was already verified.",
