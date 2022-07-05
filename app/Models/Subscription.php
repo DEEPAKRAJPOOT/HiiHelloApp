@@ -12,7 +12,8 @@ class Subscription extends Model
 {
     use HasFactory, SoftDeletes, TwillioSmsTrait;
 
-    protected $fillable = ['custom_id', 'user_id', 'plan_id', 'months', 'amount', 'start_date', 'end_date', 'payment_date', 'status'];
+    protected $fillable = ['custom_id', 'email', 'user_id', 'plan_id', 'months', 'amount', 'start_date', 'end_date', 'payment_date', 'payment_type', 'receipt_data', 'original_transaction_id', 'status'];
+    
     public function getRouteKeyName(){ return 'custom_id'; }
 
     public function subscriptionPlan(){ return $this->belongsTo('App\Models\SubscriptionPlan', 'plan_id', 'id'); }

@@ -72,6 +72,7 @@ class PaymentController extends Controller
                     'start_date'    =>  $new_subscription_start_date,
                     'end_date'      =>  $subscription_end_date,
                     'payment_date'  =>  NULL,
+                    'payment_type'  =>  'android',
                     'status'        =>  'incomplete',
                 ],[
                     'custom_id'     =>  getUniqueString('subscriptions'),
@@ -132,6 +133,7 @@ class PaymentController extends Controller
                         'user_id'               =>  $user->id ?? NULL,
                         'plan_id'               =>  $subscription->subscriptionPlan->id ?? NULL,
                         'subscription_id'       =>  $subscription->id ?? NULL,
+                        'payment_type'          =>  'android',
                         'razorpay_order_id'     =>  $request->razorpay_order_id,
                         'razorpay_payment_id'   =>  $request->razorpay_payment_id,
                         'razorpay_signature'    =>  $request->razorpay_signature,

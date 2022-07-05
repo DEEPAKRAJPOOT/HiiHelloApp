@@ -103,7 +103,7 @@ Route::group(['namespace' => 'v1', 'prefix' => 'v1', 'middleware' => 'auth:sanct
     Route::post('payment/varify-signature',[PaymentController::class,'verifySignature'])->name('api.payment.varify-signature');
 
     // subscription 
-    Route::post('subscriptions/ios',[SubscriptionController::class,'iosDetails']);
+    Route::post('subscriptions/ios',[SubscriptionController::class,'buyIosSubscription']);
 
     // Twillio Call
     Route::post('twillio/create-access-token',[TwillioController::class,'createAccessToken'])->name('api.twillio.create-access-token');
