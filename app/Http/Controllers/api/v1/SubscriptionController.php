@@ -111,8 +111,12 @@ class SubscriptionController extends Controller
                         }
                         $subscription->sendSubScriptionPurchaseSMS($subscription_type);   
 
-                        $this->response['meta']['message']  =  trans('api.ios_payment.success');
                         $this->status = Response::HTTP_OK;
+                        return (new SubscriptionResource($subscription))
+                            ->additional([
+                                'meta' => [
+                                    'message'   =>  trans('api.ios_payment.success'),
+                                ] ]);
                     } else {
                         $subscription->update(['payment_date' => NULL, 'status' => 'unpaid']);
                         $subscription->save();
