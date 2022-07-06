@@ -53,7 +53,6 @@ class SubscriptionController extends Controller
 
                     $subscription_end_date = date('Y-m-d H:i:s',$paymetDetails['expires_date_ms'] / 1000);
                     
-                    // Add Details To Subscription
                     $subscription =  Subscription::create([
                         'custom_id'                 =>  getUniqueString('subscriptions'),
                         'user_id'                   =>  $user->id ?? NULL,
