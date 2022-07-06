@@ -7,6 +7,7 @@ use Illuminate\Http\ { Request, Response };
 use Illuminate\Support\Facades\ { Auth, DB };
 use App\Models\ { User, Subscription, SubscriptionPlan, Transaction };
 use App\Http\Requests\Api\Subscription\ { IosSubscription };
+use App\Http\Resources\v1\ { SubscriptionResource };
 use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
 
@@ -157,6 +158,35 @@ class SubscriptionController extends Controller
                 $this->response['meta']['message']  =  trans('api.went_wrong');
                 $this->status = Response::HTTP_GATEWAY_TIMEOUT;
             }
+        }
+        return $this->returnResponse();
+    }
+
+    public function getUserSubDetails(Request $request)
+    {
+        try{
+            $user = User::select('id')->with('subscription.subscriptionPlan.subscriptionPlanTranslation')
+                        ->whereId(Auth::id())->firstOrFail();
+            if($user->subscription){
+                return (new SubscriptionResource($user->subscription))->additional([
+                    'meta' => [
+                        'message'   =>  trans('api.list', ['entity' => __('Subscription')]),
+                    ] ]);
+            }else{
+                $this->response['meta']['message']  =   trans('api.not_found',['entity' => __('Subscription')]); 
+                $this->status = Response::HTTP_NOT_FOUND;
+            }
+        } catch(ModelNotFoundException $exception) {                
+            switch ($exception->getModel()) {
+                case 'App\Models\User':
+                    $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("User")]);
+                    break;
+                default:
+                    $this->response['meta']['message'] = trans('api.went_wrong');
+                    break;
+            };
+        } catch (\Exception $e) {
+            $this->storeErrorLog($e,'get_user_subscription_details');
         }
         return $this->returnResponse();
     }

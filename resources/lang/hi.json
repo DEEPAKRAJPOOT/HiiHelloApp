@@ -54,6 +54,7 @@
     "Contact number"       :   "संपर्क संख्या",
     "Current location"     :   "वर्तमान स्थान",
     "Notification"         :   "अधिसूचना",
+    "Subscription"		   :   "अंशदान",
     "Twilio Outgoing App Sid"                       :   "ट्विलियो आउटगोइंग ऐप सिड",
     "Payload generated successfully"                :   "पेलोड सफलतापूर्वक उत्पन्न हुआ",
     "Security token was expired, please try again!" :   "सुरक्षा टोकन की समय सीमा समाप्त हो गई थी, कृपया पुन: प्रयास करें!",
