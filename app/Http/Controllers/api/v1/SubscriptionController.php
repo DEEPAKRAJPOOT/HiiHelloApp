@@ -40,17 +40,19 @@ class SubscriptionController extends Controller
                 if( !empty($response->latest_receipt_info)  ) {
                     $latest_receipt_info = $response->latest_receipt_info;
                     $paymetDetails = current($latest_receipt_info);
-                            
+                                
                     // Update Details
                     $new_subscription_start_date = \Carbon\Carbon::today()->format('Y-m-d');
                     if( $user->subscription_end_date >= $new_subscription_start_date ) {
                         $new_subscription_start_date = $user->subscription_end_date;
                     }
 
-                    $subscription_end_date = !empty($user->subscription_end_date)
-                                            ? \Carbon\Carbon::parse($new_subscription_start_date)->addMonth($plan->months)->format('Y-m-d')
-                                            : \Carbon\Carbon::today()->addMonth($plan->months)->format('Y-m-d');
+                    // $subscription_end_date = !empty($user->subscription_end_date)
+                    //                         ? \Carbon\Carbon::parse($new_subscription_start_date)->addMonth($plan->months)->format('Y-m-d')
+                    //                         : \Carbon\Carbon::today()->addMonth($plan->months)->format('Y-m-d');
 
+                    $subscription_end_date = date('Y-m-d H:i:s',$paymetDetails['expires_date_ms'] / 1000);
+                    
                     // Add Details To Subscription
                     $subscription =  Subscription::create([
                         'custom_id'                 =>  getUniqueString('subscriptions'),
