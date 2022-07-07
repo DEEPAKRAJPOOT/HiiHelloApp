@@ -27,8 +27,10 @@ class IosSubscription extends FormRequest
         $plan_ids = SubscriptionPlan::whereIsActive('y')->pluck('custom_id')->toArray();
 
         return [
-            'plan_id'           =>  'required|in:'.implode(',', $plan_ids),
-            'receipt_data'      =>  'required',
+            'plan_id'                   =>  'required|in:'.implode(',', $plan_ids),
+            'receipt_data'              =>  'required',
+            'transaction_id'            =>  'required',
+            'original_transaction_id'   =>  'required',
         ];
     }
 }
