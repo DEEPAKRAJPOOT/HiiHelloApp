@@ -42,6 +42,17 @@ class SubscriptionController extends Controller
                     $latest_receipt_info = $response->latest_receipt_info;
                     $paymetDetails = current($latest_receipt_info);
                                 
+                    // Check Trasacrion Is Valid Or Not
+                    $valid_transaction = false;
+                    if( ($paymetDetails['transaction_id'] == $request->transaction_id) && 
+                        ($paymetDetails['original_transaction_id'] == $request->original_transaction_id) ){
+                        $valid_transaction = true;
+                    }
+
+                    // Check Subscirption Is Renew Or Not
+                    $auto_renew = $response->pending_renewal_info ? $response->pending_renewal_info[0]['auto_renew_status'] : 0;
+                    $is_renew = $auto_renew == 0 ? 'n' : 'y' ;
+
                     // Update Details
                     $new_subscription_start_date = \Carbon\Carbon::today()->format('Y-m-d');
                     if( $user->subscription_end_date >= $new_subscription_start_date ) {
@@ -52,7 +63,7 @@ class SubscriptionController extends Controller
                     //                         ? \Carbon\Carbon::parse($new_subscription_start_date)->addMonth($plan->months)->format('Y-m-d')
                     //                         : \Carbon\Carbon::today()->addMonth($plan->months)->format('Y-m-d');
 
-                    $subscription_end_date = date('Y-m-d H:i:s',$paymetDetails['expires_date_ms'] / 1000);
+                    $subscription_end_date = date('Y-m-d',$paymetDetails['expires_date_ms'] / 1000);
                     
                     $subscription =  Subscription::create([
                         'custom_id'                 =>  getUniqueString('subscriptions'),
@@ -69,7 +80,6 @@ class SubscriptionController extends Controller
                         'original_transaction_id'   =>  $paymetDetails['original_transaction_id'],
                     ]);
 
-                    // Add Details To Transaction
                     $transaction =  Transaction::create([
                         'custom_id'                     =>  getUniqueString('transactions'),
                         'email'                         =>  $user->email,
@@ -89,7 +99,7 @@ class SubscriptionController extends Controller
                         'amount'                        =>  $plan->amount,
                     ]);
 
-                    if( date('Y-m-d H:i:s',$paymetDetails['expires_date_ms'] / 1000) >= \Carbon\Carbon::now() ) {
+                    if( $valid_transaction == true && $is_renew == "y" && date('Y-m-d H:i:s',$paymetDetails['expires_date_ms'] / 1000) >= \Carbon\Carbon::now() ) {
                         $subscription->update(['status' => 'active']);
                         $subscription->save();
 
@@ -137,8 +147,16 @@ class SubscriptionController extends Controller
                     }
 
                     // Add Payment log
-                    $transaction_data['paymetDetails']  = $paymetDetails;
-                    $transaction_data['request_data']   = $data;
+                    $transaction_data['purchase_date_ms'] = $paymetDetails['purchase_date_ms'];
+                    $transaction_data['expires_date_ms'] = $paymetDetails['expires_date_ms'];
+                    $transaction_data['purchase_date_ms_converted'] = date('Y-m-d H:i:s', $paymetDetails['purchase_date_ms'] / 1000);
+                    $transaction_data['expires_date_ms_converted'] = date('Y-m-d H:i:s',$paymetDetails['expires_date_ms'] / 1000);
+                    $transaction_data['auto_renew'] = $auto_renew;
+                    $transaction_data['transaction_id'] = $paymetDetails['transaction_id'];
+                    $transaction_data['pending_renewal_info'] = $response->pending_renewal_info;
+                    $transaction_data['full_paymet_details']  = $paymetDetails;
+                    $transaction_data['request_data'] = $data;
+
                     $file = 'payment_' . $user->id;
                     $paymentLog = new Logger($file);
                     $paymentLog->pushHandler(new StreamHandler(storage_path('logs/ios/' . $file . '.log')), Logger::INFO);
