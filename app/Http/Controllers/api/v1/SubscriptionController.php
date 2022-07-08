@@ -44,8 +44,7 @@ class SubscriptionController extends Controller
                                 
                     // Check Trasacrion Is Valid Or Not
                     $valid_transaction = false;
-                    if( ($paymetDetails['transaction_id'] == $request->transaction_id) && 
-                        ($paymetDetails['original_transaction_id'] == $request->original_transaction_id) ){
+                    if( $paymetDetails['transaction_id'] == $request->transaction_id ){
                         $valid_transaction = true;
                     }
 
