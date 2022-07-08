@@ -43,27 +43,35 @@ class HomeController extends Controller
                             * sin(radians(users.latitude))) AS distance"));
                             // ->having("distance", "<=", $radius)
 
-                        if($user->location_id == $user->discover_location_id){
-                            $users = $users->orderBy('distance');
-                        }
+                            if($user->location_id == $user->discover_location_id){
+                                $users = $users->orderBy('distance');
+                            }
                     }else{
                         $users = User::select('id','custom_id','birth_date','profile_photo','gender','interest',
                         'location_id','language_id','verify_status','is_active');
                     }
 
                     $users = $users->with(['interests.interest.interestTranslation','userTranslation','location.locationTranslation'])
-                        ->where(function ($query)  use ($auth_id, $auth_interest, $disLikes, $blocked) {
+
+                        ->where(function ($query)  use ($user, $auth_id, $auth_interest, $disLikes, $blocked) {
                             $query->where('id','!=',$auth_id)->whereNotNull('profile_photo')->whereIsActive('y');
 
                             if($auth_interest != 'Both'){ $query->where('gender',$auth_interest); }     // Interested in Gender
+
+                            if(!empty($user->discover_location_id)){                                    // Location
+                                if($user->location_id != $user->discover_location_id){
+                                    $query->where('location_id',$user->discover_location_id); 
+                                }
+                            } 
+
                             if(count($disLikes) > 0){ $query->whereNotIn('id',$disLikes); }             // Restirct DisLiked Profile
                             if(count($blocked) > 0){ $query->whereNotIn('id',$blocked); }               // Restirct Blocked Profile
                         });
 
                     // Discovery
-                    $users = $users->where(function ($query)  use ($user, $languages) {
+                    $users = $users->where(function ($query)  use ($user, $languages) {                    
                             if(count($languages) > 0){ $query->orWhereIn('language_id',$languages);}        // Languages
-                            if(!empty($user->discover_location_id)){ $query->orWhere('location_id',$user->discover_location_id); }  // Location
+
                             if(!empty($user->discover_start_age) && !empty($user->discover_end_age)){
                                 $query->orWhereBetween('birth_date',array($user->discover_start_age,$user->discover_end_age)); // Age
                             }   

@@ -29,7 +29,7 @@ class SetDiscoveryRequest extends FormRequest
         $language_ids   =   Language::whereIsActive('y')->pluck('lang_code')->toArray();
 
         return [
-            'distance'          =>  'required|numeric|min:1|max:100',
+            'distance'          =>  'required|numeric|min:1|max:500',
             'start_age'         =>  'required|numeric|min:1|max:100',
             'end_age'           =>  'required_with:start_age|numeric|min:1|max:100',
             'interest'          =>  'required|in:Male,Female,Both',

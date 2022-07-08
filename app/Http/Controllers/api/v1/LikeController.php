@@ -226,7 +226,9 @@ class LikeController extends Controller
 
                 $likes = Like::with(['likerUser:id,custom_id,birth_date,profile_photo,location_id,is_active',
                                     'likerUser.userTranslation','likerUser.location.locationTranslation'])
-                                ->whereHas('likerUser')
+                                ->whereHas('likerUser', function($query){
+                                    $query->whereIsActive('y');
+                                })
                                 ->where('user_id',$user_id)
                                 ->whereNotIn('liker_id',$match_users)
                                 ->latest();
