@@ -50,7 +50,7 @@ function getPermissions($user_type = 'normal')
                 'permissions' => 'access,add'
             ],
             15 =>[ // Subscription Plans
-                'permissions' => 'access,add,edit,delete,view'
+                'permissions' => 'access,add,edit,delete'
             ],
             16 =>[ // Subscriptions
                 'permissions' => 'access,view'
