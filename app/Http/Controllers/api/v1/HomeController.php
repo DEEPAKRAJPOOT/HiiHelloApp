@@ -33,16 +33,19 @@ class HomeController extends Controller
                     $disLikes   =   DisLike::whereDisLikerId($auth_id)->whereDate('updated_at',\Carbon\Carbon::today())
                                         ->whereNotNull('user_id')->distinct()->pluck('user_id')->toArray();
 
-                    if( !empty($radius) && !empty($latitude) && !empty($longitude)){
+                    if( !empty($radius) && !empty($latitude) && !empty($longitude) ){
                         $users = User::select('id','custom_id','birth_date','profile_photo','gender','interest',
                             'location_id','language_id','verify_status','is_active'
                             ,DB::raw("3959 * 1.609344 * acos(cos(radians(" . $latitude . ")) 
                             * cos(radians(users.latitude)) 
                             * cos(radians(users.longitude) - radians(" . $longitude . ")) 
                             + sin(radians(" .$latitude. ")) 
-                            * sin(radians(users.latitude))) AS distance"))
+                            * sin(radians(users.latitude))) AS distance"));
                             // ->having("distance", "<=", $radius)
-                            ->orderBy('distance');
+
+                        if($user->location_id == $user->discover_location_id){
+                            $users = $users->orderBy('distance');
+                        }
                     }else{
                         $users = User::select('id','custom_id','birth_date','profile_photo','gender','interest',
                         'location_id','language_id','verify_status','is_active');
