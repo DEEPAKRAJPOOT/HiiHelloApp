@@ -30,7 +30,7 @@ class IosSubscription extends FormRequest
             'plan_id'                   =>  'required|in:'.implode(',', $plan_ids),
             'receipt_data'              =>  'required',
             'transaction_id'            =>  'required',
-            'original_transaction_id'   =>  'required',
+            'original_transaction_id'   =>  'nullable',
         ];
     }
 }
