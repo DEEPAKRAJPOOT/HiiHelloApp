@@ -122,6 +122,7 @@ class BlockController extends Controller
                 $block_profiles = BlockUser::
                                     with(['blockedTo:id,custom_id,profile_photo,birth_date,location_id',
                                         'blockedTo.userTranslation', 'blockedTo.location.locationTranslation'])
+                                    ->whereHas('blockedTo')
                                     ->whereBlockBy($auth_id)->latest();
                 $count = $block_profiles->count();
                 $block_profiles = $block_profiles->limit($request->limit ?? config('utility.pagination.limit'))

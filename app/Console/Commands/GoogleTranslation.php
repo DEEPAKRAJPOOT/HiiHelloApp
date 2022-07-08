@@ -94,20 +94,20 @@ class GoogleTranslation extends Command
         $message = 'No details found to translate !!!';
 
         // Detect Language
-        $detect_url = 'https://translation.googleapis.com/language/translate/v2/detect?key=' .$apiKey. '&q='.rawurlencode($text);
-        $handle = curl_init($detect_url);
-        curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
-        $response = curl_exec($handle);
-        $responseDecoded = json_decode($response, true);
-        $responseCode = curl_getinfo($handle, CURLINFO_HTTP_CODE);      //Here we fetch the HTTP response code
-        curl_close($handle);
+        // $detect_url = 'https://translation.googleapis.com/language/translate/v2/detect?key=' .$apiKey. '&q='.rawurlencode($text);
+        // $handle = curl_init($detect_url);
+        // curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
+        // $response = curl_exec($handle);
+        // $responseDecoded = json_decode($response, true);
+        // $responseCode = curl_getinfo($handle, CURLINFO_HTTP_CODE);      //Here we fetch the HTTP response code
+        // curl_close($handle);
 
-        if($responseCode == 200) {
-            if($responseDecoded['data'] && $responseDecoded['data']['detections'] && $responseDecoded['data']['detections'][0] && $responseDecoded['data']['detections'][0][0] && $responseDecoded['data']['detections'][0][0]['language']){
+        // if($responseCode == 200) {
+        //     if($responseDecoded['data'] && $responseDecoded['data']['detections'] && $responseDecoded['data']['detections'][0] && $responseDecoded['data']['detections'][0][0] && $responseDecoded['data']['detections'][0][0]['language']){
                 
-                $detected_lang = $responseDecoded['data']['detections'][0][0]['language'] ?? $detected_lang;
-            }
-        }
+        //         $detected_lang = $responseDecoded['data']['detections'][0][0]['language'] ?? $detected_lang;
+        //     }
+        // }
 
         foreach($language_alloweds as $language_allowed){
 

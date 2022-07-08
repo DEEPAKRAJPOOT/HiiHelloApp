@@ -98,7 +98,7 @@ class SubscriptionController extends Controller
                         'amount'                        =>  $plan->amount,
                     ]);
 
-                    if( $valid_transaction == true && $is_renew == "y" && date('Y-m-d H:i:s',$paymetDetails['expires_date_ms'] / 1000) >= \Carbon\Carbon::now() ) {
+                    if( $valid_transaction == true && date('Y-m-d H:i:s',$paymetDetails['expires_date_ms'] / 1000) >= \Carbon\Carbon::now() ) {
                         $subscription->update(['status' => 'active']);
                         $subscription->save();
 

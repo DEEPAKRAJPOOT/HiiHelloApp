@@ -31,7 +31,7 @@ class FilterController extends Controller
 
                     $users = User::select('id','custom_id','birth_date','profile_photo','gender','interest',
                             'location_id','language_id','verify_status','is_active',
-                            DB::raw("3959 * acos(cos(radians(" . $latitude . ")) 
+                            DB::raw("3959 * 1.609344 * acos(cos(radians(" . $latitude . ")) 
                                     * cos(radians(users.latitude)) 
                                     * cos(radians(users.longitude) - radians(" . $longitude . ")) 
                                     + sin(radians(" .$latitude. ")) 
