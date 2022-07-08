@@ -83,7 +83,7 @@ class ProfileReportController extends Controller
     {
         extract($this->DTFilters($request->all()));
         $records = [];
-        $profile_reports = ProfileReport::with('user.userTranslations','reportedUser.userTranslations')->orderBy($sort_column, $sort_order);
+        $profile_reports = ProfileReport::with('user.userTransDefault','reportedUser.userTransDefault')->orderBy($sort_column, $sort_order);
 
         if ($search != '') {
             $profile_reports->where(function ($query) use ($search) {
