@@ -40,7 +40,7 @@ class UserProfile extends JsonResource
                 'social_user'           =>  $this->isSocialUser(),
                 'profile_setuped'       =>  $this->isProfileSetuped(),
                 'profile_percentage'    =>  $this->calculateProfilePercent(),
-                'verified_staus'        =>  $this->getVerifiedStatus(),
+                'verified_staus'        =>  $this->verify_status,
                 'likes'                 =>  $this->like_count ?? 0,
                 'email_verified_at'     =>  $this->email_verified_at ?? "",
                 'contact_verified_at'   =>  $this->contact_verified_at ?? "",

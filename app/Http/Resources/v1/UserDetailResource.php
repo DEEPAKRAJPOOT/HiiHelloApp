@@ -51,6 +51,7 @@ class UserDetailResource extends JsonResource
                 ],
             ],
             'flags'            =>  [
+                'verified_staus'        =>  $this->verify_status,
                 'is_blocked'            =>  $this->blocked_tos_count ? $this->blocked_tos_count > 0 ? true : false : false,
             ],
         ];

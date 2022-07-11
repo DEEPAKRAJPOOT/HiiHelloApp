@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\ { ModelNotFoundException };
 use App\Http\Resources\v1\ { LanguageResource, CmsResource, CountryResource, LocationResource, InterestResource, FaqResource, ProfileDetailResource, PersonalityResource, LocationTransResource };
 use App\Http\Requests\Api\General\ { PaginationRequest, LocationRequest, ProfileDetailRequest, InterestRequest };
 use App\Http\Requests\Api\User\ { AddDeviceTokenRequest };
-use App\Models\ { Language, CmsPage, Country, Location, Interest, Faq, DeviceToken, ProfileDetail, AppDetail, Personality };
+use App\Models\ { Language, CmsPage, Country, Location, Interest, Faq, DeviceToken, ProfileDetail, AppDetail, Personality, LocationTranslation };
 
 class GeneralController extends Controller
 {
@@ -190,12 +190,19 @@ class GeneralController extends Controller
         if( $this->apiValidator($request->all(), $rules) ) {
             try{
                 $search = $request->search;
-                $locations = Location::with('locationTranslation');
-                
+                $lang = app()->getLocale();
+
+                $locations = Location::
+                    with('locationTranslation')
+                    ->select('locations.*','location_translations.name as location_name')
+                    ->join('location_translations', 'locations.id', '=', 'location_translations.location_id')
+                    ->where('location_translations.locale',$lang)
+                    ->orderBy('location_translations.name');
+
                 if(!empty($search)){
                     $locations = $locations->whereHas('locationTranslation', function ($query) use ($search) {
-                                $query->where('name', 'like', "%{$search}%");
-                            });
+                            $query->where('name', 'like', "%{$search}%");
+                        });
                 }
                 $count = $locations->count();
                 $locations = $locations->limit($request->limit ?? config('utility.pagination.limit'))
