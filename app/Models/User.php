@@ -107,7 +107,6 @@ class User extends Authenticatable implements MustVerifyEmail, TranslatableContr
     public function community(){ return $this->hasOne('App\Models\ProfileDetail','id','community_id'); }
 
     public function getAge(){ return \Carbon\Carbon::parse($this->birth_date)->diff(\Carbon\Carbon::now())->y; }
-    public function getVerifiedStatus(){ return $this->verify_status; }
 
     public function countChats(){ 
         return ChatRoom::whereHas('chatMessages',  function ($query) {

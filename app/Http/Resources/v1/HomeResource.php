@@ -23,7 +23,7 @@ class HomeResource extends JsonResource
             'interests'         =>  HomeInterestResource::collection($this->interests),
             'profile_photo'     =>  generateURL($this->profile_photo) ?? "",
             'flags'             =>  [
-                'verified_staus'   =>  $this->getVerifiedStatus(),
+                'verified_staus'   =>  $this->verify_status,
                 'distance'         =>  $this->distance ?? 0,
             ],
         ];

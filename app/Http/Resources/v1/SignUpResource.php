@@ -33,7 +33,7 @@ class SignUpResource extends JsonResource
                 'social_user'           =>  $this->isSocialUser(),
                 'profile_setuped'       =>  $this->isProfileSetuped(),
                 'profile_percentage'    =>  $this->calculateProfilePercent(),
-                'verified_staus'        =>  $this->getVerifiedStatus(),
+                'verified_staus'        =>  $this->verify_status,
                 'email_verified_at'     =>  $this->email_verified_at ?? "",
                 'contact_verified_at'   =>  $this->contact_verified_at ?? "",
                 'photo_verified_at'     =>  $this->photo_verified_at ?? "",

@@ -27,7 +27,8 @@ class UserController extends Controller
                 // $max_interest = config('utility.profile.detail.max_interest') ?? 5;
 
                 $user = User::select('id','custom_id','birth_date','location_id',
-                            'profile_photo','voice','voice_answer', 'swipe_count', 'gender', 'subscription_end_date',
+                            'profile_photo','voice','voice_answer', 'swipe_count', 'gender', 'verify_status',
+                            'subscription_end_date',
                             'education_id','university_id','profession_id','religion_id',
                             'relationship_status_id','you_are_here_id','food_preference_id','drinking_id','smoking_id',
                             'pet_id','star_sign_id','community_id','is_active')
