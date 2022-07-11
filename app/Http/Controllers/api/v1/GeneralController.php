@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\ { Request, Response };
 use Illuminate\Support\Facades\ { Storage };
 use Illuminate\Database\Eloquent\ { ModelNotFoundException };
-use App\Http\Resources\v1\ { LanguageResource, CmsResource, CountryResource, LocationResource, InterestResource, FaqResource, ProfileDetailResource, PersonalityResource, LocationTransResource };
+use App\Http\Resources\v1\ { LanguageResource, CmsResource, CountryResource, LocationResource, InterestResource, FaqResource, ProfileDetailResource, PersonalityResource, LocationTransResource, LocationSearchResource };
 use App\Http\Requests\Api\General\ { PaginationRequest, LocationRequest, ProfileDetailRequest, InterestRequest };
 use App\Http\Requests\Api\User\ { AddDeviceTokenRequest };
 use App\Models\ { Language, CmsPage, Country, Location, Interest, Faq, DeviceToken, ProfileDetail, AppDetail, Personality, LocationTranslation };
@@ -192,16 +192,15 @@ class GeneralController extends Controller
                 $search = $request->search;
                 $lang = app()->getLocale();
 
-                $locations = Location::
-                    with('locationTranslation')
-                    ->select('locations.*','location_translations.name as location_name')
+                $locations = Location::select('locations.id','locations.custom_id','locations.is_active',
+                        'location_translations.name as location_name')
                     ->join('location_translations', 'locations.id', '=', 'location_translations.location_id')
                     ->where('location_translations.locale',$lang)
                     ->orderBy('location_translations.name');
 
                 if(!empty($search)){
                     $locations = $locations->whereHas('locationTranslation', function ($query) use ($search) {
-                            $query->where('name', 'like', "%{$search}%");
+                            $query->where('name', 'like', "{$search}%");
                         });
                 }
                 $count = $locations->count();
@@ -209,7 +208,7 @@ class GeneralController extends Controller
                             ->offset($request->offset ?? config('utility.pagination.offset'))
                             ->get();
                 if($locations->isNotEmpty()){
-                    return (LocationResource::collection($locations))->additional([
+                    return (LocationSearchResource::collection($locations))->additional([
                         'meta' => [
                             'limit'     =>  $request->limit,
                             'offset'    =>  $request->offset,
