@@ -9,6 +9,7 @@ use App\Console\Commands\GoogleTranslation;
 use App\Console\Commands\BirthDayWish;
 use App\Console\Commands\NotifySubScriptionExpire;
 use App\Console\Commands\RenewSwipeLimit;
+use App\Console\Commands\ChatMediaCheker;
 
 class Kernel extends ConsoleKernel
 {
@@ -23,6 +24,7 @@ class Kernel extends ConsoleKernel
         BirthDayWish::class,
         NotifySubScriptionExpire::class,
         RenewSwipeLimit::class,
+        ChatMediaCheker::class,
     ];
 
     /**
@@ -42,6 +44,13 @@ class Kernel extends ConsoleKernel
         // Image Moderation Command
         $schedule->call(function () {
             $scheculeCommand = new ImageModeration;
+            $scheculeCommand->handle();
+        })->everyMinute();
+        // ->everyFiveMinutes();
+
+         // Chat Image Moderation Command
+        $schedule->call(function () {
+            $scheculeCommand = new ChatMediaCheker;
             $scheculeCommand->handle();
         })->everyMinute();
         // ->everyFiveMinutes();

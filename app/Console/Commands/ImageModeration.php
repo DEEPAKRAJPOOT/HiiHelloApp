@@ -120,9 +120,9 @@ class ImageModeration extends Command
         } catch (\Exception $e) {
             // Add error log
             $file = 'image_moderation';
-            $iqTrackingLog = new Logger($file);
-            $iqTrackingLog->pushHandler(new StreamHandler(storage_path('logs/' . $file . '.log')), Logger::ERROR);
-            $iqTrackingLog->error($file, ['error' => $e->getMessage()]);
+            $imgModerationLog = new Logger($file);
+            $imgModerationLog->pushHandler(new StreamHandler(storage_path('logs/' . $file . '.log')), Logger::ERROR);
+            $imgModerationLog->error($file, ['error' => $e->getMessage()]);
         }
 
         $this->info($message);
@@ -181,9 +181,9 @@ class ImageModeration extends Command
         } catch (\Exception $e) {
             // Add error log
             $file = 'image_moderation';
-            $iqTrackingLog = new Logger($file);
-            $iqTrackingLog->pushHandler(new StreamHandler(storage_path('logs/' . $file . '.log')), Logger::ERROR);
-            $iqTrackingLog->error($file, ['error' => $e->getMessage()]);
+            $imgModerationLog = new Logger($file);
+            $imgModerationLog->pushHandler(new StreamHandler(storage_path('logs/' . $file . '.log')), Logger::ERROR);
+            $imgModerationLog->error($file, ['error' => $e->getMessage()]);
         }
     }
 
