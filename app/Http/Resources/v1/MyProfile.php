@@ -20,7 +20,6 @@ class MyProfile extends JsonResource
             'full_name'         =>  $this->userTranslation ? $this->userTranslation->full_name : "",
             'age'               =>  $this->getAge(),
             'gender'            =>  $this->gender ?? "",
-            'interest'          =>  $this->interest ?? "",
             'extra'             =>  [
                 'about_me'      =>  $this->userTranslation ? $this->userTranslation->about_me : "",
                 'fav_movie'     =>  $this->userTranslation ? $this->userTranslation->fav_movie : "",
