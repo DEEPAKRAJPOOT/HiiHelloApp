@@ -4,6 +4,8 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Storage;
+use Monolog\Handler\StreamHandler;
+use Monolog\Logger;
 use App\Models\ChatMessage;
 use App\Jobs\NotificationJob;
 
@@ -55,22 +57,22 @@ class ChatMediaCheker extends Command
                             && $message->type == 'file' && $message->value == 'Image' && !empty($message->other->path) ){   
                             $image = generateURL($message->other->path);
                             if(!empty($image)){
-                                $safe_main_image = $this->checkImageModeration($image);
+                                $safe_image = $this->checkImageModeration($image);
 
                                 // IF NOT SAFE
                                 if($safe_image == false){
                                     if( Storage::exists($message->other->path) ) { Storage::delete($message->other->path); }
                                     $chatMessage->is_verified = 'y';
                                     $chatMessage->save();
-
-                                    // Notify User
                                     $sender = $chatMessage->sender;
-                                    if($sender){
-                                        $this->sendImageAlertNotification($sender, $chatMessage->room);
-                                    }
 
                                     // Delete Chat Message
                                     $chatMessage->delete();
+
+                                    // Notify User
+                                    if($sender){
+                                        $this->sendImageAlertNotification($sender, $chatMessage->room);
+                                    }
                                 }
                             }
                         }
