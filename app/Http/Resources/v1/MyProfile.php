@@ -18,6 +18,7 @@ class MyProfile extends JsonResource
         return [
             'id'                =>  $this->custom_id ?? "",
             'full_name'         =>  $this->userTranslation ? $this->userTranslation->full_name : "",
+            'twilio_identifier' =>  $this->translate('en') ? $this->translate('en')->full_name : "",
             'age'               =>  $this->getAge(),
             'gender'            =>  $this->gender ?? "",
             'extra'             =>  [
