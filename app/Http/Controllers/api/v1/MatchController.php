@@ -51,9 +51,10 @@ class MatchController extends Controller
                 $personalities  =   UserPersonality::whereUserId($auth_id)->whereNotNull('personality_id')->distinct()->pluck('personality_id')->toArray();
 
                 // if chat is open then restrict in match profiles
-                $rooms = ChatRoom::where(function ($query) use ($auth_id) {
-                            $query->whereCreatorId($auth_id)->orWhere('participate_id',$auth_id);
-                        });
+                $rooms = ChatRoom::whereHas('chatMessages')
+                            ->where(function ($query) use ($auth_id) {
+                                $query->whereCreatorId($auth_id)->orWhere('participate_id',$auth_id);
+                            });
                 $creators = $rooms->whereNotNull('creator_id')->pluck('creator_id')->toArray();
                 $participants = $rooms->whereNotNull('participate_id')->pluck('participate_id')->toArray();
 

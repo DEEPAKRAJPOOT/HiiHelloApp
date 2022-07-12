@@ -24,12 +24,18 @@ class ChatRoomResource extends JsonResource
                 'full_name'     =>  $this->creator ? 
                                         $this->creator->userTranslation ? $this->creator->userTranslation->full_name : ""
                                     : "",
+                'twilio_identifier'     =>  $this->creator ? 
+                                        $this->creator->translate('en') ? $this->creator->translate('en')->full_name : ""
+                                    : "",
                 'profile'       =>  $this->creator ? $this->creator->profile_photo : "",
             ],
             'participator'  =>  [
                 'id'            =>  $this->participator ? $this->participator->custom_id : "",
                 'full_name'     =>  $this->participator ? 
                                         $this->participator->userTranslation ? $this->participator->userTranslation->full_name : ""
+                                    : "",
+                'twilio_identifier'     =>  $this->participator ? 
+                                        $this->participator->translate('en') ? $this->participator->translate('en')->full_name : ""
                                     : "",
                 'profile'       =>  $this->participator ? $this->participator->profile_photo : "",
             ],
