@@ -18,7 +18,7 @@ class LoginResource extends JsonResource
         return [
             'id'                =>  $this->custom_id ?? "",
             'full_name'         =>  $this->userTranslation ? $this->userTranslation->full_name : "",
-            'twilio_identifier' =>  $this->translate('en') ? $this->translate('en')->full_name : "",
+            'twilio_identifier' =>  $this->userTransEn ? $this->userTransEn->full_name : "",
             'email'             =>  $this->email ?? "",
             'contact'       =>  [
                 'code'      =>  $this->country_code,

@@ -24,9 +24,9 @@ class ChatRoomResource extends JsonResource
                 'full_name'     =>  $this->creator ? 
                                         $this->creator->userTranslation ? $this->creator->userTranslation->full_name : ""
                                     : "",
-                'twilio_identifier'     =>  $this->creator ? 
-                                        $this->creator->translate('en') ? $this->creator->translate('en')->full_name : ""
-                                    : "",
+                'twilio_identifier' =>  $this->creator ? 
+                                            $this->creator->userTransEn ? $this->creator->userTransEn->full_name : ""
+                                        : "",
                 'profile'       =>  $this->creator ? $this->creator->profile_photo : "",
             ],
             'participator'  =>  [
@@ -34,9 +34,9 @@ class ChatRoomResource extends JsonResource
                 'full_name'     =>  $this->participator ? 
                                         $this->participator->userTranslation ? $this->participator->userTranslation->full_name : ""
                                     : "",
-                'twilio_identifier'     =>  $this->participator ? 
-                                        $this->participator->translate('en') ? $this->participator->translate('en')->full_name : ""
-                                    : "",
+                'twilio_identifier' =>  $this->participator ? 
+                                            $this->participator->userTransEn ? $this->participator->userTransEn->full_name : ""
+                                        : "",
                 'profile'       =>  $this->participator ? $this->participator->profile_photo : "",
             ],
             'latest_message'    =>  [

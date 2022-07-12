@@ -71,6 +71,9 @@ class User extends Authenticatable implements MustVerifyEmail, TranslatableContr
     public function userTransDefault(){ 
         return $this->hasOne('App\Models\UserTranslation')->whereLocale(config('utility.default_lang_code'));
     }
+    public function userTransEn(){ 
+        return $this->hasOne('App\Models\UserTranslation')->whereLocale('en');
+    }
 
     public function deviceToken() { return $this->hasOne('App\Models\DeviceToken'); }
     public function country(){ return $this->belongsTo('App\Models\Country'); }
