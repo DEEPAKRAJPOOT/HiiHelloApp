@@ -147,12 +147,14 @@ class LikeController extends Controller
                     ]);
 
                     // Remove From Likes
-                    Like::whereUserId($auth_id)->whereLikerId($user_id)
-                        ->orWhere(function ($query) use ($user_id, $auth_id){
-                            $query->whereUserId($user_id)
-                                ->whereLikerId($auth_id);
-                        })
-                        ->delete();
+                    Like::whereUserId($user_id)->whereLikerId($auth_id)->delete();
+                        
+                    // Like::whereUserId($auth_id)->whereLikerId($user_id)
+                    //     ->orWhere(function ($query) use ($user_id, $auth_id){
+                    //         $query->whereUserId($user_id)
+                    //             ->whereLikerId($auth_id);
+                    //     })
+                    //     ->delete();
 
                     if($disLike->save()){
                         $this->status = Response::HTTP_OK;
