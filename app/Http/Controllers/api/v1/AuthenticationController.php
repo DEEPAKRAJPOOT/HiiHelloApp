@@ -62,6 +62,7 @@ class AuthenticationController extends Controller
             try{
                 $user = $this->getAuthUser();
                 $country_id = $location_id = $language_id = NULL;
+                $full_name = $request->first_name.' '.$request->last_name;
                 $traslate_data = [];
 
                 if(!empty($request->country_code)){
@@ -103,16 +104,16 @@ class AuthenticationController extends Controller
                     ]);
                 }
 
-                if(!empty($request->full_name)){
+                if(!empty($full_name)){
                     $language_codes = Language::pluck('lang_code')->toArray();
                     foreach($language_codes as $language_code){
-                        $traslate_data[$language_code] =  [ 'full_name' =>  $request->full_name ];
+                        $traslate_data[$language_code] =  [ 'full_name' =>  $full_name ];
                     }
                     $user->update($traslate_data);
 
                     // Store Account Id
                     if(!empty($request->language) && $request->language == 'en'){
-                        $user->account_id = Str::slug(substr($request->full_name, 0, 4), "_").'_'.time();
+                        $user->account_id = Str::slug(substr($full_name, 0, 4), "_").'_'.time();
                     }
                     $user->is_trans_full_name = 'n';
                 }

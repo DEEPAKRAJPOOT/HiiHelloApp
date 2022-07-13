@@ -124,7 +124,7 @@ class GoogleTransForAdmin extends Command
             }
         });
 
-        ProfileDetail::with('profileDetailTranslations')->offset('1000')->chunk(100, function($profile_details) use ($default_lang_code, $language_alloweds, $apiKey, $message) {
+        ProfileDetail::with('profileDetailTranslations')->chunk(100, function($profile_details) use ($default_lang_code, $language_alloweds, $apiKey, $message) {
             if($profile_details->isNotEmpty()){
                 foreach($profile_details as $profile_detail){
                     if($profile_detail->profileDetailTranslations->isNotEmpty()){
