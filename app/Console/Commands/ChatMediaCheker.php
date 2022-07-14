@@ -50,12 +50,22 @@ class ChatMediaCheker extends Command
                 ->chunk(100, function($chatMessages) {
 
                 if($chatMessages->isNotEmpty()){
+                    $allow_types = ['jpeg','jpg','png','webp'];
+
                     foreach($chatMessages as $chatMessage){
                         $message = json_decode( preg_replace("/\r|\n/", " ", $chatMessage->message) );
 
-                        if(!empty($message) && !empty($message->type) && !empty($message->value) && !empty($message->other) 
-                            && $message->type == 'file' && $message->value == 'Image' && !empty($message->other->path) ){   
+                        if( !empty($message) 
+                            && !empty($message->type) 
+                            && !empty($message->value) 
+                            && !empty($message->other) 
+                            && $message->type == 'file' 
+                            && !empty($message->other->path) 
+                            && !empty($message->other->type) 
+                            && in_array($message->other->type,$allow_types)
+                        ){   
                             $image = generateURL($message->other->path);
+
                             if(!empty($image)){
                                 $safe_image = $this->checkImageModeration($image);
 

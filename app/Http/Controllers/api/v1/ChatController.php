@@ -79,7 +79,6 @@ class ChatController extends Controller
                 $rooms = ChatRoom::with(['creator:id,custom_id,profile_photo',
                                 'participator:id,custom_id,profile_photo',
                                 'creator.userTranslation','participator.userTranslation',
-                                'creator.userTransEn','participator.userTransEn',
                                 'latestMessage.sender:id,custom_id'])
                         ->whereHas('chatMessages')
                         ->selectRaw("chat_rooms.*, (SELECT MAX(created_at) from chat_messages WHERE chat_messages.room_id=chat_rooms.id) as latest_message_on")

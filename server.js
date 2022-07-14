@@ -339,7 +339,7 @@ io.on('connection', (socket)=>{
 					return false;
 				}
 
-				let updateMessage =  "UPDATE chat_messages SET status = ?, updated_at = ?, deleted_at = NULL WHERE room_id = ? AND created_at <= ? ";
+				let updateMessage =  "UPDATE chat_messages SET status = ?, updated_at = ? WHERE room_id = ? AND created_at <= ? ";
 				let sql = connection.query(updateMessage, [status, request.time, selectMessage.room_id, selectMessage.created_at], (read_error, _message) => {
 					if( read_error ) throw read_error;
 					message_parse =  JSON.parse(selectMessage.message);

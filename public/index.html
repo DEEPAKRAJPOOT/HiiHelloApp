@@ -47,9 +47,9 @@
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.1/socket.io.js"></script>
 	<script type="text/javascript">
 		$(document).ready(function() {
-			var socket = io.connect('http://127.0.0.1:8080');
+			// var socket = io.connect('http://127.0.0.1:8080');
 			// var socket = io.connect('http://chat.hihelloapp.com:8080');
-			// var socket = io.connect('http://chat.hihelloapp.com');
+			var socket = io.connect('http://chat.hihelloapp.com');
 			console.log("Socket ::",socket);
 
 			/* Join The Socket Room */
@@ -162,31 +162,15 @@
 				});
 
 			/* Receive All Emits */
-				// socket.on('online', function(response) {
-				// 	if (response.user_id != $('#username').val()) {
-				// 		$('#showOnline').html( response.user_id+" is online...");
-				// 		$('#showOnline').removeClass('hide')
-				// 		setTimeout(function () {
-				// 			if ( !$('#showOnline').hasClass('hide') ) $('#showOnline').addClass('hide')
-				// 		}, 2000)
-				// 	}
-				// });
-
-				socket.on("online", (userId) => {
-			        console.log(userId, "Is Online!"); // update online status
-			        $('#showOnline').removeClass('hide')
-					setTimeout(function () {
-						if ( !$('#showOnline').hasClass('hide') ) $('#showOnline').addClass('hide')
-					}, 2000)
-			    });
-
-				socket.on("offline", (userId) => {
-			        console.log(userId, "Is Offline!"); // update offline status
-			        $('#showOnline').removeClass('hide')
-					setTimeout(function () {
-						if ( !$('#showOnline').hasClass('hide') ) $('#showOnline').addClass('hide')
-					}, 2000)
-			    });
+				socket.on('online', function(response) {
+					if (response.user_id != $('#username').val()) {
+						$('#showOnline').html( response.user_id+" is online...");
+						$('#showOnline').removeClass('hide')
+						setTimeout(function () {
+							if ( !$('#showOnline').hasClass('hide') ) $('#showOnline').addClass('hide')
+						}, 2000)
+					}
+				});
 
 			/* Get Chat Rooms */
 				// $('#getRooms').on('click', function () {
