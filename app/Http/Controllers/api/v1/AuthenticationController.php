@@ -34,6 +34,7 @@ class AuthenticationController extends Controller
                     if($user->is_active == 'y'){
                         Auth::login($user);
                         Auth::user()->tokens()->delete(); // Logout From All Devices    
+                        $user->changeLanguage(); // Change Language
 
                         return (new LoginResource($user))
                             ->additional([

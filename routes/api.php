@@ -54,7 +54,7 @@ Route::group(['namespace' => 'v1', 'prefix' => 'v1', 'middleware' => 'auth:sanct
     Route::post('logout',[AuthenticationController::class,'logout'])->name('api.user.logout'); 
 
     // Home List
-    Route::post('user/get-list', [HomeController::class,'getHomeFeeds'])->name('api.user.get-list');
+    Route::post('user/get-list', [HomeController::class,'getHomeFeeds'])->name('api.user.get-list')->middleware('change_language');
 
     // User
     Route::post('user/set-full-profile', [ProfileController::class,'setFullProfile'])->name('api.user.set-fill-profile');
@@ -67,7 +67,7 @@ Route::group(['namespace' => 'v1', 'prefix' => 'v1', 'middleware' => 'auth:sanct
     Route::post('user/profile-filters', [FilterController::class,'getUsersByFilter'])->name('api.user.profile-filters');
 
     // My Profile
-    Route::post('user/my-profile', [UserController::class,'getMyProfile'])->name('api.user.my-profile');
+    Route::post('user/my-profile', [UserController::class,'getMyProfile'])->name('api.user.my-profile')->middleware('change_language');
     Route::post('user/get-profile', [UserController::class,'getProfile'])->name('api.user.get-profile');
     Route::post('user/delete-account', [UserController::class,'deletAccount'])->name('api.user.delete-account');
 
