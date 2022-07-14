@@ -45,8 +45,6 @@ Route::group(['namespace' => 'v1', 'prefix' => 'v1'], function () {
     
     // Send Chat Notification
     Route::post('chat/send-push/{chatmessage}/{message?}', [ChatController::class,'sendChatPush'])->name('chat.send-push');
-
-
 });
 
 Route::group(['namespace' => 'v1', 'prefix' => 'v1', 'middleware' => 'auth:sanctum'], function () {

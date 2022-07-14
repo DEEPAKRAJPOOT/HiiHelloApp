@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\ { Auth, DB };
 use App\Http\Requests\Api\User\ { AddLikeRequest, AddDislikeRequest };
 use App\Http\Requests\Api\General\ { PaginationRequest };
 use App\Http\Resources\v1\ { LikeResource };
-use App\Models\ { Like, User, BlockUser, DisLike };
+use App\Models\ { Like, User, BlockUser, DisLike, UnMatch };
 use App\Jobs\ { NotificationJob };
 
 class LikeController extends Controller
@@ -28,7 +28,7 @@ class LikeController extends Controller
                 $auth_id = $auth_user->id; $user_id = $user->id;
 
                 $block = BlockUser::whereBlockBy($user_id)->whereBlockedTo($auth_id)->first();
-                        
+
                 // Manage Swipes
                 $auth_user->addSwipeCount();
                 $is_swipe_allow = $auth_user->isSwipeAllow();
@@ -54,6 +54,9 @@ class LikeController extends Controller
                                 $auth_user->increment('match_count');
                                 $user->increment('match_count');
                                 $is_matched = true;
+
+                                // Delete Unmatch Details
+                                UnMatch::whereUnmatchBy($auth_id)->whereUnmatchTo($user_id)->delete();
 
                                 $title = trans('api.notify_message.new_match.title');
                                 $message = trans('api.notify_message.new_match.message');
