@@ -11,7 +11,7 @@ use Twilio\Rest\ { Client };
 use Twilio\Jwt\ { AccessToken };
 use Twilio\Jwt\Grants\ { ChatGrant, VideoGrant, VoiceGrant };
 use Twilio\TwiML\ { VoiceResponse };
-use App\Models\ { User, UserCommunication, ChatRoom, CallLog };
+use App\Models\ { User, UserCommunication, ChatRoom, CallLog, UserTranslation };
 
 class TwillioController extends Controller
 {
@@ -197,8 +197,15 @@ class TwillioController extends Controller
         $rules = GetReceiverDetailRequest::rules();
         if( $this->apiValidator($request->all(), $rules) ) {
             try{
-                $user = User::select('id','custom_id','gender','is_subscribed','subscription_end_date')
+                $user = User::select('id','custom_id','gender','language_id','is_subscribed','subscription_end_date')
+                            ->with('language')
+                            ->with('userTransEn')
                             ->whereCustomId($request->user_id)->whereIsActive('y')->firstOrFail();
+                $locale = $user->language ? $user->language->lang_code : 'en';
+
+                $user_translation = UserTranslation::select('full_name')->where(['user_id' => $user->id, 'locale' => $locale])->first();
+                $user['user_trans_name'] = "";
+                if($user_translation){ $user['user_trans_name'] = $user_translation->full_name ?? ""; }
 
                 $this->status = Response::HTTP_OK;
                 return (new CallReceiverResource($user))

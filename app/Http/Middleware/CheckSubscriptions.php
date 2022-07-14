@@ -18,7 +18,7 @@ class CheckSubscriptions
      */
     public function handle($request, Closure $next)
     {
-        if( Auth::user()->subscription_end_date <= \Carbon\Carbon::now() ) {
+        if( Auth::user()->gender != 'Female' && Auth::user()->subscription_end_date < \Carbon\Carbon::now()->format('Y-m-d') ) {
             if ($request->expectsJson()) {
 
                 $controller = new Controller();
