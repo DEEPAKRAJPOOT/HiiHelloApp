@@ -197,18 +197,21 @@ class TwillioController extends Controller
         $rules = GetReceiverDetailRequest::rules();
         if( $this->apiValidator($request->all(), $rules) ) {
             try{
-                $user = User::select('id','custom_id','gender','language_id','is_subscribed','subscription_end_date')
+                $auth_user = $request->user();
+                $call_receiver = User::select('id','custom_id','gender','language_id','is_subscribed','subscription_end_date')
                             ->with('language')
                             ->with('userTransEn')
                             ->whereCustomId($request->user_id)->whereIsActive('y')->firstOrFail();
-                $locale = $user->language ? $user->language->lang_code : 'en';
+                $locale = $call_receiver->language ? $call_receiver->language->lang_code : 'en';
 
-                $user_translation = UserTranslation::select('full_name')->where(['user_id' => $user->id, 'locale' => $locale])->first();
-                $user['user_trans_name'] = "";
-                if($user_translation){ $user['user_trans_name'] = $user_translation->full_name ?? ""; }
+                $user_translation = UserTranslation::select('full_name')
+                                ->where(['user_id' => $auth_user->id, 'locale' => $locale])->first();
+
+                $call_receiver['twilio_rcv_show_name'] = "";
+                if($user_translation){ $call_receiver['twilio_rcv_show_name'] = $user_translation->full_name ?? ""; }
 
                 $this->status = Response::HTTP_OK;
-                return (new CallReceiverResource($user))
+                return (new CallReceiverResource($call_receiver))
                         ->additional([
                             'meta' => [
                                 'message'   =>  trans('api.list', ['entity' => __("User") ]),
