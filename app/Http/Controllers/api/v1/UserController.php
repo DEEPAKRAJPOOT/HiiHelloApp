@@ -10,7 +10,7 @@ use App\Http\Resources\v1\ { UserProfile, UserDetailResource, MyProfile };
 use App\Http\Requests\Api\User\ { ProfileRequest, ProfileReportRequest, SetLatLongRequest };
 use App\Http\Requests\Api\Authentication\ { DeleteAccountRequest };
 use App\Http\Requests\Api\General\ { PaginationRequest };
-use App\Models\ { User, Location, ProfileReport, NotificationStatus };
+use App\Models\ { User, Location, ProfileReport, NotificationStatus, Language };
 
 class UserController extends Controller
 {
@@ -163,9 +163,26 @@ class UserController extends Controller
     }
 
     // My Profile Details
-    public function getMyProfile()
+    public function getMyProfile(Request $request)
     {
         try{
+            $user = $request->user();
+            $need_to_change_lang = true;
+            
+            if(!empty($user->language)){
+                if($user->language->lang_code == app()->getLocale()){
+                    $need_to_change_lang = false;
+                }
+            }
+
+            if($need_to_change_lang){
+                $language = Language::select('id')->whereLangCode(app()->getLocale())->first();
+                if($language){
+                    $user->language_id = $language->id;
+                    $user->save();
+                }
+            }
+
             $user = User::with([
                     'userTranslation','userTransEn','userDetails','subscription.subscriptionPlan.subscriptionPlanTranslation',
                     'interests.interest.interestTranslation',
@@ -179,7 +196,7 @@ class UserController extends Controller
                     'starSign.profileDetailTranslation','community.profileDetailTranslation',
                     'personalities.personality.personalityTranslation'
                     ])
-                    ->whereId(Auth::id())->firstOrFail();
+                    ->whereId($user->id)->firstOrFail();
 
             return (new MyProfile($user))
                 ->additional(['meta' => [
