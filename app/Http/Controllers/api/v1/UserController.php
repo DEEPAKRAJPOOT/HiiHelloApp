@@ -166,23 +166,6 @@ class UserController extends Controller
     public function getMyProfile(Request $request)
     {
         try{
-            $user = $request->user();
-            $need_to_change_lang = true;
-            
-            if(!empty($user->language)){
-                if($user->language->lang_code == app()->getLocale()){
-                    $need_to_change_lang = false;
-                }
-            }
-
-            if($need_to_change_lang){
-                $language = Language::select('id')->whereLangCode(app()->getLocale())->first();
-                if($language){
-                    $user->language_id = $language->id;
-                    $user->save();
-                }
-            }
-
             $user = User::with([
                     'userTranslation','userTransEn','userDetails','subscription.subscriptionPlan.subscriptionPlanTranslation',
                     'interests.interest.interestTranslation',
@@ -196,7 +179,7 @@ class UserController extends Controller
                     'starSign.profileDetailTranslation','community.profileDetailTranslation',
                     'personalities.personality.personalityTranslation'
                     ])
-                    ->whereId($user->id)->firstOrFail();
+                    ->whereId(Auth::id())->firstOrFail();
 
             return (new MyProfile($user))
                 ->additional(['meta' => [

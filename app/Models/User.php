@@ -245,6 +245,24 @@ class User extends Authenticatable implements MustVerifyEmail, TranslatableContr
         return $status;
     }
 
+    public function changeLanguage(){
+        $need_to_change_lang = true;
+            
+        if(!empty($this->language)){
+            if($this->language->lang_code == app()->getLocale()){
+                $need_to_change_lang = false;
+            }
+        }
+
+        if($need_to_change_lang){
+            $language = Language::select('id')->whereLangCode(app()->getLocale())->first();
+            if($language){
+                $this->language_id = $language->id;
+                $this->save();
+            }
+        }
+    }
+
     /**
      * Calculation Profile Completion In Percentage
      * return $percentage
