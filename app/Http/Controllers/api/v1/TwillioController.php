@@ -100,6 +100,12 @@ class TwillioController extends Controller
             "value" => $data["room_id"],
         ]);
 
+        // pass custom display_name params to handle display caller name to receiver
+        $client->parameter([
+            "name" => "display_name",
+            "value" => $data["display_name"],
+        ]);
+
         return $response;
     }
 
