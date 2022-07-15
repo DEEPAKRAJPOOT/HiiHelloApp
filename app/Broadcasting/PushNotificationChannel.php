@@ -31,11 +31,14 @@ class PushNotificationChannel extends Controller
             'image'     =>  $notifiable['profile_photo'] ? generateURL($notifiable['profile_photo']) : "",
         ];
 
-        if ($message['type'] == config('utility.notification.type.chat_message')) {
+        if ($message['type'] == config('utility.notification.type.chat_message') ||
+            $message['type'] == config('utility.notification.type.image_moderation_chat')
+        ) {
             $data['name']       =   $message['name'];
             $data['profile']    =   $message['profile'];
             $data['room_id']    =   $message['room_id'];
         }
+
         $send_notification = [
             'priority'  =>  'high',
             'to'        =>  $deviceToken->token,
