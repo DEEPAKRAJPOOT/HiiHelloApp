@@ -172,9 +172,9 @@ class ChatMediaCheker extends Command
             'value'         =>  $user->custom_id,
             'user_id'       =>  $user->id,
             'image'         =>  '',
-            'title'         =>  trans('api.notify_message.image_moderation.title'),
-            'message'       =>  trans('api.notify_message.image_moderation.message'),
-            'type'          =>  config('utility.notification.type.image_moderation'),
+            'title'         =>  trans('api.notify_message.image_moderation_chat.title'),
+            'message'       =>  trans('api.notify_message.image_moderation_chat.message'),
+            'type'          =>  config('utility.notification.type.image_moderation_chat'),
         ];
 
         // Notify

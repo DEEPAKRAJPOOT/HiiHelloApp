@@ -161,6 +161,10 @@ return [
             'title'     =>  "Hi Hello",
             'message'   =>  "Your photo is removed from Hi Hello profile as it does not adhere to community guidelines",
         ],
+        'image_moderation_chat'    =>  [
+            'title'     =>  "Hi Hello",
+            'message'   =>  "The Image you have sent is removed from Hi Hello as it does not adhere to community guidelines",
+        ],
         'add_like'    =>  [
             'title'     =>  "Hi Hello",
             'message'   =>  "Someone liked you in Hi Hello",

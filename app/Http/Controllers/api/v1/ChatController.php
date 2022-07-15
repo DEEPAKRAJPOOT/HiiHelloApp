@@ -81,7 +81,7 @@ class ChatController extends Controller
                                 'creator.userTranslation','participator.userTranslation',
                                 'latestMessage.sender:id,custom_id'])
                         ->whereHas('chatMessages')
-                        ->selectRaw("chat_rooms.*, (SELECT MAX(created_at) from chat_messages WHERE chat_messages.room_id=chat_rooms.id) as latest_message_on")
+                        ->selectRaw("chat_rooms.*, (SELECT MAX(created_at) from chat_messages WHERE deleted_at is null and chat_messages.room_id=chat_rooms.id) as latest_message_on")
                         ->orderBy("latest_message_on", "DESC")
                         ->withCount(['chatMessages' => function ($query) {
                             $query->where('status','!=' ,'read');
