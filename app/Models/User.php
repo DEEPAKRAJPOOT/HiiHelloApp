@@ -194,7 +194,7 @@ class User extends Authenticatable implements MustVerifyEmail, TranslatableContr
         
         if( $this->swipe_count >= $daily_swipe_limit
             &&  $this->gender != 'Female'
-            &&  $this->subscription_end_date <= \Carbon\Carbon::today()->format('Y-m-d')
+            &&  $this->subscription_end_date < \Carbon\Carbon::today()->format('Y-m-d')
         ){ $is_swipe_allow = false; }
 
         return $is_swipe_allow;
