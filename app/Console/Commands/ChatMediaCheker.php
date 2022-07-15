@@ -45,7 +45,7 @@ class ChatMediaCheker extends Command
         $message = "No Chat Moderation Image Found.";
 
         try{
-            ChatMessage::with(['room:id,custom_id','sender.deviceToken'])
+            ChatMessage::with(['room:id,custom_id','sender.deviceToken','receiver.userTransEn'])
                 ->whereIsVerified('n')
                 ->chunk(100, function($chatMessages) {
 
@@ -75,13 +75,14 @@ class ChatMediaCheker extends Command
                                     $chatMessage->is_verified = 'y';
                                     $chatMessage->save();
                                     $sender = $chatMessage->sender;
+                                    $receiver = $chatMessage->receiver;
 
                                     // Delete Chat Message
                                     $chatMessage->delete();
-
+                                    
                                     // Notify User
                                     if($sender){
-                                        $this->sendImageAlertNotification($sender, $chatMessage->room);
+                                        $this->sendImageAlertNotification($sender, $receiver, $chatMessage->room);
                                     }
                                 }
                             }
@@ -164,21 +165,26 @@ class ChatMediaCheker extends Command
     }
 
     // Send Notification
-    function sendImageAlertNotification($user, $room){
+    function sendImageAlertNotification($sender, $receiver, $room){
+        $receiver_name = $receiver ? $receiver->userTransEn ? $receiver->userTransEn->full_name : "" : "";
+        $receiver_profile = $receiver ? $receiver->profile_photo : "";
+
         $notification = [
             'custom_id'     =>  getUniqueString('notifications'),
             'key'           =>  'user_id',
             'room_id'       =>  $room ? $room->custom_id : "",
-            'value'         =>  $user->custom_id,
-            'user_id'       =>  $user->id,
-            'image'         =>  '',
+            'value'         =>  $sender->custom_id,
+            'user_id'       =>  $sender->id,
+            'name'          =>  $receiver_name,
+            'profile'       =>  generateURL($receiver_profile),
+            'image'         =>  generateURL($receiver_profile),
             'title'         =>  trans('api.notify_message.image_moderation_chat.title'),
             'message'       =>  trans('api.notify_message.image_moderation_chat.message'),
             'type'          =>  config('utility.notification.type.image_moderation_chat'),
         ];
-
+        
         // Notify
-        $notificationJob = new NotificationJob($notification, $user);
+        $notificationJob = new NotificationJob($notification, $sender);
         dispatch($notificationJob);
     }
 }
