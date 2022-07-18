@@ -135,10 +135,18 @@ class ImageModeration extends Command
             $api_url        =   config('utility.image_moderation.api_url');
             $api_user       =   config('utility.image_moderation.api_user');
             $api_secret     =   config('utility.image_moderation.api_secret');
+
+            // Nudity Values
             $row_value      =   config('utility.image_moderation.row_value');
             $partial_value  =   config('utility.image_moderation.partial_value');
             $safe_value     =   config('utility.image_moderation.safe_value');
-            $models         =   'nudity'; // We can also pass array if we have multiple models
+
+            // Text Values
+            $artificial_value   =   config('utility.image_moderation.artificial_value');
+            $natural_value      =   config('utility.image_moderation.natural_value');
+
+            // $models         =   'nudity'; // We can also pass using comma values if we have multiple models
+            $models         =   "nudity,text"; // We can also pass using comma values if we have multiple models
             $safe_image     =   true;
 
             $client     =   new \GuzzleHttp\Client();
@@ -160,6 +168,7 @@ class ImageModeration extends Command
 
             $output = json_decode($response->getBody());
             if($output->status == 'success'){
+                // Check Nudity
                 if($output->nudity){
                     $row            =   $output->nudity->raw;
                     $safe           =   $output->nudity->safe;
@@ -171,6 +180,20 @@ class ImageModeration extends Command
 
                     // If Image Is Not Safe
                     if($row_condition || $partial_condition || $safe_condition){
+                        $safe_image = false;
+                    }
+                }
+
+                // Check Embedded Text 
+                if($output->text){
+                    $has_artificial =   $output->text->has_artificial;
+                    $has_natural    =   $output->text->has_natural;
+
+                    $artificial_condition   =   $has_artificial > $artificial_value;
+                    $natural_condition      =   $has_natural < $natural_value;
+
+                    // If Image Is Not Safe
+                    if($artificial_condition && $natural_condition){
                         $safe_image = false;
                     }
                 }
@@ -219,4 +242,9 @@ class ImageModeration extends Command
     // 3) SAFE
     //     ->  Decimal between 0 and 1. Images with a value close to 1 are images with a high probability of being safe (i.e. no nudity) while images with a probability closer to 0 have a lower probability of being safe.
 
+    // 4) NATURAL TEXT
+    // The returned value is between 0 and 1, images with a natural text value closer to 1 will contain natural text while images with a natural text value closer to 0 will not contain natural text.
+
+    // 5) ARTIFICIAL TEXT
+    // The returned value is between 0 and 1, images with an artificial text value closer to 1 will contain artificial text while images with an artificial text value closer to 0 will not contain artificial text.
 }   

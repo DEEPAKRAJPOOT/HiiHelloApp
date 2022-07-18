@@ -131,8 +131,7 @@ io.on('connection', (socket)=>{
 	socket.on('send-message', (request) => {
 		if(request.id && request.room_id && request.sender_id && request.receiver_id && request.message_type && request.message_value && request.time){
 
-			// let selectSender = "SELECT * FROM users where custom_id = ? and deleted_at is NULL and is_active = 'y'";
-			let selectSender = "select `users`.*, `user_translations`.`user_id`, `user_translations`.`full_name` as `user_full_name` from `users` inner join `user_translations` on `users`.`id` = `user_translations`.`user_id` where `user_translations`.`locale` = 'en' and users.custom_id = ? and users.is_active = 'y' and `users`.`deleted_at` is null";
+			let selectSender = "SELECT * FROM users where custom_id = ? and deleted_at is NULL and is_active = 'y'";
 			let sql1 = connection.query(selectSender, request.sender_id, (error, sender_result) => {
 				if( error ) throw error;
 				let sender = sender_result[0];
@@ -143,160 +142,181 @@ io.on('connection', (socket)=>{
 					return false;
 				}
 
-				// let selectReceiver = "SELECT * FROM users where custom_id = ? and deleted_at is NULL and is_active = 'y'";
-				let selectReceiver = "select `users`.*, `user_translations`.`user_id`, `user_translations`.`full_name` as `user_full_name` from `users` inner join `user_translations` on `users`.`id` = `user_translations`.`user_id` where `user_translations`.`locale` = 'en' and users.custom_id = ? and users.is_active = 'y' and `users`.`deleted_at` is null";
-				let sql1 = connection.query(selectReceiver, request.receiver_id, (error, receiver_result) => {
+				let selectSenderName = "SELECT full_name FROM user_translations where locale = 'en' and user_id = ?";
+				let sql1 = connection.query(selectSenderName, sender.id, (error, sender_trans_result) => {
 					if( error ) throw error;
-					let receiver = receiver_result[0];
-					
-					if( receiver === undefined ) {
-						io.in(request.receiver_id).emit('went-wrong','Receiver Not Found');
-						console.log('Receiver Not Found'); 
-						return false;
+					let sender_trans = sender_trans_result[0];
+					let sender_name = 'Sender';
+
+					if( sender_trans != undefined ) {
+						sender_name = sender_trans.full_name;
 					}
 
-					let selectChatRoom = "SELECT * FROM chat_rooms where custom_id = ? and deleted_at is NULL and is_active = 'y'";
-					connection.query(selectChatRoom, [request.room_id],(error, _chatRoom) => {
+					let selectReceiver = "SELECT * FROM users where custom_id = ? and deleted_at is NULL and is_active = 'y'";
+					let sql1 = connection.query(selectReceiver, request.receiver_id, (error, receiver_result) => {
 						if( error ) throw error;
-						let chatRoom = _chatRoom[0];
-
-						if( chatRoom === undefined ) {
-							io.in(request.room_id).emit('went-wrong','Chat Room Not Found');
-							console.log('Chat Room Not Found'); 
+						let receiver = receiver_result[0];
+						
+						if( receiver === undefined ) {
+							io.in(request.receiver_id).emit('went-wrong','Receiver Not Found');
+							console.log('Receiver Not Found'); 
 							return false;
-						}	
-
-						if(request.message_type == 'location' && request.message_lat && request.message_lng ){
-							json_message = '{ "type" : "'+request.message_type+'", "value" : "'+request.message_value+'", "other" : { "lat" : "'+request.message_lat+'", "lng" : "'+request.message_lng+'"} }';
-						}
-						else if(request.message_type == 'file' && request.message_file_path && request.message_file_type ){
-							json_message = '{ "type" : "'+request.message_type+'", "value" : "'+request.message_value+'", "other" : { "path" : "'+request.message_file_path+'", "type" : "'+request.message_file_type+'"} }';
-						}
-						else{
-							json_message = '{ "type" : "'+request.message_type+'", "value" : "'+request.message_value+'", "other" : {} }';
-						}	
-
-						// If Both User In Same Room (Both Online)
-						let msg_status = 'send';
-						if ( overallUsers.includes(request.receiver_id) 
-							&& users[request.room_id] 
-							&& users[request.room_id].includes(request.sender_id) 
-							&& users[request.room_id].includes(request.receiver_id)){
-								msg_status = 'read';
 						}
 
-						let addMessageData = {
-							custom_id	: 	request.id,
-							room_id		: 	chatRoom.id,
-							sender_id	: 	sender.id,
-							receiver_id	: 	receiver.id,
-							message 	: 	json_message,
-							status 		: 	msg_status,
-							created_at 	: 	request.time,
-							updated_at 	: 	request.time,
-						};
+						let selectReceiverName = "SELECT full_name FROM user_translations where locale = 'en' and user_id = ?";
+						let sql1 = connection.query(selectReceiverName, receiver.id, (error, receiver_trans_result) => {
+							if( error ) throw error;
+							let receiver_trans = receiver_trans_result[0];
+							let receiver_name = 'Receiver';
 
-						let addRecord = "INSERT INTO `chat_messages` SET ?";
-						let sql = connection.query(addRecord, addMessageData, (error, _addMessage) => {
-							if( error ) throw error;	
-								
-				            // create return object
-				            let returnSendMsg = {
-								id   		: 	request.id,
-								message: {
-									type 		: 	request.message_type,
-				                	value  		: 	request.message_value,
-				                	other 		:  	{},
-					            },
-								status 		:   msg_status,
-								sender 		: 	{
-									id 		: 	sender.custom_id,
-								},
-								created_at 	: 	request.time,
-								updated_at 	: 	request.time,
-							};
-
-							if(request.message_type == 'location'){
-								returnSendMsg = {
-									... returnSendMsg,
-									message: {
-										type 		: 	request.message_type,
-				                		value  		: 	request.message_value,
-										other 	:  {
-						                	lng 	: 	request.message_lng,
-						                	lat 	: 	request.message_lat,
-						                	url     :   'https://maps.googleapis.com/maps/api/staticmap?center='+request.message_lat+','+request.message_lng+'&zoom=14&size=400x400&markers='+request.message_lat+','+request.message_lng+'&markers=color:red&key=AIzaSyA2GIt7Ld9duVo85H4Mr15Y_v7Sc6pfzlQ',
-							            },
-							        },
-								};	
-							}else if(request.message_type == 'file'){
-								returnSendMsg = {
-									... returnSendMsg,
-									message: {
-										type 		: 	request.message_type,
-				                		value  		: 	request.message_value,
-										other 	:  {
-						                	path 	: 	request.message_file_path,
-						                	type 	: 	request.message_file_type,
-						            	},
-						            },
-								};	
+							if( receiver_trans != undefined ) {
+								receiver_name = receiver_trans.full_name;
 							}
 
-							io.in(request.room_id).emit('receive-message', returnSendMsg);	
-							console.log("Send Message Object ::"+JSON.stringify(returnSendMsg));
+							let selectChatRoom = "SELECT * FROM chat_rooms where custom_id = ? and deleted_at is NULL and is_active = 'y'";
+							connection.query(selectChatRoom, [request.room_id],(error, _chatRoom) => {
+								if( error ) throw error;
+								let chatRoom = _chatRoom[0];
 
-							if(overallUsers.includes(request.receiver_id)){
+								if( chatRoom === undefined ) {
+									io.in(request.room_id).emit('went-wrong','Chat Room Not Found');
+									console.log('Chat Room Not Found'); 
+									return false;
+								}	
 
-								// When New User(Not From The Room) Send Message
-								if (users[request.room_id] && !users[request.room_id].includes(request.receiver_id)) {
-									let returnNewMsg = {
-										id   				: 	chatRoom.custom_id,
-										is_active   		:   chatRoom.is_active,
-										creator: {
-											id 				: 	sender.custom_id,
-											full_name 		: 	sender.user_full_name,
-											profile 		: 	sender.profile_photo,
+								if(request.message_type == 'location' && request.message_lat && request.message_lng ){
+									json_message = '{ "type" : "'+request.message_type+'", "value" : "'+request.message_value+'", "other" : { "lat" : "'+request.message_lat+'", "lng" : "'+request.message_lng+'"} }';
+								}
+								else if(request.message_type == 'file' && request.message_file_path && request.message_file_type ){
+									json_message = '{ "type" : "'+request.message_type+'", "value" : "'+request.message_value+'", "other" : { "path" : "'+request.message_file_path+'", "type" : "'+request.message_file_type+'"} }';
+								}
+								else{
+									json_message = '{ "type" : "'+request.message_type+'", "value" : "'+request.message_value+'", "other" : {} }';
+								}	
+
+								// If Both User In Same Room (Both Online)
+								let msg_status = 'send';
+								if ( overallUsers.includes(request.receiver_id) 
+									&& users[request.room_id] 
+									&& users[request.room_id].includes(request.sender_id) 
+									&& users[request.room_id].includes(request.receiver_id)){
+										msg_status = 'read';
+								}
+
+								let addMessageData = {
+									custom_id	: 	request.id,
+									room_id		: 	chatRoom.id,
+									sender_id	: 	sender.id,
+									receiver_id	: 	receiver.id,
+									message 	: 	json_message,
+									status 		: 	msg_status,
+									created_at 	: 	request.time,
+									updated_at 	: 	request.time,
+								};
+
+								let addRecord = "INSERT INTO `chat_messages` SET ?";
+								let sql = connection.query(addRecord, addMessageData, (error, _addMessage) => {
+									if( error ) throw error;	
+										
+						            // create return object
+						            let returnSendMsg = {
+										id   		: 	request.id,
+										message: {
+											type 		: 	request.message_type,
+						                	value  		: 	request.message_value,
+						                	other 		:  	{},
+							            },
+										status 		:   msg_status,
+										sender 		: 	{
+											id 		: 	sender.custom_id,
 										},
-										participator: {
-											id 				: 	receiver.custom_id,
-											full_name 		: 	receiver.user_full_name,
-											profile 		: 	receiver.profile_photo,
-										},
-										latest_message: {
-											id 				: 	request.id,
-											message : {
-												type 			: 	request.message_type,
-						                		value  			: 	request.message_value,
-						                		other  			: 	{},
-											},
-						                	status  		: 	'send',
-						                	created_at 		: 	request.time,
-											updated_at 		: 	request.time,
-							            }
+										created_at 	: 	request.time,
+										updated_at 	: 	request.time,
 									};
 
-									io.in(request.receiver_id).emit('new-message', returnNewMsg);	
-									console.log("New Message Object ::"+JSON.stringify(returnNewMsg));
-								}
-							}
+									if(request.message_type == 'location'){
+										returnSendMsg = {
+											... returnSendMsg,
+											message: {
+												type 		: 	request.message_type,
+						                		value  		: 	request.message_value,
+												other 	:  {
+								                	lng 	: 	request.message_lng,
+								                	lat 	: 	request.message_lat,
+								                	url     :   'https://maps.googleapis.com/maps/api/staticmap?center='+request.message_lat+','+request.message_lng+'&zoom=14&size=400x400&markers='+request.message_lat+','+request.message_lng+'&markers=color:red&key=AIzaSyA2GIt7Ld9duVo85H4Mr15Y_v7Sc6pfzlQ',
+									            },
+									        },
+										};	
+									}else if(request.message_type == 'file'){
+										returnSendMsg = {
+											... returnSendMsg,
+											message: {
+												type 		: 	request.message_type,
+						                		value  		: 	request.message_value,
+												other 	:  {
+								                	path 	: 	request.message_file_path,
+								                	type 	: 	request.message_file_type,
+								            	},
+								            },
+										};	
+									}
 
-							// Send Push Notification
-							if(msg_status != 'read'){
-								push_message = request.message_value; 
-								sendNotification(request.room_id, request.id, push_message);
-								console.log("Log: Push Notification");
-							}
+									io.in(request.room_id).emit('receive-message', returnSendMsg);	
+									console.log("Send Message Object ::"+JSON.stringify(returnSendMsg));
+
+									if(overallUsers.includes(request.receiver_id)){
+
+										// When New User(Not From The Room) Send Message
+										if (users[request.room_id] && !users[request.room_id].includes(request.receiver_id)) {
+											let returnNewMsg = {
+												id   				: 	chatRoom.custom_id,
+												is_active   		:   chatRoom.is_active,
+												creator: {
+													id 				: 	sender.custom_id,
+													full_name 		: 	sender_name,
+													profile 		: 	sender.profile_photo,
+												},
+												participator: {
+													id 				: 	receiver.custom_id,
+													full_name 		: 	receiver_name,
+													profile 		: 	receiver.profile_photo,
+												},
+												latest_message: {
+													id 				: 	request.id,
+													message : {
+														type 			: 	request.message_type,
+								                		value  			: 	request.message_value,
+								                		other  			: 	{},
+													},
+								                	status  		: 	'send',
+								                	created_at 		: 	request.time,
+													updated_at 		: 	request.time,
+									            }
+											};
+
+											io.in(request.receiver_id).emit('new-message', returnNewMsg);	
+											console.log("New Message Object ::"+JSON.stringify(returnNewMsg));
+										}
+									}
+
+									// Send Push Notification
+									if(msg_status != 'read'){
+										push_message = request.message_value; 
+										sendNotification(request.room_id, request.id, push_message);
+										console.log("Log: Push Notification");
+									}
+								});
+							});
 						});
 					});
+
+					// VALIDATE THE USER [ FROM DB ]
+					// VALIDATE THE ROOM DETAILS [ FROM DB ]
+					// ADD MESSAGE TO DB 
+					// EMIT MESSAGE AGAIN
+					// SEND PUSH NOTIFICATION [ IF IN THE SCOPE ]
 				});
 			});
-
-			// VALIDATE THE USER [ FROM DB ]
-			// VALIDATE THE ROOM DETAILS [ FROM DB ]
-			// ADD MESSAGE TO DB 
-			// EMIT MESSAGE AGAIN
-			// SEND PUSH NOTIFICATION [ IF IN THE SCOPE ]
 		}else{
 			console.log("Precondition Failed !!!");
 			return false; 

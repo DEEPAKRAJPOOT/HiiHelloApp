@@ -138,7 +138,7 @@ class GoogleTranslation extends Command
 
                 $user->save();
                 
-                $message = 'User Id : '.$user->id.' details translatated successfully !!!';
+                $message = 'User Id : '.$user->id.' details translated successfully !!!';
             }
         }
 

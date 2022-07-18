@@ -61,14 +61,14 @@ class GoogleTransForAdmin extends Command
                                 $success = $this->translateText($apiKey, $language_alloweds, $personality, $detected_lang, 'title', $title );
                                 if($success){ 
                                     $personality->is_trans_title = 'y'; 
-                                    $message = 'Personality details translatated successfully !!!';
+                                    $message = 'Personality details translated successfully !!!';
                                 }
                             }
                             if( !empty($description) && $personality->is_trans_description == 'n'){
                                 $success = $this->translateText($apiKey, $language_alloweds, $personality, $detected_lang, 'description', $description );
                                 if($success){
                                     $personality->is_trans_description = 'y'; 
-                                    $message = 'Personality details translatated successfully !!!';
+                                    $message = 'Personality details translated successfully !!!';
                                 }
                             }
                             $personality->save();
@@ -91,7 +91,7 @@ class GoogleTransForAdmin extends Command
                                 $success = $this->translateText($apiKey, $language_alloweds, $interest, $detected_lang, 'title', $title );
                                 if($success){ 
                                     $interest->is_trans_title = 'y'; 
-                                    $message = 'Interest details translatated successfully !!!';
+                                    $message = 'Interest details translated successfully !!!';
                                 }
                             }
                             $interest->save();
@@ -114,7 +114,7 @@ class GoogleTransForAdmin extends Command
                                 $success = $this->translateText($apiKey, $language_alloweds, $location, $detected_lang, 'name', $name );
                                 if($success){ 
                                     $location->is_trans_name = 'y'; 
-                                    $message = 'Location details translatated successfully !!!';
+                                    $message = 'Location details translated successfully !!!';
                                 }
                             }
                             $location->save();
@@ -137,7 +137,7 @@ class GoogleTransForAdmin extends Command
                                 $success = $this->translateText($apiKey, $language_alloweds, $profile_detail, $detected_lang, 'value', $value );
                                 if($success){ 
                                     $profile_detail->is_trans_value = 'y'; 
-                                    $message = 'Profile Section details translatated successfully !!!';
+                                    $message = 'Profile Section details translated successfully !!!';
                                 }
                             }
                             $profile_detail->save();
