@@ -513,7 +513,8 @@ class GeneralController extends Controller
                 $api_url    =   config('utility.image_moderation.api_url');
                 $api_user   =   config('utility.image_moderation.api_user');
                 $api_secret =   config('utility.image_moderation.api_secret');
-                $models     =   'nudity'; // We can also pass array if we have multiple models
+                // $models     =   'nudity'; // We can also pass using comma values if we have multiple models
+                $models     =   "nudity,text"; // We can also pass using comma values if we have multiple models
                 $image_path =   $request->image_path;
 
                 $client     =   new \GuzzleHttp\Client();

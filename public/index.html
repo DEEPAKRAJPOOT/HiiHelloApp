@@ -47,9 +47,9 @@
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.1/socket.io.js"></script>
 	<script type="text/javascript">
 		$(document).ready(function() {
-			// var socket = io.connect('http://127.0.0.1:8080');
+			var socket = io.connect('http://127.0.0.1:8080');
 			// var socket = io.connect('http://chat.hihelloapp.com:8080');
-			var socket = io.connect('http://chat.hihelloapp.com');
+			// var socket = io.connect('http://chat.hihelloapp.com');
 			console.log("Socket ::",socket);
 
 			/* Join The Socket Room */
@@ -98,7 +98,7 @@
 						id 	 				: 	'cc79cdcv9ve8ev',
 						room_id 			: 	$('#room').val(),
 						sender_id 	 		: 	$('#username').val(),
-						receiver_id 	 	: 	'827qH2Fosf1qZwVEuHVR',
+						receiver_id 	 	: 	'S2xNR5pkzv82GlsGx7pC',
 						message_type 		: 	'text',
 						message_value 		: 	value,
 						time  				: 	'2022-02-10 15:05',
@@ -111,7 +111,7 @@
 						id 	 				: 	'cc79cdcv9ve8ev',
 						room_id 			: 	$('#room').val(),
 						sender_id 	 		: 	$('#username').val(),
-						receiver_id 	 	: 	'KeIM7uqbINRQY01sVQtm',
+						receiver_id 	 	: 	'S2xNR5pkzv82GlsGx7pC',
 						message_type 		: 	'file',
 						message_value 		: 	'New File',
 						message_file_path 	: 	'/file/path/file1.png',
@@ -126,7 +126,7 @@
 						id 	 				: 	'cc79cdcv9ve8ev',
 						room_id 			: 	$('#room').val(),
 						sender_id 	 		: 	$('#username').val(),
-						receiver_id 	 	: 	'827qH2Fosf1qZwVEuHVR',
+						receiver_id 	 	: 	'S2xNR5pkzv82GlsGx7pC',
 						message_type 		: 	'location',
 						message_value 		: 	'New Location',
 						message_lng 		: 	'23.022505',
@@ -149,7 +149,7 @@
 						id 	 			: 	'sdfccdsf79cdc234v9ve8ev',
 						room_id 	 	: 	$('#room').val(),
 						sender_id 		: 	$('#username').val(),
-						receiver_id 	: 	'827qH2Fosf1qZwVEuHVR',
+						receiver_id 	: 	'S2xNR5pkzv82GlsGx7pC',
 						time  			: 	'2022-03-02 15:05',
 					});
 				});
