@@ -145,8 +145,12 @@ class ImageModeration extends Command
             $artificial_value   =   config('utility.image_moderation.artificial_value');
             $natural_value      =   config('utility.image_moderation.natural_value');
 
+            // Blure/Sharpness Value
+            $sharpness_value    =   config('utility.image_moderation.sharpness_value');
+
             // $models         =   'nudity'; // We can also pass using comma values if we have multiple models
-            $models         =   "nudity,text"; // We can also pass using comma values if we have multiple models
+            // $models         =   "nudity,text"; // We can also pass using comma values if we have multiple models
+            $models         =   "nudity,text,properties"; // We can also pass using comma values if we have multiple models
             $safe_image     =   true;
 
             $client     =   new \GuzzleHttp\Client();
@@ -167,6 +171,7 @@ class ImageModeration extends Command
                             ]); 
 
             $output = json_decode($response->getBody());
+
             if($output->status == 'success'){
                 // Check Nudity
                 if($output->nudity){
@@ -194,6 +199,17 @@ class ImageModeration extends Command
 
                     // If Image Is Not Safe
                     if($artificial_condition && $natural_condition){
+                        $safe_image = false;
+                    }
+                }
+
+                // Check Blure/Sharpness 
+                if($output->sharpness){
+                    $sharpness = $output->sharpness;
+                    $sharpness_condition   =   $sharpness < $sharpness_value;
+
+                    // If Image Is Blureess/ Not Sharpness
+                    if($sharpness_condition){
                         $safe_image = false;
                     }
                 }
@@ -247,4 +263,8 @@ class ImageModeration extends Command
 
     // 5) ARTIFICIAL TEXT
     // The returned value is between 0 and 1, images with an artificial text value closer to 1 will contain artificial text while images with an artificial text value closer to 0 will not contain artificial text.
+
+    // 6) Sharpness / Bluriness Detection
+    // The returned value is between 0 and 1. Images with a sharpness value closer to 1 will be sharper while images with a sharpness value closer to 0 will be perceived as blurrier.
+
 }   
