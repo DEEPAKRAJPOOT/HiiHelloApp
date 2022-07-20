@@ -49,7 +49,7 @@ class ImageModeration extends Command
     {
         $message = "No Moderation Image Found.";
         try{
-            User::select('id','custom_id','profile_photo','is_media_checked')
+            User::select('id','custom_id','profile_photo','gender','is_media_checked')
                     ->where('is_media_checked','n')
                     ->chunk(100, function($users) {
                 if($users->isNotEmpty()){
@@ -58,7 +58,7 @@ class ImageModeration extends Command
 
                         // Main Image
                         if(!empty($profile_photo)){
-                            $safe_main_image = $this->checkImageModeration($profile_photo);
+                            $safe_main_image = $this->checkImageModeration($profile_photo, $user);
                                     
                             // IF NOT SAFE
                             if($safe_main_image == false){
@@ -80,7 +80,7 @@ class ImageModeration extends Command
             });
 
             UserDetail::select('id','user_id','image','is_verified')
-                    ->with('user:id,custom_id,profile_photo')
+                    ->with('user:id,custom_id,profile_photo,gender')
                     ->whereNotNull('image')
                     ->where('is_verified','n')
                     ->chunk(100, function($media_images) {
@@ -93,7 +93,7 @@ class ImageModeration extends Command
                             $user_id = $media_image->user ? $media_image->user->id : "";
 
                             if(!empty($media_photo)){
-                                $safe_media_image = $this->checkImageModeration($media_photo);
+                                $safe_media_image = $this->checkImageModeration($media_photo, $media_image->user);
                     
                                 if($safe_media_image == true){
                                     $media_image->is_verified = 'y';
@@ -129,7 +129,7 @@ class ImageModeration extends Command
         return $message;
     }
 
-    function checkImageModeration($image_path)
+    function checkImageModeration($image_path, $user)
     {
         try{
             $api_url        =   config('utility.image_moderation.api_url');
@@ -148,9 +148,15 @@ class ImageModeration extends Command
             // Blure/Sharpness Value
             $sharpness_value    =   config('utility.image_moderation.sharpness_value');
 
+            // Check Face & Gender Value
+            $female_value   =   config('utility.image_moderation.female_value');
+            $male_value     =   config('utility.image_moderation.male_value');
+            $minor_value    =   config('utility.image_moderation.minor_value');
+
             // $models         =   'nudity'; // We can also pass using comma values if we have multiple models
             // $models         =   "nudity,text"; // We can also pass using comma values if we have multiple models
-            $models         =   "nudity,text,properties"; // We can also pass using comma values if we have multiple models
+            // $models         =   "nudity,text,properties"; // We can also pass using comma values if we have multiple models
+            $models         =   "nudity,text,properties,face-attributes"; // We can also pass using comma values if we have multiple models
             $safe_image     =   true;
 
             $client     =   new \GuzzleHttp\Client();
@@ -183,9 +189,8 @@ class ImageModeration extends Command
                     $partial_condition  =   $partial > $partial_value;
                     $safe_condition     =   $safe < $safe_value;
 
-                    // If Image Is Not Safe
                     if($row_condition || $partial_condition || $safe_condition){
-                        $safe_image = false;
+                        $safe_image = false; // nude image
                     }
                 }
 
@@ -197,9 +202,8 @@ class ImageModeration extends Command
                     $artificial_condition   =   $has_artificial > $artificial_value;
                     $natural_condition      =   $has_natural < $natural_value;
 
-                    // If Image Is Not Safe
                     if($artificial_condition && $natural_condition){
-                        $safe_image = false;
+                        $safe_image = false; // image contians any artificial text
                     }
                 }
 
@@ -208,10 +212,47 @@ class ImageModeration extends Command
                     $sharpness = $output->sharpness;
                     $sharpness_condition   =   $sharpness < $sharpness_value;
 
-                    // If Image Is Blureess/ Not Sharpness
                     if($sharpness_condition){
-                        $safe_image = false;
+                        $safe_image = false; // image Is blureess/ not sharpness
                     }
+                }
+
+                // If Face Not Detect In Profile Images
+                if($output->faces){
+                    if( count($output->faces) == 1){   // If One Face In Image
+                        $first_face = $output->faces[0];
+                        if($first_face && $first_face->attributes){
+                            if($user){
+                                $minor_attribute    =   $first_face->attributes->minor;
+                                $minor_condition    =   $minor_attribute < $minor_value;
+
+                                if($minor_condition){
+                                    $female_attribute   =   $first_face->attributes->female;
+                                    $male_attribute     =   $first_face->attributes->male;
+                                    $gender = $user->gender;
+
+                                    if($gender == 'Female'){
+                                        $female_condition   =   $female_attribute < $female_value;
+                                        if($female_condition){
+                                            $safe_image = false; // not a female
+                                        }
+                                    }
+                                    elseif($gender == 'Male'){
+                                        $male_condition   =   $male_attribute < $male_value;
+                                        if($male_condition){
+                                            $safe_image = false; // not a male
+                                        }
+                                    }
+                                }else{
+                                    $safe_image = false; // person is minor
+                                }
+                            }
+                        }
+                    }else{
+                        $safe_image = false; // more then one face found
+                    }
+                }else{
+                    $safe_image = false;  // no face found
                 }
             }
 
@@ -267,4 +308,6 @@ class ImageModeration extends Command
     // 6) Sharpness / Bluriness Detection
     // The returned value is between 0 and 1. Images with a sharpness value closer to 1 will be sharper while images with a sharpness value closer to 0 will be perceived as blurrier.
 
+    // 7) Faces
+        // 1) Male 2) Female 3) Minor
 }   
