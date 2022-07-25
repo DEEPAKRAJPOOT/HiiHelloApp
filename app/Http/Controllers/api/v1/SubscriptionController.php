@@ -5,6 +5,7 @@ namespace App\Http\Controllers\api\v1;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\ { Request, Response };
 use Illuminate\Support\Facades\ { Auth, DB };
+use Illuminate\Database\Eloquent\ { ModelNotFoundException };
 use App\Models\ { User, Subscription, SubscriptionPlan, Transaction };
 use App\Http\Requests\Api\Subscription\ { IosSubscription };
 use App\Http\Resources\v1\ { SubscriptionResource };
@@ -186,21 +187,16 @@ class SubscriptionController extends Controller
     public function getUserSubDetails(Request $request)
     {
         try{
-            $user = User::select('id')->with('subscription.subscriptionPlan.subscriptionPlanTranslation')
-                        ->whereId(Auth::id())->firstOrFail();
-            if($user->subscription){
-                return (new SubscriptionResource($user->subscription))->additional([
-                    'meta' => [
-                        'message'   =>  trans('api.list', ['entity' => __('Subscription')]),
-                    ] ]);
-            }else{
-                $this->response['meta']['message']  =   trans('api.not_found',['entity' => __('Subscription')]); 
-                $this->status = Response::HTTP_NOT_FOUND;
-            }
-        } catch(ModelNotFoundException $exception) {                
+            $subscription = Subscription::with('subscriptionPlan.subscriptionPlanTranslation')
+                                ->whereUserId(Auth::id())->latest()->firstOrFail();
+            return (new SubscriptionResource($subscription))->additional([
+                'meta' => [
+                    'message'   =>  trans('api.list', ['entity' => __('Subscription')]),
+                ] ]);
+        } catch(ModelNotFoundException $exception) {      
             switch ($exception->getModel()) {
-                case 'App\Models\User':
-                    $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("User")]);
+                case 'App\Models\Subscription':
+                    $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("Subscription")]);
                     break;
                 default:
                     $this->response['meta']['message'] = trans('api.went_wrong');
