@@ -605,66 +605,46 @@
                 @endif
             </div>
 
-            {{-- Fav Actors Gender --}}
+            {{-- Fav Actors --}}
             <div class="form-group">
-                <label for="actor_id">Select Actors Gender</label>
-                <select type="text" class="form-control @error('actor_id') is-invalid @enderror" id="actor_id" name="actor_id" spellcheck="false" tabindex="0" />
-                    <option value="">Select Actors Gender</option>
+                <label for="actor_id[]">Favourite Actors/Actress</label>
+                <select type="text" class="form-control @error('actor_id[]') is-invalid @enderror" id="actor_id" name="actor_id[]" spellcheck="false" tabindex="0" multiple="multiple" />
+                    <option value="">Select Favourite Actors/Actress</option>
                     @foreach($interests as $actor)
                         @if($actor->slug == 'actors')
                             @foreach($actor->subInterests as $sub_actor)
-                                @if($sub_actor->interestTransDefault)
-                                    <option value="{{ $sub_actor->id }}"> {{ $sub_actor->interestTransDefault->title }}</option>
-                                @endif
+                                @foreach($sub_actor->subInterests as $sub_gender)
+                                    @if($sub_gender->interestTransDefault)
+                                        <option value="{{ $sub_gender->id }}"> {{ $sub_gender->interestTransDefault->title }}</option>
+                                    @endif
+                                @endforeach
                             @endforeach
                         @endif
                     @endforeach
                 </select>
-                @if ($errors->has('actor_id'))
+                @if ($errors->has('actor_id[]'))
                     <span class="text-danger">
-                        <strong class="form-text">{{ $errors->first('actor_id') }}</strong>
+                        <strong class="form-text">{{ $errors->first('actor_id[]') }}</strong>
                     </span>
                 @endif
             </div>
-
-            {{-- Depend data --}}
+            
+            {{-- Select Singer (Male/Female) --}}
             <div class="form-group">
-                <label for="depend_id[]">Favourite Actors/Actress</label>
-                <select type="text" class="form-control @error('depend_id[]') is-invalid @enderror" id="depend_id" name="depend_id[]"  multiple="multiple" />
-                </select>
-                @if ($errors->has('depend_id[]'))
-                    <span class="text-danger">
-                        <strong class="form-text">{{ $errors->first('depend_id[]') }}</strong>
-                    </span>
-                @endif
-            </div>
-
-            {{-- Select Singer gender --}}
-            <div class="form-group">
-                <label for="singer_male_id">Select Singer Gender</label>
-                <select type="text" class="form-control @error('singer_male_id') is-invalid @enderror" id="singer_male_id" name="singer_male_id" spellcheck="false" tabindex="0" />
-                    <option value="">Select Singer Gender</option>
+                <label for="singer_id[]">Select Singer (Male/Female)</label>
+                <select type="text" class="form-control @error('singer_id[]') is-invalid @enderror" id="singer_id" name="singer_id[]" spellcheck="false" tabindex="0" multiple="multiple" />
+                    <option value="">Select Singer (Male/Female)</option>
                     @foreach($interests as $singer)
                         @if($singer->slug == 'singers')
                             @foreach($singer->subInterests as $sub_singer)
-                                @if($sub_singer->interestTransDefault)
-                                    <option value="{{ $sub_singer->id }}"> {{ $sub_singer->interestTransDefault->title }}</option>
-                                @endif
+                                @foreach($sub_singer->subInterests as $sub_gender)
+                                    @if($sub_gender->interestTransDefault)
+                                        <option value="{{ $sub_gender->id }}"> {{ $sub_gender->interestTransDefault->title }}</option>
+                                    @endif
+                                @endforeach
                             @endforeach
                         @endif
                     @endforeach
-                </select>
-                @if ($errors->has('singer_male_id'))
-                    <span class="text-danger">
-                        <strong class="form-text">{{ $errors->first('singer_male_id') }}</strong>
-                    </span>
-                @endif
-            </div>
-
-            {{-- Fav Singer (Male/Female) --}}
-            <div class="form-group">
-                <label for="singer_id[]">Favourite Singer (Male/Female)</label>
-                <select type="text" class="form-control @error('singer_id[]') is-invalid @enderror" id="singer_id" name="singer_id[]"  multiple="multiple" />
                 </select>
                 @if ($errors->has('singer_id[]'))
                     <span class="text-danger">
@@ -711,8 +691,6 @@ $(document).ready(function () {
     $('#sport_id').select2({ placeholder: 'Select sport'});
     $('#food_id').select2({ placeholder: 'Select food'});
     $('#actor_id').select2({ placeholder: 'Select actor gender'});
-    $('#depend_id').select2({ placeholder: 'Select actor'});
-    $('#singer_male_id').select2({ placeholder: 'Select singer gender'});
     $('#singer_id').select2({ placeholder: 'Select singer'});
 
     $("#frmAddUser").validate({
@@ -1036,42 +1014,6 @@ $(document).ready(function () {
         } else {
             return false;
         }
-    });
-
-    $("#actor_id").on('change',function(){
-        var actor_id = this.value;
-        $("#depend_id").html();
-        $.ajax({
-            url: "{{ route('admin.user.actor-list')}}",
-            type: "POST",
-            data:{
-                "_token": "{{ csrf_token() }}",
-                actor_id:actor_id,
-            },
-            dataType : 'json',
-            success: function(success){
-                $("#depend_id").html('<option value="">Select Actor/Actoress</option>');
-                $("#depend_id").append(success);
-            }
-        });
-    });
-
-    $("#singer_male_id").on('change',function(){
-        var singer_id = this.value;
-        $("#singer_id").html();
-        $.ajax({
-            url: "{{ route('admin.user.singer-list')}}",
-            type: "POST",
-            data:{
-                "_token": "{{ csrf_token() }}",
-                singer_id:singer_id,
-            },
-            dataType : 'json',
-            success: function(success){
-                $("#singer_id").html('<option value="">Select Singer</option>');
-                $("#singer_id").append(success);
-            }
-        });
     });
 });
 </script>
