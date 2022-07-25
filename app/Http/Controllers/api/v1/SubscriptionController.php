@@ -204,10 +204,8 @@ class SubscriptionController extends Controller
             try{
                 $user = $request->user();
                 $plan_id = $request->plan_id;
-                $subscription = Subscription::whereHas('subscriptionPlan', function($query) use ($plan_id){
-                            $query->whereCustomId($plan_id);
-                        })
-                        ->whereUserId(Auth::id())->latest()->firstOrFail();
+                $subscription = Subscription::where('receipt_data',$request->receipt_data)
+                                    ->whereUserId(Auth::id())->latest()->firstOrFail();
 
                 $subscription->status = 'canceled';
                 $user->subscription_end_date = NULL;

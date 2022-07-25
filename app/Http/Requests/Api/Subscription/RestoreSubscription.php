@@ -24,7 +24,7 @@ class RestoreSubscription extends FormRequest
     public function rules()
     {
         return [
-            'plan_id'   =>  'required|max:100',
+            'receipt_data'   =>  'required',
         ];
     }
 }
