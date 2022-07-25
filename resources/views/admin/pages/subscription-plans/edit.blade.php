@@ -92,6 +92,28 @@
                     @endif
                 </div>
 
+                {{-- Android Product --}}
+                <div class="form-group">
+                    <label for="android_product">Android Product{!!$mend_sign!!}</label>
+                    <input type="text" class="form-control @error('android_product') is-invalid @enderror" id="android_product" name="android_product" value="{{ old('android_product') != null ? old('android_product') : $subscriptionPlan->android_product }}" placeholder="Enter android product" autocomplete="android_product" spellcheck="false" autocapitalize="sentences" tabindex="0" autofocus />
+                    @if ($errors->has('android_product'))
+                        <span class="help-block">
+                            <strong class="form-text">{{ $errors->first('android_product') }}</strong>
+                        </span>
+                    @endif
+                </div>
+
+                {{-- Ios Product --}}
+                <div class="form-group">
+                    <label for="ios_product">Ios Product{!!$mend_sign!!}</label>
+                    <input type="text" class="form-control @error('ios_product') is-invalid @enderror" id="ios_product" name="ios_product" value="{{ old('ios_product') != null ? old('ios_product') : $subscriptionPlan->ios_product }}" placeholder="Enter ios product" autocomplete="ios_product" spellcheck="false" autocapitalize="sentences" tabindex="0" autofocus />
+                    @if ($errors->has('ios_product'))
+                        <span class="help-block">
+                            <strong class="form-text">{{ $errors->first('ios_product') }}</strong>
+                        </span>
+                    @endif
+                </div>
+
                 {{-- Popular --}}
                 <div class="form-group">
                     <label for="is_popular">{!!$mend_sign!!}Popular:</label>
@@ -158,6 +180,14 @@ $(document).ready(function () {
                 required: true,
                 not_empty: true,
             },
+            android_product: {
+                required: true,
+                not_empty: true,
+            },
+            ios_product: {
+                required: true,
+                not_empty: true,
+            },
             is_popular: {
                 required: true,
                 not_empty: true,
@@ -189,6 +219,14 @@ $(document).ready(function () {
             amount: {
                 required: "@lang('validation.required',['attribute'=>'amount'])",
                 not_empty: "@lang('validation.not_empty',['attribute'=>'amount'])",
+            },
+            android_product: {
+                required: "@lang('validation.required',['attribute'=>'android product'])",
+                not_empty: "@lang('validation.not_empty',['attribute'=>'android product'])",
+            },
+            ios_product: {
+                required: "@lang('validation.required',['attribute'=>'ios product'])",
+                not_empty: "@lang('validation.not_empty',['attribute'=>'ios product'])",
             },
             is_popular: {
                 required: "@lang('validation.required',['attribute'=>'popular'])",
