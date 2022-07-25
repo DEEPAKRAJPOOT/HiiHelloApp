@@ -150,7 +150,7 @@ class LikeController extends Controller
                     ]);
 
                     // Remove From Likes
-                    Like::whereUserId($user_id)->whereLikerId($auth_id)->delete();
+                    Like::whereUserId($auth_id)->whereLikerId($user_id)->delete();
                         
                     // Like::whereUserId($auth_id)->whereLikerId($user_id)
                     //     ->orWhere(function ($query) use ($user_id, $auth_id){
