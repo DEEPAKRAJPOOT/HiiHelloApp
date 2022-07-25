@@ -43,7 +43,7 @@ class UsersController extends Controller
     {
         $personalities = Personality::with('personalityTransDefault')->where('is_active','y')->get();
         $attributes = ProfileDetail::with(['profileDetailTransDefault'])->where(['is_active'=>'y'])->get();
-        $interests = Interest::with(['subInterests.interestTransDefault'])->where(['is_active'=>'y'])->get();
+        $interests = Interest::with(['subInterests.interestTransDefault','subInterests.subInterests.interestTransDefault'])->where(['is_active'=>'y'])->get();
         $countries = Country::where(['is_active'=>'y'])->get();
         $locations = Location::with(['locationTransDefault'])->where(['is_active'=>'y'])->get();
         $languages = Language::where(['is_active'=>'y'])->get();
@@ -212,11 +212,11 @@ class UsersController extends Controller
                     ]);
                 }
             }
-            if(!empty($request->depend_id)){
-                foreach($request->depend_id as $depend){
+            if(!empty($request->actor_id)){
+                foreach($request->actor_id as $actor){
                     UserInterest::updateOrCreate([
                        'user_id'  => $user->id, 
-                       'interest_id' => $depend,
+                       'interest_id' => $actor,
                     ],[ 
                         
                         'custom_id' => getUniqueString('user_interests'),   
@@ -491,12 +491,12 @@ class UsersController extends Controller
                         $not_to_delete_interest[] = $custom_id;
                     }
                 }
-                if(!empty($request->depend_id)){
-                    foreach($request->depend_id as $depend){
+                if(!empty($request->actor_id)){
+                    foreach($request->actor_id as $actor){
                         $custom_id = getUniqueString('user_interests');
                         UserInterest::updateOrCreate([
                                'user_id'  => $user->id, 
-                               'interest_id' => $depend,
+                               'interest_id' => $actor,
                             ],[ 
                                 
                                 'custom_id' => $custom_id,   
@@ -748,36 +748,6 @@ class UsersController extends Controller
                 'checkbox' => view('admin.layouts.includes.checkbox')->with('id', $user->id)->render(),
             ];
         }
-        // dd($records);
-
         return $records;
-    }
-
-    public function getActorList(Request $request)
-    {
-        $interests = Interest::with('interestTransDefault')->where('parent_id',$request->actor_id)->get();
-        $data = '';
-        if($interests->isNotEmpty()){
-            foreach($interests as $interest){
-                if($interest->interestTransDefault){
-                    $data .= '<option value='.$interest->id.'>'.$interest->interestTransDefault->title.'</option>';
-                }
-            }
-        }
-        return response()->json($data);
-    }
-
-    public function getSingerList(Request $request)
-    {
-        $interests = Interest::with('interestTransDefault')->where('parent_id',$request->singer_id)->get();
-        $data = '';
-        if($interests->isNotEmpty()){
-            foreach($interests as $interest){
-                if($interest->interestTransDefault){
-                    $data .= '<option value='.$interest->id.'>'.$interest->interestTransDefault->title.'</option>';
-                }
-            }
-        }
-        return response()->json($data);
     }
 }

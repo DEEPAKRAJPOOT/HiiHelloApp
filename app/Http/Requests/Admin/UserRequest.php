@@ -75,9 +75,7 @@ class UserRequest extends FormRequest
             'game_id'                   =>  'nullable|array',
             'sport_id'                  =>  'nullable|array',
             'food_id'                   =>  'nullable|array',
-            'actor_id'                  =>  'nullable',
-            'depend_id'                 =>  'nullable|array',
-            'singer_male_id'            =>  'nullable',
+            'actor_id'                  =>  'nullable|array',
             'singer_id'                 =>  'nullable|array',
 
             // Verification
