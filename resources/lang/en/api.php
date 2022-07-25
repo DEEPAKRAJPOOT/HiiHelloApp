@@ -150,6 +150,8 @@ return [
     ],
     'subscription'    =>  [
         'already_purchased'   =>  'Subscription already purchased.',
+        'pan_purchased'       =>  'This subscription plan is already activate in your account.',
+        'restore'             =>  'Subscription restore succesfully.',
     ],
     'chat_room'  =>  [
         'delete'        =>  'Chat Session Deleted',

@@ -43,6 +43,8 @@ class SubscriptionPlanController extends Controller
         $data['custom_id'] = getUniqueString('subscription_plans');
         $data['months'] = $request->months;
         $data['amount'] = $request->amount;
+        $data['android_product'] = $request->android_product;
+        $data['ios_product'] = $request->ios_product;
         $data['is_popular'] = $request->is_popular;
 
         $subscriptionPlan = SubscriptionPlan::create($data);
@@ -102,6 +104,8 @@ class SubscriptionPlanController extends Controller
             $data = $this->getLangStoreData($request);
             $data['months'] = $request->months;
             $data['amount'] = $request->amount;
+            $data['android_product'] = $request->android_product;
+            $data['ios_product'] = $request->ios_product;
             $data['is_popular'] = $request->is_popular;
 
             $subscriptionPlan->update($data);

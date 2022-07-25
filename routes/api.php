@@ -101,6 +101,7 @@ Route::group(['namespace' => 'v1', 'prefix' => 'v1', 'middleware' => 'auth:sanct
 
     // subscription 
     Route::post('subscriptions/ios',[SubscriptionController::class,'buyIosSubscription'])->name('api.subscriptions-ios');
+    Route::post('subscriptions/ios-restore',[SubscriptionController::class,'restoreSubscription'])->name('api.subscriptions-ios-restore');
     Route::post('user/subscriptions-details',[SubscriptionController::class,'getUserSubDetails'])->name('api.user.subscriptions-details');
 
     // Twillio Call

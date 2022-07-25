@@ -29,9 +29,11 @@ class SubscriptionPlanRequest extends FormRequest
             $default_lang.'_name'           =>  'required_unless:action,'.$unless.'|max:150',
             $default_lang.'_description'    =>  'nullable|max:150',
             $default_lang.'_note'           =>  'nullable|max:150',
-            'months'         =>  'required_unless:action,'.$unless.'|numeric',
-            'amount'         =>  'required_unless:action,'.$unless.'|numeric',
-            'is_popular'     =>  'required_unless:action,'.$unless,
+            'months'                        =>  'required_unless:action,'.$unless.'|numeric',
+            'amount'                        =>  'required_unless:action,'.$unless.'|numeric',
+            'android_product'               =>  'required_unless:action,'.$unless,
+            'ios_product'                   =>  'required_unless:action,'.$unless,
+            'is_popular'                    =>  'required_unless:action,'.$unless,
         ];
     }
 }

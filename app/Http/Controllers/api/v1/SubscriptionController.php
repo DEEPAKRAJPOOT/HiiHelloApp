@@ -7,7 +7,7 @@ use Illuminate\Http\ { Request, Response };
 use Illuminate\Support\Facades\ { Auth, DB };
 use Illuminate\Database\Eloquent\ { ModelNotFoundException };
 use App\Models\ { User, Subscription, SubscriptionPlan, Transaction };
-use App\Http\Requests\Api\Subscription\ { IosSubscription };
+use App\Http\Requests\Api\Subscription\ { IosSubscription, RestoreSubscription };
 use App\Http\Resources\v1\ { SubscriptionResource };
 use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
@@ -30,7 +30,18 @@ class SubscriptionController extends Controller
 
             DB::beginTransaction();
             try{
-                $plan   =   SubscriptionPlan::whereCustomId($request->plan_id)->whereIsActive('y')->firstOrFail();
+                $plan = SubscriptionPlan::whereCustomId($request->plan_id)->whereIsActive('y')->firstOrFail();
+                $latest_subscription = Subscription::whereUserId(Auth::id())->latest()->first();
+
+                if($latest_subscription 
+                    && $plan->id == $latest_subscription->plan_id 
+                    && $latest_subscription->status == 'active' 
+                    && $latest_subscription->end_date >= today()->format('Y-m-d') ) {
+                        $this->response['meta']['message']  =  trans('api.subscription.pan_purchased');
+                        $this->status = Response::HTTP_FORBIDDEN;
+                        return $this->returnResponse();
+                }
+
                 $url    =   config('utility.in_app.ios_url');
                 $data   =   [
                     'password'      =>  config('utility.in_app.ios_password'),
@@ -168,6 +179,8 @@ class SubscriptionController extends Controller
             } catch (\Exception $e) {
                 DB::rollback();
 
+                dd($e->getMessage());
+
                 $user->is_subscribed = $user->subscription_end_date >= \Carbon\Carbon::now()->format('Y-m-d') ? 'n' : $user->is_subscribed;
                 $user->subscription_end_date = $user->subscription_end_date >= \Carbon\Carbon::now()->format('Y-m-d')
                                                     ? NULL
@@ -179,6 +192,43 @@ class SubscriptionController extends Controller
 
                 $this->response['meta']['message']  =  trans('api.went_wrong');
                 $this->status = Response::HTTP_GATEWAY_TIMEOUT;
+            }
+        }
+        return $this->returnResponse();
+    }
+
+    public function restoreSubscription(Request $request)
+    {
+        $rules = RestoreSubscription::rules();
+        if( $this->apiValidator($request->all(), $rules) ) {
+            try{
+                $user = $request->user();
+                $plan_id = $request->plan_id;
+                $subscription = Subscription::whereHas('subscriptionPlan', function($query) use ($plan_id){
+                            $query->whereCustomId($plan_id);
+                        })
+                        ->whereUserId(Auth::id())->latest()->firstOrFail();
+
+                $subscription->status = 'canceled';
+                $user->subscription_end_date = NULL;
+                $user->is_subscribed = 'n';
+
+                $subscription->save();
+                $user->save();
+
+                $this->status = Response::HTTP_OK;     
+                $this->response['meta']['message'] = trans('api.subscription.restore');     
+            } catch(ModelNotFoundException $exception) {                
+                switch ($exception->getModel()) {
+                    case 'App\Models\Subscription':
+                        $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("Subscription")]);
+                        break;
+                    default:
+                        $this->response['meta']['message'] = trans('api.went_wrong');
+                        break;
+                };
+            } catch (\Exception $e) {
+                $this->storeErrorLog($e,'ios_restore_subscription');
             }
         }
         return $this->returnResponse();

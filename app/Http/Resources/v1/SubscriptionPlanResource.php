@@ -15,13 +15,15 @@ class SubscriptionPlanResource extends JsonResource
     public function toArray($request)
     {
         return [
-            'id'            =>  $this->custom_id,
-            'name'          =>  $this->subscriptionPlanTranslation ? $this->subscriptionPlanTranslation->name: "",
-            'description'   =>  $this->subscriptionPlanTranslation ? $this->subscriptionPlanTranslation->description: "",
-            'note'          =>  $this->subscriptionPlanTranslation ? $this->subscriptionPlanTranslation->note: "",
-            'months'        =>  $this->months,
-            'amount'        =>  $this->amount,
-            'is_popular'    =>  $this->is_popular,
+            'id'                =>  $this->custom_id,
+            'name'              =>  $this->subscriptionPlanTranslation ? $this->subscriptionPlanTranslation->name: "",
+            'description'       =>  $this->subscriptionPlanTranslation ? $this->subscriptionPlanTranslation->description: "",
+            'note'              =>  $this->subscriptionPlanTranslation ? $this->subscriptionPlanTranslation->note: "",
+            'months'            =>  $this->months,
+            'amount'            =>  $this->amount,
+            'android_product'   =>  $this->android_product,
+            'ios_product'       =>  $this->ios_product,
+            'is_popular'        =>  $this->is_popular,
         ];
         return parent::toArray($request);
     }
