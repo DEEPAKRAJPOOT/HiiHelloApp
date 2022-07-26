@@ -296,10 +296,10 @@ class AuthenticationController extends Controller
                 }
 
                 $user = User::query();
-                if(!empty($request->email)){
-                    $user = $user->where('email', $request->email);
-                }else{
+                if(!empty($request->type)){
                     $user = $user->where($request->type.'_id', $request[$request->type.'_id']);
+                }else{
+                    $user = $user->where('email', $request->email);
                 }
                 $user = $user->first();
                   

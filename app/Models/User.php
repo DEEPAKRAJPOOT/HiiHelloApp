@@ -156,10 +156,9 @@ class User extends Authenticatable implements MustVerifyEmail, TranslatableContr
 
         return !empty($full_name)
             && !empty($this->birth_date)
-            && !empty($this->email)
             && !empty($this->gender) && !empty($this->interest)
             && !empty($this->location_id) && !empty($this->language_id) 
-            && !empty($this->profile_photo) ? true : false;
+            ? true : false;
     }
 
     public function isSocialUser(){
