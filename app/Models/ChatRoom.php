@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Model;
+use App\Jobs\ { NotificationJob };
 
 class ChatRoom extends Model
 {
@@ -20,4 +21,59 @@ class ChatRoom extends Model
     public function latestMessage() { return $this->hasOne(ChatMessage::class,'room_id','id')->latest('id'); }
     public function chatMessages() { return $this->hasMany(ChatMessage::class,'room_id','id'); }
     public function callLog() { return $this->hasOne(CallLog::class,'room_id','id')->latest(); }
+
+    public function nofityCallTimeOut()
+    {
+        $title      =   trans('api.notify_message.voice_call_timeout.title');
+        $message    =   trans('api.notify_message.voice_call_timeout.message');
+        $type       =   config('utility.notification.type.voice_call_timeout');
+        $creator        =   $this->creator;
+        $participator   =   $this->participator;
+
+        if($creator){
+            $participator_name = $participator ? $participator->userTransEn ? $participator->userTransEn->full_name : "" : "";
+            $participator_profile = $participator ? $participator->profile_photo : "";
+
+            $notification = [
+                'custom_id'     =>  getUniqueString('notifications'),
+                'key'           =>  'user_id',
+                'room_id'       =>  $this ? $this->custom_id : "",
+                'value'         =>  $creator->custom_id,
+                'user_id'       =>  $creator->id,
+                'name'          =>  $participator_name,
+                'profile'       =>  generateURL($participator_profile),
+                'image'         =>  generateURL($participator_profile),
+                'title'         =>  $title,
+                'message'       =>  $message,
+                'type'          =>  $type,
+            ];
+            
+            // Notify
+            $notificationJob = new NotificationJob($notification, $creator);
+            dispatch($notificationJob);
+        }
+
+        if($participator){
+            $creator_name = $creator ? $creator->userTransEn ? $creator->userTransEn->full_name : "" : "";
+            $creator_profile = $creator ? $creator->profile_photo : "";
+
+            $notification = [
+                'custom_id'     =>  getUniqueString('notifications'),
+                'key'           =>  'user_id',
+                'room_id'       =>  $this ? $this->custom_id : "",
+                'value'         =>  $participator->custom_id,
+                'user_id'       =>  $participator->id,
+                'name'          =>  $creator_name,
+                'profile'       =>  generateURL($creator_profile),
+                'image'         =>  generateURL($creator_profile),
+                'title'         =>  $title,
+                'message'       =>  $message,
+                'type'          =>  $type,
+            ];
+            
+            // Notify
+            $notificationJob = new NotificationJob($notification, $participator);
+            dispatch($notificationJob);
+        }
+    }
 }

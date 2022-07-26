@@ -156,7 +156,7 @@ class TwillioController extends Controller
         $rules = StoreCallLogRequest::rules();
         if( $this->apiValidator($request->all(), $rules) ) {
             try{
-                $room = ChatRoom::whereCustomId($request->room)->firstOrFail();
+                $room = ChatRoom::with(['creator','participator'])->whereCustomId($request->room)->firstOrFail();
 
                 $call_log = CallLog::updateOrCreate([
                     'room_id'           =>  $room->id,
@@ -167,6 +167,10 @@ class TwillioController extends Controller
                     'end_time'          =>  $request->end_time ?? NULL,
                     'remaining_time'    =>  $request->remaining_time ?? NULL,
                 ]);
+
+                if($call_log->remaining_time == "00:00" || $call_log->remaining_time == "00:00:00"){
+                    $room->nofityCallTimeOut();
+                }
 
                 $this->status = Response::HTTP_OK;
                 return (new CallLogResource($room))
