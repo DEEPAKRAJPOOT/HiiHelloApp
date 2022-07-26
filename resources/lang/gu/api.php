@@ -211,6 +211,10 @@ return [
             'title'     =>  "Hi Hello",
             'message'   =>  "Your subscription renewal has failed. Please retry.",
         ],
+        'voice_call_timeout'    =>  [
+            'title'     =>  "Hi Hello",
+            'message'   =>  "Your daily voice call limit is over.",
+        ],
     ],
     'sms'   =>  [
         'message'   =>  [
