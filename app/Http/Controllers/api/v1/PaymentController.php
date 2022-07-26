@@ -181,6 +181,7 @@ class PaymentController extends Controller
                     $paymentLog->info($file, ['success' => $transaction_data]);
 
                     $this->status = Response::HTTP_OK;
+                    $this->response['data']['status'] = $subscription->status;
                     $this->response['meta']['message'] = trans('api.razorpay.verify_signature.success');
                     return $this->returnResponse();    
                 }else{
