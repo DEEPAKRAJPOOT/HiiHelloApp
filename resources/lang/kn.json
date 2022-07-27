@@ -55,6 +55,7 @@
     "Current location"     :	"ಈಗಿನ ಸ್ಥಳ",
     "Notification"         :	"ಅಧಿಸೂಚನೆ",
     "Subscription"		   :	"ಚಂದಾದಾರಿಕೆ",
+    "Message"			   :    "ಸಂದೇಶ",
     "Twilio Outgoing App Sid"                       :	"ಟ್ವಿಲಿಯೊ ಹೊರಹೋಗುವ ಅಪ್ಲಿಕೇಶನ್ ಸಿಡ್",
     "Payload generated successfully"                :	"ಪೇಲೋಡ್ ಯಶಸ್ವಿಯಾಗಿ ರಚಿಸಲಾಗಿದೆ",
     "Security token was expired, please try again!" :	"ಭದ್ರತಾ ಟೋಕನ್ ಅವಧಿ ಮೀರಿದೆ, ದಯವಿಟ್ಟು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ!",

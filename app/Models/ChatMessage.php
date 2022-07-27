@@ -22,6 +22,9 @@ class ChatMessage extends Model
 
     public function getCreatedAtAttribute($created_at){ return date('Y-m-d H:i:s', strtotime($created_at)); }
     public function getUpdatedAtAttribute($updated_at){ return date('Y-m-d H:i:s', strtotime($updated_at)); }
+    public function getDeletedAtAttribute($deleted_at){ 
+        return $deleted_at ? date('Y-m-d H:i:s', strtotime($deleted_at)) : ""; 
+    }
 
     public function notifyChatMessageToUser($message) {
         if($this->receiver){
@@ -32,7 +35,15 @@ class ChatMessage extends Model
 
     protected function chatPushNFData($account, $chatMessage, $message = ""){
         $message = trim( preg_replace("/\r|\n/", " ", $message) );
-        $full_name = $account->userTranslation ? $account->userTranslation->full_name : "";
+
+        $lang_code = $this->receiver ? $this->receiver->language ? $this->receiver->language->lang_code : "en" : "en";
+        $userTranslation = UserTranslation::select('full_name')->whereUserId($account->id)->whereLocale($lang_code)->first();
+        if($userTranslation){ 
+            $full_name = $userTranslation->full_name ?? "";
+        }else{
+            $full_name = $account->userTranslation ? $account->userTranslation->full_name : "";
+        }
+
         if( $message == "" ) {
             $message =  $full_name." has sent you a image 📷.";
         }
@@ -49,11 +60,7 @@ class ChatMessage extends Model
     }
 
     public function getMessage(){
-        // $string = preg_replace("/[\r\n]+/", " ", $this->message);
-        // $message = json_decode($string);
-
         $message = json_decode( preg_replace("/\r|\n/", " ", $this->message) );
-        // dd($message);
         if(!empty($message) && !empty($message->type)){            
             if($message->type == 'location'){
                 if(!empty($message->other) && !empty($message->other->lat && !empty($message->other->lng) ) ){

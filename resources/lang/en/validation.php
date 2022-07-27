@@ -282,5 +282,6 @@ return [
         "remove_interests"      =>  "remove interests",
         "image_sequence"        =>  "image sequence",
         "file"                  =>  "file",
+        "message_id"            =>  "message",
     ],
 ];

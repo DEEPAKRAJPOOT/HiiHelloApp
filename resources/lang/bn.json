@@ -55,6 +55,7 @@
     "Current location"     :	"এখন যেখানে আছ",
     "Notification"         :	"বিজ্ঞপ্তি",
     "Subscription"		   :	"সাবস্ক্রিপশন",
+    "Message"			   : 	"বার্তা",
     "Twilio Outgoing App Sid"   : "Twilio আউটগোয়িং অ্যাপ Sid",
     "Payload generated successfully"                :	"পেলোড সফলভাবে তৈরি হয়েছে",
     "Security token was expired, please try again!" :	"নিরাপত্তা টোকেনের মেয়াদ শেষ হয়ে গেছে, অনুগ্রহ করে আবার চেষ্টা করুন!",

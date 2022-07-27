@@ -282,5 +282,6 @@ return [
         "remove_interests"      =>  "स्वारस्ये काढून टाका",
         "image_sequence"        =>  "प्रतिमा क्रम",
         "file"                  =>  "फाइल",
+        "message_id"            =>  "संदेश",
     ],
 ];

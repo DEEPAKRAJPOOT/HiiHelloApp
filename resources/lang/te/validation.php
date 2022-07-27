@@ -282,5 +282,6 @@ return [
         "remove_interests"      =>  "ఆసక్తులను తొలగించండి",
         "image_sequence"        =>  "చిత్ర క్రమం",
         "file"                  =>  "ఫైల్",
+        "message_id"            =>  "సందేశం",
     ],
 ];

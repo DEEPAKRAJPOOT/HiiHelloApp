@@ -282,5 +282,6 @@ return [
         "remove_interests"      =>  "ಆಸಕ್ತಿಗಳನ್ನು ತೆಗೆದುಹಾಕಿ",
         "image_sequence"        =>  "ಚಿತ್ರ ಅನುಕ್ರಮ",
         "file"                  =>  "ಕಡತ",
+        "message_id"            =>  "ಸಂದೇಶ",
     ],
 ];

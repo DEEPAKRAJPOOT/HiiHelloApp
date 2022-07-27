@@ -9,7 +9,7 @@ use App\Http\Requests\Api\General\ { PaginationRequest };
 use Illuminate\Support\Facades\ { Auth };
 use App\Models\ { ChatRoom, ChatMessage, User, CallLog };
 use App\Http\Resources\v1\ { ChatRoomResource, ChatMessageResource };
-use App\Http\Requests\Api\Chat\ { CreateRoomRequest, ChatMessagesRequest, DeleteRoomRequest, GetRoomRequest };
+use App\Http\Requests\Api\Chat\ { CreateRoomRequest, ChatMessagesRequest, DeleteRoomRequest, DeleteRoomMessageRequest, GetRoomRequest };
 
 class ChatController extends Controller
 {
@@ -154,7 +154,7 @@ class ChatController extends Controller
         $rules = ChatMessagesRequest::rules();
         if( $this->apiValidator($request->all(), $rules) ) {
             try {
-                $messages   =   ChatMessage::select('id','custom_id','room_id','sender_id','message','status','created_at','updated_at')->with(['sender:id,custom_id'])
+                $messages   =   ChatMessage::withTrashed()->select('id','custom_id','room_id','sender_id','message','status','created_at','updated_at','deleted_at')->with(['sender:id,custom_id'])
                                 ->whereHas('room', function($q) use ($request){
                                     $q->whereCustomId($request->room)->whereIsActive('y');
                                 })->latest();
@@ -215,9 +215,15 @@ class ChatController extends Controller
         $rules = DeleteRoomRequest::rules();
         if( $this->apiValidator($request->all(), $rules) ) {
             try{
-                $room = ChatRoom::with('chatMessages')->whereCustomId($request->room_id)->firstOrFail();
-                if($room->chatMessages){ $room->chatMessages->each->delete(); }
-                $room->delete();
+                $auth_id = $request->user() ? $request->user()->id : NULL;
+                $room = ChatRoom::whereCustomId($request->room_id)
+                            ->where(function($query) use ($auth_id){
+                                $query->where('creator_id',$auth_id)
+                                    ->orWhere('participate_id',$auth_id);
+                            })->firstOrFail();
+
+                ChatMessage::whereRoomId($room->id)->delete(); // Delete All Chat Messages
+                $room->delete(); // Delete Chat Room
 
                 $this->status = Response::HTTP_OK;     
                 return (['data'  =>  NULL,
@@ -238,6 +244,43 @@ class ChatController extends Controller
                 };
             } catch (\Exception $e) {
                 $this->storeErrorLog($e,'delete_chat_room');
+            }
+        }
+        return $this->returnResponse();
+    }
+
+    // Delete Chat Room Message
+    public function deleteChatRoomMessage(Request $request)
+    {
+        $rules = DeleteRoomMessageRequest::rules();
+        if( $this->apiValidator($request->all(), $rules) ) {
+            try{
+                $auth_id = $request->user() ? $request->user()->id : NULL;
+                $message = ChatMessage::select('id')
+                        ->whereHas('sender',function($query) use ($auth_id){
+                            $query->whereId($auth_id)->whereIsActive('y');
+                        })->whereCustomId($request->message_id)->firstOrFail();
+
+                $message->delete();
+                $this->status = Response::HTTP_OK;     
+                return (['data'  =>  NULL,
+                    'meta' => [
+                        'url'       =>  url()->current(),
+                        'api'       =>  $this->getVersion(),
+                        'language'  =>  app()->getLocale(),
+                        'message'   =>  trans('api.delete',['entity' => __("Message")]),
+                    ] ]);
+            } catch(ModelNotFoundException $exception) {                
+                switch ($exception->getModel()) {
+                    case 'App\Models\ChatMessage':
+                        $this->response['meta']['message'] = trans('api.not_found',['entity' => __("Message")]);
+                        break;
+                    default:
+                        $this->response['meta']['message'] = trans('api.went_wrong');
+                        break;
+                };
+            } catch (\Exception $e) {
+                $this->storeErrorLog($e,'delete_chat_room_message');
             }
         }
         return $this->returnResponse();

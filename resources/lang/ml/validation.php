@@ -282,5 +282,6 @@ return [
         "remove_interests"      =>  "താൽപ്പര്യങ്ങൾ നീക്കം ചെയ്യുക",
         "image_sequence"        =>  "ചിത്ര ക്രമം",
         "file"                  =>  "ഫയൽ",
+        "message_id"            =>  "സന്ദേശം",
     ],
 ];

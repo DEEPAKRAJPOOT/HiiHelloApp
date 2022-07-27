@@ -282,5 +282,6 @@ return [
         "remove_interests"      =>  "ਦਿਲਚਸਪੀਆਂ ਨੂੰ ਹਟਾਓ",
         "image_sequence"        =>  "ਚਿੱਤਰ ਕ੍ਰਮ",
         "file"                  =>  "ਫਾਈਲ",
+        "message_id"            =>  "ਸੁਨੇਹਾ",
     ],
 ];

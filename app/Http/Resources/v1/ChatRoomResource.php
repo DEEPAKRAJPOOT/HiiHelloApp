@@ -3,7 +3,6 @@
 namespace App\Http\Resources\v1;
 
 use Illuminate\Http\Resources\Json\JsonResource;
-use App\Http\Resources\v1\ChatMessageResource;
 
 class ChatRoomResource extends JsonResource
 {
