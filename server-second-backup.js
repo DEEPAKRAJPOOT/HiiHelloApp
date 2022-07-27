@@ -130,11 +130,10 @@ io.on('connection', (socket)=>{
 	/* Send New Message */
 	socket.on('send-message', (request) => {
 		if(request.id && request.room_id && request.sender_id && request.receiver_id && request.message_type && request.message_value && request.time){
-			let lang_code = 'en';
-			if(request.lang_code){ lang_code = request.lang_code; }
-			
-			let selectSender = "select `users`.*, `user_translations`.`user_id`, `user_translations`.`full_name` as `user_full_name` from `users` inner join `user_translations` on `users`.`id` = `user_translations`.`user_id` where `user_translations`.`locale` = ? and `users`.`custom_id` = ? and `users`.`is_active` = 'y' and `users`.`deleted_at` is null";
-			let sql1 = connection.query(selectSender, [lang_code, request.sender_id], (error, sender_result) => {
+
+			// let selectSender = "SELECT * FROM users where custom_id = ? and deleted_at is NULL and is_active = 'y'";
+			let selectSender = "select `users`.*, `user_translations`.`user_id`, `user_translations`.`full_name` as `user_full_name` from `users` inner join `user_translations` on `users`.`id` = `user_translations`.`user_id` where `user_translations`.`locale` = 'en' and users.custom_id = ? and users.is_active = 'y' and `users`.`deleted_at` is null";
+			let sql1 = connection.query(selectSender, request.sender_id, (error, sender_result) => {
 				if( error ) throw error;
 				let sender = sender_result[0];
 
@@ -145,8 +144,8 @@ io.on('connection', (socket)=>{
 				}
 
 				// let selectReceiver = "SELECT * FROM users where custom_id = ? and deleted_at is NULL and is_active = 'y'";
-				let selectReceiver = "select `users`.*, `user_translations`.`user_id`, `user_translations`.`full_name` as `user_full_name` from `users` inner join `user_translations` on `users`.`id` = `user_translations`.`user_id` where `user_translations`.`locale` = ? and users.custom_id = ? and users.is_active = 'y' and `users`.`deleted_at` is null";
-				let sql1 = connection.query(selectReceiver, [lang_code, request.receiver_id], (error, receiver_result) => {
+				let selectReceiver = "select `users`.*, `user_translations`.`user_id`, `user_translations`.`full_name` as `user_full_name` from `users` inner join `user_translations` on `users`.`id` = `user_translations`.`user_id` where `user_translations`.`locale` = 'en' and users.custom_id = ? and users.is_active = 'y' and `users`.`deleted_at` is null";
+				let sql1 = connection.query(selectReceiver, request.receiver_id, (error, receiver_result) => {
 					if( error ) throw error;
 					let receiver = receiver_result[0];
 					
