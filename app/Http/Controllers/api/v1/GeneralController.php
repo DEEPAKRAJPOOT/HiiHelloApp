@@ -6,10 +6,10 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\ { Request, Response };
 use Illuminate\Support\Facades\ { Storage };
 use Illuminate\Database\Eloquent\ { ModelNotFoundException };
-use App\Http\Resources\v1\ { LanguageResource, CmsResource, CountryResource, LocationResource, InterestResource, FaqResource, ProfileDetailResource, PersonalityResource, LocationTransResource, LocationSearchResource };
+use App\Http\Resources\v1\ { LanguageResource, CmsResource, CountryResource, LocationResource, InterestResource, FaqResource, ProfileDetailResource, PersonalityResource, LocationTransResource, LocationSearchResource, DeviceTokenResource };
 use App\Http\Requests\Api\General\ { PaginationRequest, LocationRequest, ProfileDetailRequest, InterestRequest };
-use App\Http\Requests\Api\User\ { AddDeviceTokenRequest };
-use App\Models\ { Language, CmsPage, Country, Location, Interest, Faq, DeviceToken, ProfileDetail, AppDetail, Personality, LocationTranslation };
+use App\Http\Requests\Api\User\ { AddDeviceTokenRequest, GetDeviceTokenRequest };
+use App\Models\ { User, Language, CmsPage, Country, Location, Interest, Faq, DeviceToken, ProfileDetail, AppDetail, Personality, LocationTranslation };
 
 class GeneralController extends Controller
 {
@@ -574,6 +574,39 @@ class GeneralController extends Controller
                 $this->response['meta']['message'] = trans('api.went_wrong');
                 $this->status = Response::HTTP_NOT_FOUND;  
                 $this->storeErrorLog($e,'add_device_token');
+            }
+        }
+        return $this->returnResponse();
+    }
+
+    // Get Device Token
+    public function getDeviceToken(Request $request)
+    {
+        $rules = GetDeviceTokenRequest::rules();
+        if( $this->apiValidator($request->all(), $rules) ) {
+            try{
+                $user_id = $request->user_id;
+                $deviceToken = DeviceToken::whereHas('user',function($query) use($user_id){
+                    $query->whereCustomId($user_id)->whereIsActive('y');
+                })->latest()->firstOrFail();
+
+                $this->status = Response::HTTP_OK;     
+                return (new DeviceTokenResource($deviceToken))->additional([
+                    'meta'  =>  [
+                        'message'   =>  trans('api.list', ['entity' =>  __('Device token')]),
+                    ]
+                ]);
+            } catch(ModelNotFoundException $exception) {                
+                switch ($exception->getModel()) {
+                    case 'App\Models\DeviceToken':
+                        $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("Device token")]);
+                        break;
+                    default:
+                        $this->response['meta']['message'] = trans('api.went_wrong');
+                        break;
+                };
+            } catch (\Exception $e) {
+                $this->storeErrorLog($e,'get_device_token');
             }
         }
         return $this->returnResponse();

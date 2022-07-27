@@ -11,4 +11,6 @@ class DeviceToken extends Model
     use HasFactory, SoftDeletes;
 
     protected $fillable = [ 'user_id', 'token', 'type', 'device_name', 'os_name', 'os_version', 'app_version' ];
+
+    public function user(){ return $this->belongsTo('App\Models\User'); }
 }
