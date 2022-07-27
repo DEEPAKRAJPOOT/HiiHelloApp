@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\ { ModelNotFoundException };
 use App\Http\Requests\Api\General\ { PaginationRequest };
 use Illuminate\Support\Facades\ { Auth };
 use App\Models\ { ChatRoom, ChatMessage, User, CallLog };
-use App\Http\Resources\v1\ { CreateChatRoomResource, ChatRoomResource, ChatMessageResource };
+use App\Http\Resources\v1\ { ChatRoomResource, ChatMessageResource };
 use App\Http\Requests\Api\Chat\ { CreateRoomRequest, ChatMessagesRequest, DeleteRoomRequest, GetRoomRequest };
 
 class ChatController extends Controller
@@ -28,8 +28,8 @@ class ChatController extends Controller
 
                 $chat_room = ChatRoom::with(['creator:id,custom_id,profile_photo,language_id',
                                 'participator:id,custom_id,profile_photo,language_id',
-                                'creator.userTranslation','creator.language',
-                                'participator.userTranslation','participator.language',
+                                'creator.userTranslation','creator.language:id,lang_code',
+                                'participator.userTranslation','participator.language:id,lang_code',
                                 'latestMessage.sender:id,custom_id'])
                         ->where(function ($query) use ($auth_id,$participant_id) {
                             $query->whereCreatorId($auth_id)->where('participate_id',$participant_id);
@@ -47,7 +47,7 @@ class ChatController extends Controller
                 }
 
                 $this->status = Response::HTTP_OK;     
-                return (new CreateChatRoomResource($chat_room))->additional([
+                return (new ChatRoomResource($chat_room))->additional([
                     'meta'  =>  [
                         'message'   =>  trans('api.save', ['entity' =>  __('Chat room')]),
                     ]
@@ -80,8 +80,9 @@ class ChatController extends Controller
                 $auth_id = $request->user() ? $request->user()->id : NULL;
                 $search = $request->search;
 
-                $rooms = ChatRoom::with(['creator:id,custom_id,profile_photo',
-                                'participator:id,custom_id,profile_photo',
+                $rooms = ChatRoom::with(['creator:id,custom_id,profile_photo,language_id',
+                                'participator:id,custom_id,profile_photo,language_id',
+                                'creator.language:id,lang_code','participator.language:id,lang_code',
                                 'creator.userTranslation','participator.userTranslation',
                                 'latestMessage.sender:id,custom_id'])
                         ->whereHas('chatMessages')
