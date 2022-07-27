@@ -3,7 +3,6 @@
 namespace App\Http\Requests\Api\Twillio;
 
 use Illuminate\Foundation\Http\FormRequest;
-use App\Models\ChatRoom;
 
 class GetCallLogRequest extends FormRequest
 {
@@ -24,10 +23,8 @@ class GetCallLogRequest extends FormRequest
      */
     public function rules()
     {
-        $chat_rooms_ids = ChatRoom::pluck('custom_id')->toArray();
-
         return [
-            'room'      =>  'required|in:'.implode(',',$chat_rooms_ids),
+            'room'      =>  'required|max:100',
         ];
     }
 }

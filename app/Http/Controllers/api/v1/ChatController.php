@@ -23,7 +23,8 @@ class ChatController extends Controller
         if( $this->apiValidator($request->all(), $rules) ) {
             try{
                 $user = $request->user(); $auth_id = $user ? $user->id : NULL;
-                $participant = User::whereCustomId($request->participant_id)->whereIsActive('y')->firstOrFail();
+                $participant = User::whereCustomId($request->participant_id)
+                                ->where('id','!=',$auth_id)->whereIsActive('y')->firstOrFail();
                 $participant_id = $participant ? $participant->id : NULL;
 
                 $chat_room = ChatRoom::with(['creator:id,custom_id,profile_photo,language_id',

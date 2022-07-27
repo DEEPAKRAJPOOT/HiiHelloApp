@@ -3,8 +3,6 @@
 namespace App\Http\Requests\Api\User;
 
 use Illuminate\Foundation\Http\FormRequest;
-use App\Models\UserDetail;
-use Illuminate\Support\Facades\ { Auth };
 
 class SetMediaRequest extends FormRequest
 {
@@ -25,11 +23,6 @@ class SetMediaRequest extends FormRequest
      */
     public function rules($request)
     {
-        $video_ids = array();
-        if($request->has('remove_video') || !empty($request->remove_video)){
-            $video_ids = UserDetail::whereUserId(Auth::id())->whereNotNull('video')->pluck('custom_id')->toArray();
-        }
-
         return [
             // Voice Details
             'voice'                     =>  'nullable|string|max:500',
@@ -38,7 +31,7 @@ class SetMediaRequest extends FormRequest
 
             // Video Details
             'video'                     =>  'nullable|string|max:500',
-            'remove_video'              =>  'nullable|in:'.implode(',', $video_ids),
+            'remove_video'              =>  'nullable|max:100',
 
             // Image Details
             'image_path'                =>  'nullable|string|max:500',

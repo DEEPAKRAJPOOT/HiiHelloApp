@@ -3,10 +3,6 @@
 namespace App\Http\Requests\Api\Authentication;
 
 use Illuminate\Foundation\Http\FormRequest;
-use App\Models\Country;
-use App\Models\Location;
-use App\Models\Interest;
-use App\Models\Language;
 
 class RegisterRequest extends FormRequest
 {
@@ -28,9 +24,6 @@ class RegisterRequest extends FormRequest
     public function rules()
     {
         $min_birth_date =   now()->subYears(config('utility.minimum_age'))->format('m/d/Y');
-        $location_ids   =   Location::whereIsActive('y')->pluck('custom_id')->toArray();
-        $language_ids   =   Language::whereIsActive('y')->pluck('lang_code')->toArray();
-        $phone_codes    =   Country::whereIsActive('y')->pluck('phonecode')->toArray();
 
         return [
             'first_name'        =>  'required|min:2|max:100',
@@ -40,10 +33,10 @@ class RegisterRequest extends FormRequest
             'birth_date'        =>  'required|date|before:'.$min_birth_date,
             'gender'            =>  'required|in:Male,Female',
             'interest'          =>  'required|in:Male,Female,Both',
-            'location'          =>  'required|in:'.implode(',', $location_ids),
-            'language'          =>  'required|in:'.implode(',', $language_ids),
+            'location'          =>  'required|max:100',
+            'language'          =>  'required|max:100',
             'profile_photo'     =>  'required|mimes:jpg,jpeg,png',
-            'country_code'      =>  'nullable|in:'.implode(',', $phone_codes),
+            'country_code'      =>  'nullable|max:100',
             'contact_no'        =>  'nullable|digits_between:6,16',
         ];
     }

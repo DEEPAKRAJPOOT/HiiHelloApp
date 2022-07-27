@@ -3,8 +3,6 @@
 namespace App\Http\Requests\Api\General;
 
 use Illuminate\Foundation\Http\FormRequest;
-use App\Models\Interest;
-use App\Models\Location;
 
 class InterestRequest extends FormRequest
 {
@@ -25,13 +23,10 @@ class InterestRequest extends FormRequest
      */
     public function rules($request)
     {
-        $parent_ids = Interest::select('custom_id')->whereIsActive('y')->pluck('custom_id')->toArray();
-        $location_ids = Location::select('custom_id')->whereIsActive('y')->pluck('custom_id')->toArray();
-
         return [
             'search'        =>  'nullable|max:150',
-            'parent_id'     =>  'nullable|in:'.implode(',', $parent_ids),
-            'location_id'   =>  'required|in:'.implode(',', $location_ids),
+            'parent_id'     =>  'nullable|max:100',
+            'location_id'   =>  'nullable|max:100',
             'level'         =>  'required_with:parent_id|in:2,3',
             'limit'         =>  'nullable|numeric|min:5',
             'offset'        =>  'nullable|numeric|min:0',

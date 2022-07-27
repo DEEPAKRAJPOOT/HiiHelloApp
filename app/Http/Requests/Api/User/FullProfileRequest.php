@@ -4,9 +4,6 @@ namespace App\Http\Requests\Api\User;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
-use App\Models\ProfileDetail;
-use App\Models\Interest;
-use App\Models\Personality;
 
 class FullProfileRequest extends FormRequest
 {
@@ -27,34 +24,27 @@ class FullProfileRequest extends FormRequest
      */
     public function rules($request)
     {
-        $personality_ids = array();
-        $profile_details = ProfileDetail::whereIsActive('y')->pluck('slug')->toArray();
-
-        if(!empty($request->personalities) || $request->has('personalities') || !empty($request->remove_personalities) || $request->has('remove_personalities')){ 
-            $personality_ids = Personality::whereIsActive('y')->pluck('custom_id')->toArray(); 
-        }
-
         return [
             'email'                     =>  'nullable|email|max:150|unique:users,email,'.Auth::id(),
             'about_me'                  =>  'nullable|min:3|max:1000',
             'fav_movie'                 =>  'nullable|min:1|max:250',
 
-            'personalities'             =>  'nullable|array|in:'.implode(',', $personality_ids), // Multiple
-            'remove_personalities'      =>  'nullable|array|in:'.implode(',', $personality_ids), // Multiple
+            'personalities'             =>  'nullable|array', // Multiple
+            'remove_personalities'      =>  'nullable|array', // Multiple
 
-            'education'                 =>  'nullable|in:'.implode(',', $profile_details),
-            'university_college'        =>  'nullable|in:'.implode(',', $profile_details),
-            'profession'                =>  'nullable|in:'.implode(',', $profile_details),
-            'religion'                  =>  'nullable|in:'.implode(',', $profile_details),
+            'education'                 =>  'nullable|max:100',
+            'university_college'        =>  'nullable|max:100',
+            'profession'                =>  'nullable|max:100',
+            'religion'                  =>  'nullable|max:100',
 
-            'relationship_status'       =>  'nullable|in:'.implode(',', $profile_details),
-            'i_am_here'                 =>  'nullable|in:'.implode(',', $profile_details),
-            'food_preference'           =>  'nullable|in:'.implode(',', $profile_details),
-            'drinking'                  =>  'nullable|in:'.implode(',', $profile_details),
-            'smoking'                   =>  'nullable|in:'.implode(',', $profile_details),
-            'pet'                       =>  'nullable|in:'.implode(',', $profile_details),
-            'star_sign'                 =>  'nullable|in:'.implode(',', $profile_details),
-            'community'                 =>  'nullable|in:'.implode(',', $profile_details),
+            'relationship_status'       =>  'nullable|max:100',
+            'i_am_here'                 =>  'nullable|max:100',
+            'food_preference'           =>  'nullable|max:100',
+            'drinking'                  =>  'nullable|max:100',
+            'smoking'                   =>  'nullable|max:100',
+            'pet'                       =>  'nullable|max:100',
+            'star_sign'                 =>  'nullable|max:100',
+            'community'                 =>  'nullable|max:100',
 
             // Main Image (To Upload New Image & Change Extra Image As Main Image)
             'profile_photo'             =>  'nullable|mimes:jpg,jpeg,png',

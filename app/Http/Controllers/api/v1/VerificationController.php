@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\ { ModelNotFoundException };
 use Illuminate\Support\Facades\ { Storage };
 use App\Http\Requests\Api\User\ { UploadVerifyDetailRequest, EmailVerifyRequest, VerifyContactRequest };
 use App\Http\Resources\v1\ { VerificationResource };
-use App\Models\ { User };
+use App\Models\ { User, Country };
 use App\Jobs\ { NotificationJob };
 
 class VerificationController extends Controller
@@ -79,8 +79,11 @@ class VerificationController extends Controller
         $rules = VerifyContactRequest::rules();
         if( $this->apiValidator($request->all(), $rules) ) {
             try{
+                $country = Country::select('phonecode')->wherePhonecode($request->country_code)
+                                ->whereIsActive('y')->firstOrFail();
+
                 $user = $request->user();
-                $user->country_code = $request->country_code;
+                $user->country_code = $country->phonecode;
                 $user->contact_no = $request->contact_no;
                 $user->contact_verified_at  = \Carbon\Carbon::now();
                 $user->save();
@@ -95,6 +98,9 @@ class VerificationController extends Controller
                         ] ]);
             } catch(ModelNotFoundException $exception) {                
                 switch ($exception->getModel()) {
+                    case 'App\Models\Country':
+                        $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("Country")]);
+                        break;
                     case 'App\Models\User':
                         $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("User")]);
                         break;

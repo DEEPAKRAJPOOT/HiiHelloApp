@@ -364,7 +364,7 @@ class ProfileController extends Controller
                     }
                 }
 
-                $user = User::with(['userDetails','interests'])->whereId($user->id)->firstOrFail();
+                $user = User::with(['userTranslation','personalities','userDetails','interests'])->whereId($user->id)->firstOrFail();
                 return (new MediaResource($user))
                         ->additional(['meta'  => [
                             'message'       =>  trans('api.profile_setuped'), 
