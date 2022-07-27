@@ -25,6 +25,9 @@ class ChatRoomResource extends JsonResource
                                         $this->creator->userTranslation ? $this->creator->userTranslation->full_name : ""
                                     : "",
                 'profile'       =>  $this->creator ? $this->creator->profile_photo : "",
+                'language'      =>  [
+                    'lang_code' =>  $this->creator ? $this->creator->language ? $this->creator->language->lang_code : "": "",
+                ],
             ],
             'participator'  =>  [
                 'id'            =>  $this->participator ? $this->participator->custom_id : "",
@@ -32,6 +35,9 @@ class ChatRoomResource extends JsonResource
                                         $this->participator->userTranslation ? $this->participator->userTranslation->full_name : ""
                                     : "",
                 'profile'       =>  $this->participator ? $this->participator->profile_photo : "",
+                'language'      =>  [
+                    'lang_code' =>  $this->participator ? $this->participator->language ? $this->participator->language->lang_code : "": "",
+                ],
             ],
             'latest_message'    =>  [
                 'id'        =>  $this->latestMessage ? $this->latestMessage->custom_id ?? "" : "",
