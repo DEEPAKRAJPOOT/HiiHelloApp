@@ -282,5 +282,6 @@ return [
         "remove_interests"      =>  "रुचियां हटाएं",
         "image_sequence"        =>  "छवि अनुक्रम",
         "file"                  =>  "फ़ाइल",
+        "message_id"            =>  "संदेश",
     ],
 ];

@@ -282,5 +282,6 @@ return [
         "remove_interests"      =>  "ஆர்வங்களை அகற்று",
         "image_sequence"        =>  "பட வரிசை",
         "file"                  =>  "கோப்பு",
+        "message_id"            =>  "செய்தி",
     ],
 ];

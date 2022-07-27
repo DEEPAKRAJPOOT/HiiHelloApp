@@ -282,5 +282,6 @@ return [
         "remove_interests"      =>  "আগ্রহগুলি সরান",
         "image_sequence"        =>  "ছবির ক্রম",
         "file"                  =>  "ফাইল",
+        "message_id"            =>  "বার্তা",
     ],
 ];

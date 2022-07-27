@@ -55,6 +55,7 @@
     "Current location"     :   "वर्तमान स्थान",
     "Notification"         :   "सूचना",
     "Subscription"		   :   "वर्गणी",
+    "Message"			   :   "संदेश",
     "Twilio Outgoing App Sid"                       :   "ट्विलियो आउटगोइंग अॅप Sid",
     "Payload generated successfully"                :   "पेलोड यशस्वीरित्या व्युत्पन्न झाले",
     "Security token was expired, please try again!" :   "सुरक्षा टोकन कालबाह्य झाले, कृपया पुन्हा प्रयत्न करा!",

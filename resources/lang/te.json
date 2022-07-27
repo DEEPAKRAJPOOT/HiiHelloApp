@@ -55,6 +55,7 @@
     "Current location"     :	"ప్రస్తుత స్తలం",
     "Notification"         :	"నోటిఫికేషన్",
     "Subscription"		   :	"చందా",
+    "Message"              :    "సందేశం",
     "Twilio Outgoing App Sid"                       :	"ట్విలియో అవుట్గోయింగ్ యాప్ సిడ్",
     "Payload generated successfully"                :	"పేలోడ్ విజయవంతంగా రూపొందించబడింది",
     "Security token was expired, please try again!" :	"సెక్యూరిటీ టోకెన్ గడువు ముగిసింది, దయచేసి మళ్లీ ప్రయత్నించండి!",

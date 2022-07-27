@@ -282,5 +282,6 @@ return [
         "remove_interests"      =>  "ଆଗ୍ରହ ହଟାନ୍ତୁ |",
         "image_sequence"        =>  "ପ୍ରତିଛବି କ୍ରମ |",
         "file"                  =>  "ଫାଇଲ୍ |",
+        "message_id"            =>  "ବାର୍ତ୍ତା |",
     ],
 ];
