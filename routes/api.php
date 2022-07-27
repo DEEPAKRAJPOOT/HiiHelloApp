@@ -39,6 +39,7 @@ Route::group(['namespace' => 'v1', 'prefix' => 'v1'], function () {
 
     // User
     Route::post('user/common-age',[UserController::class,'getCommonAge'])->name('api.user.common-age');
+    Route::post('user/get-device-token', [GeneralController::class,'getDeviceToken'])->name('api.user.get-device-token');
 
     // Third Party
     Route::post('image/moderation', [GeneralController::class,'checkImageModeration'])->name('api.image.moderation');
