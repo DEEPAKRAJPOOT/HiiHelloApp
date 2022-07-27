@@ -163,6 +163,9 @@ class AuthenticationController extends Controller
                     case 'App\Models\Location':
                         $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("Location")]);
                         break;
+                    case 'App\Models\Language':
+                        $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("Language")]);
+                        break;
                     case 'App\Models\UserDetail':
                         $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("User")]);
                         break;

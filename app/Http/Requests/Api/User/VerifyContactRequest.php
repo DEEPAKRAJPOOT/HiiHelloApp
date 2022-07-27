@@ -4,7 +4,6 @@ namespace App\Http\Requests\Api\User;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
-use App\Models\Country;
 
 class VerifyContactRequest extends FormRequest
 {
@@ -25,10 +24,8 @@ class VerifyContactRequest extends FormRequest
      */
     public function rules()
     {
-        $phone_codes    =   Country::whereIsActive('y')->pluck('phonecode')->toArray();
-
         return  [
-            'country_code'      =>  'required|in:'.implode(',', $phone_codes),
+            'country_code'      =>  'required|max:100',
             'contact_no'        =>  'required|numeric|digits_between:6,16|unique:users,contact_no,'.Auth::id(),
         ];
     }

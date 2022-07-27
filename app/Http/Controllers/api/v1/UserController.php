@@ -81,7 +81,9 @@ class UserController extends Controller
         if( $this->apiValidator($request->all(), $rules) ) {
             try{
                 $path = NULL;
-                $reported_user = User::whereCustomId($request->reported_user)->whereIsActive('y')->firstOrFail();
+                $reported_user = User::whereCustomId($request->reported_user)
+                                    ->where('id','!=',Auth::id())
+                                    ->whereIsActive('y')->firstOrFail();
                 if(!empty($request->image)){
                     $path = $request->file('image')->store('profile_report');
                 }

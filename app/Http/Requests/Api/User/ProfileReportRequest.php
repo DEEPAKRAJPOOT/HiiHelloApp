@@ -3,8 +3,6 @@
 namespace App\Http\Requests\api\user;
 
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Support\Facades\Auth;
-use App\Models\User;
 
 class ProfileReportRequest extends FormRequest
 {
@@ -25,10 +23,8 @@ class ProfileReportRequest extends FormRequest
      */
     public function rules()
     {
-        $user_ids = User::where('id','!=',Auth::id())->whereIsActive('y')->pluck('custom_id')->toArray();
-
         return  [
-            'reported_user'     =>  'required|in:'.implode(',', $user_ids),
+            'reported_user'     =>  'required|max:100',
             'message'           =>  'required|min:3|max:400',
             'image'             =>  'nullable|mimes:jpg,jpeg,png',
         ];

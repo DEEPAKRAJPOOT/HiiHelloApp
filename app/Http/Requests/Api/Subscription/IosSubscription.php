@@ -3,7 +3,6 @@
 namespace App\Http\Requests\Api\Subscription;
 
 use Illuminate\Foundation\Http\FormRequest;
-use App\Models\SubscriptionPlan;
 
 class IosSubscription extends FormRequest
 {
@@ -24,10 +23,8 @@ class IosSubscription extends FormRequest
      */
     public function rules()
     {
-        $plan_ids = SubscriptionPlan::whereIsActive('y')->pluck('custom_id')->toArray();
-
         return [
-            'plan_id'                   =>  'required|in:'.implode(',', $plan_ids),
+            'plan_id'                   =>  'required|max:100',
             'receipt_data'              =>  'required',
             'transaction_id'            =>  'required',
             'original_transaction_id'   =>  'nullable',

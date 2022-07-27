@@ -47,17 +47,17 @@ class FilterController extends Controller
                     $users = $users->where(function ($query_filter)  use ($request) {
                         if(!empty($request->relationship_status)){
                             $query_filter->orWhereHas('relationshipStatus', function($query_relation) use ($request){
-                                $query_relation->whereSlug($request->relationship_status);
+                                $query_relation->whereSlug($request->relationship_status)->whereIsActive('y');
                             });
                         }
                         if(!empty($request->personalities)){
                             $query_filter->orWhereHas('personalities.personality', function($query_personality) use ($request){
-                                $query_personality->whereIn('custom_id',$request->personalities);
+                                $query_personality->whereIn('custom_id',$request->personalities)->whereIsActive('y');
                             });
                         }
                         if(!empty($request->star_sign)){
                             $query_filter->orWhereHas('starSign', function($query_star_sign) use ($request){
-                                $query_star_sign->whereSlug($request->star_sign);
+                                $query_star_sign->whereSlug($request->star_sign)->whereIsActive('y');
                             });
                         }
                         if(!empty($request->fav_movie)){
@@ -68,7 +68,7 @@ class FilterController extends Controller
                         }
                         if(!empty($request->interests)){
                             $query_filter->orWhereHas('interests.interest', function($query_interests) use ($request){
-                                $query_interests->whereIn('custom_id',$request->interests);
+                                $query_interests->whereIn('custom_id',$request->interests)->whereIsActive('y');
                             });
                         }
                     });

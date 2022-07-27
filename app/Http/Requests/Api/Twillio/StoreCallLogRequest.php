@@ -24,10 +24,8 @@ class StoreCallLogRequest extends FormRequest
      */
     public function rules()
     {
-        $chat_rooms_ids = ChatRoom::pluck('custom_id')->toArray();
-
         return [
-            'room'              =>  'required|in:'.implode(',',$chat_rooms_ids),
+            'room'              =>  'required|max:100',
             'start_time'        =>  'required',
             'end_time'          =>  'required',
             'remaining_time'    =>  'required',

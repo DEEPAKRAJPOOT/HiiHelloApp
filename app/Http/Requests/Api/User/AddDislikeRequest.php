@@ -3,8 +3,6 @@
 namespace App\Http\Requests\Api\User;
 
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Support\Facades\Auth;
-use App\Models\User;
 
 class AddDislikeRequest extends FormRequest
 {
@@ -25,11 +23,8 @@ class AddDislikeRequest extends FormRequest
      */
     public function rules()
     {
-        // $user_ids = User::where('id','!=',Auth::id())->whereIsActive('y')->pluck('custom_id')->toArray();
-
         return  [
-            // 'user_id'      =>  'required|in:'.implode(',', $user_ids),
-            'user_id'      =>  'required|max:250',
+            'user_id'      =>  'required|max:100',
         ];
     }
 }

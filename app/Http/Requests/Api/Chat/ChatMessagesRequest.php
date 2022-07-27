@@ -3,8 +3,6 @@
 namespace App\Http\Requests\Api\Chat;
 
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Support\Facades\ { Auth };
-use App\Models\ { ChatRoom };
 
 class ChatMessagesRequest extends FormRequest
 {
@@ -25,14 +23,10 @@ class ChatMessagesRequest extends FormRequest
      */
     public function rules()
     {
-        $auth_id = Auth::id();
-        $chat_rooms_ids = ChatRoom::whereCreatorId($auth_id)->orWhere('participate_id',$auth_id)->whereIsActive('y')->pluck('custom_id')->toArray();
-        
         return [
-            'room'      =>  'required|min:2|max:150|in:'.implode(',',$chat_rooms_ids),
+            'room'      =>  'required|min:5|max:100',
             'limit'     =>  'nullable|numeric|min:5',
             'offset'    =>  'nullable|numeric|min:0',
         ];
-
     }
 }

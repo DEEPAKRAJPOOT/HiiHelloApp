@@ -309,7 +309,7 @@ class GeneralController extends Controller
                 if(!empty($request->parent_id)){
                     $interests = $interests->whereNotNull('parent_id')
                                     ->whereHas('parentInterest', function($query) use ($request){
-                                        $query->whereCustomId($request->parent_id);
+                                        $query->whereCustomId($request->parent_id)->whereIsActive('y');
                                     });
                 }else{
                     $interests = $interests->whereNull('parent_id');
