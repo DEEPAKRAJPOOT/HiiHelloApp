@@ -357,7 +357,7 @@ io.on('connection', (socket)=>{
 		if(request.id && request.room_id && request.sender_id && request.receiver_id && request.time){		
 			let status = 'read';
 
-			var selectChatMessage = "SELECT * FROM chat_messages where custom_id = ? and deleted_at is NULL";
+			var selectChatMessage = "SELECT * FROM chat_messages where custom_id = ?";
 			connection.query(selectChatMessage, [request.id], (error, _selectMessage) => {
 				if( error ) throw error;
 				let selectMessage = _selectMessage[0];
