@@ -429,40 +429,6 @@ io.on('connection', (socket)=>{
 		// EMIT BACK
 	});
 
-	/* Delete Message */
-	socket.on('message-delete', (request) => {
-		if(request.id && request.room_id && request.time){		
-
-			var selectChatMessage = "SELECT * FROM chat_messages where custom_id = ? and deleted_at is NULL";
-			connection.query(selectChatMessage, [request.id], (error, _selectMessage) => {
-				if( error ) throw error;
-				let selectMessage = _selectMessage[0];
-				
-				if( selectMessage === undefined ) {
-					io.in(request.id).emit('went-wrong','Message Not Found');
-					console.log('Message Not Found Of Id :: ',request.id); 
-					return false;
-				}
-
-				let deleteMessage =  "UPDATE chat_messages SET deleted_at = ?, updated_at = ? WHERE id = ? ";
-				let sql = connection.query(deleteMessage, [request.time, request.time, selectMessage.id], (delete_error, _message) => {
-					if( delete_error ) throw delete_error;
-					
-					// create return object
-					let returnUpdatedMsg = {
-						id  : selectMessage.custom_id,
-					};
-
-					console.log("Delete Message Object ::"+JSON.stringify(returnUpdatedMsg));
-					io.in(request.room_id).emit('message-delete', returnUpdatedMsg);
-				});
-			});
-		}else{
-			console.log("Precondition Failed !!!");
-			return false; 
-		}
-	});
-
 	/*
 	* room_id => For which room you want to send notification
 	* chat_message => For which message you want to send notification
