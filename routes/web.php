@@ -22,6 +22,7 @@ Auth::routes(['register' => false, 'login' => false]);
 
 // Twilio Voice Response
 Route::post('/voice',[TwillioController::class,'voice']);
+Route::get('/events',[TwillioController::class,'events'])->name('events');
 
 Route::get('login', 'AdminAuth\LoginController@showLoginForm')->name('login');
 
