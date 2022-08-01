@@ -217,7 +217,7 @@ return [
         ],
         'voice_call_miss_call'    =>  [
             'title'     =>  "Hi Hello",
-            'message'   =>  "Missed call from :entity",
+            'message'   =>  ":entity -ൽ നിന്നുള്ള മിസ്ഡ് കോൾ",
         ],
     ],
     'sms'   =>  [
