@@ -215,6 +215,10 @@ return [
             'title'     =>  "Hi Hello",
             'message'   =>  "Your daily voice call limit is over.",
         ],
+        'voice_call_miss_call'    =>  [
+            'title'     =>  "Hi Hello",
+            'message'   =>  "Missed call from :entity",
+        ],
     ],
     'sms'   =>  [
         'message'   =>  [

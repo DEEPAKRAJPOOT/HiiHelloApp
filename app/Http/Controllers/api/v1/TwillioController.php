@@ -12,6 +12,7 @@ use Twilio\Jwt\ { AccessToken };
 use Twilio\Jwt\Grants\ { ChatGrant, VideoGrant, VoiceGrant };
 use Twilio\TwiML\ { VoiceResponse };
 use App\Models\ { User, UserCommunication, ChatRoom, CallLog, UserTranslation };
+use App\Jobs\ { NotificationJob };
 
 class TwillioController extends Controller
 {
@@ -82,11 +83,16 @@ class TwillioController extends Controller
         // $dial = $response->dial('', ['callerId' => $data["outgoing_caller_id"]]);
 
         $dial = $response->dial('', array(
-                        'callerId'          =>  'client:' . $data["outgoing_caller_id"],
-                        'answerOnBridge'    =>  true,  // Callback Event For Incoming Call (For Mobile Side)
-                    ));
+                    'callerId'          =>  'client:' . $data["outgoing_caller_id"],
+                    'answerOnBridge'    =>  true,  // Callback Event For Incoming Call (For Mobile Side)
+                ));
 
-        $client = $dial->client($request->To);
+        $client = $dial->client($request->To,
+                [
+                    'statusCallbackEvent'   =>  'initiated ringing answered completed',
+                    'statusCallback'        =>  env('APP_URL').'/events?room_id='.$data["room_id"].'&receiver_id='.$data["receiver_id"],  // user's Custom id to send notification
+                    'statusCallbackMethod'  =>  'GET'
+                ]);
 
         // Sending custom parameters, We will use in client side 
         $client->parameter([
@@ -106,6 +112,48 @@ class TwillioController extends Controller
             "value" => $data["display_name"],
         ]);
 
+        return $response;
+    }
+
+    public function events(Request $request)
+    {
+        $response = new VoiceResponse();
+
+        if($request->CallStatus == 'no-answer' || $request->CallStatus == 'failed'){
+            $chat_room = ChatRoom::with('creator','participator')->whereCustomId($request->room_id)->first();
+            if($chat_room){
+
+                if($chat_room->creator && $chat_room->participator){
+                    $caller     =   $chat_room->creator;
+                    $receiver   =   $chat_room->participator;
+                    if($chat_room->creator->custom_id == $request->receiver_id){
+                        $caller     =   $chat_room->participator;
+                        $receiver   =   $chat_room->creator;
+                    }
+
+                    $caller_name = $caller ? $caller->userTransEn ? $caller->userTransEn->full_name : "" : "";
+                    $caller_profile = $caller ? $caller->profile_photo : "";
+
+                    $notification = [
+                        'custom_id'     =>  getUniqueString('notifications'),
+                        'key'           =>  'user_id',
+                        'room_id'       =>  $request->room_id ? $request->room_id : "",
+                        'value'         =>  $receiver->custom_id,
+                        'user_id'       =>  $receiver->id,
+                        'name'          =>  $caller_name,
+                        'profile'       =>  generateURL($caller_profile),
+                        'image'         =>  generateURL($caller_profile),
+                        'title'         =>  trans('api.notify_message.voice_call_miss_call.title'),
+                        'message'       =>  trans('api.notify_message.voice_call_miss_call.message',['entity' => $caller_name]),
+                        'type'          =>  config('utility.notification.type.voice_call_miss_call'),
+                    ];
+
+                    // Notify
+                    $notificationJob = new NotificationJob($notification, $receiver);
+                    dispatch($notificationJob);
+                }
+            }
+        }
         return $response;
     }
 
