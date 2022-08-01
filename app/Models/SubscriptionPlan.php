@@ -27,6 +27,9 @@ class SubscriptionPlan extends Model implements TranslatableContract
     public function subscriptionPlanTransDefault(){ 
         return $this->hasOne('App\Models\SubscriptionPlanTranslation')->whereLocale(config('utility.default_lang_code'));
     }
+    public function subscriptionPlanTransEn(){ 
+        return $this->hasOne('App\Models\SubscriptionPlanTranslation')->whereLocale('en');
+    }
 
     public function getValue($lang_code,$field){
         return $this->translate($lang_code) ? $this->translate($lang_code)->$field : "";

@@ -36,7 +36,7 @@ class FilterController extends Controller
                                     * cos(radians(users.longitude) - radians(" . $longitude . ")) 
                                     + sin(radians(" .$latitude. ")) 
                                     * sin(radians(users.latitude))) AS distance"))
-                            ->with(['interests','interests.interest.interestTranslation',
+                            ->with(['userDetails','interests','interests.interest.interestTranslation',
                                 'userTranslation','location.locationTranslation'])
                             ->where(function ($query)  use ($auth_id, $auth_interest) {
                                 $query->where('id','!=',$auth_id)->whereIsActive('y');

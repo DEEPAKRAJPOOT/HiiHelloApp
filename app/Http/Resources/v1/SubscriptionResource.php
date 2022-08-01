@@ -25,6 +25,9 @@ class SubscriptionResource extends JsonResource
             'name'          =>  $this->subscriptionPlan ? 
                                     $this->subscriptionPlan->subscriptionPlanTranslation ? $this->subscriptionPlan->subscriptionPlanTranslation->name : ""  
                                 : "",
+            'type'          =>  $this->subscriptionPlan ? 
+                                    $this->subscriptionPlan->subscriptionPlanTransEn ? $this->subscriptionPlan->subscriptionPlanTransEn->name : ""  
+                                : "",
             'android_product'       =>  $this->subscriptionPlan ? $this->subscriptionPlan->android_product : "",
             'ios_product'           =>  $this->subscriptionPlan ? $this->subscriptionPlan->ios_product : "",
         ];
