@@ -131,7 +131,13 @@ class TwillioController extends Controller
                         $receiver   =   $chat_room->creator;
                     }
 
-                    $caller_name = $caller ? $caller->userTransEn ? $caller->userTransEn->full_name : "" : "";
+                    $lang_code = $receiver ? $receiver->language ? $receiver->language->lang_code : "en" : "en";
+                    $userTranslation = UserTranslation::select('full_name')->whereUserId($caller->id)->whereLocale($lang_code)->first();
+                    if($userTranslation){ 
+                        $caller_name = $userTranslation->full_name ?? "";
+                    }else{
+                        $caller_name = $caller ? $caller->userTransEn ? $caller->userTransEn->full_name : "" : "";
+                    }
                     $caller_profile = $caller ? $caller->profile_photo : "";
 
                     $notification = [
