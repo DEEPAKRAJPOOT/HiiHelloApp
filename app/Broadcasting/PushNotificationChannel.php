@@ -33,7 +33,8 @@ class PushNotificationChannel extends Controller
 
         if ($message['type'] == config('utility.notification.type.chat_message') ||
             $message['type'] == config('utility.notification.type.image_moderation_chat') ||
-            $message['type'] == config('utility.notification.type.voice_call_timeout')
+            $message['type'] == config('utility.notification.type.voice_call_timeout') ||
+            $message['type'] == config('utility.notification.type.voice_call_miss_call')
         ) {
             $data['name']       =   $message['name'];
             $data['profile']    =   $message['profile'];
