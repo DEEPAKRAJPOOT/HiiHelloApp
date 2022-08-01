@@ -235,7 +235,7 @@ class SubscriptionController extends Controller
     public function getUserSubDetails(Request $request)
     {
         try{
-            $subscription = Subscription::with('subscriptionPlan.subscriptionPlanTranslation')
+            $subscription = Subscription::with(['subscriptionPlan.subscriptionPlanTranslation','subscriptionPlan.subscriptionPlanTransEn'])
                                 ->whereUserId(Auth::id())->latest()->firstOrFail();
             return (new SubscriptionResource($subscription))->additional([
                 'meta' => [

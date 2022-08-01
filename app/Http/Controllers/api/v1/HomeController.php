@@ -51,7 +51,7 @@ class HomeController extends Controller
                         'location_id','language_id','verify_status','is_active');
                     }
 
-                    $users = $users->with(['interests.interest.interestTranslation','userTranslation','location.locationTranslation'])
+                    $users = $users->with(['userDetails','interests.interest.interestTranslation','userTranslation','location.locationTranslation'])
 
                         ->where(function ($query)  use ($user, $auth_id, $auth_interest, $disLikes, $blocked) {
                             $query->where('id','!=',$auth_id)->whereNotNull('profile_photo')->whereIsActive('y');

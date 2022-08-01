@@ -22,6 +22,14 @@ class HomeResource extends JsonResource
             'location'          =>  new LocationResource($this->location),
             'interests'         =>  HomeInterestResource::collection($this->interests),
             'profile_photo'     =>  generateURL($this->profile_photo) ?? "",
+            'media' =>  [
+                'profile_images'    =>  $this->getProfileImages(),
+                'profile_videos'    =>  $this->getProfileVideos(),
+                'profile_voice'     =>  [
+                    'voice'         =>  generateURL($this->voice),
+                    'voice_answer'  =>  $this->voice_answer ?? "",
+                ],
+            ],
             'flags'             =>  [
                 'verified_staus'   =>  $this->verify_status,
                 'distance'         =>  $this->distance ?? 0,
