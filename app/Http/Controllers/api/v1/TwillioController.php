@@ -132,6 +132,8 @@ class TwillioController extends Controller
                     }
 
                     $lang_code = $receiver ? $receiver->language ? $receiver->language->lang_code : "en" : "en";
+                    app()->setLocale($lang_code); // Change Language As Per Receiver Langauge For Notification
+
                     $userTranslation = UserTranslation::select('full_name')->whereUserId($caller->id)->whereLocale($lang_code)->first();
                     if($userTranslation){ 
                         $caller_name = $userTranslation->full_name ?? "";
