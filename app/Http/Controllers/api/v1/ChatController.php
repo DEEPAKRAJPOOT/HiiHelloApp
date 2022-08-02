@@ -9,7 +9,7 @@ use App\Http\Requests\Api\General\ { PaginationRequest };
 use Illuminate\Support\Facades\ { Auth };
 use App\Models\ { ChatRoom, ChatMessage, User, CallLog };
 use App\Http\Resources\v1\ { ChatRoomResource, ChatMessageResource };
-use App\Http\Requests\Api\Chat\ { CreateRoomRequest, ChatMessagesRequest, DeleteRoomRequest, DeleteRoomMessageRequest, GetRoomRequest };
+use App\Http\Requests\Api\Chat\ { CreateRoomRequest, ChatMessagesRequest, DeleteRoomRequest, GetRoomRequest };
 
 class ChatController extends Controller
 {
@@ -245,43 +245,6 @@ class ChatController extends Controller
                 };
             } catch (\Exception $e) {
                 $this->storeErrorLog($e,'delete_chat_room');
-            }
-        }
-        return $this->returnResponse();
-    }
-
-    // Delete Chat Room Message
-    public function deleteChatRoomMessage(Request $request)
-    {
-        $rules = DeleteRoomMessageRequest::rules();
-        if( $this->apiValidator($request->all(), $rules) ) {
-            try{
-                $auth_id = $request->user() ? $request->user()->id : NULL;
-                $message = ChatMessage::select('id')
-                        ->whereHas('sender',function($query) use ($auth_id){
-                            $query->whereId($auth_id)->whereIsActive('y');
-                        })->whereCustomId($request->message_id)->firstOrFail();
-
-                $message->delete();
-                $this->status = Response::HTTP_OK;     
-                return (['data'  =>  NULL,
-                    'meta' => [
-                        'url'       =>  url()->current(),
-                        'api'       =>  $this->getVersion(),
-                        'language'  =>  app()->getLocale(),
-                        'message'   =>  trans('api.delete',['entity' => __("Message")]),
-                    ] ]);
-            } catch(ModelNotFoundException $exception) {                
-                switch ($exception->getModel()) {
-                    case 'App\Models\ChatMessage':
-                        $this->response['meta']['message'] = trans('api.not_found',['entity' => __("Message")]);
-                        break;
-                    default:
-                        $this->response['meta']['message'] = trans('api.went_wrong');
-                        break;
-                };
-            } catch (\Exception $e) {
-                $this->storeErrorLog($e,'delete_chat_room_message');
             }
         }
         return $this->returnResponse();
