@@ -11,7 +11,7 @@ use App\Models\UserDetail;
 use App\Http\Traits\FirebaseTrait;
 use App\Jobs\NotificationJob;
 
-class VideoModetation extends Command
+class VideoModeration extends Command
 {
     use FirebaseTrait;
     

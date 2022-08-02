@@ -5,7 +5,7 @@ namespace App\Console;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 use App\Console\Commands\ImageModeration;
-use App\Console\Commands\VideoModetation;
+use App\Console\Commands\VideoModeration;
 use App\Console\Commands\GoogleTranslation;
 use App\Console\Commands\BirthDayWish;
 use App\Console\Commands\NotifySubScriptionExpire;
@@ -21,7 +21,7 @@ class Kernel extends ConsoleKernel
      */
     protected $commands = [
         ImageModeration::class,
-        VideoModetation::class,
+        VideoModeration::class,
         GoogleTranslation::class,
         BirthDayWish::class,
         NotifySubScriptionExpire::class,
@@ -51,7 +51,7 @@ class Kernel extends ConsoleKernel
 
         // Image Moderation Command
         $schedule->call(function () {
-            $scheculeCommand = new VideoModetation;
+            $scheculeCommand = new VideoModeration;
             $scheculeCommand->handle();
         })->everyMinute();
 
