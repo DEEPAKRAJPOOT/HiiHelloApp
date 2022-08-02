@@ -159,6 +159,10 @@ return [
     ],
 
     'notify_message'    =>  [
+        'video_moderation'    =>  [
+            'title'     =>  "Hi Hello",
+            'message'   =>  "Your video is removed from Hi Hello profile as it does not adhere to community guidelines",
+        ],
         'image_moderation'    =>  [
             'title'     =>  "Hi Hello",
             'message'   =>  "Your photo is removed from Hi Hello profile as it does not adhere to community guidelines",
