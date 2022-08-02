@@ -118,16 +118,14 @@
                     <div class="copyright-box">
                         <p>{{ $footer_text }}</p>
                     </div>
-                    {{--
-                    <!-- <div class="footer-links">
+                    <div class="footer-links">
                         <ul>
                             <li><a href="{{ route('terms') }}">{{ __("Terms & Conditions") }}</a></li>
                             <li><a href="{{ route('privacy.policy') }}">{{ __("Privacy Policy") }}</a></li>
                             <li><a href="{{ route('about.us') }}">{{ __("About Us") }}</a></li>
                             <li><a href="{{ route('community.safety') }}">{{ __("Community & Safety Guidelines") }}</a></li>
                         </ul>
-                    </div> -->
-                    --}}
+                    </div>
                 </div>
             </div>
         </div>

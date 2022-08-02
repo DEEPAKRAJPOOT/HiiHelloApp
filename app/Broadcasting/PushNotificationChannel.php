@@ -41,6 +41,10 @@ class PushNotificationChannel extends Controller
             $data['room_id']    =   $message['room_id'];
         }
 
+        if ($message['type'] == config('utility.notification.type.voice_call_miss_call')){
+            $data['user_id']    =   $message['value'];
+        }
+
         $send_notification = [
             'priority'  =>  'high',
             'to'        =>  $deviceToken->token,
