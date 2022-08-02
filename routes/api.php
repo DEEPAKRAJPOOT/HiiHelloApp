@@ -115,7 +115,6 @@ Route::group(['namespace' => 'v1', 'prefix' => 'v1', 'middleware' => 'auth:sanct
     Route::post('chat/create-room', [ChatController::class,'createChatRoom'])->name('chat.create-room');
     Route::post('chat/get-rooms', [ChatController::class,'getChatRooms'])->name('chat.get-rooms'); 
     Route::post('chat/delete-room', [ChatController::class,'deleteChatRoom'])->name('chat.delete-room');
-    Route::post('chat/delete-room-message', [ChatController::class,'deleteChatRoomMessage'])->name('chat.delete-room-message');
     Route::post('chat/get-messages', [ChatController::class,'getChatMessages'])->name('chat.get-messages');
 
     // Device Token
