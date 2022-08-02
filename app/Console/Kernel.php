@@ -68,7 +68,7 @@ class Kernel extends ConsoleKernel
             $scheculeCommand->handle();
         })->daily();
 
-        // Subscription Expirt Notification At Every Night 8 AM
+        // Subscription Expirt Notification At Every Morning 8 AM
         $schedule->call(function () {
             $scheculeCommand = new NotifySubScriptionExpire;
             $scheculeCommand->handle();
