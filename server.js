@@ -431,7 +431,7 @@ io.on('connection', (socket)=>{
 
 	/* Delete Message */
 	socket.on('message-delete', (request) => {
-		if(request.id && request.room_id && request.time){		
+		if(request.id && request.receiver_id && request.room_id && request.time){		
 
 			var selectChatMessage = "SELECT * FROM chat_messages where custom_id = ? and deleted_at is NULL";
 			connection.query(selectChatMessage, [request.id], (error, _selectMessage) => {
@@ -450,7 +450,8 @@ io.on('connection', (socket)=>{
 					
 					// create return object
 					let returnUpdatedMsg = {
-						id  : selectMessage.custom_id,
+						id  			: 	selectMessage.custom_id,
+						receiver_id  	: 	request.receiver_id,
 					};
 
 					console.log("Delete Message Object ::"+JSON.stringify(returnUpdatedMsg));
