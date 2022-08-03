@@ -40,23 +40,39 @@ class NotifySubScriptionExpire extends Command
     public function handle()
     {
         $message = 'No subscription expired details found !!!';
-        $days = config('utility.notification.other.sub_expire_notify_days');
+        $one_week_before_notify = 7;
+        $one_day_before_notify = 1;
 
         User::select('id','custom_id','subscription_end_date')->with('deviceToken')
                 ->whereNotNull('subscription_end_date')
-                ->where('subscription_end_date',\Carbon\Carbon::today()->addDays($days)->format('Y-m-d'))     
+                ->where(function($query) use($one_week_before_notify, $one_day_before_notify) {
+                    $query->where('subscription_end_date',\Carbon\Carbon::today()->addDays($one_week_before_notify)->format('Y-m-d')) 
+                        ->orWhere('subscription_end_date',\Carbon\Carbon::today()->addDays($one_day_before_notify)->format('Y-m-d')) 
+                        ->orWhere('subscription_end_date','<=',\Carbon\Carbon::today()->format('Y-m-d'));
+                })    
                 ->chunk(100, function($users) use ($message) {
             if($users->isNotEmpty()){
                 foreach($users as $user){
+
+                    if($user->subscription_end_date >= \Carbon\Carbon::today()->format('Y-m-d')){
+                        $title      =   trans('api.notify_message.subscription_expire.title');
+                        $message    =   trans('api.notify_message.subscription_expire.message');
+                        $type       =   config('utility.notification.type.subscription_expire');
+                    }else{
+                        $title      =   trans('api.notify_message.subscription_already_expire.title');
+                        $message    =   trans('api.notify_message.subscription_already_expire.message');
+                        $type       =   config('utility.notification.type.subscription_already_expire');
+                    }
+
                     $notification = [
                         'custom_id'     =>  getUniqueString('notifications'),
                         'key'           =>  'user_id',
-                        'value'         =>  $user->id,
+                        'value'         =>  $user->custom_id,
                         'user_id'       =>  $user->id,
-                        'title'         =>  trans('api.notify_message.subscription_expire.title'),
-                        'message'       =>  trans('api.notify_message.subscription_expire.message'),
+                        'title'         =>  $title,
+                        'message'       =>  $message,
                         'image'         =>  '',
-                        'type'          =>  config('utility.notification.type.subscription_expire'),
+                        'type'          =>  $type,
                     ];
 
                     // Notify

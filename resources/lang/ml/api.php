@@ -191,6 +191,10 @@ return [
             'title'     =>  "Hi Hello",
             'message'   =>  "Your Hi Hello Membership is expiring soon. Renew now.",
         ],
+        'subscription_already_expire'    =>  [
+            'title'     =>  "Hi Hello",
+            'message'   =>  "Your Hi Hello Membership is expired. Renew now.",
+        ],
         'swipe_alert'    =>  [
             'title'     =>  "Hi Hello",
             'message'   =>  "Your daily swipe limit is over. Upgrade to continue.",
