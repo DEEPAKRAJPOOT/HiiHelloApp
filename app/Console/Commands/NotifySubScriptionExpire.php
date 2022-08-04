@@ -5,6 +5,8 @@ namespace App\Console\Commands;
 use Illuminate\Console\Command;
 use App\Models\User;
 use App\Jobs\NotificationJob;
+use App\Jobs\SubscriptionExpiredJob;
+use App\Jobs\SubscriptionExpiringJob;
 
 class NotifySubScriptionExpire extends Command
 {
@@ -43,7 +45,7 @@ class NotifySubScriptionExpire extends Command
         $one_week_before_notify = 7;
         $one_day_before_notify = 1;
 
-        User::select('id','custom_id','subscription_end_date')->with('deviceToken')
+        User::select('id','custom_id','subscription_end_date')->with(['deviceToken','userTransEn:id,user_id,full_name'])
                 ->whereNotNull('subscription_end_date')
                 ->where(function($query) use($one_week_before_notify, $one_day_before_notify) {
                     $query->where('subscription_end_date',\Carbon\Carbon::today()->addDays($one_week_before_notify)->format('Y-m-d')) 
@@ -58,10 +60,18 @@ class NotifySubScriptionExpire extends Command
                         $title      =   trans('api.notify_message.subscription_expire.title');
                         $message    =   trans('api.notify_message.subscription_expire.message');
                         $type       =   config('utility.notification.type.subscription_expire');
+
+                        // Email
+                        $subscriptionExpiringJob = new SubscriptionExpiringJob($user);
+                        dispatch($subscriptionExpiringJob);
                     }else{
                         $title      =   trans('api.notify_message.subscription_already_expire.title');
                         $message    =   trans('api.notify_message.subscription_already_expire.message');
                         $type       =   config('utility.notification.type.subscription_already_expire');
+
+                        // Email
+                        $subscriptionExpiredJob = new SubscriptionExpiredJob($user);
+                        dispatch($subscriptionExpiredJob);
                     }
 
                     $notification = [
