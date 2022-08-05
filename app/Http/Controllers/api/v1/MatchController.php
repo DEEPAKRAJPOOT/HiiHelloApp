@@ -37,6 +37,8 @@ class MatchController extends Controller
                 $match_percentage   =   config('utility.profile.match.match_percentage') ?? 20;
                 $age_min_diff       =   config('utility.profile.match.age_min_diff') ?? 1;
                 $age_max_diff       =   config('utility.profile.match.age_max_diff') ?? 1;
+                $max_limit          =   config('utility.profile.match.max_limit') ?? 1;
+                $max_limit_apply    =   config('utility.profile.match.max_limit_apply') ?? true;
 
                 // Gender & It's Interest Details
                 // $find_gender    =   $user->gender ?  $user->gender == 'Female' ? 'Male' : 'Female'  : 'Female';
@@ -72,6 +74,9 @@ class MatchController extends Controller
                             ->where("likes.user_id", '!=', $auth_id)
                             // ->where("users.gender", $find_gender) // get details from based on interest so comment for now
                             ->pluck('users.custom_id')->toArray();
+
+                $likes_count = count($likes);
+                if($likes_count > $max_limit){ $max_limit = $likes_count; }
 
                 $matches = User::with('userTranslation:id,locale,user_id,full_name')
                             ->where('id','!=',$auth_id)                 // Not Own Profile
@@ -122,9 +127,10 @@ class MatchController extends Controller
                         $query_search->where('full_name', 'like', "%{$search}%");
                     });
                 }
-                $count = $matches->count();
 
-                // BackUp Pan If No Profile Match
+                $count = $matches->count(); 
+
+                // BackUp Plan If No Profile Match
                 if( $count < 1 && $backup_logic == true ){
                     $matches = User::with('userTranslation:id,locale,user_id,full_name')
                                     ->where('id','!=',$auth_id)->whereNotNull('profile_photo')->whereIsActive('y');
@@ -133,10 +139,14 @@ class MatchController extends Controller
                     $count = $matches->count();
                 }
 
-                $matches    = $matches->latest();
-                $matches    = $matches->limit($request->limit ?? config('utility.pagination.limit'))
-                                ->offset($request->offset ?? config('utility.pagination.offset'))
-                                ->get();
+                $matches        =   $matches->latest();
+                if($max_limit_apply){
+                    $matches    =   $matches->limit($max_limit)->get();
+                }else{  
+                    $matches    =   $matches->limit($request->limit ?? config('utility.pagination.limit'))
+                                        ->offset($request->offset ?? config('utility.pagination.offset'))
+                                        ->get();
+                }
 
                 if($matches->isNotEmpty()){
                     $this->status = Response::HTTP_OK;     
@@ -144,7 +154,7 @@ class MatchController extends Controller
                         'meta'  =>  [
                             'limit'     =>  $request->limit,
                             'offset'    =>  $request->offset,
-                            'total'     =>  $count,
+                            'total'     =>  $max_limit_apply ? $max_limit : $count,
                             'url'       =>  url()->current(),
                             'api'       =>  $this->getVersion(),
                             'language'  =>  app()->getLocale(),
