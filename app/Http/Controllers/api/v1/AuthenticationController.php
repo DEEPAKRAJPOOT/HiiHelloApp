@@ -64,6 +64,7 @@ class AuthenticationController extends Controller
                 $user = $this->getAuthUser();
                 $country_id = $location_id = $language_id = NULL;
                 $full_name = $request->first_name.' '.$request->last_name;
+                if($request->language == 'en'){ $full_name = Str::title($full_name); }
                 $traslate_data = [];
 
                 if(!empty($request->country_code)){
