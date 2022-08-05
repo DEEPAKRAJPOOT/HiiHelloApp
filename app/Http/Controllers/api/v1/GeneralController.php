@@ -66,16 +66,16 @@ class GeneralController extends Controller
             'links' =>  [
                 'storage'   =>  config("utility.s3.prefix_url"),
                 'terms'     =>  [
-                    'en'    =>  route('terms'),
+                    'en'    =>  route('terms',['device' => 'mobile']),
                 ],
                 'privacy'   =>  [
-                    'en'    =>  route('privacy.policy'),
+                    'en'    =>  route('privacy.policy',['device' => 'mobile']),
                 ],
                 'about'     =>  [
-                    'en'    =>  route('about.us'),
+                    'en'    =>  route('about.us',['device' => 'mobile']),
                 ],
                 'community_safety'     =>  [
-                    'en'    =>  route('community.safety'),
+                    'en'    =>  route('community.safety',['device' => 'mobile']),
                 ],
             ],
             'verification_details'  =>  $verification_data,

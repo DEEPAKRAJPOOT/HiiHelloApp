@@ -15,9 +15,6 @@ use App\Models\ { User };
 | contains the "web" middleware group. Now create something great!
 |
 */
-
-Route::get('/','FrontendPagesController@index')->name('home');
-
 Auth::routes(['register' => false, 'login' => false]);
 
 // Twilio Voice Response
@@ -38,11 +35,13 @@ Route::post('profile-details/csv-upload','Admin\ProfileDetailController@csvUploa
 Route::get('profile-details/sample-csv-download','Admin\ProfileDetailController@sampleCsvDownload')->name('admin.profile-details.sample-csv-download');
 
 /* CMS Pages */
-  Route::get('about-us', 'FrontendPagesController@about')->name('about.us');
-  Route::get('terms-and-conditions', 'FrontendPagesController@terms')->name('terms');
-  Route::get('privacy-policy', 'FrontendPagesController@privacy')->name('privacy.policy');
-  Route::get('community-and-safety', 'FrontendPagesController@communityAndSafety')->name('community.safety');
+  Route::get('about-us/{device?}', 'FrontendPagesController@about')->name('about.us');
+  Route::get('terms-and-conditions/{device?}', 'FrontendPagesController@terms')->name('terms');
+  Route::get('privacy-policy/{device?}', 'FrontendPagesController@privacy')->name('privacy.policy');
+  Route::get('community-and-safety/{device?}', 'FrontendPagesController@communityAndSafety')->name('community.safety');
     
+Route::get('/{device?}','FrontendPagesController@index')->name('home');
+
 Route::group(['prefix' => 'admin'], function () {
   Route::get('login', 'AdminAuth\LoginController@showLoginForm')->name('admin.login');
   Route::post('login', 'AdminAuth\LoginController@login');
