@@ -181,7 +181,6 @@ class TwillioController extends Controller
                             'message'       =>  '{ "type" : "voicelog", "value" : "'.$message.'", "other" : { "type" : "missed_call" } }',
                             'custom_id'     =>  getUniqueString('chat_messages'),
                         ]);
-
                     }
                 }
             }
