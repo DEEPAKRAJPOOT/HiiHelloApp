@@ -178,7 +178,7 @@ class TwillioController extends Controller
                             'room_id'       =>  $chat_room->id,
                             'sender_id'     =>  $caller->id,
                             'receiver_id'   =>  $receiver->id,
-                            'message'       =>  '{ "type" : "voicelog", "value" : "'.$message.'", "other" : { "type" : "missed_call" } }',
+                            'message'       =>  '{ "type" : "voicelog", "value" : "", "other" : { "type" : "missed_call" } }',
                             'custom_id'     =>  getUniqueString('chat_messages'),
                         ]);
                     }
@@ -252,24 +252,24 @@ class TwillioController extends Controller
                     $room->nofityCallTimeOut();
                 }
 
-                $start_message = ChatMessage::Create([
+                ChatMessage::Create([
                     'room_id'       =>  $room->id,
                     'sender_id'     =>  $room->creator ? $room->creator->id : "",
                     'receiver_id'   =>  $room->participator ? $room->participator->id : "",
-                    'message'       =>  '{ "type" : "voicelog", "value" : "'.$request->start_time.'", "other" : { "type" : "start_time" } }',
+                    'message'       =>  '{ "type" : "voicelog", "value" : "", "other" : { "type" : "start_time" } }',
                     'custom_id'     =>  getUniqueString('chat_messages'),
+                    'created_at'    =>  now()->format('Y-m-d').''.$request->start_time,
+                    'updated_at'    =>  now()->format('Y-m-d').''.$request->start_time,
                 ]);
 
-                $end_message = ChatMessage::Create([
+                ChatMessage::Create([
                     'room_id'       =>  $room->id,
                     'sender_id'     =>  $room->creator ? $room->creator->id : "",
                     'receiver_id'   =>  $room->participator ? $room->participator->id : "",
-                    'message'       =>  '{ "type" : "voicelog", "value" : "'.$request->end_time.'", "other" : { "type" : "end_time" } }',
+                    'message'       =>  '{ "type" : "voicelog", "value" : "", "other" : { "type" : "end_time" } }',
                     'custom_id'     =>  getUniqueString('chat_messages'),
-                ]);
-
-                $end_message->update([
-                    'created_at'    =>  now()->addSecond(),
+                    'created_at'    =>  now()->format('Y-m-d').''.$request->end_time,
+                    'updated_at'    =>  now()->format('Y-m-d').''.$request->end_time,
                 ]);
 
                 $this->status = Response::HTTP_OK;
