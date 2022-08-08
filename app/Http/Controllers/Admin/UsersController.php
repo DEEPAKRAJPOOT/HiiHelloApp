@@ -21,6 +21,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use App\Jobs\NotificationJob;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Response;
 
 class UsersController extends Controller
@@ -768,111 +769,58 @@ class UsersController extends Controller
 
     public function csvDownload(Request $request)
     {
+        $down_file_name = 'User';
         $users = User::with('userTransEn', 'deviceToken', 'country', 'location', 'language')->get();
         if (!$users->isEmpty()) {
-            foreach ($users as $key => $user) {
-
-
+            foreach ($users as $user) {
                 $data[] = [
                     'Account Id'            =>  $user->account_id ?? "",
-                    'Name'                  => $user->userTransEn->full_name ?? "",
+                    'Name'                  =>  $user ? ($user->userTransEn ? $user->userTransEn->full_name ?? "" : "") : "",
                     'Email'                 =>  $user->email ?? "",
-                    'Birth Date'                => $user->birth_date,
-                    'Contact No'          =>  $user->country_code . " " . $user->contact_no ?? "",
-                    'Verify Video Status'   => $user->verify_video_status ?? '',
-                    'Verify Photo Status'   => $user->verify_photo_status ?? '',
-                    'Gender'                => $user->gender ?? '',
-                    'Location'              => $user->location->name ?? '',
-                    'Intrest'             =>  $user->interest ?? "",
-                    'Verify Status'         => $user->verify_status ?? "",
+                    'Birth Date'            =>  $user->birth_date,
+                    'Contact No'            =>  $user ? $user->country_code . " " . $user->contact_no ?? "" : "",
+                    'Verify Video Status'   =>  $user->verify_video_status ?? "",
+                    'Verify Photo Status'   =>  $user->verify_photo_status ?? "",
+                    'Gender'                =>  $user->gender ?? "",
+                    'Location'              =>  $user->location->name ?? "",
+                    'Intrest'               =>  $user->interest ?? "",
+                    'Verify Status'         =>  $user->verify_status ?? "",
                     'Profile Percentage'    =>  $user->profile_percentage ?? "",
-                    'Language'              => $user->language->language ?? '',
-                    'Langauge Code'         => $user->language->lang_code ?? '',
-                    'Swipe Count'           => $user->swipe_count ?? '',
-                    'Like Count'           => $user->like_count ?? '',
-                    'Match Count'           => $user->match_count ?? '',
-                    'Chat Count'           => $user->chat_count ?? '',
-                    'Is Social User'        => $user->is_social_user ?? '',
-                    'Is Subscribed'         => $user->is_subscribed ?? '',
-                    'Subscription End Date' => $user->subscription_end_date ?? '',
-                    'Email Verified Date'     => $user->email_verified_at ?? '',
-                    'Contact Verified Date' => $user->contact_verified_at ?? '',
-                    'Photo Verified Date'   => $user->photo_verified_at ?? '',
-                    'Video Verified Date'   => $user->video_verified_at ?? '',
-                    'Device Type'           => $user->deviceToken->type ?? '',
-                    'Device Name'           => $user->deviceToken->device_name ?? '',
-                    'Device App Version'           => $user->deviceToken->app_version ?? '',
-                    'Device OS Name'           => $user->deviceToken->os_name ?? '',
-                    'Device OS Version'           => $user->deviceToken->os_version ?? '',
-                    'Active'                => $user->is_avtive == 'y' ? 'y' : 'n'
+                    'Language'              =>  $user ? ($user->language ? $user->language->language ?? "" : "") : "",
+                    'Langauge Code'         =>  $user ? ($user->language ? $user->language->lang_code ?? "" : "") : "",
+                    'Swipe Count'           =>  $user->swipe_count ?? "",
+                    'Like Count'            =>  $user->like_count ?? "",
+                    'Match Count'           =>  $user->match_count ?? "",
+                    'Chat Count'            =>  $user->chat_count ?? "",
+                    'Is Social User'        =>  $user->is_social_user ?? "",
+                    'Is Subscribed'         =>  $user->is_subscribed ?? "",
+                    'Subscription End Date' =>  $user->subscription_end_date ?? "",
+                    'Email Verified Date'   =>  $user->email_verified_at ?? "",
+                    'Contact Verified Date' =>  $user->contact_verified_at ?? "",
+                    'Photo Verified Date'   =>  $user->photo_verified_at ?? "",
+                    'Video Verified Date'   =>  $user->video_verified_at ?? "",
+                    'Device Type'           =>  $user ? ($user->deviceToken ? $user->deviceToken->type ?? "" : "") : "",
+                    'Device Name'           =>  $user ? ($user->deviceToken ? $user->deviceToken->device_name ?? "" : "") : "",
+                    'Device App Version'    =>  $user ? ($user->deviceToken ? $user->deviceToken->app_version ?? "" : "") : "",
+                    'Device OS Name'        =>  $user ? ($user->deviceToken ? $user->deviceToken->os_name ?? "" : "") : "",
+                    'Device OS Version'     =>  $user ? ($user->deviceToken ? $user->deviceToken->os_version ?? "" : "") : "",
+                    'Active'                =>  $user->is_avtive == 'y' ? 'y' : 'n'
                 ];
             }
 
-            $filename = "users-csv.csv";
+            if (!File::exists(public_path() . "/files")) {
+                File::makeDirectory(public_path() . "/files");
+            }
+
+            $filename = public_path('files/' . $down_file_name . ".csv");
             $handle   = fopen($filename, 'w+');
             fputcsv($handle, array(
-                'Account Id', 'Name', 'Email',
-                'Contact No',
-                'Verify Video Status',
-                'Verify Photo Status',
-                'Gender',
-                'Location',
-                'Intrest',
-                'Verify Status',
-                'Profile Percentage',
-                'Language',
-                'Langauge Code',
-                'Swipe Count',
-                'Like Count',
-                'Match Count',
-                'Chat Count',
-                'Is Social User',
-                'Is Subscribed',
-                'Subscription End Date',
-                'Email Verified Date',
-                'Contact Verified Date',
-                'Photo Verified Date',
-                'Video Verified Date',
-                'Device Name',
-                'Device Type',
-                'Device App Version',
-                'Device OS name',
-                'Device OS Version',
-                'Active'
+                'Account Id', 'Name', 'Email', 'Contact No', 'Verify Video Status', 'Verify Photo Status', 'Gender', 'Location', 'Intrest', 'Verify Status', 'Profile Percentage', 'Language', 'Langauge Code', 'Swipe Count', 'Like Count', 'Match Count', 'Chat Count', 'Is Social User', 'Is Subscribed', 'Subscription End Date', 'Email Verified Date', 'Contact Verified Date', 'Photo Verified Date', 'Video Verified Date', 'Device Name', 'Device Type', 'Device App Version', 'Device OS name', 'Device OS Version', 'Active'
             ));
 
             foreach ($data as $row) {
                 fputcsv($handle, array(
-                    $row['Account Id'],
-                    $row['Name'],
-                    $row['Email'],
-                    $row['Contact No'],
-                    $row['Verify Video Status'],
-                    $row['Verify Photo Status'],
-                    $row['Gender'],
-                    $row['Location'],
-                    $row['Intrest'],
-                    $row['Verify Status'],
-                    $row['Profile Percentage'],
-                    $row['Language'],
-                    $row['Langauge Code'],
-                    $row['Swipe Count'],
-                    $row['Like Count'],
-                    $row['Match Count'],
-                    $row['Chat Count'],
-                    $row['Is Social User'],
-                    $row['Is Subscribed'],
-                    $row['Subscription End Date'],
-                    $row['Email Verified Date'],
-                    $row['Contact Verified Date'],
-                    $row['Photo Verified Date'],
-                    $row['Video Verified Date'],
-                    $row['Device Name'],
-                    $row['Device Type'],
-                    $row['Device App Version'],
-                    $row['Device OS Name'],
-                    $row['Device OS Version'],
-                    $row['Active']
+                    $row['Account Id'], $row['Name'], $row['Email'], $row['Contact No'], $row['Verify Video Status'], $row['Verify Photo Status'], $row['Gender'], $row['Location'], $row['Intrest'], $row['Verify Status'], $row['Profile Percentage'], $row['Language'], $row['Langauge Code'], $row['Swipe Count'], $row['Like Count'], $row['Match Count'], $row['Chat Count'], $row['Is Social User'], $row['Is Subscribed'], $row['Subscription End Date'], $row['Email Verified Date'], $row['Contact Verified Date'], $row['Photo Verified Date'], $row['Video Verified Date'], $row['Device Name'], $row['Device Type'], $row['Device App Version'], $row['Device OS Name'], $row['Device OS Version'], $row['Active']
                 ));
             }
             fclose($handle);
@@ -881,8 +829,7 @@ class UsersController extends Controller
                 'Content-Type' => 'text/csv',
             );
 
-            // flash('user csv generated successfully!')->success();
-            return Response::download($filename, 'users-csv.csv', $headers);
+            return Response::download($filename, $down_file_name . ".csv", $headers);
         } else {
             flash('Unable to generate user csv. Try again later')->error();
         }

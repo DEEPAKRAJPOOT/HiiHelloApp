@@ -8,6 +8,7 @@ use App\Models\SubscriptionPlan;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Response;
 
 class SubscriptionListController extends Controller
@@ -89,62 +90,41 @@ class SubscriptionListController extends Controller
     }
     public function csvDownload(Request $request)
     {
-        $subscriptions = Subscription::with('user', 'subscriptionPlan')->get();
+        $down_file_name = 'Subscriptions';
+        $subscriptions = Subscription::with('user.userTransEn', 'subscriptionPlan.subscriptionPlanTransEn')->get();
         if (!$subscriptions->isEmpty()) {
-            foreach ($subscriptions as $key => $subscription) {
+            foreach ($subscriptions as $subscription) {
                 $data[] = [
-                    'Account Id'            =>  $subscription->user->account_id ?? "",
-                    'Name'                  => $subscription->user->userTransEn->full_name ?? "",
-                    'Email'                 =>  $subscription->email ?? "",
-                    'Subscription Plan Name' => $subscription->subscriptionPlan->subscriptionPlanTransEn->name ?? '',
-                    'Months'                 => $subscription->months ?? '',
-                    'Amount'                => $subscription->amount ?? '',
-                    'Start date'            => $subscription->start_date ?? '',
-                    'End date'            => $subscription->end_date ?? '',
-                    'Payment Type'          => $subscription->payment_type ?? '',
-                    'Payment Date'            => $subscription->payment_date ?? '',
-                    'Receipt Data'              => $subscription->receipt_data ?? '',
-                    'Original Transaction Id'   => $subscription->original_transaction_id ?? '',
-                    'Status'                    => $subscription->status ?? '',
-                    'Created at'                => $subscription->created_at ? Carbon::parse($subscription->created_at)->format('o-m-d') : ''
+                    'Account Id'                =>  $subscription ? ($subscription->user ? $subscription->user->account_id ?? "" : "") : "",
+                    'Name'                      =>  $subscription ? ($subscription->user ? $subscription->user->userTransEn->full_name ?? "" : "") : "",
+                    'Email'                     =>  $subscription->email ?? "",
+                    'Subscription Plan Name'    =>  $subscription ? ($subscription->subscriptionPlan ? $subscription->subscriptionPlan->subscriptionPlanTransEn->name ?? "" : "") : "",
+                    'Months'                    =>  $subscription->months ?? "",
+                    'Amount'                    =>  $subscription->amount ?? "",
+                    'Start date'                =>  $subscription->start_date ?? "",
+                    'End date'                  =>  $subscription->end_date ?? "",
+                    'Payment Type'              =>  $subscription->payment_type ?? "",
+                    'Payment Date'              =>  $subscription->payment_date ?? "",
+                    'Receipt Data'              =>  $subscription->receipt_data ?? "",
+                    'Original Transaction Id'   =>  $subscription->original_transaction_id ?? "",
+                    'Status'                    =>  $subscription->status ?? "",
+                    'Created at'                =>  $subscription->created_at ? Carbon::parse($subscription->created_at)->format('Y-m-d') : ""
                 ];
             }
 
-            $filename = "subscriptions-csv.csv";
+            if (!File::exists(public_path() . "/files")) {
+                File::makeDirectory(public_path() . "/files");
+            }
+
+            $filename = public_path('files/' . $down_file_name . ".csv");
             $handle   = fopen($filename, 'w+');
             fputcsv($handle, array(
-                'Account Id',
-                'Name',
-                'Email',
-                'Subscription Plan Name',
-                'Months',
-                'Amount',
-                'Start date',
-                'End date',
-                'Payment Type',
-                'Payment Date',
-                'Receipt Data',
-                'Original Transaction Id',
-                'Status',
-                'Created at'
+                'Account Id', 'Name', 'Email', 'Subscription Plan Name', 'Months', 'Amount', 'Start date', 'End date', 'Payment Type', 'Payment Date', 'Receipt Data', 'Original Transaction Id', 'Status', 'Created at'
             ));
 
             foreach ($data as $row) {
                 fputcsv($handle, array(
-                    $row['Account Id'],
-                    $row['Name'],
-                    $row['Email'],
-                    $row['Subscription Plan Name'],
-                    $row['Months'],
-                    $row['Amount'],
-                    $row['Start date'],
-                    $row['End date'],
-                    $row['Payment Type'],
-                    $row['Payment Date'],
-                    $row['Receipt Data'],
-                    $row['Original Transaction Id'],
-                    $row['Status'],
-                    $row['Created at'],
+                    $row['Account Id'], $row['Name'], $row['Email'], $row['Subscription Plan Name'], $row['Months'], $row['Amount'], $row['Start date'], $row['End date'], $row['Payment Type'], $row['Payment Date'], $row['Receipt Data'], $row['Original Transaction Id'], $row['Status'], $row['Created at'],
                 ));
             }
             fclose($handle);
@@ -153,10 +133,9 @@ class SubscriptionListController extends Controller
                 'Content-Type' => 'text/csv',
             );
 
-            // flash('user csv generated successfully!')->success();
-            return Response::download($filename, 'subscriptions-csv.csv', $headers);
+            return Response::download($filename, $down_file_name . ".csv", $headers);
         } else {
-            flash('Unable to generate user csv. Try again later')->error();
+            flash('Unable to generate subscription csv file. Try again later')->error();
         }
         return redirect(route('admin.subscription-lists.index'));
     }
