@@ -24,6 +24,7 @@ Route::group(['namespace' => 'Admin', 'middleware' => ['check_permit', 'revalida
 	Route::get('users/listing', 'UsersController@listing')->name('users.listing');
 	Route::resource('users', 'UsersController');
 
+
 	/* Role Management */
 	Route::get('roles/listing', 'AdminController@listing')->name('roles.listing');
 	Route::resource('roles', 'AdminController');
@@ -78,7 +79,7 @@ Route::group(['namespace' => 'Admin', 'middleware' => ['check_permit', 'revalida
 	/*subscriptions */
 	Route::get('subscription-lists/listing', 'SubscriptionListController@listing')->name('subscription-lists.listing');
 	Route::resource('subscription-lists', 'SubscriptionListController');
-	
+
 	/* transaction */
 	Route::get('transaction-lists/listing', 'TrasactionListController@listing')->name('transaction-lists.listing');
 	Route::resource('transaction-lists', 'TrasactionListController');

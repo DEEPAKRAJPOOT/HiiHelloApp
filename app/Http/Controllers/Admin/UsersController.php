@@ -21,6 +21,8 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use App\Jobs\NotificationJob;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Response;
 
 class UsersController extends Controller
 {
@@ -41,13 +43,13 @@ class UsersController extends Controller
      */
     public function create()
     {
-        $personalities = Personality::with('personalityTransDefault')->where('is_active','y')->get();
-        $attributes = ProfileDetail::with(['profileDetailTransDefault'])->where(['is_active'=>'y'])->get();
-        $interests = Interest::with(['subInterests.interestTransDefault','subInterests.subInterests.interestTransDefault'])->where(['is_active'=>'y'])->get();
-        $countries = Country::where(['is_active'=>'y'])->get();
-        $locations = Location::with(['locationTransDefault'])->where(['is_active'=>'y'])->get();
-        $languages = Language::where(['is_active'=>'y'])->get();
-        return view('admin.pages.users.create',compact('personalities','interests','countries','attributes','locations','languages'))->with(['custom_title' => 'User']);
+        $personalities = Personality::with('personalityTransDefault')->where('is_active', 'y')->get();
+        $attributes = ProfileDetail::with(['profileDetailTransDefault'])->where(['is_active' => 'y'])->get();
+        $interests = Interest::with(['subInterests.interestTransDefault', 'subInterests.subInterests.interestTransDefault'])->where(['is_active' => 'y'])->get();
+        $countries = Country::where(['is_active' => 'y'])->get();
+        $locations = Location::with(['locationTransDefault'])->where(['is_active' => 'y'])->get();
+        $languages = Language::where(['is_active' => 'y'])->get();
+        return view('admin.pages.users.create', compact('personalities', 'interests', 'countries', 'attributes', 'locations', 'languages'))->with(['custom_title' => 'User']);
     }
 
     /**
@@ -58,10 +60,11 @@ class UsersController extends Controller
      */
     public function store(UserRequest $request)
     {
-        try{
+        try {
             DB::beginTransaction();
-            $path = NULL; $traslate_data = [];
-            if( $request->has('profile_photo') ) {
+            $path = NULL;
+            $traslate_data = [];
+            if ($request->has('profile_photo')) {
                 $path = $request->file('profile_photo')->store('users/profile_photo');
             }
 
@@ -70,67 +73,69 @@ class UsersController extends Controller
             $user['password']    =  Hash::make(config('utility.default_password'));
             $user->profile_photo =  $path;
 
-            if(!empty($request->country_code)){
+            if (!empty($request->country_code)) {
                 $country = Country::wherePhonecode($request->country_code)->whereIsActive('y')->firstOrFail();
                 $user->country_id = $country->id;
             }
-            if(!empty($request->location)){
+            if (!empty($request->location)) {
                 $location = Location::whereId($request->location)->whereIsActive('y')->firstOrFail();
                 $user->location_id = $location->id;
                 $user->discover_location_id = $location->id;
             }
-            if(!empty($request->language)){
+            if (!empty($request->language)) {
                 $language = Language::whereLangCode($request->language)->whereIsActive('y')->firstOrFail();
                 $user->language_id = $language->id;
             }
 
             // Store Account Id
-            if(!empty($request->language) && $request->language == 'en'){
-                $user->account_id = Str::slug(substr($request->full_name, 0, 4), "_").'_'.time();
+            if (!empty($request->language) && $request->language == 'en') {
+                $user->account_id = Str::slug(substr($request->full_name, 0, 4), "_") . '_' . time();
             }
 
             // Full name
             $language_codes = Language::pluck('lang_code')->toArray();
-            if(!empty($request->full_name)) {
-                foreach($language_codes as $language_code){
-                    $traslate_data[$language_code] =  [ 'full_name' =>  $request->full_name ];
+            if (!empty($request->full_name)) {
+                foreach ($language_codes as $language_code) {
+                    $traslate_data[$language_code] =  ['full_name' =>  $request->full_name];
                 }
                 $user->update($traslate_data);
                 $user->is_trans_full_name = 'n';
             }
 
-            if(!empty($request->fav_movie)){
-                foreach($language_codes as $language_code){
-                    $traslate_data[$language_code] =  [ 'fav_movie' =>  $request->fav_movie ];
+            if (!empty($request->fav_movie)) {
+                foreach ($language_codes as $language_code) {
+                    $traslate_data[$language_code] =  ['fav_movie' =>  $request->fav_movie];
                 }
                 $user->update($traslate_data);
                 $user->is_trans_fav_movie = 'n';
             }
 
-            if(!empty($request->about_me)){
-                foreach($language_codes as $language_code){
-                    $traslate_data[$language_code] =  [ 'about_me' =>  $request->about_me ];
+            if (!empty($request->about_me)) {
+                foreach ($language_codes as $language_code) {
+                    $traslate_data[$language_code] =  ['about_me' =>  $request->about_me];
                 }
                 $user->update($traslate_data);
                 $user->is_trans_about_me = 'n';
             }
 
             // Set Contact Number As Verified
-            if(!empty($user->contact_no)){ $user->contact_verified_at = \Carbon\Carbon::now();  }
+            if (!empty($user->contact_no)) {
+                $user->contact_verified_at = \Carbon\Carbon::now();
+            }
 
             /* Verification Details */
             $verify_photo   =    $request->verify_photo;
             $verify_video   =    $request->verify_video;
 
-            if($verify_photo == 'y' && empty($user->photo_verified_at)){
-                $user->photo_verified_at = \Carbon\Carbon::now(); 
-            }elseif($verify_photo == NULL){
+            if ($verify_photo == 'y' && empty($user->photo_verified_at)) {
+                $user->photo_verified_at = \Carbon\Carbon::now();
+            } elseif ($verify_photo == NULL) {
                 $user->photo_verified_at = NULL;
             }
 
-            if($verify_video == 'y' && empty($user->video_verified_at)){ 
-                $user->video_verified_at = \Carbon\Carbon::now(); 
-            }elseif($verify_video == NULL){
+            if ($verify_video == 'y' && empty($user->video_verified_at)) {
+                $user->video_verified_at = \Carbon\Carbon::now();
+            } elseif ($verify_video == NULL) {
                 $user->video_verified_at = NULL;
             }
 
@@ -140,114 +145,114 @@ class UsersController extends Controller
             $user->discover_end_age     = config('utility.profile.detail.discover_end_age');
 
             /* User Personality */
-            if(!empty($request->personalities)){
-                foreach($request->personalities as $personality_id){
+            if (!empty($request->personalities)) {
+                foreach ($request->personalities as $personality_id) {
                     UserPersonality::updateOrCreate([
-                      'user_id'         => $user->id,
-                      'personality_id'  => $personality_id,  
-                    ],[
+                        'user_id'         => $user->id,
+                        'personality_id'  => $personality_id,
+                    ], [
                         'custom_id'     => getUniqueString('user_personalities'),
                     ]);
                 }
             }
 
             /* User Interest */
-            if(!empty($request->traveling_id)){
-                foreach($request->traveling_id as $traveling){
+            if (!empty($request->traveling_id)) {
+                foreach ($request->traveling_id as $traveling) {
                     UserInterest::updateOrCreate([
-                      'user_id'  => $user->id,
-                      'interest_id' => $traveling,  
-                    ],[
+                        'user_id'  => $user->id,
+                        'interest_id' => $traveling,
+                    ], [
                         'custom_id' => getUniqueString('user_interests'),
                     ]);
                 }
             }
-            if(!empty($request->music_id)){
-                foreach($request->music_id as $music){
+            if (!empty($request->music_id)) {
+                foreach ($request->music_id as $music) {
                     UserInterest::updateOrCreate([
                         'user_id' => $user->id,
-                        'interest_id' => $music,  
-                    ],[
+                        'interest_id' => $music,
+                    ], [
                         'custom_id' => getUniqueString('user_interests'),
                     ]);
                 }
             }
-            if(!empty($request->hobbie_id)){
-                foreach($request->hobbie_id as $hobby){
+            if (!empty($request->hobbie_id)) {
+                foreach ($request->hobbie_id as $hobby) {
                     UserInterest::updateOrCreate([
                         'user_id'  => $user->id,
                         'interest_id' => $hobby,
-                    ],[
-                        'custom_id' => getUniqueString('user_interests'),  
-                    ]);
-                }
-            }
-            if(!empty($request->game_id)){
-                foreach($request->game_id as $game){
-                    UserInterest::updateOrCreate([
-                        'user_id'  => $user->id,
-                        'interest_id' => $game,  
-                    ],[
+                    ], [
                         'custom_id' => getUniqueString('user_interests'),
                     ]);
                 }
             }
-            if(!empty($request->sport_id)){
-                foreach($request->sport_id as $sport){
+            if (!empty($request->game_id)) {
+                foreach ($request->game_id as $game) {
+                    UserInterest::updateOrCreate([
+                        'user_id'  => $user->id,
+                        'interest_id' => $game,
+                    ], [
+                        'custom_id' => getUniqueString('user_interests'),
+                    ]);
+                }
+            }
+            if (!empty($request->sport_id)) {
+                foreach ($request->sport_id as $sport) {
                     UserInterest::updateOrCreate([
                         'user_id'  => $user->id,
                         'interest_id' => $sport,
-                    ],[
-                        'custom_id' => getUniqueString('user_interests'), 
+                    ], [
+                        'custom_id' => getUniqueString('user_interests'),
                     ]);
                 }
             }
-            if(!empty($request->food_id)){
-                foreach($request->food_id as $food){
+            if (!empty($request->food_id)) {
+                foreach ($request->food_id as $food) {
                     UserInterest::updateOrCreate([
                         'user_id'  => $user->id,
-                        'interest_id' => $food, 
-                    ],[ 
-                        'custom_id' => getUniqueString('user_interests'), 
+                        'interest_id' => $food,
+                    ], [
+                        'custom_id' => getUniqueString('user_interests'),
                     ]);
                 }
             }
-            if(!empty($request->actor_id)){
-                foreach($request->actor_id as $actor){
+            if (!empty($request->actor_id)) {
+                foreach ($request->actor_id as $actor) {
                     UserInterest::updateOrCreate([
-                       'user_id'  => $user->id, 
-                       'interest_id' => $actor,
-                    ],[ 
-                        
-                        'custom_id' => getUniqueString('user_interests'),   
+                        'user_id'  => $user->id,
+                        'interest_id' => $actor,
+                    ], [
+
+                        'custom_id' => getUniqueString('user_interests'),
                     ]);
                 }
             }
-            if(!empty($request->singer_id)){
-                foreach($request->singer_id as $singer){
+            if (!empty($request->singer_id)) {
+                foreach ($request->singer_id as $singer) {
                     UserInterest::updateOrCreate([
-                       'user_id'  => $user->id, 
-                       'interest_id' => $singer,
-                    ],[ 
-                        'custom_id' => getUniqueString('user_interests'),    
+                        'user_id'  => $user->id,
+                        'interest_id' => $singer,
+                    ], [
+                        'custom_id' => getUniqueString('user_interests'),
                     ]);
                 }
             }
 
             $user->profile_percentage = $user->calculateProfilePercent();
 
-            if( $user->save() ) {
+            if ($user->save()) {
                 DB::commit();
                 flash('User account created successfully!')->success();
             } else {
                 flash('Unable to save avatar. Please try again later.')->error();
             }
             return redirect(route('admin.users.index'));
-        }catch(QueryException $e){
+        } catch (QueryException $e) {
             DB::rollback();
-            return redirect()->back()->flash('error',$e->getMessage());
-        }catch(Exception $e){
-            return redirect()->back()->with('error',$e->getMessage());
+            return redirect()->back()->flash('error', $e->getMessage());
+        } catch (Exception $e) {
+            return redirect()->back()->with('error', $e->getMessage());
         }
     }
 
@@ -260,18 +265,18 @@ class UsersController extends Controller
     public function show(User $user)
     {
         $user = User::with([
-            'userTranslation','userTransDefault','userDetails',
-            'country.countryTransDefault','location.locationTransDefault','language',
-            'interests.interest.interestTransDefault','religion.profileDetailTransDefault',
-            'relationshipStatus.profileDetailTransDefault','youAreHere.profileDetailTransDefault',
-            'foodPreference.profileDetailTransDefault','drinking.profileDetailTransDefault',
-            'smoking.profileDetailTransDefault','starSign.profileDetailTransDefault',
-            'religion.profileDetailTransDefault','community.profileDetailTransDefault',
+            'userTranslation', 'userTransDefault', 'userDetails',
+            'country.countryTransDefault', 'location.locationTransDefault', 'language',
+            'interests.interest.interestTransDefault', 'religion.profileDetailTransDefault',
+            'relationshipStatus.profileDetailTransDefault', 'youAreHere.profileDetailTransDefault',
+            'foodPreference.profileDetailTransDefault', 'drinking.profileDetailTransDefault',
+            'smoking.profileDetailTransDefault', 'starSign.profileDetailTransDefault',
+            'religion.profileDetailTransDefault', 'community.profileDetailTransDefault',
             'education.profileDetailTransDefault',
-            'university.profileDetailTransDefault','profession.profileDetailTransDefault',
+            'university.profileDetailTransDefault', 'profession.profileDetailTransDefault',
             'personalities.personality.personalityTransDefault'
-            ])->whereId($user->id)->firstOrFail();
-        return view('admin.pages.users.view',compact('user'))->with(['custom_title' => 'User']);
+        ])->whereId($user->id)->firstOrFail();
+        return view('admin.pages.users.view', compact('user'))->with(['custom_title' => 'User']);
     }
 
     /**
@@ -283,18 +288,18 @@ class UsersController extends Controller
     public function edit(User $user)
     {
         $user = User::with('userTransDefault')->whereId($user->id)->firstOrFail();
-        $personalities = Personality::with('personalityTransDefault')->where('is_active','y')->get();
-        $attributes = ProfileDetail::with(['profileDetailTransDefault'])->where(['is_active'=>'y'])->get();
-        $interests = Interest::with(['subInterests.interestTransDefault','subInterests.subInterests.interestTransDefault'])
-                        ->where(['is_active'=>'y'])->get();
-        $countries = Country::where(['is_active'=>'y'])->get();
-        $locations = Location::with(['locationTransDefault'])->where(['is_active'=>'y'])->get();
-        $languages = Language::where(['is_active'=>'y'])->get();
+        $personalities = Personality::with('personalityTransDefault')->where('is_active', 'y')->get();
+        $attributes = ProfileDetail::with(['profileDetailTransDefault'])->where(['is_active' => 'y'])->get();
+        $interests = Interest::with(['subInterests.interestTransDefault', 'subInterests.subInterests.interestTransDefault'])
+            ->where(['is_active' => 'y'])->get();
+        $countries = Country::where(['is_active' => 'y'])->get();
+        $locations = Location::with(['locationTransDefault'])->where(['is_active' => 'y'])->get();
+        $languages = Language::where(['is_active' => 'y'])->get();
 
         //user interest
-        $user_interest = UserInterest::where('user_id',$user->id)->pluck('interest_id')->toArray();
-        $user_personality = UserPersonality::where('user_id',$user->id)->pluck('personality_id')->toArray();
-        return view('admin.pages.users.edit', compact('user','user_personality','personalities','user_interest','interests','attributes','countries','locations','languages'))->with(['custom_title' => 'Users']);
+        $user_interest = UserInterest::where('user_id', $user->id)->pluck('interest_id')->toArray();
+        $user_personality = UserPersonality::where('user_id', $user->id)->pluck('personality_id')->toArray();
+        return view('admin.pages.users.edit', compact('user', 'user_personality', 'personalities', 'user_interest', 'interests', 'attributes', 'countries', 'locations', 'languages'))->with(['custom_title' => 'Users']);
     }
 
     /**
@@ -306,81 +311,92 @@ class UsersController extends Controller
      */
     public function update(UserRequest $request, User $user)
     {
-        try{
+        try {
             DB::beginTransaction();
-            if(!empty($request->action) && $request->action == 'change_status') {
-                $content = ['status'=>204, 'message'=>"something went wrong"];
-                if($user) {
+            if (!empty($request->action) && $request->action == 'change_status') {
+                $content = ['status' => 204, 'message' => "something went wrong"];
+                if ($user) {
                     $user->is_active = $request->value;
-                    if($user->save()) {
+                    if ($user->save()) {
                         DB::commit();
-                        $content['status']=200;
+                        $content['status'] = 200;
                         $content['message'] = "Status updated successfully.";
                     }
                 }
                 return response()->json($content);
             } else {
-                $verify_notify = $verify_photo_notify = $verify_video_notify = false; 
-                if($user->verify_status == 'under_review'){ $verify_notify = true;  }
-                if($user->verify_photo_status != 'unverified'){ $verify_photo_notify = true;  }
-                if($user->verify_video_status != 'unverified'){ $verify_video_notify = true;  }
+                $verify_notify = $verify_photo_notify = $verify_video_notify = false;
+                if ($user->verify_status == 'under_review') {
+                    $verify_notify = true;
+                }
+                if ($user->verify_photo_status != 'unverified') {
+                    $verify_photo_notify = true;
+                }
+                if ($user->verify_video_status != 'unverified') {
+                    $verify_video_notify = true;
+                }
 
-                $path = $user->profile_photo; $not_to_delete_interest = $not_to_delete_personality = array();
+                $path = $user->profile_photo;
+                $not_to_delete_interest = $not_to_delete_personality = array();
 
                 //request has remove_profie_photo then delete user image
-                if( $request->has('remove_profie_photo') ){
-                    if( $user->profile_photo){ Storage::delete($user->profile_photo); }
+                if ($request->has('remove_profie_photo')) {
+                    if ($user->profile_photo) {
+                        Storage::delete($user->profile_photo);
+                    }
                     $path = null;
                 }
 
-                if( $request->hasFile('profile_photo') ) {
-                    if( $user->profile_photo){ Storage::delete($user->profile_photo); }
+                if ($request->hasFile('profile_photo')) {
+                    if ($user->profile_photo) {
+                        Storage::delete($user->profile_photo);
+                    }
                     $path = $request->profile_photo->store('users/profile_photo');
                     $user->is_media_checked = 'n';
                 }
                 $user->fill($request->validated());
                 $user->profile_photo = $path;
 
-                if(!empty($request->country_code)){
+                if (!empty($request->country_code)) {
                     $country = Country::wherePhonecode($request->country_code)->whereIsActive('y')->firstOrFail();
                     $user->country_id = $country->id;
                 }
-                if(!empty($request->location)){
+                if (!empty($request->location)) {
                     $location = Location::whereId($request->location)->whereIsActive('y')->firstOrFail();
                     $user->location_id = $location->id;
                     $user->discover_location_id = $location->id;
                 }
-                if(!empty($request->language)){
+                if (!empty($request->language)) {
                     $language = Language::whereLangCode($request->language)->whereIsActive('y')->firstOrFail();
                     $user->language_id = $language->id;
                 }
 
                 // Store Account Id
-                if(!empty($request->language) && $request->language == 'en'){
-                    $user->account_id = Str::slug(substr($request->full_name, 0, 4), "_").'_'.time();
+                if (!empty($request->language) && $request->language == 'en') {
+                    $user->account_id = Str::slug(substr($request->full_name, 0, 4), "_") . '_' . time();
                 }
 
                 // Full name
                 $language_codes = Language::pluck('lang_code')->toArray();
-                if(!empty($request->full_name)) {
-                    foreach($language_codes as $language_code){
-                        $traslate_data[$language_code] =  [ 'full_name' =>  $request->full_name ];
+                if (!empty($request->full_name)) {
+                    foreach ($language_codes as $language_code) {
+                        $traslate_data[$language_code] =  ['full_name' =>  $request->full_name];
                     }
                     $user->update($traslate_data);
                     $user->is_trans_full_name = 'n';
                 }
 
-                if(!empty($request->fav_movie)){
-                    foreach($language_codes as $language_code){
-                        $traslate_data[$language_code] =  [ 'fav_movie' =>  $request->fav_movie ];
+                if (!empty($request->fav_movie)) {
+                    foreach ($language_codes as $language_code) {
+                        $traslate_data[$language_code] =  ['fav_movie' =>  $request->fav_movie];
                     }
                     $user->update($traslate_data);
                     $user->is_trans_fav_movie = 'n';
                 }
 
-                if(!empty($request->about_me)){
-                    foreach($language_codes as $language_code){
-                        $traslate_data[$language_code] =  [ 'about_me' =>  $request->about_me ];
+                if (!empty($request->about_me)) {
+                    foreach ($language_codes as $language_code) {
+                        $traslate_data[$language_code] =  ['about_me' =>  $request->about_me];
                     }
                     $user->update($traslate_data);
                     $user->is_trans_about_me = 'n';
@@ -390,146 +406,146 @@ class UsersController extends Controller
                 $photo_verified_at  =   $request->photo_verified_at;
                 $video_verified_at  =   $request->video_verified_at;
 
-                if($photo_verified_at == 'y' && empty($user->photo_verified_at)){
-                    $user->photo_verified_at = \Carbon\Carbon::now(); 
-                }elseif($photo_verified_at == NULL){
+                if ($photo_verified_at == 'y' && empty($user->photo_verified_at)) {
+                    $user->photo_verified_at = \Carbon\Carbon::now();
+                } elseif ($photo_verified_at == NULL) {
                     $user->photo_verified_at = NULL;
                 }
 
-                if($video_verified_at == 'y' && empty($user->video_verified_at)){ 
-                    $user->video_verified_at = \Carbon\Carbon::now(); 
-                }elseif($video_verified_at == NULL){
+                if ($video_verified_at == 'y' && empty($user->video_verified_at)) {
+                    $user->video_verified_at = \Carbon\Carbon::now();
+                } elseif ($video_verified_at == NULL) {
                     $user->video_verified_at = NULL;
                 }
 
-                 /* User Personality */
-                if(!empty($request->personalities)){
-                    foreach($request->personalities as $personality_id){
+                /* User Personality */
+                if (!empty($request->personalities)) {
+                    foreach ($request->personalities as $personality_id) {
                         $custom_id = getUniqueString('user_personalities');
                         UserPersonality::updateOrCreate([
-                              'user_id'         => $user->id,
-                              'personality_id'  => $personality_id,  
-                            ],[
-                                'custom_id'     => $custom_id,
-                            ]);
-                       $not_to_delete_personality[] = $custom_id;
+                            'user_id'         => $user->id,
+                            'personality_id'  => $personality_id,
+                        ], [
+                            'custom_id'     => $custom_id,
+                        ]);
+                        $not_to_delete_personality[] = $custom_id;
                     }
                 }
-                UserPersonality::where('user_id',$user->id)->whereNotIn('custom_id',$not_to_delete_personality)->delete();
+                UserPersonality::where('user_id', $user->id)->whereNotIn('custom_id', $not_to_delete_personality)->delete();
 
                 /* User Interest */
-                if(!empty($request->traveling_id)){
-                    foreach($request->traveling_id as $traveling){
+                if (!empty($request->traveling_id)) {
+                    foreach ($request->traveling_id as $traveling) {
                         $custom_id = getUniqueString('user_interests');
                         UserInterest::updateOrCreate([
-                              'user_id'  => $user->id,
-                              'interest_id' => $traveling,  
-                            ],[
-                                'custom_id' => $custom_id,
-                            ]);
-                       $not_to_delete_interest[] = $custom_id;
-                    }
-                }
-
-                if(!empty($request->music_id)){
-                    foreach($request->music_id as $music){
-                        $custom_id = getUniqueString('user_interests');
-                        UserInterest::updateOrCreate([
-                                'user_id' => $user->id,
-                                'interest_id' => $music,  
-                            ],[
-                                'custom_id' => $custom_id,
-                            ]);
-                        $not_to_delete_interest[] = $custom_id;
-                    }
-                }
-                if(!empty($request->hobbie_id)){
-                    foreach($request->hobbie_id as $hobby){
-                        $custom_id = getUniqueString('user_interests');
-                        UserInterest::updateOrCreate([
-                                'user_id'  => $user->id,
-                                'interest_id' => $hobby,
-                            ],[
-                                'custom_id' => $custom_id,  
-                            ]);
-                        $not_to_delete_interest[] = $custom_id;
-                    }
-                }
-                if(!empty($request->game_id)){
-                    foreach($request->game_id as $game){
-                    $custom_id = getUniqueString('user_interests');
-                        UserInterest::updateOrCreate([
-                                'user_id'  => $user->id,
-                                'interest_id' => $game,  
-                            ],[
-                                'custom_id' => $custom_id,
-                            ]);
-                        $not_to_delete_interest[] = $custom_id;
-                    }
-                }
-                if(!empty($request->sport_id)){
-                    foreach($request->sport_id as $sport){
-                        $custom_id = getUniqueString('user_interests');
-                        UserInterest::updateOrCreate([
-                                'user_id'  => $user->id,
-                                'interest_id' => $sport,
-                            ],[
-                                'custom_id' => $custom_id, 
-                            ]);
-                        $not_to_delete_interest[] = $custom_id;
-                    }
-                }
-                if(!empty($request->food_id)){
-                    foreach($request->food_id as $food){
-                        $custom_id = getUniqueString('user_interests');
-                        UserInterest::updateOrCreate([
-                                'user_id'  => $user->id,
-                                'interest_id' => $food, 
-                            ],[ 
-                                'custom_id' => $custom_id, 
-                            ]);
-                        $not_to_delete_interest[] = $custom_id;
-                    }
-                }
-                if(!empty($request->actor_id)){
-                    foreach($request->actor_id as $actor){
-                        $custom_id = getUniqueString('user_interests');
-                        UserInterest::updateOrCreate([
-                               'user_id'  => $user->id, 
-                               'interest_id' => $actor,
-                            ],[ 
-                                
-                                'custom_id' => $custom_id,   
-                            ]);
+                            'user_id'  => $user->id,
+                            'interest_id' => $traveling,
+                        ], [
+                            'custom_id' => $custom_id,
+                        ]);
                         $not_to_delete_interest[] = $custom_id;
                     }
                 }
 
-                if(!empty($request->singer_id)){
-                    foreach($request->singer_id as $singer){
+                if (!empty($request->music_id)) {
+                    foreach ($request->music_id as $music) {
                         $custom_id = getUniqueString('user_interests');
                         UserInterest::updateOrCreate([
-                               'user_id'  => $user->id, 
-                               'interest_id' => $singer,
-                            ],[ 
-                                'custom_id' => $custom_id,    
-                            ]);
+                            'user_id' => $user->id,
+                            'interest_id' => $music,
+                        ], [
+                            'custom_id' => $custom_id,
+                        ]);
                         $not_to_delete_interest[] = $custom_id;
                     }
                 }
-                
-                UserInterest::where('user_id',$user->id)->whereNotIn('custom_id',$not_to_delete_interest)->delete();
+                if (!empty($request->hobbie_id)) {
+                    foreach ($request->hobbie_id as $hobby) {
+                        $custom_id = getUniqueString('user_interests');
+                        UserInterest::updateOrCreate([
+                            'user_id'  => $user->id,
+                            'interest_id' => $hobby,
+                        ], [
+                            'custom_id' => $custom_id,
+                        ]);
+                        $not_to_delete_interest[] = $custom_id;
+                    }
+                }
+                if (!empty($request->game_id)) {
+                    foreach ($request->game_id as $game) {
+                        $custom_id = getUniqueString('user_interests');
+                        UserInterest::updateOrCreate([
+                            'user_id'  => $user->id,
+                            'interest_id' => $game,
+                        ], [
+                            'custom_id' => $custom_id,
+                        ]);
+                        $not_to_delete_interest[] = $custom_id;
+                    }
+                }
+                if (!empty($request->sport_id)) {
+                    foreach ($request->sport_id as $sport) {
+                        $custom_id = getUniqueString('user_interests');
+                        UserInterest::updateOrCreate([
+                            'user_id'  => $user->id,
+                            'interest_id' => $sport,
+                        ], [
+                            'custom_id' => $custom_id,
+                        ]);
+                        $not_to_delete_interest[] = $custom_id;
+                    }
+                }
+                if (!empty($request->food_id)) {
+                    foreach ($request->food_id as $food) {
+                        $custom_id = getUniqueString('user_interests');
+                        UserInterest::updateOrCreate([
+                            'user_id'  => $user->id,
+                            'interest_id' => $food,
+                        ], [
+                            'custom_id' => $custom_id,
+                        ]);
+                        $not_to_delete_interest[] = $custom_id;
+                    }
+                }
+                if (!empty($request->actor_id)) {
+                    foreach ($request->actor_id as $actor) {
+                        $custom_id = getUniqueString('user_interests');
+                        UserInterest::updateOrCreate([
+                            'user_id'  => $user->id,
+                            'interest_id' => $actor,
+                        ], [
+
+                            'custom_id' => $custom_id,
+                        ]);
+                        $not_to_delete_interest[] = $custom_id;
+                    }
+                }
+
+                if (!empty($request->singer_id)) {
+                    foreach ($request->singer_id as $singer) {
+                        $custom_id = getUniqueString('user_interests');
+                        UserInterest::updateOrCreate([
+                            'user_id'  => $user->id,
+                            'interest_id' => $singer,
+                        ], [
+                            'custom_id' => $custom_id,
+                        ]);
+                        $not_to_delete_interest[] = $custom_id;
+                    }
+                }
+
+                UserInterest::where('user_id', $user->id)->whereNotIn('custom_id', $not_to_delete_interest)->delete();
 
                 $user->profile_percentage = $user->calculateProfilePercent();
 
-                if( $user->save() ) {
+                if ($user->save()) {
                     // Notify Profile Verification
-                    if($verify_notify && $user->verify_status != 'under_review'){
-                        if($user->verify_status == 'verified'){
+                    if ($verify_notify && $user->verify_status != 'under_review') {
+                        if ($user->verify_status == 'verified') {
                             $title = trans('api.notify_message.profile_verified.title');
                             $message = trans('api.notify_message.profile_verified.message');
                             $type = config('utility.notification.type.profile_verified');
-                        }else{
+                        } else {
                             $title = trans('api.notify_message.profile_not_verified.title');
                             $message = trans('api.notify_message.profile_not_verified.message');
                             $type = config('utility.notification.type.profile_not_verified');
@@ -545,14 +561,14 @@ class UsersController extends Controller
                             'image'         =>  '',
                             'type'          =>  $type,
                         ];
-                                
+
                         // Notify
                         $notificationJob = new NotificationJob($notification, $user);
                         dispatch($notificationJob);
                     }
 
                     // Notify Photo
-                    if($verify_photo_notify && $user->verify_photo_status == 'unverified'){
+                    if ($verify_photo_notify && $user->verify_photo_status == 'unverified') {
                         $notification = [
                             'custom_id'     =>  getUniqueString('notifications'),
                             'key'           =>  'user_id',
@@ -563,14 +579,14 @@ class UsersController extends Controller
                             'image'         =>  '',
                             'type'          =>  config('utility.notification.type.verify_fail_photo'),
                         ];
-                                
+
                         // Notify
                         $notificationJob = new NotificationJob($notification, $user);
                         dispatch($notificationJob);
                     }
 
                     // Notify Video
-                    if($verify_video_notify && $user->verify_video_status == 'unverified'){
+                    if ($verify_video_notify && $user->verify_video_status == 'unverified') {
                         $notification = [
                             'custom_id'     =>  getUniqueString('notifications'),
                             'key'           =>  'user_id',
@@ -581,7 +597,7 @@ class UsersController extends Controller
                             'image'         =>  '',
                             'type'          =>  config('utility.notification.type.verify_fail_video'),
                         ];
-                                
+
                         // Notify
                         $notificationJob = new NotificationJob($notification, $user);
                         dispatch($notificationJob);
@@ -594,11 +610,11 @@ class UsersController extends Controller
                 }
                 return redirect(route('admin.users.index'));
             }
-        }catch(QueryException $e){
+        } catch (QueryException $e) {
             DB::rollback();
-            return redirect()->back()->flash('error',$e->getMessage());
-        }catch(Exception $e){
-            return redirect()->back()->with('error',$e->getMessage());
+            return redirect()->back()->flash('error', $e->getMessage());
+        } catch (Exception $e) {
+            return redirect()->back()->with('error', $e->getMessage());
         }
     }
 
@@ -610,8 +626,8 @@ class UsersController extends Controller
      */
     public function destroy(Request $request, $id)
     {
-        if(!empty($request->action) && $request->action == 'delete_all'){
-            $content = ['status'=>204, 'message'=>"something went wrong"];
+        if (!empty($request->action) && $request->action == 'delete_all') {
+            $content = ['status' => 204, 'message' => "something went wrong"];
 
             // $users_profile_photos = User::whereIn('custom_id', explode(',', $request->ids))->pluck('profile_photo')->toArray();
             // foreach ($users_profile_photos as $image) {
@@ -619,21 +635,21 @@ class UsersController extends Controller
             //       Storage::delete($image);
             //     }
             // }
-            User::whereIn('custom_id',explode(',',$request->ids))->forceDelete();
-            $content['status']=200;
+            User::whereIn('custom_id', explode(',', $request->ids))->forceDelete();
+            $content['status'] = 200;
             $content['message'] = "User deleted successfully.";
             $content['count'] = User::all()->count();
             return response()->json($content);
-        }else{
+        } else {
             $user = User::where('custom_id', $id)->firstOrFail();
             // if( $user->profile_photo ){
             //     Storage::delete($user->profile_photo);
             // }
             $user->forceDelete();
-            if(request()->ajax()){
-                $content = array('status'=>200, 'message'=>"User deleted successfully.", 'count' => User::all()->count());
+            if (request()->ajax()) {
+                $content = array('status' => 200, 'message' => "User deleted successfully.", 'count' => User::all()->count());
                 return response()->json($content);
-            }else{
+            } else {
                 flash('User deleted successfully.')->success();
                 return redirect()->route('admin.users.index');
             }
@@ -655,7 +671,7 @@ class UsersController extends Controller
                     ->orWhere('gender', 'like', "%{$search}%")
                     ->orWhere('interest', 'like', "%{$search}%")
                     ->orWhere('email', 'like', "%{$search}%")
-                    ->orWhereHas('userTransDefault',function($q) use ($search){
+                    ->orWhereHas('userTransDefault', function ($q) use ($search) {
                         $q->where('full_name', 'like', "%{$search}%");
                     });
             });
@@ -684,8 +700,8 @@ class UsersController extends Controller
                 'account_id' => $user->account_id ?? "N/A",
                 'full_name' =>  $user->userTransDefault ? $user->userTransDefault->full_name : "N/A",
                 'profile_percentage' =>  $user->profile_percentage ?? 0,
-                'contact_no' => $user->contact_no ? '<a href="tel:' .$user->country_code.''.$user->contact_no.'" >' .$user->country_code.''. $user->contact_no . '</a>' : 'N/A',
-                'email' => $user->email ? '<a href="mailto:' .$user->email. '" >' .$user->email. '</a>' : 'N/A',
+                'contact_no' => $user->contact_no ? '<a href="tel:' . $user->country_code . '' . $user->contact_no . '" >' . $user->country_code . '' . $user->contact_no . '</a>' : 'N/A',
+                'email' => $user->email ? '<a href="mailto:' . $user->email . '" >' . $user->email . '</a>' : 'N/A',
                 'gender' => $user->gender ?? 'N/A',
                 'active' => view('admin.layouts.includes.switch', compact('params'))->render(),
                 'action' => view('admin.layouts.includes.actions')->with(['custom_title' => 'User', 'id' => $user->custom_id], $user)->render(),
@@ -749,5 +765,74 @@ class UsersController extends Controller
             ];
         }
         return $records;
+    }
+
+    public function csvDownload(Request $request)
+    {
+        $down_file_name = 'User';
+        $users = User::with('userTransEn', 'deviceToken', 'country', 'location', 'language')->get();
+        if (!$users->isEmpty()) {
+            foreach ($users as $user) {
+                $data[] = [
+                    'Account Id'            =>  $user->account_id ?? "",
+                    'Name'                  =>  $user->userTransEn ? $user->userTransEn->full_name ?? "" : "",
+                    'Email'                 =>  $user->email ?? "",
+                    'Birth Date'            =>  $user->birth_date,
+                    'Contact No'            =>  $user->country_code ?? "" . " " . $user->contact_no ?? "",
+                    'Verify Video Status'   =>  $user->verify_video_status ?? "",
+                    'Verify Photo Status'   =>  $user->verify_photo_status ?? "",
+                    'Gender'                =>  $user->gender ?? "",
+                    'Location'              =>  $user->location->name ?? "",
+                    'Intrest'               =>  $user->interest ?? "",
+                    'Verify Status'         =>  $user->verify_status ?? "",
+                    'Profile Percentage'    =>  $user->profile_percentage ?? "",
+                    'Language'              =>  $user->language ? $user->language->language ?? "" : "",
+                    'Langauge Code'         =>  $user->language ? $user->language->lang_code ?? "" : "",
+                    'Swipe Count'           =>  $user->swipe_count ?? "",
+                    'Like Count'            =>  $user->like_count ?? "",
+                    'Match Count'           =>  $user->match_count ?? "",
+                    'Chat Count'            =>  $user->chat_count ?? "",
+                    'Is Social User'        =>  $user->is_social_user ?? "",
+                    'Is Subscribed'         =>  $user->is_subscribed ?? "",
+                    'Subscription End Date' =>  $user->subscription_end_date ?? "",
+                    'Email Verified Date'   =>  $user->email_verified_at ?? "",
+                    'Contact Verified Date' =>  $user->contact_verified_at ?? "",
+                    'Photo Verified Date'   =>  $user->photo_verified_at ?? "",
+                    'Video Verified Date'   =>  $user->video_verified_at ?? "",
+                    'Device Type'           =>  $user->deviceToken ? $user->deviceToken->type ?? "" : "",
+                    'Device Name'           =>  $user->deviceToken ? $user->deviceToken->device_name ?? "" : "",
+                    'Device App Version'    =>  $user->deviceToken ? $user->deviceToken->app_version ?? "" : "",
+                    'Device OS Name'        =>  $user->deviceToken ? $user->deviceToken->os_name ?? "" : "",
+                    'Device OS Version'     =>  $user->deviceToken ? $user->deviceToken->os_version ?? "" : "",
+                    'Active'                =>  $user->is_avtive == 'y' ? 'y' : 'n'
+                ];
+            }
+
+            if (!File::exists(public_path() . "/files")) {
+                File::makeDirectory(public_path() . "/files");
+            }
+
+            $filename = public_path('files/' . $down_file_name . ".csv");
+            $handle   = fopen($filename, 'w+');
+            fputcsv($handle, array(
+                'Account Id', 'Name', 'Email', 'Contact No', 'Verify Video Status', 'Verify Photo Status', 'Gender', 'Location', 'Intrest', 'Verify Status', 'Profile Percentage', 'Language', 'Langauge Code', 'Swipe Count', 'Like Count', 'Match Count', 'Chat Count', 'Is Social User', 'Is Subscribed', 'Subscription End Date', 'Email Verified Date', 'Contact Verified Date', 'Photo Verified Date', 'Video Verified Date', 'Device Name', 'Device Type', 'Device App Version', 'Device OS name', 'Device OS Version', 'Active'
+            ));
+
+            foreach ($data as $row) {
+                fputcsv($handle, array(
+                    $row['Account Id'], $row['Name'], $row['Email'], $row['Contact No'], $row['Verify Video Status'], $row['Verify Photo Status'], $row['Gender'], $row['Location'], $row['Intrest'], $row['Verify Status'], $row['Profile Percentage'], $row['Language'], $row['Langauge Code'], $row['Swipe Count'], $row['Like Count'], $row['Match Count'], $row['Chat Count'], $row['Is Social User'], $row['Is Subscribed'], $row['Subscription End Date'], $row['Email Verified Date'], $row['Contact Verified Date'], $row['Photo Verified Date'], $row['Video Verified Date'], $row['Device Name'], $row['Device Type'], $row['Device App Version'], $row['Device OS Name'], $row['Device OS Version'], $row['Active']
+                ));
+            }
+            fclose($handle);
+
+            $headers = array(
+                'Content-Type' => 'text/csv',
+            );
+
+            return Response::download($filename, $down_file_name . ".csv", $headers);
+        } else {
+            flash('Unable to generate user csv. Try again later')->error();
+        }
+        return redirect(route('admin.users.index'));
     }
 }

@@ -1,7 +1,7 @@
 @extends('admin.layouts.app')
 
 @push('breadcrumb')
-    {!! Breadcrumbs::render('subscription_list') !!}
+{!! Breadcrumbs::render('subscription_list') !!}
 @endpush
 
 @push('extra-css-styles')
@@ -22,22 +22,30 @@
 
             <div class="card-toolbar">
                 {{-- @if (in_array('delete', $permissions))
-                    <a href="{{ route('admin.subscription-plans.destroy', 0) }}" name="del_select" id="del_select" class="btn btn-sm btn-light-danger font-weight-bolder text-uppercase mr-2 delete_all_link">
-                        <i class="far fa-trash-alt"></i> Delete Selected
-                    </a>
+                <a href="{{ route('admin.subscription-plans.destroy', 0) }}" name="del_select" id="del_select"
+                    class="btn btn-sm btn-light-danger font-weight-bolder text-uppercase mr-2 delete_all_link">
+                    <i class="far fa-trash-alt"></i> Delete Selected
+                </a>
                 @endif
                 @if (in_array('add', $permissions))
-                    <a href="{{ route('admin.subscription-plans.create') }}" class="btn btn-sm btn-primary font-weight-bolder text-uppercase">
-                        <i class="fas fa-plus"></i>
-                        Add {{ $custom_title }}
-                    </a>
+                <a href="{{ route('admin.subscription-plans.create') }}"
+                    class="btn btn-sm btn-primary font-weight-bolder text-uppercase">
+                    <i class="fas fa-plus"></i>
+                    Add {{ $custom_title }}
+                </a>
                 @endif --}}
+                <a href="{{ route('admin.subscriptions.csv-download') }}"
+                    class="btn btn-sm btn-primary font-weight-bolder text-uppercase ml-2">
+                    <i class="fas fa-arrow-down"></i>
+                    Download CSV
+                </a>
             </div>
         </div>
         <div class="card-body">
-            {{--  Datatable Start  --}}
-            <table class="table table-bordered table-hover table-checkable" id="subscription_pan_table" style="margin-top: 13px !important"></table>
-            {{--  Datatable End  --}}
+            {{-- Datatable Start --}}
+            <table class="table table-bordered table-hover table-checkable" id="subscription_pan_table"
+                style="margin-top: 13px !important"></table>
+            {{-- Datatable End --}}
         </div>
     </div>
 </div>

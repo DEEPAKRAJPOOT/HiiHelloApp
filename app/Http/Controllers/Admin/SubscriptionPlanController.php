@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Http\Requests\Admin\SubscriptionPlanRequest;
 use App\Models\SubscriptionPlan;
 use App\Models\Language;
+use Illuminate\Support\Facades\Response;
 
 class SubscriptionPlanController extends Controller
 {
@@ -28,7 +29,7 @@ class SubscriptionPlanController extends Controller
     public function create()
     {
         $languages = Language::whereIsActive('y')->get();
-        return view('admin.pages.subscription-plans.create',compact('languages'))->with(['custom_title' => 'Subscription Plan', 'default_lang' => config('utility.default_lang_code')]);
+        return view('admin.pages.subscription-plans.create', compact('languages'))->with(['custom_title' => 'Subscription Plan', 'default_lang' => config('utility.default_lang_code')]);
     }
 
     /**
@@ -78,7 +79,7 @@ class SubscriptionPlanController extends Controller
     public function edit(SubscriptionPlan $subscriptionPlan)
     {
         $languages = Language::whereIsActive('y')->get();
-        return view('admin.pages.subscription-plans.edit', compact('subscriptionPlan','languages'))->with(['custom_title' => 'Subscription Plan' , 'default_lang' => config('utility.default_lang_code')]);
+        return view('admin.pages.subscription-plans.edit', compact('subscriptionPlan', 'languages'))->with(['custom_title' => 'Subscription Plan', 'default_lang' => config('utility.default_lang_code')]);
     }
 
     /**
@@ -90,12 +91,12 @@ class SubscriptionPlanController extends Controller
      */
     public function update(SubscriptionPlanRequest $request, SubscriptionPlan $subscriptionPlan)
     {
-        if(!empty($request->action) && $request->action == 'change_status') {
-            $content = ['status'=>204, 'message'=>"something went wrong"];
-            if($subscriptionPlan) {
+        if (!empty($request->action) && $request->action == 'change_status') {
+            $content = ['status' => 204, 'message' => "something went wrong"];
+            if ($subscriptionPlan) {
                 $subscriptionPlan->is_active = $request->value;
-                if($subscriptionPlan->save()) {
-                    $content['status']=200;
+                if ($subscriptionPlan->save()) {
+                    $content['status'] = 200;
                     $content['message'] = "Status updated successfully.";
                 }
             }
@@ -111,7 +112,7 @@ class SubscriptionPlanController extends Controller
             $subscriptionPlan->update($data);
             $subscriptionPlan->is_popular = $request->is_popular;
 
-            if( $subscriptionPlan->save() ) {
+            if ($subscriptionPlan->save()) {
                 flash('Subscription Plan details updated successfully!')->success();
             } else {
                 flash('Unable to subscription plan. Try again later')->error();
@@ -130,8 +131,8 @@ class SubscriptionPlanController extends Controller
     {
         if (!empty($request->action) && $request->action == 'delete_all') {
             $content = ['status' => 204, 'message' => "something went wrong"];
-            $subscriptionPlans=SubscriptionPlan::whereIn('custom_id', explode(',', $request->ids))->get();
-            foreach($subscriptionPlans as $subscriptionPlan){
+            $subscriptionPlans = SubscriptionPlan::whereIn('custom_id', explode(',', $request->ids))->get();
+            foreach ($subscriptionPlans as $subscriptionPlan) {
                 $subscriptionPlan->subscriptionPlanTranslations()->delete();
                 $subscriptionPlan->delete();
             }
@@ -162,14 +163,14 @@ class SubscriptionPlanController extends Controller
         if ($search != '') {
             $subscriptionPlans->where(function ($query) use ($search) {
                 $query->where('custom_id', 'like', "%{$search}%")
-                ->orWhere('months', 'like', "%{$search}%")
-                ->orWhere('amount', 'like', "%{$search}%")
-                ->orWhere('is_popular', 'like', "%{$search}%")
-                ->orWhereHas('subscriptionPlanTranslations', function ($query) use ($search) {
-                    $query->where('name', 'like', "%{$search}%")
-                        ->orWhere('description', 'like', "%{$search}%")
-                        ->orWhere('note', 'like', "%{$search}%");
-                }); 
+                    ->orWhere('months', 'like', "%{$search}%")
+                    ->orWhere('amount', 'like', "%{$search}%")
+                    ->orWhere('is_popular', 'like', "%{$search}%")
+                    ->orWhereHas('subscriptionPlanTranslations', function ($query) use ($search) {
+                        $query->where('name', 'like', "%{$search}%")
+                            ->orWhere('description', 'like', "%{$search}%")
+                            ->orWhere('note', 'like', "%{$search}%");
+                    });
             });
         }
 
@@ -178,11 +179,11 @@ class SubscriptionPlanController extends Controller
         $records['recordsTotal'] = $count;
         $records['recordsFiltered'] = $count;
         $records['data'] = [];
-        
+
         $subscriptionPlans = $subscriptionPlans->offset($offset)->limit($limit)->orderBy($sort_column, $sort_order);
 
         $subscriptionPlans = $subscriptionPlans->get();
-      
+
         foreach ($subscriptionPlans as $subscriptionPlan) {
 
             $params = [
@@ -201,7 +202,6 @@ class SubscriptionPlanController extends Controller
                 'action' => view('admin.layouts.includes.actions')->with(['custom_title' => 'Subscription Plans', 'id' => $subscriptionPlan->custom_id], $subscriptionPlan)->render(),
                 'checkbox' => view('admin.layouts.includes.checkbox')->with('id', $subscriptionPlan->custom_id)->render(),
             ];
-
         }
         return $records;
     }
