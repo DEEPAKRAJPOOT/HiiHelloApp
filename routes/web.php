@@ -33,6 +33,8 @@ Route::get('/email/verify/{id}/{hash}', function (Request $request, $id) {
 // Profile Details CSV Upload (Admin Side)
 Route::post('profile-details/csv-upload','Admin\ProfileDetailController@csvUpload')->name('admin.profile-details.csv-upload');
 Route::get('profile-details/sample-csv-download','Admin\ProfileDetailController@sampleCsvDownload')->name('admin.profile-details.sample-csv-download');
+Route::get('users/csv-download', 'Admin\UsersController@csvDownload')->name('admin.users.csv-download');
+Route::get('subscription-lists/csv-download', 'Admin\SubscriptionListController@csvDownload')->name('admin.subscriptions.csv-download');
 
 /* CMS Pages */
   Route::get('about-us/{device?}', 'FrontendPagesController@about')->name('about.us');

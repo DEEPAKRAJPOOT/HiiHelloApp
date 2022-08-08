@@ -24,7 +24,6 @@ Route::group(['namespace' => 'Admin', 'middleware' => ['check_permit', 'revalida
 	Route::get('users/listing', 'UsersController@listing')->name('users.listing');
 	Route::resource('users', 'UsersController');
 
-
 	/* Role Management */
 	Route::get('roles/listing', 'AdminController@listing')->name('roles.listing');
 	Route::resource('roles', 'AdminController');
