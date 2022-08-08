@@ -9,7 +9,7 @@ use Illuminate\Http\Request;
 
 class FrontendPagesController extends Controller
 {
-    public function index(){
+    public function index($device = false){
         $settings = Setting::select('value')->whereIn('constant',['footer_text','instagram','facebook','twitter'])->get();
 
         if($settings->isNotEmpty()){
@@ -18,39 +18,39 @@ class FrontendPagesController extends Controller
 
             $random_file = rand(0,1);
             if($random_file == 0){
-                return view('frontend.pages.hindi',compact('footer_text','instagram','facebook','twitter'));
+                return view('frontend.pages.hindi',compact('footer_text','instagram','facebook','twitter','device'));
             }
-            return view('frontend.pages.english',compact('footer_text','instagram','facebook','twitter'));
+            return view('frontend.pages.english',compact('footer_text','instagram','facebook','twitter','device'));
         }
         return abort(404);
     }
 
-    public function terms(){
+    public function terms($device = false){
         $setting = Setting::select('value')->whereConstant('footer_text')->firstOrFail();
         $footer_text = $setting->value;
         $page = CmsPage::with('cmsPageTranslations')->whereSlug('terms-and-conditions')->firstOrFail();
-        return view('frontend.pages.cms-page', compact('page','footer_text'))->withTitle($page->getTitle());
+        return view('frontend.pages.cms-page', compact('page','footer_text','device'))->withTitle($page->getTitle());
     }
     
-    public function privacy(){
+    public function privacy($device = false){
         $setting = Setting::select('value')->whereConstant('footer_text')->firstOrFail();
         $footer_text = $setting->value;
         $page = CmsPage::with('cmsPageTranslations')->whereSlug('privacy')->firstOrFail();
-        return view('frontend.pages.cms-page', compact('page','footer_text'))->withTitle($page->getTitle());
+        return view('frontend.pages.cms-page', compact('page','footer_text','device'))->withTitle($page->getTitle());
     }
 
-    public function about(){
+    public function about($device = false){
         $setting = Setting::select('value')->whereConstant('footer_text')->firstOrFail();
         $footer_text = $setting->value;
         $page = CmsPage::with('cmsPageTranslations')->whereSlug('about-us')->firstOrFail();
-        return view('frontend.pages.cms-page', compact('page','footer_text'))->withTitle($page->getTitle());
+        return view('frontend.pages.cms-page', compact('page','footer_text','device'))->withTitle($page->getTitle());
     }
 
-    public function communityAndSafety(){
+    public function communityAndSafety($device = false){
         $setting = Setting::select('value')->whereConstant('footer_text')->firstOrFail();
         $footer_text = $setting->value;
         $page = CmsPage::with('cmsPageTranslations')->whereSlug('community-and-safety')->firstOrFail();
-        return view('frontend.pages.cms-page', compact('page','footer_text'))->withTitle($page->getTitle());
+        return view('frontend.pages.cms-page', compact('page','footer_text','device'))->withTitle($page->getTitle());
     }
     
 }

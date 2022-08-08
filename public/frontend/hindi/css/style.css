@@ -34,6 +34,8 @@ body                                    { height: 100vh; position: relative;}
 .main-image                             {  width: 50%; height: 100%; background: url('../images/banner-bg-right1.png') no-repeat top left / cover;}
 .gradient                               { background: linear-gradient(46.21deg, rgba(255, 230, 5, 0.93) 7.19%, rgba(255, 230, 5, 0.799219) 17.37%, rgba(255, 230, 5, 0.27728) 35.93%, rgba(255, 230, 5, 0) 50.64%), linear-gradient(295.72deg, rgba(255, 0, 0, 0.6) -7.92%, rgba(139, 80, 215, 0.8) 25.67%, rgba(145, 151, 224, 0.8) 48.93%, rgba(104, 205, 216, 0.8) 77.35%), #FFFFFF; border-radius: 64px 0px 0px 140px; width: 70%; height: 37vh;}
 .footer-section                         { padding: 10px 0;}
+.footer-section.isMobile .copyright-box { flex: 1 0 100%; text-align: center; }
+.footer-section.isMobile .footer-links  { display: none; }
 .footer-links ul                        { display: flex; flex-wrap: wrap;}
 .footer-links ul li                     { padding: 0 10px;}
 .footer-links ul li a                   { font-size: 16px; line-height: 24px; color:#9B8FB1;}
