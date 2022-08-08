@@ -11,7 +11,7 @@ use Twilio\Rest\ { Client };
 use Twilio\Jwt\ { AccessToken };
 use Twilio\Jwt\Grants\ { ChatGrant, VideoGrant, VoiceGrant };
 use Twilio\TwiML\ { VoiceResponse };
-use App\Models\ { User, UserCommunication, ChatRoom, CallLog, UserTranslation };
+use App\Models\ { User, UserCommunication, ChatRoom, CallLog, UserTranslation, ChatMessage };
 use App\Jobs\ { NotificationJob };
 
 class TwillioController extends Controller
@@ -119,7 +119,7 @@ class TwillioController extends Controller
     {
         $response = new VoiceResponse();
 
-        if($request->CallStatus == 'no-answer' || $request->CallStatus == 'failed'){
+        if($request->CallStatus == 'no-answer' || $request->CallStatus == 'failed' || $request->CallStatus == 'canceled'){
             $chat_room = ChatRoom::with('creator','participator')->whereCustomId($request->room_id)->first();
             if($chat_room){
 
@@ -131,37 +131,62 @@ class TwillioController extends Controller
                         $receiver   =   $chat_room->creator;
                     }
 
-                    $lang_code = $receiver ? $receiver->language ? $receiver->language->lang_code : "en" : "en";
-                    app()->setLocale($lang_code); // Change Language As Per Receiver Langauge For Notification
-
-                    $userTranslation = UserTranslation::select('full_name')->whereUserId($caller->id)->whereLocale($lang_code)->first();
-                    if($userTranslation){ 
-                        $caller_name = $userTranslation->full_name ?? "";
-                    }else{
-                        $caller_name = $caller ? $caller->userTransEn ? $caller->userTransEn->full_name : "" : "";
+                    if($request->CallStatus == 'canceled'){
+                        ChatMessage::Create([
+                            'room_id'       =>  $chat_room->id,
+                            'sender_id'     =>  $caller->id,
+                            'receiver_id'   =>  $receiver->id,
+                            'message'       =>  '{ "type" : "voicelog", "value" : "", "other" : { "type" : "canceled_call" } }',
+                            'custom_id'     =>  getUniqueString('chat_messages'),
+                        ]);
                     }
-                    $caller_profile = $caller ? $caller->profile_photo : "";
+                    else if($request->CallStatus == 'no-answer' || $request->CallStatus == 'failed'){
+                        $lang_code = $receiver ? $receiver->language ? $receiver->language->lang_code : "en" : "en";
+                        app()->setLocale($lang_code); // Change Language As Per Receiver Langauge For Notification
 
-                    $notification = [
-                        'custom_id'     =>  getUniqueString('notifications'),
-                        'key'           =>  'user_id',
-                        'room_id'       =>  $request->room_id ? $request->room_id : "",
-                        'value'         =>  $caller->custom_id,
-                        'user_id'       =>  $caller->id,
-                        'name'          =>  $caller_name,
-                        'profile'       =>  generateURL($caller_profile),
-                        'image'         =>  generateURL($caller_profile),
-                        'title'         =>  trans('api.notify_message.voice_call_miss_call.title'),
-                        'message'       =>  trans('api.notify_message.voice_call_miss_call.message',['entity' => $caller_name]),
-                        'type'          =>  config('utility.notification.type.voice_call_miss_call'),
-                    ];
+                        $userTranslation = UserTranslation::select('full_name')->whereUserId($caller->id)->whereLocale($lang_code)->first();
+                        if($userTranslation){ 
+                            $caller_name = $userTranslation->full_name ?? "";
+                        }else{
+                            $caller_name = $caller ? $caller->userTransEn ? $caller->userTransEn->full_name : "" : "";
+                        }
+                        $caller_profile = $caller ? $caller->profile_photo : "";
 
-                    // Notify
-                    $notificationJob = new NotificationJob($notification, $receiver);
-                    dispatch($notificationJob);
+                        $title      =   trans('api.notify_message.voice_call_miss_call.title');
+                        $message    =   trans('api.notify_message.voice_call_miss_call.message',['entity' => $caller_name]);
+                        $type       =   config('utility.notification.type.voice_call_miss_call');
+
+                        $notification = [
+                            'custom_id'     =>  getUniqueString('notifications'),
+                            'key'           =>  'user_id',
+                            'room_id'       =>  $request->room_id ? $request->room_id : "",
+                            'value'         =>  $caller->custom_id,
+                            'user_id'       =>  $caller->id,
+                            'name'          =>  $caller_name,
+                            'profile'       =>  generateURL($caller_profile),
+                            'image'         =>  generateURL($caller_profile),
+                            'title'         =>  $title,
+                            'message'       =>  $message,
+                            'type'          =>  $type,
+                        ];
+
+                        // Notify
+                        $notificationJob = new NotificationJob($notification, $receiver);
+                        dispatch($notificationJob);
+
+                        ChatMessage::Create([
+                            'room_id'       =>  $chat_room->id,
+                            'sender_id'     =>  $caller->id,
+                            'receiver_id'   =>  $receiver->id,
+                            'message'       =>  '{ "type" : "voicelog", "value" : "'.$message.'", "other" : { "type" : "missed_call" } }',
+                            'custom_id'     =>  getUniqueString('chat_messages'),
+                        ]);
+
+                    }
                 }
             }
         }
+
         return $response;
     }
 
@@ -227,6 +252,26 @@ class TwillioController extends Controller
                 if($call_log->remaining_time == "00:00" || $call_log->remaining_time == "00:00:00"){
                     $room->nofityCallTimeOut();
                 }
+
+                $start_message = ChatMessage::Create([
+                    'room_id'       =>  $room->id,
+                    'sender_id'     =>  $room->creator ? $room->creator->id : "",
+                    'receiver_id'   =>  $room->participator ? $room->participator->id : "",
+                    'message'       =>  '{ "type" : "voicelog", "value" : "'.$request->start_time.'", "other" : { "type" : "start_time" } }',
+                    'custom_id'     =>  getUniqueString('chat_messages'),
+                ]);
+
+                $end_message = ChatMessage::Create([
+                    'room_id'       =>  $room->id,
+                    'sender_id'     =>  $room->creator ? $room->creator->id : "",
+                    'receiver_id'   =>  $room->participator ? $room->participator->id : "",
+                    'message'       =>  '{ "type" : "voicelog", "value" : "'.$request->end_time.'", "other" : { "type" : "end_time" } }',
+                    'custom_id'     =>  getUniqueString('chat_messages'),
+                ]);
+
+                $end_message->update([
+                    'created_at'    =>  now()->addSecond(),
+                ]);
 
                 $this->status = Response::HTTP_OK;
                 return (new CallLogResource($room))
