@@ -95,10 +95,10 @@ class SubscriptionListController extends Controller
         if (!$subscriptions->isEmpty()) {
             foreach ($subscriptions as $subscription) {
                 $data[] = [
-                    'Account Id'                =>  $subscription ? ($subscription->user ? $subscription->user->account_id ?? "" : "") : "",
-                    'Name'                      =>  $subscription ? ($subscription->user ? $subscription->user->userTransEn->full_name ?? "" : "") : "",
+                    'Account Id'                =>  $subscription->user ? $subscription->user->account_id ?? "" : "",
+                    'Name'                      =>  $subscription->user ? ($subscription->user->userTransEn ? $subscription->user->userTransEn->full_name ?? "" : "") : "",
                     'Email'                     =>  $subscription->email ?? "",
-                    'Subscription Plan Name'    =>  $subscription ? ($subscription->subscriptionPlan ? $subscription->subscriptionPlan->subscriptionPlanTransEn->name ?? "" : "") : "",
+                    'Subscription Plan Name'    =>  $subscription->subscriptionPlan ? ($subscription->subscriptionPlan->subscriptionPlanTransEn ? $subscription->subscriptionPlan->subscriptionPlanTransEn->name ?? "" : "") : "",
                     'Months'                    =>  $subscription->months ?? "",
                     'Amount'                    =>  $subscription->amount ?? "",
                     'Start date'                =>  $subscription->start_date ?? "",

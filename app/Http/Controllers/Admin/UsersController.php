@@ -775,10 +775,10 @@ class UsersController extends Controller
             foreach ($users as $user) {
                 $data[] = [
                     'Account Id'            =>  $user->account_id ?? "",
-                    'Name'                  =>  $user ? ($user->userTransEn ? $user->userTransEn->full_name ?? "" : "") : "",
+                    'Name'                  =>  $user->userTransEn ? $user->userTransEn->full_name ?? "" : "",
                     'Email'                 =>  $user->email ?? "",
                     'Birth Date'            =>  $user->birth_date,
-                    'Contact No'            =>  $user ? $user->country_code . " " . $user->contact_no ?? "" : "",
+                    'Contact No'            =>  $user->country_code ?? "" . " " . $user->contact_no ?? "",
                     'Verify Video Status'   =>  $user->verify_video_status ?? "",
                     'Verify Photo Status'   =>  $user->verify_photo_status ?? "",
                     'Gender'                =>  $user->gender ?? "",
@@ -786,8 +786,8 @@ class UsersController extends Controller
                     'Intrest'               =>  $user->interest ?? "",
                     'Verify Status'         =>  $user->verify_status ?? "",
                     'Profile Percentage'    =>  $user->profile_percentage ?? "",
-                    'Language'              =>  $user ? ($user->language ? $user->language->language ?? "" : "") : "",
-                    'Langauge Code'         =>  $user ? ($user->language ? $user->language->lang_code ?? "" : "") : "",
+                    'Language'              =>  $user->language ? $user->language->language ?? "" : "",
+                    'Langauge Code'         =>  $user->language ? $user->language->lang_code ?? "" : "",
                     'Swipe Count'           =>  $user->swipe_count ?? "",
                     'Like Count'            =>  $user->like_count ?? "",
                     'Match Count'           =>  $user->match_count ?? "",
@@ -799,11 +799,11 @@ class UsersController extends Controller
                     'Contact Verified Date' =>  $user->contact_verified_at ?? "",
                     'Photo Verified Date'   =>  $user->photo_verified_at ?? "",
                     'Video Verified Date'   =>  $user->video_verified_at ?? "",
-                    'Device Type'           =>  $user ? ($user->deviceToken ? $user->deviceToken->type ?? "" : "") : "",
-                    'Device Name'           =>  $user ? ($user->deviceToken ? $user->deviceToken->device_name ?? "" : "") : "",
-                    'Device App Version'    =>  $user ? ($user->deviceToken ? $user->deviceToken->app_version ?? "" : "") : "",
-                    'Device OS Name'        =>  $user ? ($user->deviceToken ? $user->deviceToken->os_name ?? "" : "") : "",
-                    'Device OS Version'     =>  $user ? ($user->deviceToken ? $user->deviceToken->os_version ?? "" : "") : "",
+                    'Device Type'           =>  $user->deviceToken ? $user->deviceToken->type ?? "" : "",
+                    'Device Name'           =>  $user->deviceToken ? $user->deviceToken->device_name ?? "" : "",
+                    'Device App Version'    =>  $user->deviceToken ? $user->deviceToken->app_version ?? "" : "",
+                    'Device OS Name'        =>  $user->deviceToken ? $user->deviceToken->os_name ?? "" : "",
+                    'Device OS Version'     =>  $user->deviceToken ? $user->deviceToken->os_version ?? "" : "",
                     'Active'                =>  $user->is_avtive == 'y' ? 'y' : 'n'
                 ];
             }
