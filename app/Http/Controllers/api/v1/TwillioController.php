@@ -119,7 +119,7 @@ class TwillioController extends Controller
     {
         $response = new VoiceResponse();
 
-        if($request->CallStatus == 'no-answer' || $request->CallStatus == 'failed' || $request->CallStatus == 'canceled'){
+        if($request->CallStatus == 'no-answer' || $request->CallStatus == 'failed' || $request->CallStatus == 'canceled' || $request->CallStatus == 'busy'){
             $chat_room = ChatRoom::with('creator','participator')->whereCustomId($request->room_id)->first();
             if($chat_room){
 
@@ -131,7 +131,7 @@ class TwillioController extends Controller
                         $receiver   =   $chat_room->creator;
                     }
 
-                    if($request->CallStatus == 'canceled'){
+                    if($request->CallStatus == 'canceled' || $request->CallStatus == 'busy'){
                         ChatMessage::Create([
                             'room_id'       =>  $chat_room->id,
                             'sender_id'     =>  $caller->id,
