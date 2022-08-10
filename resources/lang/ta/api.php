@@ -45,7 +45,7 @@ return [
     'max_referred' => 'இந்தப் பரிந்துரைக் குறியீட்டைப் பயன்படுத்த முடியாது',
     'generated'  =>  ':entity வெற்றிகரமாக உருவாக்கப்பட்டது',
     'apply_success' =>  ':entity வெற்றிகரமாக விண்ணப்பிக்கப்பட்டது',
-    'swipe_over' =>  'உங்கள் தினசரி ஸ்வைப் வரம்பு முடிந்துவிட்டது. தொடர மேம்படுத்தவும்.',
+    'swipe_over' =>  'உங்கள் தினசரி விருப்ப வரம்பு முடிந்துவிட்டது. தொடர மேம்படுத்தவும்.',
 
     /* Login Messages */
     'login_fail' => 'இந்த சான்றுகள் எங்கள் பதிவுகளுடன் பொருந்தவில்லை',
@@ -197,7 +197,7 @@ return [
         ],
         'swipe_alert'    =>  [
             'title'     =>  "Hi Hello",
-            'message'   =>  "Your daily swipe limit is over. Upgrade to continue.",
+            'message'   =>  "Your daily like limit is over. Upgrade to continue.",
         ],
         'verify_fail_email'    =>  [
             'title'     =>  "Hi Hello",

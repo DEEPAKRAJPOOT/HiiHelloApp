@@ -56,13 +56,13 @@ class GeneralTest extends TestCase
                 'links' =>  [
                     'storage'   =>  config("utility.s3.prefix_url"),
                     'terms'     =>  [
-                        'en'    =>  route('terms'),
+                        'en'    =>  route('terms',['device' => 'mobile']),
                     ],
                     'privacy'   =>  [
-                        'en'    =>  route('privacy.policy'),
+                        'en'    =>  route('privacy.policy',['device' => 'mobile']),
                     ],
                     'about'     =>  [
-                        'en'    =>  route('about.us'),
+                        'en'    =>  route('about.us',['device' => 'mobile']),
                     ],
                 ],
             ],
@@ -146,7 +146,7 @@ class GeneralTest extends TestCase
     public function test_get_interests_validation()
     {
         $data = [
-            'location_id'      =>  'Abc',
+            'parent_id'      =>  'test_id',
         ];
         $this->postJson(route('api.get-interests'),$data)
         ->assertStatus(412)
@@ -158,7 +158,7 @@ class GeneralTest extends TestCase
                 'api'       =>  $this->getVersion(),
                 'url'       =>  url()->current(),
                 'language'  =>  config('utility.default_lang_code'),
-                'message'   =>  trans('validation.in', ['attribute' => __('location id') ])
+                'message'   =>  trans('validation.required_with', ['attribute' => __('level'), 'values' => __('parent') ])
             ],
         ]);
     }

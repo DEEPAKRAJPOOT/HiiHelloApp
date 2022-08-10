@@ -42,15 +42,16 @@ class DiscoveryTest extends TestCase
     public function test_set_discovery_detail_successfully()
     {
         $user = User::firstOrFail();
+        $location = $this->getLocation();
         $this->setUserToken($user);
         $data = [
-            'distance' => 100,
-            'start_age' => 20,
-            'end_age' => 25,
-            'interest' => 'Female',
-            'location' => 'IpQiFcIwk7Qo3x79FzlF',
-            'languages[0]' => 'en',
-            'languages[1]' => 'hi',
+            'distance'      =>  100,
+            'start_age'     =>  20,
+            'end_age'       =>  25,
+            'interest'      =>  'Female',
+            'location'      =>  $location->custom_id,
+            'languages[0]'  =>  'en',
+            'languages[1]'  =>  'hi',
         ];
         $this->postJson(route('api.discovery.set-detail'),$data)
         ->assertStatus(200)

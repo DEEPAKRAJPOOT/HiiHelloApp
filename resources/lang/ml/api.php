@@ -45,7 +45,7 @@ return [
     'max_referred' => 'ഈ റഫറൽ കോഡ് ഉപയോഗിക്കാൻ കഴിയില്ല',
     'generated'  =>  ':entity വിജയകരമായി സൃഷ്ടിച്ചു',
     'apply_success' =>  ':entity വിജയകരമായി പ്രയോഗിച്ചു',
-    'swipe_over' =>  'നിങ്ങളുടെ പ്രതിദിന സ്വൈപ്പ് പരിധി കഴിഞ്ഞു. തുടരാൻ നവീകരിക്കുക.',
+    'swipe_over' =>  'നിങ്ങളുടെ ദൈനംദിന ലൈക്ക് പരിധി കഴിഞ്ഞു. തുടരാൻ നവീകരിക്കുക.',
 
     /* Login Messages */
     'login_fail' => 'ഈ യോഗ്യതാപത്രങ്ങൾ ഞങ്ങളുടെ റെക്കോർഡുകളുമായി പൊരുത്തപ്പെടുന്നില്ല',
@@ -197,7 +197,7 @@ return [
         ],
         'swipe_alert'    =>  [
             'title'     =>  "Hi Hello",
-            'message'   =>  "Your daily swipe limit is over. Upgrade to continue.",
+            'message'   =>  "Your daily like limit is over. Upgrade to continue.",
         ],
         'verify_fail_email'    =>  [
             'title'     =>  "Hi Hello",

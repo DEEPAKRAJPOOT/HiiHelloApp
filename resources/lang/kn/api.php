@@ -45,7 +45,7 @@ return [
     'max_referred' => 'ಈ ರೆಫರೆಲ್ ಕೋಡ್ ಅನ್ನು ಬಳಸಲಾಗುವುದಿಲ್ಲ',
     'generated'  =>  ':entity ಯಶಸ್ವಿಯಾಗಿ ರಚಿಸಲಾಗಿದೆ',
     'apply_success' =>  ':entity ಯಶಸ್ವಿಯಾಗಿ ಅನ್ವಯಿಸಲಾಗಿದೆ',
-    'swipe_over' =>  'ನಿಮ್ಮ ದೈನಂದಿನ ಸ್ವೈಪ್ ಮಿತಿ ಮುಗಿದಿದೆ. ಮುಂದುವರಿಸಲು ಅಪ್ಗ್ರೇಡ್ ಮಾಡಿ.',
+    'swipe_over' =>  'ನಿಮ್ಮ ದೈನಂದಿನ ಇಷ್ಟದ ಮಿತಿ ಮುಗಿದಿದೆ. ಮುಂದುವರಿಸಲು ಅಪ್ಗ್ರೇಡ್ ಮಾಡಿ.',
 
     /* Login Messages */
     'login_fail' => 'ಈ ರುಜುವಾತುಗಳು ನಮ್ಮ ದಾಖಲೆಗಳಿಗೆ ಹೊಂದಿಕೆಯಾಗುವುದಿಲ್ಲ',
@@ -197,7 +197,7 @@ return [
         ],
         'swipe_alert'    =>  [
             'title'     =>  "Hi Hello",
-            'message'   =>  "Your daily swipe limit is over. Upgrade to continue.",
+            'message'   =>  "Your daily like limit is over. Upgrade to continue.",
         ],
         'verify_fail_email'    =>  [
             'title'     =>  "Hi Hello",

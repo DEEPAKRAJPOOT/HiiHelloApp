@@ -3,12 +3,12 @@
 namespace App\Http\Controllers\api\v1;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\ { Request, Response };
-use App\Http\Resources\v1\ { UserProfile, LoginResource, SignUpResource };
-use Illuminate\Database\Eloquent\ { ModelNotFoundException };
-use Illuminate\Support\Facades\ { Storage, Auth, Hash };
-use App\Http\Requests\Api\Authentication\ { LoginRequest, RegisterRequest, SocialLoginRequest };
-use App\Models\ { User, Country, UserDetail, Location, Interest, UserInterest, Language, ProfileDetail, DeviceToken };
+use Illuminate\Http\{Request, Response};
+use App\Http\Resources\v1\{UserProfile, LoginResource, SignUpResource};
+use Illuminate\Database\Eloquent\{ModelNotFoundException};
+use Illuminate\Support\Facades\{Storage, Auth, Hash};
+use App\Http\Requests\Api\Authentication\{LoginRequest, RegisterRequest, SocialLoginRequest};
+use App\Models\{User, Country, UserDetail, Location, Interest, UserInterest, Language, ProfileDetail, DeviceToken};
 use Illuminate\Support\Str;
 
 class AuthenticationController extends Controller
@@ -19,19 +19,21 @@ class AuthenticationController extends Controller
 
     // User Login
     public function login(Request $request)
-    {   
+    {
         $rules = LoginRequest::rules();
-        if( $this->apiValidator($request->all(), $rules) ) {
+        if ($this->apiValidator($request->all(), $rules)) {
             $this->response['meta']['message']  = trans('api.login_fail');
             $this->status = Response::HTTP_FORBIDDEN;
 
             $checksumDetails = $this->validateCheckSum($request->security_token, $request->contact_no);
-            if( $checksumDetails->validate ) {
+            if ($checksumDetails->validate) {
                 try {
-                    $user = User::with(['userTranslation','userTransEn','userDetails','interests.interest.interestTranslation',
-                                'language','location.locationTranslation'])
-                                ->whereContactNo($request->contact_no)->firstOrFail();
-                    if($user->is_active == 'y'){
+                    $user = User::with([
+                        'userTranslation', 'userTransEn', 'userDetails', 'interests.interest.interestTranslation',
+                        'language', 'location.locationTranslation'
+                    ])
+                        ->whereContactNo($request->contact_no)->firstOrFail();
+                    if ($user->is_active == 'y') {
                         Auth::login($user);
                         Auth::user()->tokens()->delete(); // Logout From All Devices    
                         $user->changeLanguage(); // Change Language
@@ -41,12 +43,13 @@ class AuthenticationController extends Controller
                                 'meta' => [
                                     'message'           =>  trans('api.login'),
                                     'auth_token'        =>  $user->createToken(config('utility.token'))->plainTextToken,
-                                ] ]);
-                    }else{
+                                ]
+                            ]);
+                    } else {
                         $this->response['meta']['message']  = trans('api.in_active');
                     }
                 } catch (\Exception $e) {
-                    $this->storeErrorLog($e,'login',trans('api.login_fail'));
+                    $this->storeErrorLog($e, 'login', trans('api.login_fail'));
                 }
             } else {
                 $this->response['meta']['message']  = $checksumDetails->message;
@@ -59,41 +62,43 @@ class AuthenticationController extends Controller
     public function setProfile(Request $request)
     {
         $rules = RegisterRequest::rules();
-        if( $this->apiValidator($request->all(), $rules) ) {
-            try{
+        if ($this->apiValidator($request->all(), $rules)) {
+            try {
                 $user = $this->getAuthUser();
                 $country_id = $location_id = $language_id = NULL;
-                $full_name = $request->first_name.' '.$request->last_name;
-                if($request->language == 'en'){ $full_name = Str::title($full_name); }
+                $full_name = $request->first_name . ' ' . $request->last_name;
+                if ($request->language == 'en') {
+                    $full_name = Str::title($full_name);
+                }
                 $traslate_data = [];
 
-                if(!empty($request->country_code)){
+                if (!empty($request->country_code)) {
                     $country = Country::wherePhonecode($request->country_code)->whereIsActive('y')->firstOrFail();
                     $country_id = $country->id;
                 }
-                if(!empty($request->location)){
+                if (!empty($request->location)) {
                     $location = Location::whereCustomId($request->location)->whereIsActive('y')->firstOrFail();
                     $location_id = $location->id;
                 }
-                if(!empty($request->language)){
+                if (!empty($request->language)) {
                     $language = Language::whereLangCode($request->language)->whereIsActive('y')->firstOrFail();
                     $language_id = $language->id;
                 }
-                if(empty($user) && !empty($request->email)){
+                if (empty($user) && !empty($request->email)) {
                     $user = User::whereEmail($request->email)->first();
                 }
 
-                if(!empty($user)){
+                if (!empty($user)) {
                     $user->fill($request->all());
                     $user->country_id = $country_id;
                     $user->location_id = $location_id;
                     $user->discover_location_id = $location_id;
                     $user->language_id = $language_id;
-                }else{
+                } else {
                     $user = User::updateOrCreate([
                         'country_code'          =>  $request->country_code ?? NULL,
                         'contact_no'            =>  $request->contact_no ?? NULL,
-                    ],[
+                    ], [
                         'custom_id'             =>  getUniqueString('users'),
                         'birth_date'            =>  $request->birth_date ?? NULL,
                         'gender'                =>  $request->gender ?? NULL,
@@ -106,28 +111,30 @@ class AuthenticationController extends Controller
                     ]);
                 }
 
-                if(!empty($full_name)){
+                if (!empty($full_name)) {
                     $language_codes = Language::pluck('lang_code')->toArray();
-                    foreach($language_codes as $language_code){
-                        $traslate_data[$language_code] =  [ 'full_name' =>  $full_name ];
+                    foreach ($language_codes as $language_code) {
+                        $traslate_data[$language_code] =  ['full_name' =>  $full_name];
                     }
                     $user->update($traslate_data);
 
                     // Store Account Id
-                    if(!empty($request->language) && $request->language == 'en'){
-                        $user->account_id = Str::slug(substr($full_name, 0, 4), "_").'_'.time();
+                    if (!empty($request->language) && $request->language == 'en') {
+                        $user->account_id = Str::slug(substr($full_name, 0, 4), "_") . '_' . time();
                     }
                     $user->is_trans_full_name = 'n';
                 }
-                
-                if($user->wasRecentlyCreated && !empty($user->country_code) && !empty($user->contact_no)){
+
+                if ($user->wasRecentlyCreated && !empty($user->country_code) && !empty($user->contact_no)) {
                     $user->contact_verified_at = \Carbon\Carbon::now();  // Set Contact Number As Verified
                     $user->sendWelcomeSms(); // Send Welcome SMS
                 }
 
-                if( !empty($request->profile_photo) ) {
-                    if(!empty($user->profile_photo)){
-                        if( Storage::exists($user->profile_photo) ) { Storage::delete($user->profile_photo); }
+                if (!empty($request->profile_photo)) {
+                    if (!empty($user->profile_photo)) {
+                        if (Storage::exists($user->profile_photo)) {
+                            Storage::delete($user->profile_photo);
+                        }
                     }
                     $path = $request->file('profile_photo')->store('users/profile_photo');
                     $user->profile_photo = $path;
@@ -139,21 +146,21 @@ class AuthenticationController extends Controller
                 $user->discover_start_age   =   config('utility.profile.detail.discover_start_age');
                 $user->discover_end_age     =   config('utility.profile.detail.discover_end_age');
 
-                if($user->save()){
-                    $user = User::with(['userTranslation','interests','userDetails','location.locationTranslation','language'])
-                                    ->whereId($user->id)->firstOrFail();
+                if ($user->save()) {
+                    $user = User::with(['userTranslation', 'interests', 'userDetails', 'location.locationTranslation', 'language'])
+                        ->whereId($user->id)->firstOrFail();
                     Auth::login($user);
                     return (new SignUpResource($user))
                         ->additional([
                             'meta' => [
-                                'message'       =>  trans('api.profile_setuped'), 
+                                'message'       =>  trans('api.profile_setuped'),
                                 'auth_token'    =>  $user->createToken(config('utility.token'))->plainTextToken,
                             ]
                         ]);
-                }else{
+                } else {
                     $this->response['meta']['message']  = trans('api.profile_setuped_fail');
                 }
-            } catch(ModelNotFoundException $exception) {                
+            } catch (ModelNotFoundException $exception) {
                 switch ($exception->getModel()) {
                     case 'App\Models\User':
                         $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("User")]);
@@ -175,7 +182,7 @@ class AuthenticationController extends Controller
                         break;
                 };
             } catch (\Exception $e) {
-                $this->storeErrorLog($e,'set_profile');
+                $this->storeErrorLog($e, 'set_profile');
             }
         }
 
@@ -189,7 +196,7 @@ class AuthenticationController extends Controller
             'contact_no'    =>  'required',
         ];
 
-        if( $this->apiValidator($request->all(), $rules) ) {
+        if ($this->apiValidator($request->all(), $rules)) {
             try {
                 $user = User::whereContactNo($request->contact_no)->first();
             } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $exception) {
@@ -201,7 +208,7 @@ class AuthenticationController extends Controller
                     ]
                 ], 404);
             } catch (\Exception $e) {
-                $this->storeErrorLog($e,'generate_checksum');
+                $this->storeErrorLog($e, 'generate_checksum');
             }
 
             $key = config('utility.checksum.key');
@@ -279,59 +286,63 @@ class AuthenticationController extends Controller
     public function socialLogin(Request $request)
     {
         $rules = SocialLoginRequest::rules($request);
-        if( $this->apiValidator($request->all(), $rules, $this->version) ) {
+        if ($this->apiValidator($request->all(), $rules, $this->version)) {
             try {
                 // Check for deleted account details
                 $account_del = false;
                 $traslate_data = [];
 
-                if(!empty($request->email)){
+                if (!empty($request->email)) {
                     $deleted = User::onlyTrashed()->pluck('email')->toArray();
-                    if( in_array($request->email, $deleted) ) { $account_del = true; }
-                }else{
-                    $deleted = User::onlyTrashed()->where($request->type.'_id', $request[$request->type.'_id'])->first();
-                    if($deleted){ $account_del = true; }
+                    if (in_array($request->email, $deleted)) {
+                        $account_del = true;
+                    }
+                } else {
+                    $deleted = User::onlyTrashed()->where($request->type . '_id', $request[$request->type . '_id'])->first();
+                    if ($deleted) {
+                        $account_del = true;
+                    }
                 }
 
-                if($account_del){
+                if ($account_del) {
                     $this->response['meta']['message']  =  trans('api.account_deleted');
                     $this->status = Response::HTTP_FORBIDDEN;
                     return $this->returnResponse();
                 }
 
                 $user = User::query();
-                if(!empty($request->type)){
-                    $user = $user->where($request->type.'_id', $request[$request->type.'_id']);
-                }else{
+                if (!empty($request->type)) {
+                    $user = $user->where($request->type . '_id', $request[$request->type . '_id']);
+                } else {
                     $user = $user->where('email', $request->email);
                 }
                 $user = $user->first();
-                  
+
                 unset($request['type']);
-                if( !empty($user) ) { # Update Profile Details
+                if (!empty($user)) { # Update Profile Details
                     // $request['full_name'] = $user->full_name ? $user->full_name : $request->full_name;
                     $user->fill($request->all());
                 } else { # Create new user
                     $request['custom_id'] = getUniqueString('users');
                     $password = str_random(config('utility.password_length'));
                     $request['password'] = Hash::make($password);
-                    
+
                     $user = User::create($request->all());
-                    $user->is_social_user = 'y'; 
+                    $user->is_social_user = 'y';
                 }
 
-                if(!empty($request->full_name) && empty($user->full_name)){
+                if (!empty($request->full_name) && empty($user->full_name)) {
                     $language_codes = Language::pluck('lang_code')->toArray();
-                    foreach($language_codes as $language_code){
-                        $traslate_data[$language_code] =  [ 'full_name' =>  $request->full_name ];
+                    foreach ($language_codes as $language_code) {
+                        $traslate_data[$language_code] =  ['full_name' =>  $request->full_name];
                     }
                     $user->update($traslate_data);
                     $user->is_trans_full_name = 'n';
                 }
 
                 $path = $user->profile_photo;
-                if( $request->has('profile_photo') ) {
-                    if( $user->profile_photo ) if( Storage::exists($user->profile_photo) ) Storage::delete($user->profile_photo);
+                if ($request->has('profile_photo')) {
+                    if ($user->profile_photo) if (Storage::exists($user->profile_photo)) Storage::delete($user->profile_photo);
                     $path = $request->file('profile_photo')->store('users/profile_photo');
                 }
 
@@ -339,11 +350,12 @@ class AuthenticationController extends Controller
                 $user->save();
                 return (new UserProfile($user))
                     ->additional([
-                    'meta' => [
-                        'message'       =>  trans('api.login'), 
-                        'auth_token'    =>  $user->createToken(config('utility.token'))->plainTextToken,
-                    ] ]);
-            } catch(ModelNotFoundException $exception) {                
+                        'meta' => [
+                            'message'       =>  trans('api.login'),
+                            'auth_token'    =>  $user->createToken(config('utility.token'))->plainTextToken,
+                        ]
+                    ]);
+            } catch (ModelNotFoundException $exception) {
                 switch ($exception->getModel()) {
                     case 'App\Models\User':
                         $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("User")]);
@@ -353,7 +365,7 @@ class AuthenticationController extends Controller
                         break;
                 };
             } catch (\Exception $e) {
-                $this->storeErrorLog($e,'social_login');
+                $this->storeErrorLog($e, 'social_login');
             }
         }
         return $this->returnResponse();
@@ -369,7 +381,7 @@ class AuthenticationController extends Controller
 
             $this->status = Response::HTTP_OK;
             $this->response['meta']['message'] = trans('api.logout');
-        } catch(ModelNotFoundException $exception) {
+        } catch (ModelNotFoundException $exception) {
             switch ($exception->getModel()) {
                 case 'App\Models\User':
                     $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("User")]);
@@ -379,7 +391,7 @@ class AuthenticationController extends Controller
                     break;
             };
         } catch (\Exception $e) {
-            $this->storeErrorLog($e,'logout');
+            $this->storeErrorLog($e, 'logout');
         }
         return $this->returnResponse();
     }

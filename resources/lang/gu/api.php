@@ -45,7 +45,7 @@ return [
     'max_referred' => 'આ રેફરલ કોડનો ઉપયોગ કરી શકાતો નથી',
     'generated'  =>  ':entity સફળતાપૂર્વક જનરેટ કર્યું',
     'apply_success' =>  ':entity સફળતાપૂર્વક લાગુ કર્યું',
-    'swipe_over' =>  'તમારી દૈનિક સ્વાઇપ મર્યાદા પૂરી થઈ ગઈ છે. ચાલુ રાખવા માટે અપગ્રેડ કરો.',
+    'swipe_over' =>  'તમારી દૈનિક લાઈક મર્યાદા પૂરી થઈ ગઈ છે. ચાલુ રાખવા માટે અપગ્રેડ કરો.',
 
     /* Login Messages */
     'login_fail' => 'આ જાણકારી અમારા રેકોર્ડ સાથે મેળ ખાતા નથી',
@@ -197,7 +197,7 @@ return [
         ],
         'swipe_alert'    =>  [
             'title'     =>  "Hi Hello",
-            'message'   =>  "Your daily swipe limit is over. Upgrade to continue.",
+            'message'   =>  "Your daily like limit is over. Upgrade to continue.",
         ],
         'verify_fail_email'    =>  [
             'title'     =>  "Hi Hello",

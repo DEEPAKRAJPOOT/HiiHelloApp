@@ -10,9 +10,12 @@ use App\Http\Resources\v1\ { LanguageResource, CmsResource, CountryResource, Loc
 use App\Http\Requests\Api\General\ { PaginationRequest, LocationRequest, ProfileDetailRequest, InterestRequest };
 use App\Http\Requests\Api\User\ { AddDeviceTokenRequest, GetDeviceTokenRequest };
 use App\Models\ { User, Language, CmsPage, Country, Location, Interest, Faq, DeviceToken, ProfileDetail, AppDetail, Personality, LocationTranslation };
+use Illuminate\Support\Facades\Redis;
+use App\Http\Traits\RedisTrait;
 
 class GeneralController extends Controller
 {
+    use RedisTrait;
     private $version = "v.1.0";
     public function getVersion(){ return $this->version; }
 
@@ -23,7 +26,7 @@ class GeneralController extends Controller
         $cms_page       =   CmsPage::select('updated_at')->orderBy('updated_at', 'DESC')->first();
         $location       =   Location::select('updated_at')->orderBy('updated_at', 'DESC')->first();
         $attributes     =   ProfileDetail::whereIsActive('y')->distinct()->pluck('attribute')->toArray();
-        $app_details    =   AppDetail::all();
+        $app_details    =   AppDetail::limit(4)->get();
 
         $verification_data = [];
         if($app_details->isNotEmpty()){
@@ -85,39 +88,6 @@ class GeneralController extends Controller
         return $this->returnResponse();
     }
 
-    // Get All Languages List
-    public function getLanguages()
-    {
-        try{
-            $languages = Language::whereIsActive('y')->get();
-            if($languages->isNotEmpty()){
-                return (LanguageResource::collection($languages))
-                        ->additional([
-                        'meta' => [
-                            'url'       =>  url()->current(),
-                            'api'       =>  $this->getVersion(),
-                            'language'  =>  app()->getLocale(),
-                            'message'   =>  trans('api.list', ['entity' => __('Languages')]),
-                        ] ]);
-            }else{
-                $this->status = Response::HTTP_FORBIDDEN;
-                $this->response['meta']['message']  = trans('api.not_found',['entity' => __('Languages')]);
-            }
-        } catch(ModelNotFoundException $exception) {                
-            switch ($exception->getModel()) {
-                case 'App\Models\Language':
-                    $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("Languages")]);
-                    break;
-                default:
-                    $this->response['meta']['message'] = trans('api.went_wrong');
-                    break;
-            };
-        } catch (\Exception $e) {
-            $this->storeErrorLog($e,'get_languages');
-        }
-        return $this->returnResponse();
-    }
-
     // Get Countries List
     public function getCountries(Request $request)
     {
@@ -154,10 +124,20 @@ class GeneralController extends Controller
     public function getCmsPages(Request $request)
     {
         try{
-            $cms_pages = CmsPage::with('cmsPageTranslation')->get();
-            if($cms_pages->isNotEmpty()){
+            $redisKey = config('redis.key.get-cms-pages');
+            if( $this->cacheExist($redisKey) ) { 
+                $cms_pages = $this->getCache($redisKey); 
+            }else {
+                $cms_pages = CmsPage::with('cmsPageTranslation')->get();
+                if( $this->cacheAllow() ){
+                    $this->setCache($redisKey, $cms_pages);
+                    $cms_pages = $this->getCache($redisKey);
+                } 
+            }
+            
+            if(count($cms_pages) > 0){
                 return (CmsResource::collection($cms_pages))
-                ->additional([
+                    ->additional([
                     'meta' => [
                         'url'       =>  url()->current(),
                         'api'       =>  $this->getVersion(),
@@ -673,4 +653,39 @@ class GeneralController extends Controller
         }
         return $this->returnResponse();
     }
+
+    // Get All Languages List
+    /*
+    public function getLanguages()
+    {
+        try{
+            $languages = Language::whereIsActive('y')->get();
+            if($languages->isNotEmpty()){
+                return (LanguageResource::collection($languages))
+                        ->additional([
+                        'meta' => [
+                            'url'       =>  url()->current(),
+                            'api'       =>  $this->getVersion(),
+                            'language'  =>  app()->getLocale(),
+                            'message'   =>  trans('api.list', ['entity' => __('Languages')]),
+                        ] ]);
+            }else{
+                $this->status = Response::HTTP_FORBIDDEN;
+                $this->response['meta']['message']  = trans('api.not_found',['entity' => __('Languages')]);
+            }
+        } catch(ModelNotFoundException $exception) {                
+            switch ($exception->getModel()) {
+                case 'App\Models\Language':
+                    $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("Languages")]);
+                    break;
+                default:
+                    $this->response['meta']['message'] = trans('api.went_wrong');
+                    break;
+            };
+        } catch (\Exception $e) {
+            $this->storeErrorLog($e,'get_languages');
+        }
+        return $this->returnResponse();
+    }
+    */
 }

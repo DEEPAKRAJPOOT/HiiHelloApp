@@ -81,7 +81,9 @@ trait InitialiseUserTrait
         $user = [
             'custom_id'         =>  getUniqueString('users'),
             'x-language'        =>  config('utility.default_lang_code'),
-            'full_name'         =>  $faker->firstNameFemale.' '.$faker->lastName,
+            // 'full_name'         =>  $faker->firstNameFemale.' '.$faker->lastName,
+            'first_name'        =>  $faker->firstNameFemale,
+            'last_name'         =>  $faker->lastName,
             'email'             =>  $faker->email,
             'country_code'      =>  $country->phonecode,
             'contact_no'        =>  12345678,

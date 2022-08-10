@@ -49,7 +49,7 @@ class LikeTest extends TestCase
                 'api'       =>  $this->getVersion(),
                 'url'       =>  url()->current(),
                 'language'  =>  config('utility.default_lang_code'),
-                'message'   =>  trans('validation.in', ['attribute' => __('user_id') ])
+                'message'   =>  trans('api.not_found', ['entity' => __('User') ])
             ],
         ]);
     }

@@ -45,7 +45,7 @@ return [
     'max_referred' => 'हा रेफरल कोड वापरला जाऊ शकत नाही',
     'generated'  =>  ':entity यशस्वीरित्या व्युत्पन्न केले',
     'apply_success' =>  ':entity यशस्वीरित्या लागू केले',
-    'swipe_over' =>  'तुमची दैनंदिन स्वाइप मर्यादा संपली आहे. सुरू ठेवण्यासाठी अपग्रेड करा.',
+    'swipe_over' =>  'तुमची रोजची लाईक मर्यादा संपली आहे. सुरू ठेवण्यासाठी अपग्रेड करा.',
 
     /* Login Messages */
     'login_fail' => 'ही क्रेडेन्शियल आमच्या रेकॉर्डशी जुळत नाहीत',
@@ -197,7 +197,7 @@ return [
         ],
         'swipe_alert'    =>  [
             'title'     =>  "Hi Hello",
-            'message'   =>  "Your daily swipe limit is over. Upgrade to continue.",
+            'message'   =>  "Your daily like limit is over. Upgrade to continue.",
         ],
         'verify_fail_email'    =>  [
             'title'     =>  "Hi Hello",
