@@ -9,5 +9,5 @@ class AppDetail extends Model
 {
     use HasFactory;
 
-    protected $fillable = [ 'custom_id', 'constant', 'value', 'hint' ];
+    protected $fillable = ['custom_id', 'constant', 'value', 'hint'];
 }

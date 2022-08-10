@@ -45,7 +45,7 @@ return [
     'max_referred' => 'এই রেফারেল কোড ব্যবহার করা যাবে না',
     'generated'  =>  ':entity সফলভাবে উত্পন্ন',
     'apply_success' =>  ':entity সফলভাবে প্রয়োগ করা হয়েছে',
-    'swipe_over' =>  'আপনার দৈনিক সোয়াইপ সীমা শেষ. চালিয়ে যেতে আপগ্রেড করুন।',
+    'swipe_over' =>  'আপনার দৈনিক লাইক সীমা শেষ. চালিয়ে যেতে আপগ্রেড করুন।',
 
     /* Login Messages */
     'login_fail' => 'এই শংসাপত্রগুলি আমাদের রেকর্ডের সাথে মেলে না',
@@ -197,7 +197,7 @@ return [
         ],
         'swipe_alert'    =>  [
             'title'     =>  "Hi Hello",
-            'message'   =>  "Your daily swipe limit is over. Upgrade to continue.",
+            'message'   =>  "Your daily like limit is over. Upgrade to continue.",
         ],
         'verify_fail_email'    =>  [
             'title'     =>  "Hi Hello",

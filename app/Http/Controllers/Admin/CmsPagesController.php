@@ -9,9 +9,12 @@ use App\Models\Language;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use App\Http\Traits\RedisTrait;
 
 class CmsPagesController extends Controller
 {
+    use RedisTrait;
+
     /**
      * Display a listing of the resource.
      *
@@ -37,6 +40,8 @@ class CmsPagesController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function store(Request $request) {
+        /* Clear Cache Details */
+        $this->deleteCache(config('redis.key.get-cms-pages'));
     }
 
     /**
@@ -80,6 +85,9 @@ class CmsPagesController extends Controller
 
         $page->update($data);
         if ($page->save()) {
+            /* Clear Cache Details */
+            $this->deleteCache(config('redis.key.get-cms-pages'));
+
             flash(trans('flash_message.update', ['entity' => 'Page details']))->success();
         } else {
             flash(trans('try_again'))->error();
@@ -96,6 +104,8 @@ class CmsPagesController extends Controller
      */
     public function destroy($id) {
         CmsPage::find($id);
+        /* Clear Cache Details */
+        $this->deleteCache(config('redis.key.get-cms-pages'));
     }
 
     /* Listing Details */

@@ -45,7 +45,7 @@ return [
     'max_referred' => 'ଏହି ରେଫରାଲ୍ କୋଡ୍ ବ୍ୟବହାର କରାଯାଇପାରିବ ନାହିଁ |',
     'generated'  =>  ':entity ସଫଳତାର ସହିତ ସୃଷ୍ଟି |',
     'apply_success' =>  ':entity ସଫଳତାର ସହିତ ପ୍ରୟୋଗ ହୋଇଛି |',
-    'swipe_over' =>  'ତୁମର ଦ daily ନିକ ସ୍ୱାଇପ୍ ସୀମା ସମାପ୍ତ ହୋଇଛି | ଜାରି ରଖିବାକୁ ଅପଗ୍ରେଡ୍ କରନ୍ତୁ |',
+    'swipe_over' =>  'ତୁମର ଦ daily ନିକ ପରି ସୀମା ସମାପ୍ତ ହୋଇଛି | ଜାରି ରଖିବାକୁ ଅପଗ୍ରେଡ୍ କରନ୍ତୁ |',
 
     /* Login Messages */
     'login_fail' => 'ଏହି ପ୍ରମାଣପତ୍ରଗୁଡ଼ିକ ଆମର ରେକର୍ଡ ସହିତ ମେଳ ଖାଉ ନାହିଁ',
@@ -197,7 +197,7 @@ return [
         ],
         'swipe_alert'    =>  [
             'title'     =>  "Hi Hello",
-            'message'   =>  "Your daily swipe limit is over. Upgrade to continue.",
+            'message'   =>  "Your daily like limit is over. Upgrade to continue.",
         ],
         'verify_fail_email'    =>  [
             'title'     =>  "Hi Hello",

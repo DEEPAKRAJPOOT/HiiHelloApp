@@ -45,7 +45,7 @@ return [
     'max_referred' => 'ఈ రెఫరల్ కోడ్ ఉపయోగించబడదు',
     'generated'  =>  ':entity విజయవంతంగా రూపొందించబడింది',
     'apply_success' =>  ':entity విజయవంతంగా దరఖాస్తు చేయబడింది',
-    'swipe_over' =>  'మీ రోజువారీ స్వైప్ పరిమితి ముగిసింది. కొనసాగించడానికి అప్గ్రేడ్ చేయండి.',
+    'swipe_over' =>  'మీ రోజువారీ లైక్ పరిమితి ముగిసింది. కొనసాగించడానికి అప్గ్రేడ్ చేయండి.',
 
     /* Login Messages */
     'login_fail' =>'ఈ ఆధారాలు మా రికార్డులతో సరిపోలడం లేదు',
@@ -197,7 +197,7 @@ return [
         ],
         'swipe_alert'    =>  [
             'title'     =>  "Hi Hello",
-            'message'   =>  "Your daily swipe limit is over. Upgrade to continue.",
+            'message'   =>  "Your daily like limit is over. Upgrade to continue.",
         ],
         'verify_fail_email'    =>  [
             'title'     =>  "Hi Hello",

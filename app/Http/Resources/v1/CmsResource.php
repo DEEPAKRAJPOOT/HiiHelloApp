@@ -3,9 +3,12 @@
 namespace App\Http\Resources\v1;
 
 use Illuminate\Http\Resources\Json\JsonResource;
+use App\Http\Traits\RedisTrait;
 
 class CmsResource extends JsonResource
 {
+    use RedisTrait;
+    
     /**
      * Transform the resource collection into an array.
      *
@@ -14,15 +17,27 @@ class CmsResource extends JsonResource
      */
     public function toArray($request)
     {
-        return [ 
-            'id'            =>  $this->custom_id ?? "",
-            // 'title'         =>  $this->getTitle() ?? "",
-            // 'description'   =>  $this->getDescription() ?? "",
-            'title'         =>  $this->cmsPageTranslation ? $this->cmsPageTranslation->title : "",
-            'description'   =>  $this->cmsPageTranslation ? $this->cmsPageTranslation->description : "",
-            'hint'          =>  $this->hint ?? "",
-            'image'         =>  generateURL($this->file) ?? "",
-        ];
+        if( $this->cacheExist(config('redis.key.get-cms-pages')) ){
+            return [ 
+                'id'            =>  $this->custom_id ?? "",
+                // 'title'         =>  $this->getTitle() ?? "",
+                // 'description'   =>  $this->getDescription() ?? "",
+                'title'         =>  $this->cms_page_translation ? $this->cms_page_translation->title : "",
+                'description'   =>  $this->cms_page_translation ? $this->cms_page_translation->description : "",
+                'hint'          =>  $this->hint ?? "",
+                'image'         =>  generateURL($this->file) ?? "",
+            ];
+        }else{
+            return [ 
+                'id'            =>  $this->custom_id ?? "",
+                // 'title'         =>  $this->getTitle() ?? "",
+                // 'description'   =>  $this->getDescription() ?? "",
+                'title'         =>  $this->cmsPageTranslation ? $this->cmsPageTranslation->title : "",
+                'description'   =>  $this->cmsPageTranslation ? $this->cmsPageTranslation->description : "",
+                'hint'          =>  $this->hint ?? "",
+                'image'         =>  generateURL($this->file) ?? "",
+            ];
+        }
         return parent::toArray($request);
     }
 
