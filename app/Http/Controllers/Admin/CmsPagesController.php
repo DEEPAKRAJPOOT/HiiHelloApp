@@ -41,7 +41,7 @@ class CmsPagesController extends Controller
      */
     public function store(Request $request) {
         /* Clear Cache Details */
-        $this->deleteCache(config('redis.key.get-cms-pages'));
+        if($this->cacheAllow()) { $this->deleteCache(config('redis.key.get-cms-pages')); }
     }
 
     /**
@@ -86,7 +86,7 @@ class CmsPagesController extends Controller
         $page->update($data);
         if ($page->save()) {
             /* Clear Cache Details */
-            $this->deleteCache(config('redis.key.get-cms-pages'));
+            if($this->cacheAllow()) { $this->deleteCache(config('redis.key.get-cms-pages')); }
 
             flash(trans('flash_message.update', ['entity' => 'Page details']))->success();
         } else {
@@ -105,7 +105,7 @@ class CmsPagesController extends Controller
     public function destroy($id) {
         CmsPage::find($id);
         /* Clear Cache Details */
-        $this->deleteCache(config('redis.key.get-cms-pages'));
+        if($this->cacheAllow()) { $this->deleteCache(config('redis.key.get-cms-pages')); }
     }
 
     /* Listing Details */
