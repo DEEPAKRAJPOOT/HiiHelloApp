@@ -30,13 +30,15 @@ class UserTest extends TestCase
 
     /* ------------------------------------------ User Profile ------------------------------------------  */
 
-    public function test_get_profile_validation()
+    public function test_get_profile_not_found()
     {
+        $user = $this->createUser();
+        $this->setUserToken($user);
+
         $data = [
             'id'      =>  'DemoIdTest',
         ];
         $this->postJson(route('api.user.get-profile'),$data)
-        ->assertStatus(412)
         ->assertJsonStructure([
             'data', 'meta' => [ 'api','url','message' ],
         ])->assertJson([
@@ -45,14 +47,17 @@ class UserTest extends TestCase
                 'api'       =>  $this->getVersion(),
                 'url'       =>  url()->current(),
                 'language'  =>  config('utility.default_lang_code'),
-                'message'   =>  trans('validation.in', ['attribute' => __('id') ])
+                'message'   =>  trans('api.not_found', ['entity' => __('User') ])
             ],
         ]);
     }
 
     public function test_get_profile_successfully()
     {        
+        $auth_user = $this->createUser();
+        $this->setUserToken($auth_user);
         $user = $this->createUser();
+
         $data = [
             'id'    =>  $user->custom_id,
         ];
@@ -60,7 +65,19 @@ class UserTest extends TestCase
         ->assertOk()
         ->assertJsonStructure([
             'data'  =>  [
-                'id', 'full_name', 'email', 'contact' => ['code', 'number'], 'age', 'gender', 'interest', 'profile_photo', 'media' => ['profile_images', 'profile_videos'], 'flags' => [ 'profile_setuped', 'verified_staus', 'likes', 'matches', 'chats'],
+                'id', 'full_name', 'age', 'interests', 'extra' => ['about_me'], 'location', 'interests', 'profile_photo', 
+                'my_things' =>  [
+                    'relationship_status', 'i_am_here', 'food_preference', 'drinking', 'smoking', 'pet', 'star_sign', 'community'
+                ],
+                'my_basics' =>  [
+                    'personalities', 'education', 'university_college', 'profession', 'religion'
+                ],
+                'media' => [
+                    'profile_images', 'profile_videos',
+                    'profile_voice' =>  [
+                        'voice', 'voice_answer'
+                    ],
+                ], 'flags' => [ 'verified_staus', 'is_blocked'],
             ],
             'meta' => [ 'api','url','message' ],
         ])->assertJson([
@@ -73,25 +90,14 @@ class UserTest extends TestCase
             'data'  =>  [
                 'id'                =>  $user->custom_id ?? "",
                 'full_name'         =>  $user->userTranslation ? $user->userTranslation->full_name : "",
-                'email'             =>  $user->email ?? "",
-                'contact'       =>  [
-                    'code'      =>  $user->country_code,
-                    'number'    =>  $user->contact_no,
-                ],
                 'age'               =>  $user->getAge(),
-                'gender'            =>  $user->gender ?? "",
-                'interest'          =>  $user->interest ?? "",
                 'profile_photo'     =>  generateURL($user->profile_photo) ?? "",
                 'media' =>  [
                     'profile_images'    =>  $user->getProfileImages(),
                     'profile_videos'    =>  $user->getProfileVideos(),
                 ],
                 'flags'             =>  [
-                    'profile_setuped'       =>  $user->isProfileSetuped(),
-                    'verified_staus'        =>  $user->getVerifiedStatus(),
-                    'likes'                 =>  $user->likes_count,
-                    'matches'               =>  $user->countMatches(),
-                    'chats'                 =>  $user->countChats(),
+                    'is_blocked'            =>  $user->blocked_tos_count ? $this->blocked_tos_count > 0 ? true : false : false,
                 ],
             ],
         ]);

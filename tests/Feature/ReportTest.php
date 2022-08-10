@@ -50,7 +50,7 @@ class ReportTest extends TestCase
                 'api'       =>  $this->getVersion(),
                 'url'       =>  url()->current(),
                 'language'  =>  config('utility.default_lang_code'),
-                'message'   =>  trans('validation.in', ['attribute' => __('reported_user') ])
+                'message'   =>  trans('validation.min.string', ['attribute' => __('message'), 'min' => 3 ])
             ],
         ]);
     }

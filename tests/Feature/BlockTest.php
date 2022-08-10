@@ -55,12 +55,11 @@ class BlockTest extends TestCase
 
     public function test_block_unblock_successfully()
     {
-        // $user = User::firstOrFail();
         $user = $this->createUser();
         $this->setUserToken($user);
         $data = [
-            'user_id' => '4d1Ol3mp43zBcEavnqHR',
-            'status' => 'unblock',
+            'user_id'   =>  $user->custom_id,
+            'status'    =>  'block',
         ];
         $this->postJson(route('api.user.block-unblock'),$data)
         ->assertStatus(200)
