@@ -14,14 +14,8 @@ use Illuminate\Support\Str;
 class AuthenticationController extends Controller
 {
     private $version = "v.1.0";
-    public function getVersion()
-    {
-        return $this->version;
-    }
-    public function getAuthUser()
-    {
-        return auth('sanctum')->user();
-    }
+    public function getVersion(){ return $this->version; }
+    public function getAuthUser(){ return auth('sanctum')->user(); }
 
     // User Login
     public function login(Request $request)
