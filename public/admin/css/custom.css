@@ -58,8 +58,9 @@
 .alert {
     position: absolute;
     margin-bottom: 0;
-    bottom: 40px;
+    /*bottom: 40px;*/
     right: 40px;
+    z-index: 50;
 }
 form > .card-header {
     display: flex;
