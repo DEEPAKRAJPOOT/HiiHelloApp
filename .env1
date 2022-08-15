@@ -1,0 +1,230 @@
+APP_NAME=Hi-Hello
+APP_ENV=local
+APP_KEY=base64:WjN8f9YzyIZrPXbMyVWV/0Jk6E9EiprQzc9C9f43CG8=
+APP_DEBUG=true
+APP_URL=http://127.0.0.1:8000
+
+LOG_CHANNEL=stack
+LOG_DEPRECATIONS_CHANNEL=null
+LOG_LEVEL=debug
+
+# Utility Details --------------------------------------------------------------------------------
+DEFAULT_LANG_CODE=en
+CACHE_ALLOW=true
+API_CACHE_ALLOW=false
+PROFILE_DETAIL_MAX_INTEREST=1
+PROFILE_DISCOVER_DISTANCE=100
+PROFILE_DISCOVER_START_AGE=0
+PROFILE_DISCOVER_END_AGE=0
+TWILLIO_ALLOW_CALL_TIME='00:05:00'
+MIN_AGE=18
+MAX_AGE=65
+DAILY_SWIPE_LIMIT=12
+
+# Match Logic Details --------------------------------------------------------------------------------
+MATCH_BACKUP_LOGIC=true
+MATCH_PERCENTAGE=20
+MATCH_AGE_MIN_DIFF=1
+MATCH_AGE_MAX_DIFF=1
+MATCH_MAX_LIMIT=1
+MATCH_MAX_LIMIT_APPLY=true
+
+# Database Details --------------------------------------------------------------------------------
+DB_CONNECTION=mysql
+DB_HOST=localhost
+DB_PORT=3306
+DB_DATABASE=la_hi_hello
+DB_USERNAME=root
+DB_PASSWORD=root
+
+# RDS Details --------------------------------------------------------------------------------
+#DB_CONNECTION=mysql
+#DB_HOST=hihellapp.cx3wyfpc93bh.ap-south-1.rds.amazonaws.com
+#DB_PORT=3306
+#DB_DATABASE=hihelloapp
+#DB_USERNAME=admin
+#DB_PASSWORD=JINJN5A0cELWaT6xRJ1S
+
+BROADCAST_DRIVER=log
+CACHE_DRIVER=file
+FILESYSTEM_DRIVER=public
+STORAGE_URL='https://hi-hello-app.s3.ap-south-1.amazonaws.com'
+QUEUE_CONNECTION=database
+SESSION_DRIVER=file
+SESSION_LIFETIME=120
+
+MEMCACHED_HOST=127.0.0.1
+
+# Redis Details -------------------------------------------------------------------------------------
+REDIS_CLIENT=predis
+REDIS_HOST=127.0.0.1
+REDIS_PASSWORD=null
+REDIS_PORT=6379
+
+# SMTP Details -------------------------------------------------------------------------------------
+#MAIL_MAILER=smtp
+#MAIL_HOST=smtp.mailtrap.io
+#MAIL_PORT=2525
+#MAIL_USERNAME=135ec80cd75997
+#MAIL_PASSWORD=0566b2a54abe35
+#MAIL_ENCRYPTION=tls
+#MAIL_FROM_ADDRESS=noreply@hihello.com
+#MAIL_FROM_NAME="${APP_NAME}"
+
+# SMTP Live Details -------------------------------------------------------------------------------------
+#MAIL_MAILER=smtp
+#MAIL_HOST=smtp.gmail.com
+#MAIL_PORT=465
+#MAIL_USERNAME=support@hihelloapp.com
+#MAIL_PASSWORD=utjwyzdvlehkhcip
+#MAIL_ENCRYPTION=ssl
+#MAIL_FROM_ADDRESS=support@hihelloapp.com
+#MAIL_FROM_NAME="${APP_NAME}"
+
+# Sendgrid Live Details -------------------------------------------------------------------------------------
+MAIL_MAILER=smtp
+MAIL_HOST=smtp.sendgrid.net
+MAIL_PORT=587
+MAIL_USERNAME=apikey
+MAIL_PASSWORD="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"
+MAIL_ENCRYPTION=tls
+MAIL_FROM_ADDRESS=support@hihelloapp.com
+MAIL_FROM_NAME="${APP_NAME}"
+
+
+# Notification Types -------------------------------------------------------------------------------------
+NOTIFICATION_IMAGE_MODERATION="image-moderation"
+
+
+# RAZORPAY Test Details (Mansi)--------------------------------------------------------------------------------
+RAZORPAY_API_KEY='rzp_test_RaLDbLv3ynJapC'
+RAZORPAY_API_SECRET='uKoflMmp2pAPPqt6SBUQ8mko'
+RAZORPAY_CURRENCY='INR'
+RAZORPAY_PARTIAL_PAYMENT=true
+
+# RAZORPAY Test Details (Client)--------------------------------------------------------------------------------
+#RAZORPAY_API_KEY='rzp_test_gYLsCLkr0lfxqM'
+#RAZORPAY_API_SECRET='9CBmqppO7d2u5ffycoCow8gO'
+
+
+# IOS InApp Purchase Details --------------------------------------------------------------------------------
+IOS_IN_APP_URL=https://sandbox.itunes.apple.com/verifyReceipt
+IOS_IN_APP_PASSWORD=875dc89c797547fc95f7b70a89c741ab
+
+# IOS InApp Purchase Details (Live/Production) --------------------------------------------------------------------------------
+#IOS_IN_APP_URL=https://buy.itunes.apple.com/verifyReceipt
+
+
+# FCM Details -------------------------------------------------------------------------------------
+GOOGLE_FCM_SERVER_KEY='AAAAuXC5OJE:APA91bHeZQv7xFgL3Gw7ArsSQeB5NFj94nMx-NQG8FhkWnNwZUlUYKaMC8lpHF5xEt7Hb4DIqrZn6bAJ_fgwUswv_t-HnRhWjlAmd71u1T0sigLDf4X3PSTiZpjAxRpcj3aStkYU_j5k'
+GOOGLE_TRANSLATE_API_KEY='AIzaSyCnTLblh4He46O3-5NoJ0sXOzyelS76jEY'
+
+
+# IMAGE MODERATION API DETAILS -----------------------------------------------------------------------------------
+IMAGE_MODERATION_API_URL='https://api.sightengine.com/1.0/check.json'
+IMAGE_MODERATION_API_USER=1792248422
+IMAGE_MODERATION_API_SECRET='wN7K9dUkHytkG6C3AgWG'
+IMAGE_MODERATION_ROW_VALUE=0.6
+IMAGE_MODERATION_PARTIAL_VALUE=0.8
+IMAGE_MODERATION_SAFE_VALUE=0.5
+IMAGE_MODERATION_ARTIFICIAL_VALUE=0.6
+IMAGE_MODERATION_NATURAL_VALUE=0.6
+IMAGE_MODERATION_SHARPNESS_VALUE=0.6
+IMAGE_MODERATION_FEMALE_VALUE=0.7
+IMAGE_MODERATION_MALE_VALUE=0.7
+IMAGE_MODERATION_MINOR_VALUE=0.7
+
+# VIDEO MODERATION API DETAILS -----------------------------------------------------------------------------------
+VIDEO_MODERATION_API_URL='https://api.sightengine.com/1.0/video/check-sync.json'
+VIDEO_MODERATION_API_USER=1792248422
+VIDEO_MODERATION_API_SECRET='wN7K9dUkHytkG6C3AgWG'
+VIDEO_MODERATION_ROW_VALUE=0.6
+VIDEO_MODERATION_PARTIAL_VALUE=0.8
+VIDEO_MODERATION_SAFE_VALUE=0.5
+
+
+# TWILLIO TEST ACCOUNT DETAILS -----------------------------------------------------------------------------------
+#TWILLIO_ACCOUNT_SID='AC772ec6faf6263fdc602aa49fc3b67d2b' 
+#TWILLIO_ACCOUNT_TOKEN='dc18034bda6e4c105e764157b88695fd'
+TWILLIO_OUTGOING_APP_SID='APf77bf42a99dcdd0d9f528f612a18bc23'
+TWILLIO_PUSH_SID='CR80b95c977320b88a058923f2b251013e'
+#TWILLIO_PUSH_SID='CRf16d8a9935c27604f50e76abf319e53c'
+TWILLIO_ACCOUNT_TIME_LINE=3600
+TWILLIO_ACCOUNT_NAME='HiHelloAppNotify'
+
+# TWILLIO LIVE ACCOUNT DETAILS -----------------------------------------------------------------------------------
+TWILLIO_ACCOUNT_SID='AC715392efca31703cee38150bdf6b4ba3' 
+TWILLIO_ACCOUNT_TOKEN='cc724deb4627ede3d218866d1552c056'
+
+
+# OLD TWILLIO DETAILS -----------------------------------------------------------------------------------
+# TWILLIO_OUTGOING_APP_SID='AP8cfeea5014a92cd3afb9a6638e263938'
+# TWILLIO_ACCOUNT_TIME_LINE=3600
+# TWILLIO_ACCOUNT_SID='AC121ef4f38952c56188d8882401848bd1' 
+# TWILLIO_ACCOUNT_TOKEN='d54e210e72b81dcb0333e35f76ea5f82'
+
+
+# Chat Details -----------------------------------------------------------------------------------
+CHAT_URL='http://127.0.0.1:8081/'
+CHAT_PORT=8081 
+
+
+# AWS S3 Details -----------------------------------------------------------------------------------
+#FILESYSTEM_DRIVER=s3
+AWS_ACCESS_KEY_ID=AKIASG43SOPSLXIXV2RL
+AWS_SECRET_ACCESS_KEY=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
+AWS_DEFAULT_REGION=ap-south-1
+AWS_BUCKET=hi-hello-app
+AWS_USE_PATH_STYLE_ENDPOINT=false
+
+PUSHER_APP_ID=
+PUSHER_APP_KEY=
+PUSHER_APP_SECRET=
+PUSHER_APP_CLUSTER=mt1
+
+MIX_PUSHER_APP_KEY="${PUSHER_APP_KEY}"
+MIX_PUSHER_APP_CLUSTER="${PUSHER_APP_CLUSTER}"
+
+CHECKSUM_KEY="nJBEompwPWet84kEMPNVx22F"
+CHECKSUM_ALGORITHM="AES-256-CBC"
+CHECKSUM_TIME_LIMIT_MINUTES=10
+
+# PROFILE CALCULATION -----------------------------------------------------------------------------------
+PROFILE_MAX_POINTS=100
+
+PROFILE_LANGUAGE=1
+PROFILE_FULL_NAME=1
+PROFILE_BIRTH_DATE=1
+PROFILE_LOCATION=1
+PROFILE_INTEREST=1
+
+PROFILE_PHOTO_VERIFIED=5
+PROFILE_EMAIL_VERIFIED=5
+PROFILE_VIDEO_VERIFIED=5
+PROFILE_CONTACT_NO=5
+
+MAIN_PHOTO=5
+PROFILE_PHOTO_DETAIL=5
+PROFILE_PHOTO_MAX_POINT=15
+PROFILE_VIDEO_DETAIL=2
+
+PROFILE_ABOUT_ME=1
+PROFILE_VOICE=1
+PROFILE_PERSONALITY=5
+PROFILE_RELATION_STATUS=5
+PROFILE_YOU_ARE_HERE=2
+PROFILE_FOOD_PREFERENCE=2
+PROFILE_DRINKING=2
+PROFILE_SMOKING=2
+PROFILE_STAT_SIGN=5
+PROFILE_RELIGION=1
+PROFILE_COMMUNITY=1
+PROFILE_PET=2
+PROFILE_EDUCATION=2
+PROFILE_UNIVERSITY=2
+PROFILE_PROFESSION=2
+
+PROFILE_FAV_MOVIE=2
+PROFILE_INTERESTS=2
+PROFILE_INTERESTS_MAX_POINT=16
+# ENDPROFILE CALCULATION -----------------------------------------------------------------------------------
