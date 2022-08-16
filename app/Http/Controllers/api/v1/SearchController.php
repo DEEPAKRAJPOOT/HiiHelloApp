@@ -3,12 +3,12 @@
 namespace App\Http\Controllers\api\v1;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\ { Request, Response };
-use Illuminate\Support\Facades\ { Auth, DB };
-use Illuminate\Database\Eloquent\ { ModelNotFoundException };
-use App\Http\Requests\Api\Search\ { SearchMatchChatRequest };
-use App\Http\Resources\v1\ { SearchMatchChatResource };
-use App\Models\ { ChatRoom };
+use Illuminate\Http\{Request, Response};
+use Illuminate\Support\Facades\{Auth, DB};
+use Illuminate\Database\Eloquent\{ModelNotFoundException};
+use App\Http\Requests\Api\Search\{SearchMatchChatRequest};
+use App\Http\Resources\v1\{SearchMatchChatResource};
+use App\Models\{ChatRoom};
 
 class SearchController extends Controller
 {

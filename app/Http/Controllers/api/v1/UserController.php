@@ -3,14 +3,14 @@
 namespace App\Http\Controllers\api\v1;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\ { Request, Response };
-use Illuminate\Database\Eloquent\ { ModelNotFoundException };
-use Illuminate\Support\Facades\ { Storage, DB, Auth };
-use App\Http\Resources\v1\ { UserProfile, UserDetailResource, MyProfile };
-use App\Http\Requests\Api\User\ { ProfileRequest, ProfileReportRequest, SetLatLongRequest };
-use App\Http\Requests\Api\Authentication\ { DeleteAccountRequest };
-use App\Http\Requests\Api\General\ { PaginationRequest };
-use App\Models\ { User, Location, ProfileReport, NotificationStatus, Language };
+use Illuminate\Http\{Request, Response};
+use Illuminate\Database\Eloquent\{ModelNotFoundException};
+use Illuminate\Support\Facades\{Storage, DB, Auth};
+use App\Http\Resources\v1\{UserProfile, UserDetailResource, MyProfile};
+use App\Http\Requests\Api\User\{ProfileRequest, ProfileReportRequest, SetLatLongRequest};
+use App\Http\Requests\Api\Authentication\{DeleteAccountRequest};
+use App\Http\Requests\Api\General\{PaginationRequest};
+use App\Models\{User, Location, ProfileReport, NotificationStatus, Language};
 
 class UserController extends Controller
 {
