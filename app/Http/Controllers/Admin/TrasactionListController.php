@@ -6,7 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\Transaction;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
-use Illuminate\Http\Testing\File;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Response;
 
 class TrasactionListController extends Controller
 {
@@ -84,6 +85,7 @@ class TrasactionListController extends Controller
         $down_file_name = 'Transactions';
         $transactions = Transaction::with(['subscriptionPlan', 'user', 'user.userTransDefault', 'subscriptionPlan.subscriptionPlanTranslation'])->get();
         if (!$transactions->isEmpty()) {
+            
             foreach ($transactions as $transaction) {
                 $data[] = [
                     'Account Id'                =>  $transaction->user ? ($transaction->user->account_id ?? "") :  "",
@@ -94,7 +96,7 @@ class TrasactionListController extends Controller
                     'Amount'                    =>  $transaction->subscriptionPlan ? ($transaction->subscriptionPlan ? $transaction->subscriptionPlan->amount : "N/A") : "",                    
                     'Payment Type'              =>  $transaction->payment_type ?? "",
                     'Razorpay Order Id'         =>  $transaction->razorpay_order_id ?? "",
-                    'Razorpay Paymentb Id'              =>  $transaction->razorpay_payment_id ?? "",
+                    'Razorpay Payment Id'              =>  $transaction->razorpay_payment_id ?? "",
                     'Razorpay Signature'              =>  $transaction->razorpay_signature ?? "",
                     'Transaction Id'              =>  $transaction->transaction_id ?? "",
                     'Original Transaction Id'              =>  $transaction->original_transaction_id ?? "",
@@ -108,7 +110,7 @@ class TrasactionListController extends Controller
                     'Status'                    =>  $transaction->status ?? "",
                     'Created at'                =>  $transaction->created_at ? Carbon::parse($transaction->created_at)->format('Y-m-d') : ""
                 ];
-                dd($data);
+                
             }
 
             if (!File::exists(public_path() . "/files")) {
@@ -118,12 +120,17 @@ class TrasactionListController extends Controller
             $filename = public_path('files/' . $down_file_name . ".csv");
             $handle   = fopen($filename, 'w+');
             fputcsv($handle, array(
-                'Account Id', 'Name', 'Email', 'Subscription Plan Name', 'Months', 'Amount', 'Start date', 'End date', 'Payment Type', 'Payment Date', 'Receipt Data', 'Original Transaction Id', 'Status', 'Created at'
+                'Account Id', 'Name', 'Email', 'Plan Name', 'Months', 'Amount', 'Payment Type', 'Razorpay Order Id','Razorpay Paymentb Id','Transaction Id',
+                'Original Transaction Id','Web Order Line Item Id','Purchase Date','Original Purchase Date','Subscription End DAte','Payment Date', 'Receipt Data',
+                'In App Ownership Type','Subscription Group Identifier','Status','Created at'  
             ));
 
             foreach ($data as $row) {
                 fputcsv($handle, array(
-                    $row['Account Id'], $row['Name'], $row['Email'], $row['Subscription Plan Name'], $row['Months'], $row['Amount'], $row['Start date'], $row['End date'], $row['Payment Type'], $row['Payment Date'], $row['Receipt Data'], $row['Original Transaction Id'], $row['Status'], $row['Created at'],
+                    $row['Account Id'], $row['Name'], $row['Email'], $row['Plan Name'], $row['Months'], $row['Amount'],
+                    $row['Payment Type'], $row['Razorpay Order Id'], $row['Razorpay Payment Id'], $row['Razorpay Signature'], $row['Transaction Id'],
+                    $row['Original Transaction Id'],$row['Subscription End DAte'], $row['Receipt Data'],$row['In App Ownership Type'],
+                    $row['Subscription Group Identifier'], $row['Status'], $row['Created at']
                 ));
             }
             fclose($handle);
@@ -136,6 +143,6 @@ class TrasactionListController extends Controller
         } else {
             flash('Unable to generate transaction csv file. Try again later')->error();
         }
-        return redirect(route('admin.subscription-lists.index'));
+        return redirect(route('admin.transaction-lists.index'));
     }
 }

@@ -32,7 +32,7 @@
                         Add {{ $custom_title }}
                     </a>
                 @endif --}}
-                <a href="{{ route('admin.subscriptions.csv-download') }}"
+                <a href="{{ route('admin.transactions.csv-download') }}"
                 class="btn btn-sm btn-primary font-weight-bolder text-uppercase ml-2">
                 <i class="fas fa-arrow-down"></i>
                 Download CSV
