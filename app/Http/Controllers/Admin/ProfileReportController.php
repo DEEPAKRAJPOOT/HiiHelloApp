@@ -142,7 +142,7 @@ class ProfileReportController extends Controller
                     'Reported User name'  =>  $profile_report->reportedUser ? $profile_report->reportedUser->userTransDefault ? $profile_report->reportedUser->userTransDefault->full_name : "" : "",
                     'Message'       =>  $profile_report->message,
                     'Status'        =>  $profile_report->status,
-                    'Created at'    =>  $profile_report->created_at,
+                    'Reported At'    =>  $profile_report->created_at,
                     ];
             }
 
@@ -153,11 +153,11 @@ class ProfileReportController extends Controller
             $filename = public_path('files/' . $down_file_name . ".csv");
             $handle   = fopen($filename, 'w+');
             fputcsv($handle, array(
-                'Id', 'User name', 'Reported User name', 'Message', 'Status','Created at'  
+                'User name', 'Reported User name', 'Message', 'Status','Reported At'  
             ));
             foreach ($data as $row) {
                 fputcsv($handle, array(
-                    $row['Id'], $row['User name'], $row['Reported User name'], $row['Message'], $row['Status'], $row['Created at']
+                    $row['User name'], $row['Reported User name'], $row['Message'], $row['Status'], $row['Reported At']
                 ));
             }
             fclose($handle);
