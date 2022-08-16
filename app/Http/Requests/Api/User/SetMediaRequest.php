@@ -21,7 +21,7 @@ class SetMediaRequest extends FormRequest
      *
      * @return array
      */
-    public function rules($request)
+    public function rules()
     {
         return [
             // Voice Details

@@ -21,9 +21,10 @@ class ProfileController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
     */
-    public function setFullProfile(Request $request){
-        $rules = FullProfileRequest::rules($request);
-        if( $this->apiValidator($request->all(), $rules) ) {
+    public function setFullProfile(Request $request)
+    {
+        $fullProfileRequest = new FullProfileRequest();
+        if( $this->apiValidator($request->all(), $fullProfileRequest->rules()) ) {
             try{
                 $user = $request->user();
                 $auth_id = $user ? $user->id : NULL;
@@ -169,9 +170,10 @@ class ProfileController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
     */
-    public function setInterest(Request $request){
-        $rules = SetInterestRequest::rules($request);
-        if( $this->apiValidator($request->all(), $rules) ) {
+    public function setInterest(Request $request)
+    {
+        $setInterestRequest = new SetInterestRequest();    
+        if( $this->apiValidator($request->all(), $setInterestRequest->rules()) ) {
             try{
                 $user = $request->user();
                 
@@ -247,9 +249,10 @@ class ProfileController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
     */
-    public function setMedia(Request $request){
-        $rules = SetMediaRequest::rules($request);
-        if( $this->apiValidator($request->all(), $rules) ) {
+    public function setMedia(Request $request)
+    {
+        $setMediaRequest = new SetMediaRequest();        
+        if( $this->apiValidator($request->all(), $setMediaRequest->rules()) ) {
             try{
                 $user = $request->user();
 

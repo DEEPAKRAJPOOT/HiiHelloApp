@@ -24,8 +24,8 @@ class SearchController extends Controller
     /* Currently Not Working
     public function searchMatchAndChat(Request $request)
     {
-        $rules = SearchMatchChatRequest::rules();
-        if( $this->apiValidator($request->all(), $rules) ) {
+        $searchMatchChatRequest = new SearchMatchChatRequest();        
+        if( $this->apiValidator($request->all(), $searchMatchChatRequest->rules()) ) {
             try{
                 $search = $request->search;
                 $results = ['matches' => [], 'rooms' => []];

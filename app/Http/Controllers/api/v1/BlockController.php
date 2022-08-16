@@ -23,8 +23,8 @@ class BlockController extends Controller
      */
     public function blockUnblockProfile(Request $request)
     {
-        $rules = BlockUnblockRequest::rules();
-        if( $this->apiValidator($request->all(), $rules) ) {
+        $blockUnblockRequest = new BlockUnblockRequest();
+        if( $this->apiValidator($request->all(), $blockUnblockRequest->rules()) ) {
             DB::beginTransaction();
             try{
                 /* Block Profile */
@@ -114,8 +114,8 @@ class BlockController extends Controller
      */
     public function blockList(Request $request)
     {
-        $rules = PaginationRequest::rules();
-        if( $this->apiValidator($request->all(), $rules) ) {
+        $paginationRequest = new PaginationRequest;
+        if( $this->apiValidator($request->all(), $paginationRequest->rules()) ) {
             try{
                 $auth_id = $request->user() ? $request->user()->id : NULL;
 

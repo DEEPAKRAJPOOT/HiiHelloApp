@@ -17,8 +17,8 @@ class DiscoveryController extends Controller
 
     public function setDiscoveryDetail(Request $request)
     {
-        $rules = SetDiscoveryRequest::rules();
-        if( $this->apiValidator($request->all(), $rules) ) {
+        $setDiscoveryRequest = new SetDiscoveryRequest();
+        if( $this->apiValidator($request->all(), $setDiscoveryRequest->rules()) ) {
             try{
                 $user = $request->user();
                 $location = Location::select('id')->whereCustomId($request->location)->whereIsActive('y')->firstOrFail();

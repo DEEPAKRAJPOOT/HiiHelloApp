@@ -19,8 +19,8 @@ class ChatController extends Controller
     // Create New Chat Room 
     public function createChatRoom(Request $request)
     {
-        $rules = CreateRoomRequest::rules();
-        if( $this->apiValidator($request->all(), $rules) ) {
+        $createRoomRequest = new CreateRoomRequest();
+        if( $this->apiValidator($request->all(), $createRoomRequest->rules()) ) {
             try{
                 $user = $request->user(); $auth_id = $user ? $user->id : NULL;
                 $participant = User::whereCustomId($request->participant_id)
@@ -75,8 +75,8 @@ class ChatController extends Controller
     // Get Chat Rooms Details
     public function getChatRooms(Request $request)
     {
-        $rules = GetRoomRequest::rules();
-        if( $this->apiValidator($request->all(), $rules) ) {
+        $getRoomRequest = new GetRoomRequest();
+        if( $this->apiValidator($request->all(), $getRoomRequest->rules()) ) {
             try{
                 $auth_id = $request->user() ? $request->user()->id : NULL;
                 $search = $request->search;
@@ -152,8 +152,8 @@ class ChatController extends Controller
     // Get Chat Messages Of The Room
     public function getChatMessages(Request $request)
     {
-        $rules = ChatMessagesRequest::rules();
-        if( $this->apiValidator($request->all(), $rules) ) {
+        $chatMessagesRequest = new ChatMessagesRequest();
+        if( $this->apiValidator($request->all(), $chatMessagesRequest->rules()) ) {
             try {
                 $messages   =   ChatMessage::withTrashed()->select('id','custom_id','room_id','sender_id','message','status','created_at','updated_at','deleted_at')->with(['sender:id,custom_id'])
                                 ->whereHas('room', function($q) use ($request){
@@ -213,8 +213,8 @@ class ChatController extends Controller
     // Delete Chat Room
     public function deleteChatRoom(Request $request)
     {
-        $rules = DeleteRoomRequest::rules();
-        if( $this->apiValidator($request->all(), $rules) ) {
+        $deleteRoomRequest = new DeleteRoomRequest();
+        if( $this->apiValidator($request->all(), $deleteRoomRequest->rules()) ) {
             try{
                 $auth_id = $request->user() ? $request->user()->id : NULL;
                 $room = ChatRoom::whereCustomId($request->room_id)

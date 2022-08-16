@@ -20,8 +20,8 @@ class LikeController extends Controller
     // Add New Like
     public function addNewLike(Request $request)
     {
-        $rules = AddLikeRequest::rules();
-        if( $this->apiValidator($request->all(), $rules) ) {
+        $addLikeRequest = new AddLikeRequest();
+        if( $this->apiValidator($request->all(), $addLikeRequest->rules()) ) {
             try{
                 $auth_user = $request->user(); $is_matched = false; 
                 $user = User::whereCustomId($request->user_id)->where('id','!=',$auth_user->id)->whereIsActive('y')->firstOrFail();
@@ -127,8 +127,8 @@ class LikeController extends Controller
     // Add New Dislike
     public function addNewDisLike(Request $request)
     {
-        $rules = AddDislikeRequest::rules();
-        if( $this->apiValidator($request->all(), $rules) ) {
+        $addDislikeRequest = new AddDislikeRequest();
+        if( $this->apiValidator($request->all(), $addDislikeRequest->rules()) ) {
             try{
                 $auth_user = $request->user(); 
                 $user = User::select('id')->whereCustomId($request->user_id)->whereIsActive('y')->firstOrFail();
@@ -202,8 +202,8 @@ class LikeController extends Controller
     // Get User Liked Profiles
     public function getLikes(Request $request)
     {
-        $rules = PaginationRequest::rules();
-        if( $this->apiValidator($request->all(), $rules) ) {
+        $paginationRequest = new PaginationRequest();
+        if( $this->apiValidator($request->all(), $paginationRequest->rules()) ) {
             try{
                 $user = $request->user(); $user_id = $user->id; $is_subscribed = false; $subscription_end_date = "";
                 $user->like_count = 0; // Reset Like Count

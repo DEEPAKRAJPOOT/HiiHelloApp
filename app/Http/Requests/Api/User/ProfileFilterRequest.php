@@ -21,7 +21,7 @@ class ProfileFilterRequest extends FormRequest
      *
      * @return array
      */
-    public function rules($request)
+    public function rules()
     {
         return [
             'limit'                     =>  'nullable|numeric',

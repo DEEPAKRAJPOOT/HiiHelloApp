@@ -27,8 +27,8 @@ class TwillioController extends Controller
     */
     public function createAccessToken(Request $request)
     {
-        $rules = CreateAccessTokenRequest::rules();
-        if( $this->apiValidator($request->all(), $rules) ) {
+        $createAccessTokenRequest = new CreateAccessTokenRequest();
+        if( $this->apiValidator($request->all(), $createAccessTokenRequest->rules()) ) {
             try{
                 $twilioAccountSid   =   config('utility.twillio.account_sid');
                 // $pushCredentialSid  =   config('utility.twillio.push_sid');
@@ -196,8 +196,8 @@ class TwillioController extends Controller
      */
     public function getCallLog(Request $request)
     {
-        $rules = GetCallLogRequest::rules();
-        if( $this->apiValidator($request->all(), $rules) ) {
+        $getCallLogRequest = new GetCallLogRequest();
+        if( $this->apiValidator($request->all(), $getCallLogRequest->rules()) ) {
             try{
                 $room = ChatRoom::with(['callLog' => function($query){
                             $query->where('date',now()->format('Y-m-d'));
@@ -233,8 +233,8 @@ class TwillioController extends Controller
      */
     public function storeCallLog(Request $request)
     {
-        $rules = StoreCallLogRequest::rules();
-        if( $this->apiValidator($request->all(), $rules) ) {
+        $storeCallLogRequest = new StoreCallLogRequest();
+        if( $this->apiValidator($request->all(), $storeCallLogRequest->rules()) ) {
             try{
                 $room = ChatRoom::with(['creator','participator'])->whereCustomId($request->room)->firstOrFail();
 
@@ -304,8 +304,8 @@ class TwillioController extends Controller
      */
     public function getReceiverDetail(Request $request)
     {
-        $rules = GetReceiverDetailRequest::rules();
-        if( $this->apiValidator($request->all(), $rules) ) {
+        $getReceiverDetailRequest = new GetReceiverDetailRequest();
+        if( $this->apiValidator($request->all(), $getReceiverDetailRequest->rules()) ) {
             try{
                 $auth_user = $request->user();
                 $call_receiver = User::select('id','custom_id','gender','language_id','is_subscribed','subscription_end_date')
@@ -349,8 +349,8 @@ class TwillioController extends Controller
     // Create Api Key & Secret Using App Name
     public function createApiKey(Request $request)
     {
-        $rules = CreateApiKeyRequest::rules();
-        if( $this->apiValidator($request->all(), $rules) ) {
+        $createApiKeyRequest = new CreateApiKeyRequest();
+        if( $this->apiValidator($request->all(), $createApiKeyRequest->rules()) ) {
             try{
                 $sid        =   config('utility.twillio.account_sid');
                 $token      =   config('utility.twillio.account_token');
@@ -377,8 +377,8 @@ class TwillioController extends Controller
     // Create OutGoing Application SID Using App Name
     public function getOutgoingAppSid(Request $request)
     {
-        $rules = OutgoingAppSidRequest::rules();
-        if( $this->apiValidator($request->all(), $rules) ) {
+        $outgoingAppSidRequest = new OutgoingAppSidRequest();
+        if( $this->apiValidator($request->all(), $outgoingAppSidRequest->rules()) ) {
             try{
                 $sid        =   config('utility.twillio.account_sid');
                 $token      =   config('utility.twillio.account_token');

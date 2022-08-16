@@ -20,8 +20,8 @@ class AuthenticationController extends Controller
     // User Login
     public function login(Request $request)
     {
-        $rules = LoginRequest::rules();
-        if ($this->apiValidator($request->all(), $rules)) {
+        $loginRequest = new LoginRequest();
+        if ($this->apiValidator($request->all(), $loginRequest->rules())) {
             $this->response['meta']['message']  = trans('api.login_fail');
             $this->status = Response::HTTP_FORBIDDEN;
 
@@ -61,8 +61,8 @@ class AuthenticationController extends Controller
     // Signup/Profile Setup For User
     public function setProfile(Request $request)
     {
-        $rules = RegisterRequest::rules();
-        if ($this->apiValidator($request->all(), $rules)) {
+        $registerRequest = new RegisterRequest();
+        if ($this->apiValidator($request->all(), $registerRequest->rules())) {
             try {
                 $user = $this->getAuthUser();
                 $country_id = $location_id = $language_id = NULL;
@@ -195,7 +195,6 @@ class AuthenticationController extends Controller
         $rules = [
             'contact_no'    =>  'required',
         ];
-
         if ($this->apiValidator($request->all(), $rules)) {
             try {
                 $user = User::whereContactNo($request->contact_no)->first();
@@ -285,8 +284,8 @@ class AuthenticationController extends Controller
     // Customer Social Login
     public function socialLogin(Request $request)
     {
-        $rules = SocialLoginRequest::rules($request);
-        if ($this->apiValidator($request->all(), $rules, $this->version)) {
+        $socialLoginRequest = new SocialLoginRequest();
+        if ($this->apiValidator($request->all(), $socialLoginRequest->rules($request), $this->version)) {
             try {
                 // Check for deleted account details
                 $account_del = false;

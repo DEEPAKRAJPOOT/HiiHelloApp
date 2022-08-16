@@ -19,8 +19,8 @@ class VerificationController extends Controller
     // Upload Verification Details
     public function uploadVerifyDetail(Request $request)
     {
-        $rules = UploadVerifyDetailRequest::rules();
-        if( $this->apiValidator($request->all(), $rules) ) {
+        $uploadVerifyDetailRequest = new UploadVerifyDetailRequest();
+        if( $this->apiValidator($request->all(), $uploadVerifyDetailRequest->rules()) ) {
             try{
                 $path = NULL;
                 $user = $request->user();
@@ -76,8 +76,8 @@ class VerificationController extends Controller
     // Upload Verification Details
     public function verifyContactNumber(Request $request)
     {
-        $rules = VerifyContactRequest::rules();
-        if( $this->apiValidator($request->all(), $rules) ) {
+        $verifyContactRequest = new VerifyContactRequest();
+        if( $this->apiValidator($request->all(), $verifyContactRequest->rules()) ) {
             try{
                 $country = Country::select('phonecode')->wherePhonecode($request->country_code)
                                 ->whereIsActive('y')->firstOrFail();
@@ -118,8 +118,8 @@ class VerificationController extends Controller
     // Verify Details
     public function verifyEmail(Request $request)
     {
-        $rules = EmailVerifyRequest::rules();
-        if( $this->apiValidator($request->all(), $rules) ) {
+        $emailVerifyRequest = new EmailVerifyRequest();
+        if( $this->apiValidator($request->all(), $emailVerifyRequest->rules()) ) {
             $user = $request->user();
             try{
                 if(!empty($user->email) && $user->email != $request->email){

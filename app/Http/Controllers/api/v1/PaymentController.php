@@ -222,8 +222,8 @@ class PaymentController extends Controller
      */
     public function getSubscriptionPlans(Request $request)
     {
-        $rules = PaginationRequest::rules();
-        if( $this->apiValidator($request->all(), $rules) ) {
+        $paginationRequest = new PaginationRequest();
+        if( $this->apiValidator($request->all(), $paginationRequest->rules()) ) {
             try{
                 $subscription_plans = SubscriptionPlan::with('subscriptionPlanTranslation')->whereIsActive('y');
                 

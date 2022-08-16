@@ -23,8 +23,8 @@ class MatchController extends Controller
      */
     public function getNewMatches(Request $request)
     {
-        $rules = GetMatchRequest::rules();
-        if( $this->apiValidator($request->all(), $rules) ) {
+        $getMatchRequest = new GetMatchRequest();
+        if( $this->apiValidator($request->all(), $getMatchRequest->rules()) ) {
             try{
                 $user   = $request->user(); $auth_id = $user ? $user->id : NULL;
                 $search = $request->search;
@@ -181,8 +181,8 @@ class MatchController extends Controller
      */
     public function removeMatch(Request $request)
     {
-        $rules = DeleteMatchRequest::rules();
-        if( $this->apiValidator($request->all(), $rules) ) {
+        $deleteMatchRequest = new DeleteMatchRequest();
+        if( $this->apiValidator($request->all(), $deleteMatchRequest->rules()) ) {
             DB::beginTransaction();
             try{
                 $auth_id = $request->user() ? $request->user()->id : NULL;

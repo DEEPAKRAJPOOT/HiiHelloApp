@@ -18,8 +18,8 @@ class HomeController extends Controller
     // Get All Users List
     public function getHomeFeeds(Request $request)
     {
-        $rules = PaginationRequest::rules();
-        if( $this->apiValidator($request->all(), $rules) ) {
+        $paginationRequest = new PaginationRequest();
+        if( $this->apiValidator($request->all(), $paginationRequest->rules()) ) {
             try{
                 $user = $request->user(); $auth_id = $user ? $user->id : NULL;
                 $is_swipe_allow = $user->isSwipeAllow();

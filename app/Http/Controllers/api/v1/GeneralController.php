@@ -166,8 +166,8 @@ class GeneralController extends Controller
     // Get Locations List
     public function getLocations(Request $request)
     {
-        $rules = LocationRequest::rules();
-        if( $this->apiValidator($request->all(), $rules) ) {
+        $locationRequest = new LocationRequest();
+        if( $this->apiValidator($request->all(), $locationRequest->rules()) ) {
             try{
                 $search = $request->search;
                 $lang = app()->getLocale();
@@ -221,8 +221,8 @@ class GeneralController extends Controller
     // Get Locations List In All Languages
     public function getLocationsTrans(Request $request)
     {
-        $rules = LocationRequest::rules();
-        if( $this->apiValidator($request->all(), $rules) ) {
+        $locationRequest = new LocationRequest();
+        if( $this->apiValidator($request->all(), $locationRequest->rules()) ) {
             try{
                 $search = $request->search;
                 $locations = Location::with('locationTranslations')->whereHas('locationTranslations');
@@ -270,8 +270,8 @@ class GeneralController extends Controller
     // Get Interests List
     public function getInterests(Request $request)
     {
-        $rules = InterestRequest::rules($request);
-        if( $this->apiValidator($request->all(), $rules) ) {
+        $interestRequest = new InterestRequest();
+        if( $this->apiValidator($request->all(), $interestRequest->rules()) ) {
             try{
                 $search = $request->search;
                 $interests = Interest::with(['parentInterest:id,custom_id','masterInterest:id,custom_id',
@@ -343,8 +343,8 @@ class GeneralController extends Controller
     // Get Presonlaties 
     public function getPersonalities(Request $request)
     {
-        $rules = PaginationRequest::rules();
-        if( $this->apiValidator($request->all(), $rules) ) {
+        $paginationRequest = new PaginationRequest();
+        if( $this->apiValidator($request->all(), $paginationRequest->rules()) ) {
             try{
                 $personalities = Personality::with('personalityTranslation')->whereIsActive('y');
                 $count = $personalities->count();
@@ -387,8 +387,8 @@ class GeneralController extends Controller
     // Get Faq Question And Answers
     public function getFaqs(Request $request)
     {
-        $rules = PaginationRequest::rules();
-        if( $this->apiValidator($request->all(), $rules) ) {
+        $paginationRequest = new PaginationRequest();
+        if( $this->apiValidator($request->all(), $paginationRequest->rules()) ) {
             try{
                 $faqs = Faq::with('faqTranslation')->whereIsActive('y');
                 $count = $faqs->count();
@@ -431,8 +431,8 @@ class GeneralController extends Controller
     // Get Details For Setup Profile
     public function getProfileDetails(Request $request)
     {
-        $rules = ProfileDetailRequest::rules();
-        if( $this->apiValidator($request->all(), $rules) ) {
+        $profileDetailRequest = new ProfileDetailRequest();
+        if( $this->apiValidator($request->all(), $profileDetailRequest->rules()) ) {
             try{
                 $search = $request->search;
                 $profile_details = ProfileDetail::with('profileDetailTranslation')->whereIsActive('y');
@@ -534,8 +534,8 @@ class GeneralController extends Controller
     // Store Device Token
     public function storeDeviceToken(Request $request)
     {
-        $rules = AddDeviceTokenRequest::rules();
-        if( $this->apiValidator($request->all(), $rules) ) {
+        $addDeviceTokenRequest = new AddDeviceTokenRequest();
+        if( $this->apiValidator($request->all(), $addDeviceTokenRequest->rules()) ) {
             try{
                 $user = $request->user();
                 DeviceToken::updateOrCreate([
@@ -562,8 +562,8 @@ class GeneralController extends Controller
     // Get Device Token
     public function getDeviceToken(Request $request)
     {
-        $rules = GetDeviceTokenRequest::rules();
-        if( $this->apiValidator($request->all(), $rules) ) {
+        $getDeviceTokenRequest = new GetDeviceTokenRequest();
+        if( $this->apiValidator($request->all(), $getDeviceTokenRequest->rules()) ) {
             try{
                 $user_id = $request->user_id;
                 $deviceToken = DeviceToken::whereHas('user',function($query) use($user_id){

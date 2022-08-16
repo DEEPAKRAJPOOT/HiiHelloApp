@@ -24,8 +24,8 @@ class SubscriptionController extends Controller
      */
     public function buyIosSubscription(Request $request)
     {
-        $rules = IosSubscription::rules();
-        if( $this->apiValidator($request->all(), $rules) ) {
+        $iosSubscription = new IosSubscription();
+        if( $this->apiValidator($request->all(), $iosSubscription->rules()) ) {
             $user = $request->user();
 
             DB::beginTransaction();
@@ -199,8 +199,8 @@ class SubscriptionController extends Controller
 
     public function restoreSubscription(Request $request)
     {
-        $rules = RestoreSubscription::rules();
-        if( $this->apiValidator($request->all(), $rules) ) {
+        $restoreSubscription = new RestoreSubscription();
+        if( $this->apiValidator($request->all(), $restoreSubscription->rules()) ) {
             try{
                 $user = $request->user();
                 $plan_id = $request->plan_id;

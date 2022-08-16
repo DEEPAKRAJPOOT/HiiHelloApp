@@ -18,8 +18,8 @@ class FilterController extends Controller
     // Apply Filters On Users List
     public function getUsersByFilter(Request $request)
     {
-        $rules = ProfileFilterRequest::rules($request);
-        if( $this->apiValidator($request->all(), $rules) ) {
+        $profileFilterRequest = new ProfileFilterRequest();
+        if( $this->apiValidator($request->all(), $profileFilterRequest->rules()) ) {
             try{
                 $user = $request->user();
                 $is_swipe_allow = $user->isSwipeAllow();
