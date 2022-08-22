@@ -3,12 +3,12 @@
 namespace App\Http\Controllers\api\v1;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\ { Request, Response };
-use Illuminate\Support\Facades\ { Auth, DB };
-use Illuminate\Database\Eloquent\ { ModelNotFoundException };
-use App\Models\ { User, Subscription, SubscriptionPlan, Transaction };
-use App\Http\Requests\Api\Subscription\ { IosSubscription, RestoreSubscription };
-use App\Http\Resources\v1\ { SubscriptionResource };
+use Illuminate\Http\{Request, Response};
+use Illuminate\Support\Facades\{Auth, DB};
+use Illuminate\Database\Eloquent\{ModelNotFoundException};
+use App\Models\{User, Subscription, SubscriptionPlan, Transaction};
+use App\Http\Requests\Api\Subscription\{IosSubscription, RestoreSubscription};
+use App\Http\Resources\v1\{SubscriptionResource};
 use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
 
@@ -24,22 +24,24 @@ class SubscriptionController extends Controller
      */
     public function buyIosSubscription(Request $request)
     {
-        $rules = IosSubscription::rules();
-        if( $this->apiValidator($request->all(), $rules) ) {
+        $iosSubscription = new IosSubscription();
+        if ($this->apiValidator($request->all(), $iosSubscription->rules())) {
             $user = $request->user();
 
             DB::beginTransaction();
-            try{
+            try {
                 $plan = SubscriptionPlan::whereCustomId($request->plan_id)->whereIsActive('y')->firstOrFail();
                 $latest_subscription = Subscription::whereUserId(Auth::id())->latest()->first();
 
-                if($latest_subscription 
-                    && $plan->id == $latest_subscription->plan_id 
-                    && $latest_subscription->status == 'active' 
-                    && $latest_subscription->end_date >= today()->format('Y-m-d') ) {
-                        $this->response['meta']['message']  =  trans('api.subscription.pan_purchased');
-                        $this->status = Response::HTTP_FORBIDDEN;
-                        return $this->returnResponse();
+                if (
+                    $latest_subscription
+                    && $plan->id == $latest_subscription->plan_id
+                    && $latest_subscription->status == 'active'
+                    && $latest_subscription->end_date >= today()->format('Y-m-d')
+                ) {
+                    $this->response['meta']['message']  =  trans('api.subscription.pan_purchased');
+                    $this->status = Response::HTTP_FORBIDDEN;
+                    return $this->returnResponse();
                 }
 
                 $url    =   config('utility.in_app.ios_url');
@@ -50,23 +52,23 @@ class SubscriptionController extends Controller
                 ];
 
                 $response = fireCURL($url, 'POST', json_encode($data));
-                if( !empty($response->latest_receipt_info)  ) {
+                if (!empty($response->latest_receipt_info)) {
                     $latest_receipt_info = $response->latest_receipt_info;
                     $paymetDetails = current($latest_receipt_info);
-                                
+
                     // Check Trasacrion Is Valid Or Not
                     $valid_transaction = false;
-                    if( $paymetDetails['transaction_id'] == $request->transaction_id ){
+                    if ($paymetDetails['transaction_id'] == $request->transaction_id) {
                         $valid_transaction = true;
                     }
 
                     // Check Subscirption Is Renew Or Not
                     $auto_renew = $response->pending_renewal_info ? $response->pending_renewal_info[0]['auto_renew_status'] : 0;
-                    $is_renew = $auto_renew == 0 ? 'n' : 'y' ;
+                    $is_renew = $auto_renew == 0 ? 'n' : 'y';
 
                     // Update Details
                     $new_subscription_start_date = \Carbon\Carbon::today()->format('Y-m-d');
-                    if( $user->subscription_end_date >= $new_subscription_start_date ) {
+                    if ($user->subscription_end_date >= $new_subscription_start_date) {
                         $new_subscription_start_date = $user->subscription_end_date;
                     }
 
@@ -74,8 +76,8 @@ class SubscriptionController extends Controller
                     //                         ? \Carbon\Carbon::parse($new_subscription_start_date)->addMonth($plan->months)->format('Y-m-d')
                     //                         : \Carbon\Carbon::today()->addMonth($plan->months)->format('Y-m-d');
 
-                    $subscription_end_date = date('Y-m-d',$paymetDetails['expires_date_ms'] / 1000);
-                    
+                    $subscription_end_date = date('Y-m-d', $paymetDetails['expires_date_ms'] / 1000);
+
                     $subscription =  Subscription::create([
                         'custom_id'                 =>  getUniqueString('subscriptions'),
                         'user_id'                   =>  $user->id ?? NULL,
@@ -85,7 +87,7 @@ class SubscriptionController extends Controller
                         'amount'                    =>  $plan->amount,
                         'start_date'                =>  $new_subscription_start_date,
                         'end_date'                  =>  $subscription_end_date,
-                        'payment_date'              =>  date('Y-m-d H:i:s',$paymetDetails['purchase_date_ms'] / 1000) ?? now(),
+                        'payment_date'              =>  date('Y-m-d H:i:s', $paymetDetails['purchase_date_ms'] / 1000) ?? now(),
                         'payment_type'              =>  'ios',
                         'receipt_data'              =>  $request->receipt_data,
                         'original_transaction_id'   =>  $paymetDetails['original_transaction_id'],
@@ -110,7 +112,7 @@ class SubscriptionController extends Controller
                         'amount'                        =>  $plan->amount,
                     ]);
 
-                    if( $valid_transaction == true && date('Y-m-d H:i:s',$paymetDetails['expires_date_ms'] / 1000) >= \Carbon\Carbon::now() ) {
+                    if ($valid_transaction == true && date('Y-m-d H:i:s', $paymetDetails['expires_date_ms'] / 1000) >= \Carbon\Carbon::now()) {
                         $subscription->update(['status' => 'active']);
                         $subscription->save();
 
@@ -126,18 +128,19 @@ class SubscriptionController extends Controller
                         $subscription->notifySubScriptionPurchase('success');
                         $subscription_type = 'new'; // New Purchase
                         $renew_count = Subscription::withTrashed()->whereUserId($user->id)
-                                        ->whereNotIn('status',['incomplete','incomplete_expired','unpaid'])->count();
-                        if($renew_count > 0){
+                            ->whereNotIn('status', ['incomplete', 'incomplete_expired', 'unpaid'])->count();
+                        if ($renew_count > 0) {
                             $subscription_type = 'renew';   // Renew Subscription
                         }
-                        $subscription->sendSubScriptionPurchaseSMS($subscription_type);   
+                        $subscription->sendSubScriptionPurchaseSMS($subscription_type);
 
                         $this->status = Response::HTTP_OK;
                         return (new SubscriptionResource($subscription))
                             ->additional([
                                 'meta' => [
                                     'message'   =>  trans('api.ios_payment.success'),
-                                ] ]);
+                                ]
+                            ]);
                     } else {
                         $subscription->update(['payment_date' => NULL, 'status' => 'unpaid']);
                         $subscription->save();
@@ -148,11 +151,11 @@ class SubscriptionController extends Controller
                         $user->is_subscribed = 'n';
                         $user->subscription_end_date = $subscription_end_date;
                         $user->save();
-                        
+
                         DB::commit();
-                        
+
                         $subscription->notifySubScriptionPurchase('fail');
-                        
+
                         $this->response['meta']['message']  =  trans('api.ios_payment.fail');
                         $this->status = Response::HTTP_FORBIDDEN;
                     }
@@ -161,7 +164,7 @@ class SubscriptionController extends Controller
                     $transaction_data['purchase_date_ms'] = $paymetDetails['purchase_date_ms'];
                     $transaction_data['expires_date_ms'] = $paymetDetails['expires_date_ms'];
                     $transaction_data['purchase_date_ms_converted'] = date('Y-m-d H:i:s', $paymetDetails['purchase_date_ms'] / 1000);
-                    $transaction_data['expires_date_ms_converted'] = date('Y-m-d H:i:s',$paymetDetails['expires_date_ms'] / 1000);
+                    $transaction_data['expires_date_ms_converted'] = date('Y-m-d H:i:s', $paymetDetails['expires_date_ms'] / 1000);
                     $transaction_data['auto_renew'] = $auto_renew;
                     $transaction_data['transaction_id'] = $paymetDetails['transaction_id'];
                     $transaction_data['pending_renewal_info'] = $response->pending_renewal_info;
@@ -172,10 +175,10 @@ class SubscriptionController extends Controller
                     $paymentLog = new Logger($file);
                     $paymentLog->pushHandler(new StreamHandler(storage_path('logs/ios/' . $file . '.log')), Logger::INFO);
                     $paymentLog->info($file, ['success' => $transaction_data]);
-                }else {
+                } else {
                     $this->response['meta']['message']  =  trans('api.went_wrong');
                     $this->status = Response::HTTP_GATEWAY_TIMEOUT;
-                }   
+                }
             } catch (\Exception $e) {
                 DB::rollback();
 
@@ -183,12 +186,12 @@ class SubscriptionController extends Controller
 
                 $user->is_subscribed = $user->subscription_end_date >= \Carbon\Carbon::now()->format('Y-m-d') ? 'n' : $user->is_subscribed;
                 $user->subscription_end_date = $user->subscription_end_date >= \Carbon\Carbon::now()->format('Y-m-d')
-                                                    ? NULL
-                                                    : $user->subscription_end_date;
+                    ? NULL
+                    : $user->subscription_end_date;
                 $user->save();
 
                 $file = 'ios/payment_' . $user->id;
-                $this->storeErrorLog($e,$file,$e->getMessage());
+                $this->storeErrorLog($e, $file, $e->getMessage());
 
                 $this->response['meta']['message']  =  trans('api.went_wrong');
                 $this->status = Response::HTTP_GATEWAY_TIMEOUT;
@@ -199,13 +202,13 @@ class SubscriptionController extends Controller
 
     public function restoreSubscription(Request $request)
     {
-        $rules = RestoreSubscription::rules();
-        if( $this->apiValidator($request->all(), $rules) ) {
-            try{
+        $restoreSubscription = new RestoreSubscription();
+        if ($this->apiValidator($request->all(), $restoreSubscription->rules())) {
+            try {
                 $user = $request->user();
                 $plan_id = $request->plan_id;
-                $subscription = Subscription::where('receipt_data',$request->receipt_data)
-                                    ->whereUserId(Auth::id())->latest()->firstOrFail();
+                $subscription = Subscription::where('receipt_data', $request->receipt_data)
+                    ->whereUserId(Auth::id())->latest()->firstOrFail();
 
                 $subscription->status = 'canceled';
                 $user->subscription_end_date = NULL;
@@ -214,9 +217,9 @@ class SubscriptionController extends Controller
                 $subscription->save();
                 $user->save();
 
-                $this->status = Response::HTTP_OK;     
-                $this->response['meta']['message'] = trans('api.subscription.restore');     
-            } catch(ModelNotFoundException $exception) {                
+                $this->status = Response::HTTP_OK;
+                $this->response['meta']['message'] = trans('api.subscription.restore');
+            } catch (ModelNotFoundException $exception) {
                 switch ($exception->getModel()) {
                     case 'App\Models\Subscription':
                         $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("Subscription")]);
@@ -226,7 +229,7 @@ class SubscriptionController extends Controller
                         break;
                 };
             } catch (\Exception $e) {
-                $this->storeErrorLog($e,'ios_restore_subscription');
+                $this->storeErrorLog($e, 'ios_restore_subscription');
             }
         }
         return $this->returnResponse();
@@ -234,14 +237,15 @@ class SubscriptionController extends Controller
 
     public function getUserSubDetails(Request $request)
     {
-        try{
-            $subscription = Subscription::with(['subscriptionPlan.subscriptionPlanTranslation','subscriptionPlan.subscriptionPlanTransEn'])
-                                ->whereUserId(Auth::id())->latest()->firstOrFail();
+        try {
+            $subscription = Subscription::with(['subscriptionPlan.subscriptionPlanTranslation', 'subscriptionPlan.subscriptionPlanTransEn'])
+                ->whereUserId(Auth::id())->latest()->firstOrFail();
             return (new SubscriptionResource($subscription))->additional([
                 'meta' => [
                     'message'   =>  trans('api.list', ['entity' => __('Subscription')]),
-                ] ]);
-        } catch(ModelNotFoundException $exception) {      
+                ]
+            ]);
+        } catch (ModelNotFoundException $exception) {
             switch ($exception->getModel()) {
                 case 'App\Models\Subscription':
                     $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("Subscription")]);
@@ -251,7 +255,7 @@ class SubscriptionController extends Controller
                     break;
             };
         } catch (\Exception $e) {
-            $this->storeErrorLog($e,'get_user_subscription_details');
+            $this->storeErrorLog($e, 'get_user_subscription_details');
         }
         return $this->returnResponse();
     }

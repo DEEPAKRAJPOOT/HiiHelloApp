@@ -3,13 +3,13 @@
 namespace App\Http\Controllers\api\v1;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\ { Request, Response };
-use Illuminate\Support\Facades\ { Auth, DB };
-use Illuminate\Database\Eloquent\ { ModelNotFoundException };
-use App\Http\Requests\Api\General\ { PaginationRequest };
-use App\Http\Requests\Api\Match\ { DeleteMatchRequest, GetMatchRequest };
-use App\Http\Resources\v1\ { MatchResource };
-use App\Models\ { User, Like, ChatRoom, UserInterest, BlockUser, UnMatch, UserPersonality };
+use Illuminate\Http\{Request, Response};
+use Illuminate\Support\Facades\{Auth, DB};
+use Illuminate\Database\Eloquent\{ModelNotFoundException};
+use App\Http\Requests\Api\General\{PaginationRequest};
+use App\Http\Requests\Api\Match\{DeleteMatchRequest, GetMatchRequest};
+use App\Http\Resources\v1\{MatchResource};
+use App\Models\{User, Like, ChatRoom, UserInterest, BlockUser, UnMatch, UserPersonality};
 
 class MatchController extends Controller
 {
@@ -23,15 +23,16 @@ class MatchController extends Controller
      */
     public function getNewMatches(Request $request)
     {
-        $rules = GetMatchRequest::rules();
-        if( $this->apiValidator($request->all(), $rules) ) {
-            try{
-                $user   = $request->user(); $auth_id = $user ? $user->id : NULL;
+        $getMatchRequest = new GetMatchRequest();
+        if ($this->apiValidator($request->all(), $getMatchRequest->rules())) {
+            try {
+                $user   = $request->user();
+                $auth_id = $user ? $user->id : NULL;
                 $search = $request->search;
 
                 $user->match_count = 0; // Reset Match Count
                 $user->save();
-                
+
                 // Config Details
                 $backup_logic       =   config('utility.profile.match.backup_logic') ?? true;
                 $match_percentage   =   config('utility.profile.match.match_percentage') ?? 20;
@@ -43,9 +44,11 @@ class MatchController extends Controller
                 // Gender & It's Interest Details
                 // $find_gender    =   $user->gender ?  $user->gender == 'Female' ? 'Male' : 'Female'  : 'Female';
                 $auth_interest  =   $user->interest ? $user->interest : 'Both';
-                    
+
                 // Blocked & Interest Details
-                $auth_age   =   $user->getAge(); $age_from = $auth_age - $age_min_diff; $age_to = $auth_age + $age_max_diff;
+                $auth_age   =   $user->getAge();
+                $age_from = $auth_age - $age_min_diff;
+                $age_to = $auth_age + $age_max_diff;
 
                 $unmatched  =   UnMatch::whereUnmatchBy($auth_id)->whereNotNull('unmatch_to')->distinct()->pluck('unmatch_to')->toArray();
                 $blocked    =   BlockUser::whereBlockBy($auth_id)->whereNotNull('blocked_to')->distinct()->pluck('blocked_to')->toArray();
@@ -54,102 +57,116 @@ class MatchController extends Controller
 
                 // if chat is open then restrict in match profiles
                 $rooms = ChatRoom::whereHas('chatMessages')
-                            ->where(function ($query) use ($auth_id) {
-                                $query->whereCreatorId($auth_id)->orWhere('participate_id',$auth_id);
-                            });
+                    ->where(function ($query) use ($auth_id) {
+                        $query->whereCreatorId($auth_id)->orWhere('participate_id', $auth_id);
+                    });
                 $creators = $rooms->whereNotNull('creator_id')->pluck('creator_id')->toArray();
                 $participants = $rooms->whereNotNull('participate_id')->pluck('participate_id')->toArray();
 
                 $restricted_ids = array_unique(array_merge($unmatched, $blocked, $creators, $participants));
-                if (($key = array_search($auth_id, $restricted_ids)) !== false) { unset($restricted_ids[$key]);  }
+                if (($key = array_search($auth_id, $restricted_ids)) !== false) {
+                    unset($restricted_ids[$key]);
+                }
 
                 // Get users details who likes each others
                 $likes = DB::table('likes')
-                            ->join("likes as like", function($q){
-                                $q->on("likes.liker_id", "=", "like.user_id");
-                                $q->on("like.liker_id", "=", "likes.user_id");
-                            })
-                            ->join('users', function($q){ $q->on('users.id',"=", "likes.user_id"); })
-                            ->where("likes.liker_id", '=', $auth_id) //to only get users details who likes current user
-                            ->where("likes.user_id", '!=', $auth_id)
-                            // ->where("users.gender", $find_gender) // get details from based on interest so comment for now
-                            ->pluck('users.custom_id')->toArray();
+                    ->join("likes as like", function ($q) {
+                        $q->on("likes.liker_id", "=", "like.user_id");
+                        $q->on("like.liker_id", "=", "likes.user_id");
+                    })
+                    ->join('users', function ($q) {
+                        $q->on('users.id', "=", "likes.user_id");
+                    })
+                    ->where("likes.liker_id", '=', $auth_id) //to only get users details who likes current user
+                    ->where("likes.user_id", '!=', $auth_id)
+                    // ->where("users.gender", $find_gender) // get details from based on interest so comment for now
+                    ->pluck('users.custom_id')->toArray();
 
                 $likes_count = count($likes);
-                if($likes_count > $max_limit){ $max_limit = $likes_count; }
+                if ($likes_count > $max_limit) {
+                    $max_limit = $likes_count;
+                }
 
                 $matches = User::with('userTranslation:id,locale,user_id,full_name')
-                            ->where('id','!=',$auth_id)                 // Not Own Profile
-                            ->whereNotNull('profile_photo');            // Must Have Main Photo
-                            // ->whereNotIn('id',$blocked)              // Restricted Blocked Profiles
-                            // ->where('gender',$find_gender)           // Gender (Currently Stopped)
-                
-                            if($auth_interest != 'Both'){ $matches = $matches->where('gender',$auth_interest); }    // Interested in Gender
-                            if(count($restricted_ids) > 0){ $matches = $matches->whereNotIn('id',$restricted_ids); } 
+                    ->where('id', '!=', $auth_id)                 // Not Own Profile
+                    ->whereNotNull('profile_photo');            // Must Have Main Photo
+                // ->whereNotIn('id',$blocked)              // Restricted Blocked Profiles
+                // ->where('gender',$find_gender)           // Gender (Currently Stopped)
+
+                if ($auth_interest != 'Both') {
+                    $matches = $matches->where('gender', $auth_interest);
+                }    // Interested in Gender
+                if (count($restricted_ids) > 0) {
+                    $matches = $matches->whereNotIn('id', $restricted_ids);
+                }
 
                 $matches = $matches->whereIsActive('y')
-                        // ->where('is_subscribed','y')            // Subscription
-                        // ->where('subscription_end_date','>=', \Carbon\Carbon::today()->format('Y-m-d'))
+                    // ->where('is_subscribed','y')            // Subscription
+                    // ->where('subscription_end_date','>=', \Carbon\Carbon::today()->format('Y-m-d'))
 
-                        ->where(function ($query) 
-                            use ($user, $likes, $age_from, $age_to, $match_percentage, $interests, $personalities) {
+                    ->where(function ($query)
+                    use ($user, $likes, $age_from, $age_to, $match_percentage, $interests, $personalities) {
 
-                            $query->orWhereIn('custom_id',$likes)                                   // Someone likes me and I like him/her 
-                                ->orWhere('language_id',$user->language_id)                         // Language
-                                ->orWhere('location_id',$user->location_id)                         // Location
-                                ->orWhereBetween('birth_date',array($age_from,$age_to))             // Age / Birth Date
-                                ->orWhere('profile_percentage','>=',$match_percentage)              // Profile completion
-                                ->orWhere('verify_status','verified')                               // Verified/Unverified  
+                        $query->orWhereIn('custom_id', $likes)                                   // Someone likes me and I like him/her 
+                            ->orWhere('language_id', $user->language_id)                         // Language
+                            ->orWhere('location_id', $user->location_id)                         // Location
+                            ->orWhereBetween('birth_date', array($age_from, $age_to))             // Age / Birth Date
+                            ->orWhere('profile_percentage', '>=', $match_percentage)              // Profile completion
+                            ->orWhere('verify_status', 'verified')                               // Verified/Unverified  
 
-                                ->orWhereHas('personalities',function($q) use ($personalities){     // Personality Type 
-                                    $q->whereIn('personality_id',$personalities);
-                                })
+                            ->orWhereHas('personalities', function ($q) use ($personalities) {     // Personality Type 
+                                $q->whereIn('personality_id', $personalities);
+                            })
 
-                                // Basic Details 
-                                ->orWhere('relationship_status_id',$user->relationship_status_id)   // Relationship status
-                                ->orWhere('you_are_here_id',$user->you_are_here_id)                 // I am here for
-                                ->orWhere('food_preference_id',$user->food_preference_id)           // Food Preference
-                                ->orWhere('drinking_id',$user->drinking_id)                         // Drinking
-                                ->orWhere('smoking_id',$user->smoking_id)                           // Smoking
-                                ->orWhere('pet_id',$user->pet_id)                                   // Pet
-                                ->orWhere('education_id',$user->education_id)                       // Education
-                                ->orWhere('university_id',$user->university_id)                     // University/College
-                                ->orWhere('profession_id',$user->profession_id)                     // Profession
-                                ->orWhere('star_sign_id',$user->star_sign_id)                       // Star Sign
+                            // Basic Details 
+                            ->orWhere('relationship_status_id', $user->relationship_status_id)   // Relationship status
+                            ->orWhere('you_are_here_id', $user->you_are_here_id)                 // I am here for
+                            ->orWhere('food_preference_id', $user->food_preference_id)           // Food Preference
+                            ->orWhere('drinking_id', $user->drinking_id)                         // Drinking
+                            ->orWhere('smoking_id', $user->smoking_id)                           // Smoking
+                            ->orWhere('pet_id', $user->pet_id)                                   // Pet
+                            ->orWhere('education_id', $user->education_id)                       // Education
+                            ->orWhere('university_id', $user->university_id)                     // University/College
+                            ->orWhere('profession_id', $user->profession_id)                     // Profession
+                            ->orWhere('star_sign_id', $user->star_sign_id)                       // Star Sign
 
-                                ->orWhereHas('interests',function($q) use ($interests){             // My Interests
-                                    $q->whereIn('interest_id',$interests);
-                                });
-                        });
-                        
-                if(!empty($search)){
-                    $matches = $matches->whereHas('userTranslations',function ($query_search) use ($search) {
+                            ->orWhereHas('interests', function ($q) use ($interests) {             // My Interests
+                                $q->whereIn('interest_id', $interests);
+                            });
+                    });
+
+                if (!empty($search)) {
+                    $matches = $matches->whereHas('userTranslations', function ($query_search) use ($search) {
                         $query_search->where('full_name', 'like', "%{$search}%");
                     });
                 }
 
-                $count = $matches->count(); 
+                $count = $matches->count();
 
                 // BackUp Plan If No Profile Match
-                if( $count < 1 && $backup_logic == true ){
+                if ($count < 1 && $backup_logic == true) {
                     $matches = User::with('userTranslation:id,locale,user_id,full_name')
-                                    ->where('id','!=',$auth_id)->whereNotNull('profile_photo')->whereIsActive('y');
-                    if($auth_interest != 'Both'){ $matches = $matches->where('gender',$auth_interest); }
-                    if(count($restricted_ids) > 0){ $matches = $matches->whereNotIn('id',$restricted_ids); } 
+                        ->where('id', '!=', $auth_id)->whereNotNull('profile_photo')->whereIsActive('y');
+                    if ($auth_interest != 'Both') {
+                        $matches = $matches->where('gender', $auth_interest);
+                    }
+                    if (count($restricted_ids) > 0) {
+                        $matches = $matches->whereNotIn('id', $restricted_ids);
+                    }
                     $count = $matches->count();
                 }
 
                 $matches        =   $matches->latest();
-                if($max_limit_apply){
+                if ($max_limit_apply) {
                     $matches    =   $matches->limit($max_limit)->get();
-                }else{  
+                } else {
                     $matches    =   $matches->limit($request->limit ?? config('utility.pagination.limit'))
-                                        ->offset($request->offset ?? config('utility.pagination.offset'))
-                                        ->get();
+                        ->offset($request->offset ?? config('utility.pagination.offset'))
+                        ->get();
                 }
 
-                if($matches->isNotEmpty()){
-                    $this->status = Response::HTTP_OK;     
+                if ($matches->isNotEmpty()) {
+                    $this->status = Response::HTTP_OK;
                     return (MatchResource::Collection($matches))->additional([
                         'meta'  =>  [
                             'limit'     =>  $request->limit,
@@ -161,14 +178,14 @@ class MatchController extends Controller
                             'message'   =>  trans('api.list', ['entity' =>  __('New Matches')]),
                         ]
                     ]);
-                }else{
-                    $this->response['meta']['message']  =   trans('api.not_found',['entity' => __('New Matches')]); 
-                    $this->status = Response::HTTP_OK;     
+                } else {
+                    $this->response['meta']['message']  =   trans('api.not_found', ['entity' => __('New Matches')]);
+                    $this->status = Response::HTTP_OK;
                 }
-            } catch(ModelNotFoundException $exception) {    
+            } catch (ModelNotFoundException $exception) {
                 $this->response['meta']['message'] = trans('api.went_wrong');
             } catch (\Exception $e) {
-                $this->storeErrorLog($e,'new_matches');
+                $this->storeErrorLog($e, 'new_matches');
             }
         }
         return $this->returnResponse();
@@ -181,10 +198,10 @@ class MatchController extends Controller
      */
     public function removeMatch(Request $request)
     {
-        $rules = DeleteMatchRequest::rules();
-        if( $this->apiValidator($request->all(), $rules) ) {
+        $deleteMatchRequest = new DeleteMatchRequest();
+        if ($this->apiValidator($request->all(), $deleteMatchRequest->rules())) {
             DB::beginTransaction();
-            try{
+            try {
                 $auth_id = $request->user() ? $request->user()->id : NULL;
                 $match_user = User::select('id')->whereCustomId($request->user_id)->firstOrFail();
 
@@ -201,35 +218,39 @@ class MatchController extends Controller
                 UnMatch::firstOrCreate([
                     'unmatch_by'    =>  $auth_id,
                     'unmatch_to'    =>  $match_user->id ?? NULL,
-                ],[ 
+                ], [
                     'custom_id'     =>  getUniqueString('un_matches'),
                 ]);
 
                 $room = ChatRoom::with('chatMessages')
-                                ->where(function($query) use ($auth_id, $match_user){
-                                    $query->where('creator_id',$auth_id)->where('participate_id',$match_user->id);
-                                })->orWhere(function($query_or) use ($auth_id, $match_user){
-                                    $query_or->where('creator_id',$match_user->id)->where('participate_id',$auth_id);
-                                })->first();
+                    ->where(function ($query) use ($auth_id, $match_user) {
+                        $query->where('creator_id', $auth_id)->where('participate_id', $match_user->id);
+                    })->orWhere(function ($query_or) use ($auth_id, $match_user) {
+                        $query_or->where('creator_id', $match_user->id)->where('participate_id', $auth_id);
+                    })->first();
 
                 // Delete Chat Room & Chat Messages
-                if($room){
-                    if($room->chatMessages){ $room->chatMessages->each->delete(); }
+                if ($room) {
+                    if ($room->chatMessages) {
+                        $room->chatMessages->each->delete();
+                    }
                     $room->delete();
                 }
 
                 DB::commit();
-                $this->status = Response::HTTP_OK;     
-                return (['data'  =>  NULL,
+                $this->status = Response::HTTP_OK;
+                return ([
+                    'data'  =>  NULL,
                     'meta' => [
                         'url'       =>  url()->current(),
                         'api'       =>  $this->getVersion(),
                         'language'  =>  app()->getLocale(),
                         'message'   =>  trans('api.delete', ['entity' =>  __('Unmatch')]),
-                    ] ]);
-            } catch(ModelNotFoundException $exception) {   
+                    ]
+                ]);
+            } catch (ModelNotFoundException $exception) {
                 DB::rollback();
-                $this->status = Response::HTTP_OK;     
+                $this->status = Response::HTTP_OK;
                 switch ($exception->getModel()) {
                     case 'App\Models\ChatRoom':
                         $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("Chat room")]);
@@ -242,9 +263,9 @@ class MatchController extends Controller
                         break;
                 };
             } catch (\Exception $e) {
-                DB::rollback();   
-                $this->status = Response::HTTP_OK;     
-                $this->storeErrorLog($e,'delete_match');
+                DB::rollback();
+                $this->status = Response::HTTP_OK;
+                $this->storeErrorLog($e, 'delete_match');
             }
         }
         return $this->returnResponse();

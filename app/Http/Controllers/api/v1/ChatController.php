@@ -3,13 +3,13 @@
 namespace App\Http\Controllers\api\v1;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\ { Request, Response };
-use Illuminate\Database\Eloquent\ { ModelNotFoundException };
-use App\Http\Requests\Api\General\ { PaginationRequest };
-use Illuminate\Support\Facades\ { Auth };
-use App\Models\ { ChatRoom, ChatMessage, User, CallLog };
-use App\Http\Resources\v1\ { ChatRoomResource, ChatMessageResource };
-use App\Http\Requests\Api\Chat\ { CreateRoomRequest, ChatMessagesRequest, DeleteRoomRequest, GetRoomRequest };
+use Illuminate\Http\{Request, Response};
+use Illuminate\Database\Eloquent\{ModelNotFoundException};
+use App\Http\Requests\Api\General\{PaginationRequest};
+use Illuminate\Support\Facades\{Auth};
+use App\Models\{ChatRoom, ChatMessage, User, CallLog};
+use App\Http\Resources\v1\{ChatRoomResource, ChatMessageResource};
+use App\Http\Requests\Api\Chat\{CreateRoomRequest, ChatMessagesRequest, DeleteRoomRequest, GetRoomRequest};
 
 class ChatController extends Controller
 {
@@ -19,41 +19,44 @@ class ChatController extends Controller
     // Create New Chat Room 
     public function createChatRoom(Request $request)
     {
-        $rules = CreateRoomRequest::rules();
-        if( $this->apiValidator($request->all(), $rules) ) {
-            try{
-                $user = $request->user(); $auth_id = $user ? $user->id : NULL;
+        $createRoomRequest = new CreateRoomRequest();
+        if ($this->apiValidator($request->all(), $createRoomRequest->rules())) {
+            try {
+                $user = $request->user();
+                $auth_id = $user ? $user->id : NULL;
                 $participant = User::whereCustomId($request->participant_id)
-                                ->where('id','!=',$auth_id)->whereIsActive('y')->firstOrFail();
+                    ->where('id', '!=', $auth_id)->whereIsActive('y')->firstOrFail();
                 $participant_id = $participant ? $participant->id : NULL;
 
-                $chat_room = ChatRoom::with(['creator:id,custom_id,profile_photo,language_id',
-                                'participator:id,custom_id,profile_photo,language_id',
-                                'creator.userTranslation','creator.language:id,lang_code',
-                                'participator.userTranslation','participator.language:id,lang_code',
-                                'latestMessage.sender:id,custom_id'])
-                        ->where(function ($query) use ($auth_id,$participant_id) {
-                            $query->whereCreatorId($auth_id)->where('participate_id',$participant_id);
-                        })->orWhere(function ($query) use ($auth_id,$participant_id) {
-                            $query->whereCreatorId($participant_id)->where('participate_id',$auth_id);
-                        })->first();
+                $chat_room = ChatRoom::with([
+                    'creator:id,custom_id,profile_photo,language_id',
+                    'participator:id,custom_id,profile_photo,language_id',
+                    'creator.userTranslation', 'creator.language:id,lang_code',
+                    'participator.userTranslation', 'participator.language:id,lang_code',
+                    'latestMessage.sender:id,custom_id'
+                ])
+                    ->where(function ($query) use ($auth_id, $participant_id) {
+                        $query->whereCreatorId($auth_id)->where('participate_id', $participant_id);
+                    })->orWhere(function ($query) use ($auth_id, $participant_id) {
+                        $query->whereCreatorId($participant_id)->where('participate_id', $auth_id);
+                    })->first();
 
-                if(empty($chat_room)){
+                if (empty($chat_room)) {
                     $chat_room = ChatRoom::firstOrCreate([
                         'creator_id'        =>  $auth_id,
                         'participate_id'    =>  $participant_id,
-                    ],[ 
+                    ], [
                         'custom_id'         =>  getUniqueString('chat_rooms'),
                     ]);
                 }
 
-                $this->status = Response::HTTP_OK;     
+                $this->status = Response::HTTP_OK;
                 return (new ChatRoomResource($chat_room))->additional([
                     'meta'  =>  [
                         'message'   =>  trans('api.save', ['entity' =>  __('Chat room')]),
                     ]
                 ]);
-            } catch(ModelNotFoundException $exception) {                
+            } catch (ModelNotFoundException $exception) {
                 switch ($exception->getModel()) {
                     case 'App\Models\ChatRoom':
                         $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("Chat room")]);
@@ -66,7 +69,7 @@ class ChatController extends Controller
                         break;
                 };
             } catch (\Exception $e) {
-                $this->storeErrorLog($e,'create_chat_room');
+                $this->storeErrorLog($e, 'create_chat_room');
             }
         }
         return $this->returnResponse();
@@ -75,44 +78,46 @@ class ChatController extends Controller
     // Get Chat Rooms Details
     public function getChatRooms(Request $request)
     {
-        $rules = GetRoomRequest::rules();
-        if( $this->apiValidator($request->all(), $rules) ) {
-            try{
+        $getRoomRequest = new GetRoomRequest();
+        if ($this->apiValidator($request->all(), $getRoomRequest->rules())) {
+            try {
                 $auth_id = $request->user() ? $request->user()->id : NULL;
                 $search = $request->search;
 
-                $rooms = ChatRoom::with(['creator:id,custom_id,profile_photo,language_id',
-                                'participator:id,custom_id,profile_photo,language_id',
-                                'creator.language:id,lang_code','participator.language:id,lang_code',
-                                'creator.userTranslation','participator.userTranslation',
-                                'latestMessage.sender:id,custom_id'])
-                        ->whereHas('chatMessages')
-                        ->selectRaw("chat_rooms.*, (SELECT MAX(created_at) from chat_messages WHERE deleted_at is null and chat_messages.room_id=chat_rooms.id) as latest_message_on")
-                        ->orderBy("latest_message_on", "DESC")
-                        ->withCount(['chatMessages' => function ($query) {
-                            $query->where('status','!=' ,'read');
-                        }])
-                        ->withCount('blockBy')
-                        ->where(function ($query) use ($auth_id) {
-                            $query->whereCreatorId($auth_id)->orWhere('participate_id',$auth_id);
-                        });
+                $rooms = ChatRoom::with([
+                    'creator:id,custom_id,profile_photo,language_id',
+                    'participator:id,custom_id,profile_photo,language_id',
+                    'creator.language:id,lang_code', 'participator.language:id,lang_code',
+                    'creator.userTranslation', 'participator.userTranslation',
+                    'latestMessage.sender:id,custom_id'
+                ])
+                    ->whereHas('chatMessages')
+                    ->selectRaw("chat_rooms.*, (SELECT MAX(created_at) from chat_messages WHERE deleted_at is null and chat_messages.room_id=chat_rooms.id) as latest_message_on")
+                    ->orderBy("latest_message_on", "DESC")
+                    ->withCount(['chatMessages' => function ($query) {
+                        $query->where('status', '!=', 'read');
+                    }])
+                    ->withCount('blockBy')
+                    ->where(function ($query) use ($auth_id) {
+                        $query->whereCreatorId($auth_id)->orWhere('participate_id', $auth_id);
+                    });
 
-                if(!empty($search)){
+                if (!empty($search)) {
                     $rooms = $rooms->where(function ($query) use ($search) {
-                                $query->whereHas('creator.userTranslations', function ($q1) use ($search){
-                                    $q1->where('full_name', 'like', '%'.$search.'%');
-                                })->orWhereHas('participator.userTranslations', function ($q2) use ($search){
-                                    $q2->where('full_name', 'like', '%'.$search.'%');
-                                });
-                            });
+                        $query->whereHas('creator.userTranslations', function ($q1) use ($search) {
+                            $q1->where('full_name', 'like', '%' . $search . '%');
+                        })->orWhereHas('participator.userTranslations', function ($q2) use ($search) {
+                            $q2->where('full_name', 'like', '%' . $search . '%');
+                        });
+                    });
                 }
 
                 $count = $rooms->count();
                 $rooms = $rooms->limit($request->limit ?? config('utility.pagination.limit'))
-                            ->offset($request->offset ?? config('utility.pagination.offset'))
-                            ->get();
+                    ->offset($request->offset ?? config('utility.pagination.offset'))
+                    ->get();
 
-                if($rooms->isNotEmpty()){
+                if ($rooms->isNotEmpty()) {
                     return (ChatRoomResource::Collection($rooms))->additional([
                         'meta'  =>  [
                             'limit'     =>  $request->limit,
@@ -124,12 +129,12 @@ class ChatController extends Controller
                             'message'   =>  trans('api.list', ['entity' =>  __('Chat rooms')]),
                         ]
                     ]);
-                }else{
+                } else {
                     $this->status = Response::HTTP_OK;  // Return 200 because android can handle popup screen
-                    $this->response['meta']['message']  =   trans('api.not_found',['entity' => __('Chat rooms')]); 
+                    $this->response['meta']['message']  =   trans('api.not_found', ['entity' => __('Chat rooms')]);
                 }
-            } catch(ModelNotFoundException $exception) {     
-                $this->status = Response::HTTP_OK;     
+            } catch (ModelNotFoundException $exception) {
+                $this->status = Response::HTTP_OK;
                 switch ($exception->getModel()) {
                     case 'App\Models\ChatRoom':
                         $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("Chat rooms")]);
@@ -142,8 +147,8 @@ class ChatController extends Controller
                         break;
                 };
             } catch (\Exception $e) {
-                $this->status = Response::HTTP_OK;     
-                $this->storeErrorLog($e,'get_chat_rooms');
+                $this->status = Response::HTTP_OK;
+                $this->storeErrorLog($e, 'get_chat_rooms');
             }
         }
         return $this->returnResponse();
@@ -152,25 +157,25 @@ class ChatController extends Controller
     // Get Chat Messages Of The Room
     public function getChatMessages(Request $request)
     {
-        $rules = ChatMessagesRequest::rules();
-        if( $this->apiValidator($request->all(), $rules) ) {
+        $chatMessagesRequest = new ChatMessagesRequest();
+        if ($this->apiValidator($request->all(), $chatMessagesRequest->rules())) {
             try {
-                $messages   =   ChatMessage::withTrashed()->select('id','custom_id','room_id','sender_id','message','status','created_at','updated_at','deleted_at')->with(['sender:id,custom_id'])
-                                ->whereHas('room', function($q) use ($request){
-                                    $q->whereCustomId($request->room)->whereIsActive('y');
-                                })->latest();
-                                
+                $messages   =   ChatMessage::withTrashed()->select('id', 'custom_id', 'room_id', 'sender_id', 'message', 'status', 'created_at', 'updated_at', 'deleted_at')->with(['sender:id,custom_id'])
+                    ->whereHas('room', function ($q) use ($request) {
+                        $q->whereCustomId($request->room)->whereIsActive('y');
+                    })->latest();
+
                 $count      =   $messages->count();
                 $messages   =   $messages->limit($request->limit ?? config('utility.pagination.limit'))
-                                    ->offset($request->offset ?? config('utility.pagination.offset'))
-                                    ->get();
+                    ->offset($request->offset ?? config('utility.pagination.offset'))
+                    ->get();
 
-                $callLog    =   CallLog::select('id','room_id','remaining_time')->where('date',now()->format('Y-m-d'))
-                                    ->whereHas('room', function($q) use ($request){
-                                        $q->whereCustomId($request->room)->whereIsActive('y');
-                                    })->latest()->first();
+                $callLog    =   CallLog::select('id', 'room_id', 'remaining_time')->where('date', now()->format('Y-m-d'))
+                    ->whereHas('room', function ($q) use ($request) {
+                        $q->whereCustomId($request->room)->whereIsActive('y');
+                    })->latest()->first();
 
-                if($messages->isNotEmpty()){
+                if ($messages->isNotEmpty()) {
                     return (ChatMessageResource::Collection($messages))->additional([
                         'meta'  =>  [
                             'remaining_time'    =>  $callLog ? $callLog->remaining_time : config('utility.twillio.allow_call_time'),
@@ -183,12 +188,12 @@ class ChatController extends Controller
                             'message'   =>  trans('api.list', ['entity' => __('Chat history')])
                         ],
                     ]);
-                }else{
-                    $this->response['meta']['remaining_time']  = $callLog ? $callLog->remaining_time : config('utility.twillio.allow_call_time'); 
-                    $this->response['meta']['message']  =   trans('api.not_found',['entity' => __('Chat history')]); 
-                    $this->status = Response::HTTP_NOT_FOUND;     
+                } else {
+                    $this->response['meta']['remaining_time']  = $callLog ? $callLog->remaining_time : config('utility.twillio.allow_call_time');
+                    $this->response['meta']['message']  =   trans('api.not_found', ['entity' => __('Chat history')]);
+                    $this->status = Response::HTTP_NOT_FOUND;
                 }
-           } catch(ModelNotFoundException $exception) {                
+            } catch (ModelNotFoundException $exception) {
                 switch ($exception->getModel()) {
                     case 'App\Models\ChatRoom':
                         $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("Chat rooms")]);
@@ -204,7 +209,7 @@ class ChatController extends Controller
                         break;
                 };
             } catch (\Exception $e) {
-                $this->storeErrorLog($e,'get_chat_messages');
+                $this->storeErrorLog($e, 'get_chat_messages');
             }
         }
         return $this->returnResponse();
@@ -213,28 +218,30 @@ class ChatController extends Controller
     // Delete Chat Room
     public function deleteChatRoom(Request $request)
     {
-        $rules = DeleteRoomRequest::rules();
-        if( $this->apiValidator($request->all(), $rules) ) {
-            try{
+        $deleteRoomRequest = new DeleteRoomRequest();
+        if ($this->apiValidator($request->all(), $deleteRoomRequest->rules())) {
+            try {
                 $auth_id = $request->user() ? $request->user()->id : NULL;
                 $room = ChatRoom::whereCustomId($request->room_id)
-                            ->where(function($query) use ($auth_id){
-                                $query->where('creator_id',$auth_id)
-                                    ->orWhere('participate_id',$auth_id);
-                            })->firstOrFail();
+                    ->where(function ($query) use ($auth_id) {
+                        $query->where('creator_id', $auth_id)
+                            ->orWhere('participate_id', $auth_id);
+                    })->firstOrFail();
 
                 ChatMessage::whereRoomId($room->id)->delete(); // Delete All Chat Messages
                 $room->delete(); // Delete Chat Room
 
-                $this->status = Response::HTTP_OK;     
-                return (['data'  =>  NULL,
+                $this->status = Response::HTTP_OK;
+                return ([
+                    'data'  =>  NULL,
                     'meta' => [
                         'url'       =>  url()->current(),
                         'api'       =>  $this->getVersion(),
                         'language'  =>  app()->getLocale(),
                         'message'   =>  trans('api.chat_room.delete'),
-                    ] ]);
-            } catch(ModelNotFoundException $exception) {                
+                    ]
+                ]);
+            } catch (ModelNotFoundException $exception) {
                 switch ($exception->getModel()) {
                     case 'App\Models\ChatRoom':
                         $this->response['meta']['message'] = trans('api.chat_room.not_found');
@@ -244,7 +251,7 @@ class ChatController extends Controller
                         break;
                 };
             } catch (\Exception $e) {
-                $this->storeErrorLog($e,'delete_chat_room');
+                $this->storeErrorLog($e, 'delete_chat_room');
             }
         }
         return $this->returnResponse();

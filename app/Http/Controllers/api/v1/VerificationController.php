@@ -3,13 +3,13 @@
 namespace App\Http\Controllers\api\v1;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\ { Request, Response };
-use Illuminate\Database\Eloquent\ { ModelNotFoundException };
-use Illuminate\Support\Facades\ { Storage };
-use App\Http\Requests\Api\User\ { UploadVerifyDetailRequest, EmailVerifyRequest, VerifyContactRequest };
-use App\Http\Resources\v1\ { VerificationResource };
-use App\Models\ { User, Country };
-use App\Jobs\ { NotificationJob };
+use Illuminate\Http\{Request, Response};
+use Illuminate\Database\Eloquent\{ModelNotFoundException};
+use Illuminate\Support\Facades\{Storage};
+use App\Http\Requests\Api\User\{UploadVerifyDetailRequest, EmailVerifyRequest, VerifyContactRequest};
+use App\Http\Resources\v1\{VerificationResource};
+use App\Models\{User, Country};
+use App\Jobs\{NotificationJob};
 
 class VerificationController extends Controller
 {
@@ -19,22 +19,25 @@ class VerificationController extends Controller
     // Upload Verification Details
     public function uploadVerifyDetail(Request $request)
     {
-        $rules = UploadVerifyDetailRequest::rules();
-        if( $this->apiValidator($request->all(), $rules) ) {
-            try{
+        $uploadVerifyDetailRequest = new UploadVerifyDetailRequest();
+        if ($this->apiValidator($request->all(), $uploadVerifyDetailRequest->rules())) {
+            try {
                 $path = NULL;
                 $user = $request->user();
 
-                if($request->type == 'image'){
-                    if( Storage::exists($user->verify_photo) ) { Storage::delete($user->verify_photo); }
+                if ($request->type == 'image') {
+                    if (Storage::exists($user->verify_photo)) {
+                        Storage::delete($user->verify_photo);
+                    }
 
                     $path = $request->file('file')->store('users/verify/image');
                     $user->verify_photo = $path;
                     $user->verify_photo_status = "under_review";
                     $user->photo_verified_at = NULL;
-                }
-                elseif($request->type == 'video'){
-                    if( Storage::exists($user->verify_video) ) { Storage::delete($user->verify_video); }
+                } elseif ($request->type == 'video') {
+                    if (Storage::exists($user->verify_video)) {
+                        Storage::delete($user->verify_video);
+                    }
 
                     $path = $request->file('file')->store('users/verify/video');
                     $user->verify_video = $path;
@@ -44,20 +47,22 @@ class VerificationController extends Controller
                 $user->verify_status = 'under_review';
                 $user->save();
 
-                if($path){
+                if ($path) {
                     $this->status = Response::HTTP_OK;
-                    return (['data'  =>  NULL,
-                            'meta' => [
-                                'url'       =>  url()->current(),
-                                'api'       =>  $this->getVersion(),
-                                'language'  =>  app()->getLocale(),
-                                'message'   =>  trans('api.verification_upload.success'),
-                            ] ]);
-                }else{
+                    return ([
+                        'data'  =>  NULL,
+                        'meta' => [
+                            'url'       =>  url()->current(),
+                            'api'       =>  $this->getVersion(),
+                            'language'  =>  app()->getLocale(),
+                            'message'   =>  trans('api.verification_upload.success'),
+                        ]
+                    ]);
+                } else {
                     $this->response['meta']['message']  =   trans('api.verification_upload.fail');
-                    $this->status = Response::HTTP_NOT_FOUND; 
+                    $this->status = Response::HTTP_NOT_FOUND;
                 }
-            } catch(ModelNotFoundException $exception) {                
+            } catch (ModelNotFoundException $exception) {
                 switch ($exception->getModel()) {
                     case 'App\Models\User':
                         $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("User")]);
@@ -67,7 +72,7 @@ class VerificationController extends Controller
                         break;
                 };
             } catch (\Exception $e) {
-                $this->storeErrorLog($e,'upload_verify_detail');
+                $this->storeErrorLog($e, 'upload_verify_detail');
             }
         }
         return $this->returnResponse();
@@ -76,11 +81,11 @@ class VerificationController extends Controller
     // Upload Verification Details
     public function verifyContactNumber(Request $request)
     {
-        $rules = VerifyContactRequest::rules();
-        if( $this->apiValidator($request->all(), $rules) ) {
-            try{
+        $verifyContactRequest = new VerifyContactRequest();
+        if ($this->apiValidator($request->all(), $verifyContactRequest->rules())) {
+            try {
                 $country = Country::select('phonecode')->wherePhonecode($request->country_code)
-                                ->whereIsActive('y')->firstOrFail();
+                    ->whereIsActive('y')->firstOrFail();
 
                 $user = $request->user();
                 $user->country_code = $country->phonecode;
@@ -89,14 +94,16 @@ class VerificationController extends Controller
                 $user->save();
 
                 $this->status = Response::HTTP_OK;
-                return (['data'  =>  NULL,
-                        'meta' => [
-                            'url'       =>  url()->current(),
-                            'api'       =>  $this->getVersion(),
-                            'language'  =>  app()->getLocale(),
-                            'message'   =>  trans('api.verification.success', ['entity' => __("Contact number")]),
-                        ] ]);
-            } catch(ModelNotFoundException $exception) {                
+                return ([
+                    'data'  =>  NULL,
+                    'meta' => [
+                        'url'       =>  url()->current(),
+                        'api'       =>  $this->getVersion(),
+                        'language'  =>  app()->getLocale(),
+                        'message'   =>  trans('api.verification.success', ['entity' => __("Contact number")]),
+                    ]
+                ]);
+            } catch (ModelNotFoundException $exception) {
                 switch ($exception->getModel()) {
                     case 'App\Models\Country':
                         $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("Country")]);
@@ -109,7 +116,7 @@ class VerificationController extends Controller
                         break;
                 };
             } catch (\Exception $e) {
-                $this->storeErrorLog($e,'verify_contact_number');
+                $this->storeErrorLog($e, 'verify_contact_number');
             }
         }
         return $this->returnResponse();
@@ -118,32 +125,32 @@ class VerificationController extends Controller
     // Verify Details
     public function verifyEmail(Request $request)
     {
-        $rules = EmailVerifyRequest::rules();
-        if( $this->apiValidator($request->all(), $rules) ) {
+        $emailVerifyRequest = new EmailVerifyRequest();
+        if ($this->apiValidator($request->all(), $emailVerifyRequest->rules())) {
             $user = $request->user();
-            try{
-                if(!empty($user->email) && $user->email != $request->email){
+            try {
+                if (!empty($user->email) && $user->email != $request->email) {
                     $this->response['meta']['message']  =   trans('api.invalid', ['entity' => __("email")]);
-                    $this->status = Response::HTTP_NOT_FOUND; 
+                    $this->status = Response::HTTP_NOT_FOUND;
                     return $this->returnResponse();
-                }
-                else{
+                } else {
                     $email_exist = User::select('id')->whereEmail($request->email)->first();
-                    if(!$email_exist){
-                        $user->email = $request->email; $user->save();
-                    }else{
+                    if (!$email_exist) {
+                        $user->email = $request->email;
+                        $user->save();
+                    } else {
                         $this->response['meta']['message']  =   trans('api.already_exists', ['entity' => __("email")]);
-                        $this->status = Response::HTTP_NOT_FOUND; 
+                        $this->status = Response::HTTP_NOT_FOUND;
                         return $this->returnResponse();
                     }
                 }
 
-                /* Send Verification */    
+                /* Send Verification */
                 $user->sendEmailVerificationNotification();
                 $user->verify_email_send = 'y';
                 $user->verify_status = 'under_review';
                 $user->save();
-                
+
                 return ([
                     'data'  =>  NULL,
                     'meta' => [
@@ -151,7 +158,8 @@ class VerificationController extends Controller
                         'api'       =>  $this->getVersion(),
                         'language'  =>  app()->getLocale(),
                         'message'   =>  trans('api.link_sent', ['entity' => __('Verification email')]),
-                ] ]);
+                    ]
+                ]);
             } catch (\Exception $e) {
                 $notification = [
                     'custom_id'     =>  getUniqueString('notifications'),
@@ -163,13 +171,13 @@ class VerificationController extends Controller
                     'image'         =>  '',
                     'type'          =>  config('utility.notification.type.verify_fail_email'),
                 ];
-                        
+
                 // Notify
                 $notificationJob = new NotificationJob($notification, $user);
                 dispatch($notificationJob);
 
                 $this->response['meta']['message'] = trans('api.link_not_send');
-                $this->storeErrorLog($e,'verify_email');
+                $this->storeErrorLog($e, 'verify_email');
             }
         }
         return $this->returnResponse();
@@ -178,7 +186,7 @@ class VerificationController extends Controller
     /* Get Verification Details */
     public function getVerifyDetails(Request $request)
     {
-        try{
+        try {
             $user = $request->user();
             return (new VerificationResource($user))->additional([
                 'meta'  =>  [
@@ -187,7 +195,7 @@ class VerificationController extends Controller
             ]);
         } catch (\Exception $e) {
             $this->response['meta']['message'] = trans('api.link_not_send');
-            $this->storeErrorLog($e,'get_verify_detail');
+            $this->storeErrorLog($e, 'get_verify_detail');
         }
         return $this->returnResponse();
     }

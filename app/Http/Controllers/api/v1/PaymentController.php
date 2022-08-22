@@ -3,12 +3,12 @@
 namespace App\Http\Controllers\api\v1;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\ { Request, Response };
-use Illuminate\Database\Eloquent\ { ModelNotFoundException };
-use Illuminate\Support\Facades\ { Auth, DB };
-use App\Http\Requests\Api\General\ { PaginationRequest };
-use App\Http\Resources\v1\ { SubscriptionPlanResource, RazorPayOrderResource };
-use App\Models\ { SubscriptionPlan, Subscription, Transaction };
+use Illuminate\Http\{Request, Response};
+use Illuminate\Database\Eloquent\{ModelNotFoundException};
+use Illuminate\Support\Facades\{Auth, DB};
+use App\Http\Requests\Api\General\{PaginationRequest};
+use App\Http\Resources\v1\{SubscriptionPlanResource, RazorPayOrderResource};
+use App\Models\{SubscriptionPlan, Subscription, Transaction};
 use Razorpay\Api\Api;
 use Razorpay\Api\Errors\SignatureVerificationError;
 use Monolog\Handler\StreamHandler;
@@ -28,11 +28,11 @@ class PaymentController extends Controller
     {
         $plan_ids = SubscriptionPlan::whereIsActive('y')->pluck('custom_id')->toArray();
         $rules = [
-            'plan_id'   =>  'required|in:'.implode(',', $plan_ids),
+            'plan_id'   =>  'required|in:' . implode(',', $plan_ids),
         ];
 
-        if( $this->apiValidator($request->all(), $rules) ) {
-            try{
+        if ($this->apiValidator($request->all(), $rules)) {
+            try {
                 $user = $request->user();
                 $plan = SubscriptionPlan::whereCustomId($request->plan_id)->whereIsActive('y')->firstOrFail();
 
@@ -47,22 +47,22 @@ class PaymentController extends Controller
                 $api = new Api($keyId, $keySecret);
 
                 $orderData = [
-                    'receipt'         =>    'receipt_'.$user->custom_id.'_'.$time,
+                    'receipt'         =>    'receipt_' . $user->custom_id . '_' . $time,
                     'amount'          =>    $amount * 100, // 2000 * 100  = 2000 rupees in paise
                     'currency'        =>    $currency,
                     'payment_capture' =>    $partial_payment // auto capture
                 ];
-                
+
                 $razorpayOrder = $api->order->create($orderData);
 
                 $new_subscription_start_date = \Carbon\Carbon::today()->format('Y-m-d');
-                if( $user->subscription_end_date >= $new_subscription_start_date ) {
+                if ($user->subscription_end_date >= $new_subscription_start_date) {
                     $new_subscription_start_date = $user->subscription_end_date;
                 }
 
                 $subscription_end_date = !empty($user->subscription_end_date)
-                                            ? \Carbon\Carbon::parse($new_subscription_start_date)->addMonth($plan->months)->format('Y-m-d')
-                                            : \Carbon\Carbon::today()->addMonth($plan->months)->format('Y-m-d');
+                    ? \Carbon\Carbon::parse($new_subscription_start_date)->addMonth($plan->months)->format('Y-m-d')
+                    : \Carbon\Carbon::today()->addMonth($plan->months)->format('Y-m-d');
 
                 $subscription =  Subscription::firstOrCreate([
                     'user_id'       =>  $user->id ?? NULL,
@@ -74,7 +74,7 @@ class PaymentController extends Controller
                     'payment_date'  =>  NULL,
                     'payment_type'  =>  'android',
                     'status'        =>  'incomplete',
-                ],[
+                ], [
                     'custom_id'     =>  getUniqueString('subscriptions'),
                 ]);
 
@@ -83,9 +83,10 @@ class PaymentController extends Controller
                 return (new RazorPayOrderResource($razorpayOrder))
                     ->additional([
                         'meta' => [
-                            'message'   =>  trans('api.razorpay.order.success'), 
-                        ] ]);
-            } catch(ModelNotFoundException $exception) {                
+                            'message'   =>  trans('api.razorpay.order.success'),
+                        ]
+                    ]);
+            } catch (ModelNotFoundException $exception) {
                 switch ($exception->getModel()) {
                     case 'App\Models\SubscriptionPlan':
                         $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("Subscription plan")]);
@@ -94,8 +95,8 @@ class PaymentController extends Controller
                         $this->response['meta']['message'] = trans('api.went_wrong');
                         break;
                 };
-            }catch (\Exception $e) {
-                $this->storeErrorLog($e,'razorpay_create_order');
+            } catch (\Exception $e) {
+                $this->storeErrorLog($e, 'razorpay_create_order');
             }
         }
         return $this->returnResponse();
@@ -104,30 +105,30 @@ class PaymentController extends Controller
     /**
      * Please note that the razorpay order ID must
      * come from a trusted source (this could be database or something else)
-     */ 
+     */
     public function verifySignature(Request $request)
     {
         $subscription_ids = Subscription::whereUserId(Auth::id())->whereNull('payment_date')->pluck('custom_id')->toArray();
 
         $rules = [
-            'subscription_id'       =>  'required|in:'.implode(',', $subscription_ids),
+            'subscription_id'       =>  'required|in:' . implode(',', $subscription_ids),
             'razorpay_order_id'     =>  'required',
             'razorpay_payment_id'   =>  'required',
             'razorpay_signature'    =>  'required',
         ];
 
-        if( $this->apiValidator($request->all(), $rules) ) {
+        if ($this->apiValidator($request->all(), $rules)) {
             $user = $request->user();
 
             DB::beginTransaction();
-            try{
+            try {
                 $keyId      =   config('utility.razorpay.api_key');
                 $keySecret  =   config('utility.razorpay.api_secret');
                 $api        =   new Api($keyId, $keySecret);
 
                 $subscription = Subscription::with('subscriptionPlan')->whereUserId(Auth::id())->whereCustomId($request->subscription_id)->firstOrFail();
-                if($subscription->subscriptionPlan){
-                   
+                if ($subscription->subscriptionPlan) {
+
                     $transaction =  Transaction::create([
                         'custom_id'             =>  getUniqueString('transactions'),
                         'user_id'               =>  $user->id ?? NULL,
@@ -146,7 +147,7 @@ class PaymentController extends Controller
                         'razorpay_order_id'     =>  $request->razorpay_order_id,
                         'razorpay_payment_id'   =>  $request->razorpay_payment_id,
                         'razorpay_signature'    =>  $request->razorpay_signature,
-                    );  
+                    );
                     // if signature is verified (Payment Success)
                     $api->utility->verifyPaymentSignature($attributes);
 
@@ -167,11 +168,11 @@ class PaymentController extends Controller
 
                     $subscription_type = 'new'; // New Purchase
                     $renew_count = Subscription::withTrashed()->whereUserId($user->id)
-                                    ->whereNotIn('status',['incomplete','incomplete_expired','unpaid'])->count();
-                    if($renew_count > 0){
+                        ->whereNotIn('status', ['incomplete', 'incomplete_expired', 'unpaid'])->count();
+                    if ($renew_count > 0) {
                         $subscription_type = 'renew';   // Renew Subscription
                     }
-                    $subscription->sendSubScriptionPurchaseSMS($subscription_type);   
+                    $subscription->sendSubScriptionPurchaseSMS($subscription_type);
 
                     // Add Payment success log
                     $transaction_data = json_decode($transaction, true);
@@ -183,35 +184,34 @@ class PaymentController extends Controller
                     $this->status = Response::HTTP_OK;
                     $this->response['data']['status'] = $subscription->status;
                     $this->response['meta']['message'] = trans('api.razorpay.verify_signature.success');
-                    return $this->returnResponse();    
-                }else{
-                    $this->status = Response::HTTP_NOT_FOUND;  
-                    $this->response['meta']['message']  =   trans('api.not_found',['entity' => __('Subscription plan')]); 
-                    return $this->returnResponse();  
+                    return $this->returnResponse();
+                } else {
+                    $this->status = Response::HTTP_NOT_FOUND;
+                    $this->response['meta']['message']  =   trans('api.not_found', ['entity' => __('Subscription plan')]);
+                    return $this->returnResponse();
                 }
-
-            }catch(SignatureVerificationError $e){
+            } catch (SignatureVerificationError $e) {
                 DB::rollback();
-                
+
                 $user->is_subscribed = $user->subscription_end_date >= \Carbon\Carbon::now()->format('Y-m-d') ? 'n' : $user->is_subscribed;
                 $user->subscription_end_date = $user->subscription_end_date >= \Carbon\Carbon::now()->format('Y-m-d')
-                                                    ? NULL
-                                                    : $user->subscription_end_date;
+                    ? NULL
+                    : $user->subscription_end_date;
                 $user->save();
-                if($subscription){
+                if ($subscription) {
                     $subscription->update(['payment_date' => NULL, 'status' => 'unpaid']);
                     $subscription->save();
 
                     // Notify
                     $subscription->notifySubScriptionPurchase('fail');
                 }
-                if($transaction){
+                if ($transaction) {
                     $transaction->update(['status' => 'fail']);
                     $transaction->save();
                 }
 
                 $file = 'payment_' . $user->id;
-                $this->storeErrorLog($e,$file,$e->getMessage());
+                $this->storeErrorLog($e, $file, $e->getMessage());
             }
         }
         return $this->returnResponse();
@@ -222,33 +222,34 @@ class PaymentController extends Controller
      */
     public function getSubscriptionPlans(Request $request)
     {
-        $rules = PaginationRequest::rules();
-        if( $this->apiValidator($request->all(), $rules) ) {
-            try{
+        $paginationRequest = new PaginationRequest();
+        if ($this->apiValidator($request->all(), $paginationRequest->rules())) {
+            try {
                 $subscription_plans = SubscriptionPlan::with('subscriptionPlanTranslation')->whereIsActive('y');
-                
+
                 $count = $subscription_plans->count();
                 $subscription_plans = $subscription_plans->limit($request->limit ?? config('utility.pagination.limit'))
-                            ->offset($request->offset ?? config('utility.pagination.offset'))
-                            ->get();
+                    ->offset($request->offset ?? config('utility.pagination.offset'))
+                    ->get();
 
-                if($subscription_plans->isNotEmpty()){
+                if ($subscription_plans->isNotEmpty()) {
                     return (SubscriptionPlanResource::collection($subscription_plans))
-                    ->additional([
-                        'meta' => [
-                            'limit'     =>  $request->limit,
-                            'offset'    =>  $request->offset,
-                            'total'     =>  $count,
-                            'url'       =>  url()->current(),
-                            'api'       =>  $this->getVersion(),
-                            'language'  =>  app()->getLocale(),
-                            'message'   =>  trans('api.list', ['entity' => __('Subscription plans')]),
-                        ] ]);
-                }else{
-                    $this->response['meta']['message']  =   trans('api.not_found',['entity' => __('Subscription plans')]); 
-                    $this->status = Response::HTTP_NOT_FOUND;     
+                        ->additional([
+                            'meta' => [
+                                'limit'     =>  $request->limit,
+                                'offset'    =>  $request->offset,
+                                'total'     =>  $count,
+                                'url'       =>  url()->current(),
+                                'api'       =>  $this->getVersion(),
+                                'language'  =>  app()->getLocale(),
+                                'message'   =>  trans('api.list', ['entity' => __('Subscription plans')]),
+                            ]
+                        ]);
+                } else {
+                    $this->response['meta']['message']  =   trans('api.not_found', ['entity' => __('Subscription plans')]);
+                    $this->status = Response::HTTP_NOT_FOUND;
                 }
-            } catch(ModelNotFoundException $exception) {                
+            } catch (ModelNotFoundException $exception) {
                 switch ($exception->getModel()) {
                     case 'App\Models\SubscriptionPlan':
                         $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("Subscription plans")]);
@@ -258,7 +259,7 @@ class PaymentController extends Controller
                         break;
                 };
             } catch (\Exception $e) {
-                $this->storeErrorLog($e,'get_subscription_plans');
+                $this->storeErrorLog($e, 'get_subscription_plans');
             }
         }
         return $this->returnResponse();

@@ -3,14 +3,14 @@
 namespace App\Http\Controllers\api\v1;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\ { Request, Response };
-use Illuminate\Database\Eloquent\ { ModelNotFoundException };
-use Illuminate\Support\Facades\ { Storage, DB, Auth };
-use App\Http\Resources\v1\ { UserProfile, UserDetailResource, MyProfile };
-use App\Http\Requests\Api\User\ { ProfileRequest, ProfileReportRequest, SetLatLongRequest };
-use App\Http\Requests\Api\Authentication\ { DeleteAccountRequest };
-use App\Http\Requests\Api\General\ { PaginationRequest };
-use App\Models\ { User, Location, ProfileReport, NotificationStatus, Language };
+use Illuminate\Http\{Request, Response};
+use Illuminate\Database\Eloquent\{ModelNotFoundException};
+use Illuminate\Support\Facades\{Storage, DB, Auth};
+use App\Http\Resources\v1\{UserProfile, UserDetailResource, MyProfile};
+use App\Http\Requests\Api\User\{ProfileRequest, ProfileReportRequest, SetLatLongRequest};
+use App\Http\Requests\Api\Authentication\{DeleteAccountRequest};
+use App\Http\Requests\Api\General\{PaginationRequest};
+use App\Models\{User, Location, ProfileReport, NotificationStatus, Language};
 
 class UserController extends Controller
 {
@@ -20,8 +20,8 @@ class UserController extends Controller
     // Get User Profile
     public function getProfile(Request $request)
     {
-        $rules = ProfileRequest::rules();
-        if( $this->apiValidator($request->all(), $rules) ) {
+        $profileRequest = new ProfileRequest();
+        if( $this->apiValidator($request->all(), $profileRequest->rules()) ) {
             try{
                 $auth_id = $request->user() ? $request->user()->id : NULL;
                 // $max_interest = config('utility.profile.detail.max_interest') ?? 5;
@@ -77,8 +77,8 @@ class UserController extends Controller
     // Store Profile Report Details
     public function storeProfileReport(Request $request)
     {
-        $rules = ProfileReportRequest::rules();
-        if( $this->apiValidator($request->all(), $rules) ) {
+        $profileReportRequest = new ProfileReportRequest();
+        if( $this->apiValidator($request->all(), $profileReportRequest->rules()) ) {
             try{
                 $path = NULL;
                 $reported_user = User::whereCustomId($request->reported_user)
@@ -207,8 +207,8 @@ class UserController extends Controller
     // Delete Account
     public function deletAccount(Request $request)
     {
-        $rules = DeleteAccountRequest::rules();
-        if( $this->apiValidator($request->all(), $rules) ) {
+        $deleteAccountRequest = new DeleteAccountRequest();
+        if( $this->apiValidator($request->all(), $deleteAccountRequest->rules()) ) {
             try{
                 $user = $request->user();
                 $user->reason_of_delete = $request->reason;
@@ -241,8 +241,8 @@ class UserController extends Controller
     // Store Latitude & Longitude Of User
     public function storeLatLong(Request $request)
     {
-        $rules = SetLatLongRequest::rules();
-        if( $this->apiValidator($request->all(), $rules) ) {
+        $setLatLongRequest = new SetLatLongRequest();
+        if( $this->apiValidator($request->all(), $setLatLongRequest->rules()) ) {
             try{
                 $user = $request->user();
                 $user->latitude = $request->latitude;

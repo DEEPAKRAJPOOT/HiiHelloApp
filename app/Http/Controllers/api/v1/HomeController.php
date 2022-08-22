@@ -3,12 +3,12 @@
 namespace App\Http\Controllers\api\v1;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\ { Request, Response };
-use Illuminate\Database\Eloquent\ { ModelNotFoundException };
-use App\Http\Resources\v1\ { HomeResource };
-use Illuminate\Support\Facades\ { DB };
-use App\Http\Requests\Api\General\ { PaginationRequest };
-use App\Models\ { User, BlockUser, UserSetting, DisLike };
+use Illuminate\Http\{Request, Response};
+use Illuminate\Database\Eloquent\{ModelNotFoundException};
+use App\Http\Resources\v1\{HomeResource};
+use Illuminate\Support\Facades\{DB};
+use App\Http\Requests\Api\General\{PaginationRequest};
+use App\Models\{User, BlockUser, UserSetting, DisLike};
 
 class HomeController extends Controller
 {
@@ -18,71 +18,102 @@ class HomeController extends Controller
     // Get All Users List
     public function getHomeFeeds(Request $request)
     {
-        $rules = PaginationRequest::rules();
-        if( $this->apiValidator($request->all(), $rules) ) {
-            try{
-                $user = $request->user(); $auth_id = $user ? $user->id : NULL;
+        $paginationRequest = new PaginationRequest();
+        if ($this->apiValidator($request->all(), $paginationRequest->rules())) {
+            try {
+                $user = $request->user();
+                $auth_id = $user ? $user->id : NULL;
                 $is_swipe_allow = $user->isSwipeAllow();
 
-                if($is_swipe_allow){
+                if ($is_swipe_allow) {
                     $auth_interest = $user->interest ? $user->interest : 'Both';
-                    $radius = $user->discover_distance; $latitude = $user->latitude; $longitude = $user->longitude; 
+                    $radius = $user->discover_distance;
+                    $latitude = $user->latitude;
+                    $longitude = $user->longitude;
 
                     $blocked    =   BlockUser::whereBlockBy($auth_id)->whereNotNull('blocked_to')->distinct()->pluck('blocked_to')->toArray();
                     $languages  =   UserSetting::whereUserId($auth_id)->whereNotNull('language_id')->distinct()->pluck('language_id')->toArray();
-                    $disLikes   =   DisLike::whereDisLikerId($auth_id)->whereDate('updated_at',\Carbon\Carbon::today())
-                                        ->whereNotNull('user_id')->distinct()->pluck('user_id')->toArray();
+                    $disLikes   =   DisLike::whereDisLikerId($auth_id)->whereDate('updated_at', \Carbon\Carbon::today())
+                        ->whereNotNull('user_id')->distinct()->pluck('user_id')->toArray();
 
-                    if( !empty($radius) && !empty($latitude) && !empty($longitude) ){
-                        $users = User::select('id','custom_id','birth_date','profile_photo','gender','interest',
-                            'location_id','language_id','verify_status','is_active'
-                            ,DB::raw("3959 * 1.609344 * acos(cos(radians(" . $latitude . ")) 
+                    if (!empty($radius) && !empty($latitude) && !empty($longitude)) {
+                        $users = User::select(
+                            'id',
+                            'custom_id',
+                            'birth_date',
+                            'profile_photo',
+                            'gender',
+                            'interest',
+                            'location_id',
+                            'language_id',
+                            'verify_status',
+                            'is_active',
+                            DB::raw("3959 * 1.609344 * acos(cos(radians(" . $latitude . ")) 
                             * cos(radians(users.latitude)) 
                             * cos(radians(users.longitude) - radians(" . $longitude . ")) 
-                            + sin(radians(" .$latitude. ")) 
-                            * sin(radians(users.latitude))) AS distance"));
-                            // ->having("distance", "<=", $radius)
+                            + sin(radians(" . $latitude . ")) 
+                            * sin(radians(users.latitude))) AS distance")
+                        );
+                        // ->having("distance", "<=", $radius)
 
-                            if($user->location_id == $user->discover_location_id){
-                                $users = $users->orderBy('distance');
-                            }
-                    }else{
-                        $users = User::select('id','custom_id','birth_date','profile_photo','gender','interest',
-                        'location_id','language_id','verify_status','is_active');
+                        if ($user->location_id == $user->discover_location_id) {
+                            $users = $users->orderBy('distance');
+                        }
+                    } else {
+                        $users = User::select(
+                            'id',
+                            'custom_id',
+                            'birth_date',
+                            'profile_photo',
+                            'gender',
+                            'interest',
+                            'location_id',
+                            'language_id',
+                            'verify_status',
+                            'is_active'
+                        );
                     }
 
-                    $users = $users->with(['userDetails','interests.interest.interestTranslation','userTranslation','location.locationTranslation'])
+                    $users = $users->with(['userDetails', 'interests.interest.interestTranslation', 'userTranslation', 'location.locationTranslation'])
 
                         ->where(function ($query)  use ($user, $auth_id, $auth_interest, $disLikes, $blocked) {
-                            $query->where('id','!=',$auth_id)->whereNotNull('profile_photo')->whereIsActive('y');
+                            $query->where('id', '!=', $auth_id)->whereNotNull('profile_photo')->whereIsActive('y');
 
-                            if($auth_interest != 'Both'){ $query->where('gender',$auth_interest); }     // Interested in Gender
+                            if ($auth_interest != 'Both') {
+                                $query->where('gender', $auth_interest);
+                            }     // Interested in Gender
 
-                            if(!empty($user->discover_location_id)){                                    // Location
-                                if($user->location_id != $user->discover_location_id){
-                                    $query->where('location_id',$user->discover_location_id); 
+                            if (!empty($user->discover_location_id)) {                                    // Location
+                                if ($user->location_id != $user->discover_location_id) {
+                                    $query->where('location_id', $user->discover_location_id);
                                 }
-                            } 
+                            }
 
-                            if(count($disLikes) > 0){ $query->whereNotIn('id',$disLikes); }             // Restirct DisLiked Profile
-                            if(count($blocked) > 0){ $query->whereNotIn('id',$blocked); }               // Restirct Blocked Profile
+                            if (count($disLikes) > 0) {
+                                $query->whereNotIn('id', $disLikes);
+                            }             // Restirct DisLiked Profile
+                            if (count($blocked) > 0) {
+                                $query->whereNotIn('id', $blocked);
+                            }               // Restirct Blocked Profile
                         });
 
                     // Discovery
-                    $users = $users->where(function ($query)  use ($user, $languages) {                    
-                            if(count($languages) > 0){ $query->orWhereIn('language_id',$languages);}        // Languages
+                    $users = $users->where(function ($query)  use ($user, $languages) {
+                        if (count($languages) > 0) {
+                            $query->orWhereIn('language_id', $languages);
+                        }        // Languages
 
-                            if(!empty($user->discover_start_age) && !empty($user->discover_end_age)){
-                                $query->orWhereBetween('birth_date',array($user->discover_start_age,$user->discover_end_age)); // Age
-                            }   
-                        });
+                        if (!empty($user->discover_start_age) && !empty($user->discover_end_age)) {
+                            $query->orWhereBetween('birth_date', array($user->discover_start_age, $user->discover_end_age)); // Age
+                        }
+                    });
 
                     $count = $users->count();
                     $users = $users->limit($request->limit ?? config('utility.pagination.limit'))
-                                ->offset($request->offset ?? config('utility.pagination.offset'))
-                                ->get();
-                                
-                    if($users->isNotEmpty()){
+                        ->offset($request->offset ?? config('utility.pagination.offset'))
+                        ->get();
+
+                    if ($users->isNotEmpty()) {
                         return (HomeResource::collection($users))->additional([
                             'meta' => [
                                 'limit'     =>  $request->limit,
@@ -93,18 +124,19 @@ class HomeController extends Controller
                                 'api'       =>  $this->getVersion(),
                                 'language'  =>  app()->getLocale(),
                                 'message'   =>  trans('api.list', ['entity' => __('Users')]),
-                            ] ]);
-                    }else{
+                            ]
+                        ]);
+                    } else {
                         $this->response['meta']['is_swipe_allow'] = $is_swipe_allow;
-                        $this->response['meta']['message']  =   trans('api.not_found',['entity' => __('Users')]); 
-                        $this->status = Response::HTTP_NOT_FOUND;     
+                        $this->response['meta']['message']  =   trans('api.not_found', ['entity' => __('Users')]);
+                        $this->status = Response::HTTP_NOT_FOUND;
                     }
-                }else{
+                } else {
                     $this->response['meta']['is_swipe_allow'] = $is_swipe_allow;
-                    $this->response['meta']['message']  =   trans('api.swipe_over'); 
-                    $this->status = Response::HTTP_FORBIDDEN;     
+                    $this->response['meta']['message']  =   trans('api.swipe_over');
+                    $this->status = Response::HTTP_FORBIDDEN;
                 }
-            } catch(ModelNotFoundException $exception) {                
+            } catch (ModelNotFoundException $exception) {
                 switch ($exception->getModel()) {
                     case 'App\Models\User':
                         $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("Users")]);
@@ -114,7 +146,7 @@ class HomeController extends Controller
                         break;
                 };
             } catch (\Exception $e) {
-                $this->storeErrorLog($e,'get_home_feed');
+                $this->storeErrorLog($e, 'get_home_feed');
             }
         }
         return $this->returnResponse();

@@ -22,7 +22,7 @@ class FullProfileRequest extends FormRequest
      *
      * @return array
      */
-    public function rules($request)
+    public function rules()
     {
         return [
             'email'                     =>  'nullable|email|max:150|unique:users,email,'.Auth::id(),
