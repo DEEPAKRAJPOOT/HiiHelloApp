@@ -770,7 +770,7 @@ class UsersController extends Controller
     public function csvDownload(Request $request)
     {
         $down_file_name = 'User';
-        $users = User::with('userTransEn', 'deviceToken', 'country', 'location', 'language')->orderBy('created_at','desc')->get();
+        $users = User::with('userTransEn', 'deviceToken', 'country', 'location', 'language','subscription','subscriptionPlan','subscriptionPlanTranslation')->orderBy('created_at','desc')->get();
         if (!$users->isEmpty()) {
             foreach ($users as $user) {
                 $data[] = [

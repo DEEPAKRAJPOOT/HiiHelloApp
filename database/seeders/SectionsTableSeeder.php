@@ -199,6 +199,16 @@ class SectionsTableSeeder extends Seeder
                     'created_at'    => \Carbon\Carbon::now(),
                     'updated_at'    => \Carbon\Carbon::now(),
                 ],
+                [
+                    'name'          => 'Call Logs',
+                    'icon'          =>  'icon-settings',
+                    'image'         =>  '',
+                    'icon_type'     =>  'font-awesome',
+                    'sequence'      => 19,
+                    'is_active'     => 'y',
+                    'created_at'    => \Carbon\Carbon::now(),
+                    'updated_at'    => \Carbon\Carbon::now(),
+                ],
         ];
         Section::insert($sections);
     }

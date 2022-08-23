@@ -67,6 +67,10 @@ function getPermissions($user_type = 'normal')
             20 =>[ //Site Configurations
                 'permissions' => 'access'
             ],
+            21 =>[ //Site Configurations
+                'permissions' => 'access,view'
+            ],
+
         ];
     }
 

@@ -93,6 +93,11 @@ Route::group(['namespace' => 'Admin', 'middleware' => ['check_permit', 'revalida
 	/* Site Configuration */
 	Route::get('settings', 'PagesController@showSetting')->name('settings.index');
 	Route::post('change-setting', 'PagesController@changeSetting')->name('settings.change-setting');
+
+	// call logs
+	Route::get('call-logs/listing', 'CallController@listing')->name('call-logs.listing');
+	Route::resource('call-logs', 'CallController');
+
 });
 
 //User Exception
