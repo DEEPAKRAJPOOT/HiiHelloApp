@@ -28,7 +28,9 @@ var connection = mysql.createConnection({
 	port     : "3306",
 	user     : "admin",
 	password : "JINJN5A0cELWaT6xRJ1S",
-	database : "dev_hi_hello_app"
+	database : "dev_hi_hello_app",
+
+	charset  : 'utf8mb4'  // to store emoji into database with utf8mb4 format
 });
 
 /* Listen On Respective Port */

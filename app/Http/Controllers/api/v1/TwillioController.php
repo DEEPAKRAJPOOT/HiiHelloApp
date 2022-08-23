@@ -122,7 +122,7 @@ class TwillioController extends Controller
     {
         $response = new VoiceResponse();
 
-        if ($request->CallStatus == 'no-answer' || $request->CallStatus == 'failed' || $request->CallStatus == 'canceled' || $request->CallStatus == 'busy') {
+        if ($request->CallStatus == 'in-progress' || $request->CallStatus == 'completed' || $request->CallStatus == 'no-answer' || $request->CallStatus == 'failed' || $request->CallStatus == 'canceled' || $request->CallStatus == 'busy') {
             $chat_room = ChatRoom::with('creator', 'participator')->whereCustomId($request->room_id)->first();
             if ($chat_room) {
 
@@ -134,7 +134,23 @@ class TwillioController extends Controller
                         $receiver   =   $chat_room->creator;
                     }
 
-                    if ($request->CallStatus == 'canceled' || $request->CallStatus == 'busy') {
+                    if ($request->CallStatus == 'in-progress') {
+                        ChatMessage::Create([
+                            'room_id'       =>  $chat_room->id,
+                            'sender_id'     =>  $caller->id,
+                            'receiver_id'   =>  $receiver->id,
+                            'message'       =>  '{ "type" : "voicelog", "value" : "", "other" : { "type" : "start_time" } }',
+                            'custom_id'     =>  getUniqueString('chat_messages'),
+                        ]);
+                    } else if($request->CallStatus == 'completed') {
+                        ChatMessage::Create([
+                            'room_id'       =>  $chat_room->id,
+                            'sender_id'     =>  $caller->id,
+                            'receiver_id'   =>  $receiver->id,
+                            'message'       =>  '{ "type" : "voicelog", "value" : "", "other" : { "type" : "end_time" } }',
+                            'custom_id'     =>  getUniqueString('chat_messages'),
+                        ]);
+                    } else if ($request->CallStatus == 'canceled' || $request->CallStatus == 'busy') {
                         ChatMessage::Create([
                             'room_id'       =>  $chat_room->id,
                             'sender_id'     =>  $caller->id,
@@ -254,25 +270,25 @@ class TwillioController extends Controller
                     $room->nofityCallTimeOut();
                 }
 
-                ChatMessage::Create([
-                    'room_id'       =>  $room->id,
-                    'sender_id'     =>  $room->creator ? $room->creator->id : "",
-                    'receiver_id'   =>  $room->participator ? $room->participator->id : "",
-                    'message'       =>  '{ "type" : "voicelog", "value" : "", "other" : { "type" : "start_time" } }',
-                    'custom_id'     =>  getUniqueString('chat_messages'),
-                    'created_at'    =>  now()->format('Y-m-d') . '' . $request->start_time,
-                    'updated_at'    =>  now()->format('Y-m-d') . '' . $request->start_time,
-                ]);
+                // ChatMessage::Create([
+                //     'room_id'       =>  $room->id,
+                //     'sender_id'     =>  $room->creator ? $room->creator->id : "",
+                //     'receiver_id'   =>  $room->participator ? $room->participator->id : "",
+                //     'message'       =>  '{ "type" : "voicelog", "value" : "", "other" : { "type" : "start_time" } }',
+                //     'custom_id'     =>  getUniqueString('chat_messages'),
+                //     'created_at'    =>  now()->format('Y-m-d') . '' . $request->start_time,
+                //     'updated_at'    =>  now()->format('Y-m-d') . '' . $request->start_time,
+                // ]);
 
-                ChatMessage::Create([
-                    'room_id'       =>  $room->id,
-                    'sender_id'     =>  $room->creator ? $room->creator->id : "",
-                    'receiver_id'   =>  $room->participator ? $room->participator->id : "",
-                    'message'       =>  '{ "type" : "voicelog", "value" : "", "other" : { "type" : "end_time" } }',
-                    'custom_id'     =>  getUniqueString('chat_messages'),
-                    'created_at'    =>  now()->format('Y-m-d') . '' . $request->end_time,
-                    'updated_at'    =>  now()->format('Y-m-d') . '' . $request->end_time,
-                ]);
+                // ChatMessage::Create([
+                //     'room_id'       =>  $room->id,
+                //     'sender_id'     =>  $room->creator ? $room->creator->id : "",
+                //     'receiver_id'   =>  $room->participator ? $room->participator->id : "",
+                //     'message'       =>  '{ "type" : "voicelog", "value" : "", "other" : { "type" : "end_time" } }',
+                //     'custom_id'     =>  getUniqueString('chat_messages'),
+                //     'created_at'    =>  now()->format('Y-m-d') . '' . $request->end_time,
+                //     'updated_at'    =>  now()->format('Y-m-d') . '' . $request->end_time,
+                // ]);
 
                 $this->status = Response::HTTP_OK;
                 return (new CallLogResource($room))
