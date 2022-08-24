@@ -54,3 +54,16 @@ Route::group(['prefix' => 'admin'], function () {
   Route::get('/password/reset', 'AdminAuth\ForgotPasswordController@showLinkRequestForm')->name('admin.password.reset');
   Route::get('/password/reset/{token}/{email?}', 'AdminAuth\ResetPasswordController@showResetForm');
 });
+
+Route::group(['prefix' => 'webhook', 'as' => 'webhooks.', 'namespace' => 'WebHooks'], function() {
+
+    // Web hook manage request
+        // Route::any('ios', 'IosWebHook@manageAllRequest');
+        // Route::any('android', 'AndroidWebHook@manageAllRequest');
+
+    // Google Web Hooks
+        // Route::any('android/test', 'AndroidWebHook@getTestRequest');
+
+    // iOS Web Hooks
+        Route::any('ios/test', 'IosWebHook@getTestRequest');
+});

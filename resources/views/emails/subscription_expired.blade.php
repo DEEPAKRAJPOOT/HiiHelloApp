@@ -108,6 +108,22 @@
         </tr>
         <tr style="height: 56px;"></tr>
     </table>
+    <table class="gmail-app-fix">
+        <tr>
+            <td>
+                <table cellpadding="0" cellspacing="0" border="0" align="center" width="600">
+                    <tr>
+                        <td cellpadding="0" cellspacing="0" border="0" height="1"; style="line-height: 1px; min-width: 200px;">
+                         </td>
+                        <td cellpadding="0" cellspacing="0" border="0" height="1"; style="line-height: 1px; min-width: 200px;">                        
+                        </td>
+                        <td cellpadding="0" cellspacing="0" border="0" height="1"; style="line-height: 1px; min-width: 200px;">                      
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
 </body>
 
 </html>
