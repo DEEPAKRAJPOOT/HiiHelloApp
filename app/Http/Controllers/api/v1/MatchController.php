@@ -26,10 +26,17 @@ class MatchController extends Controller
         $getMatchRequest = new GetMatchRequest();
         if ($this->apiValidator($request->all(), $getMatchRequest->rules())) {
             try {
-                $user   = $request->user();
+                $user = $request->user();
+
+                // Match Not Allowed
+                if(!$user->isNewMatchAllow()){
+                    $this->response['meta']['message']  =   trans('api.not_found', ['entity' => __('New Matches')]);
+                    $this->status = Response::HTTP_OK;
+                    return $this->returnResponse();
+                }
+
                 $auth_id = $user ? $user->id : NULL;
                 $search = $request->search;
-
                 $user->match_count = 0; // Reset Match Count
                 $user->save();
 
