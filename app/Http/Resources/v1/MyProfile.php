@@ -70,13 +70,19 @@ class MyProfile extends JsonResource
 
     public function with($request)
     {
-        $is_subscribed = false;
+        $is_subscribed = $is_feature_allow = false;
         $subscription_end_date = "";
         if( !Auth::guest() ) {
             if( Auth::user()->is_subscribed == 'y' && Auth::user()->subscription_end_date >= \Carbon\Carbon::today()->format('Y-m-d') ){
                 $is_subscribed = true;
             }
             $subscription_end_date = Auth::user()->subscription_end_date ?? "";
+
+            if($is_subscribed && ($this->start_date == \Carbon\Carbon::today()->format('Y-m-d')) ){
+                $is_feature_allow = true;
+            }else if($is_subscribed && Auth::user()->verify_status == 'verified'){
+                $is_feature_allow = true;
+            }
         }
         return [
             'meta' => [ 
@@ -85,6 +91,7 @@ class MyProfile extends JsonResource
                 'language'                  =>  app()->getLocale(),
                 'is_subscribed'             =>  $is_subscribed,
                 'subscription_end_date'     =>  $subscription_end_date,
+                'is_feature_allow'          =>  $is_feature_allow,
             ],
         ];
     }
