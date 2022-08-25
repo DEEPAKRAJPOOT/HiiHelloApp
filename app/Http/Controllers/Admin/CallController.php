@@ -33,7 +33,7 @@ class CallController extends Controller
     {
         extract($this->DTFilters($request->all()));
         $records = [];
-        $call_logs = CallLog::with(['room'])->orderBy($sort_column, $sort_order);
+        $call_logs = CallLog::with(['room','room.creator.userTransEn', 'room.participator.userTransEn', 'room.creator','room.participator'])->orderBy($sort_column, $sort_order);
 
         if ($search != '') {
             $call_logs->where(function ($query) use ($search, $call_logs) {
@@ -77,7 +77,7 @@ class CallController extends Controller
     public function csvDownload(Request $request)
     {
         $down_file_name = 'Call Log';
-        $call_logs = CallLog::with('room.creator.userTransEn', 'room.participator.userTransEn')->get();
+        $call_logs = CallLog::with('room','room.creator.userTransEn', 'room.participator.userTransEn', 'room.creator','room.participator')->get();
         if (!$call_logs->isEmpty()) {
             foreach ($call_logs as $call_log) {
                 $data[] = [
@@ -115,8 +115,8 @@ class CallController extends Controller
 
             return Response::download($filename, $down_file_name . ".csv", $headers);
         } else {
-            flash('Unable to generate subscription csv file. Try again later')->error();
+            flash('Unable to generate Call logs csv file. Try again later')->error();
         }
-        return redirect(route('admin.subscription-lists.index'));
+        return redirect(route('admin.call-logs.index'));
     }
 }
