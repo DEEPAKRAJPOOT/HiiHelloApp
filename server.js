@@ -9,7 +9,7 @@ const mysql 	= 	require('mysql');
 const tech 		= 	io.of('/');
 const port 		= 	8080;
 
-const APP_URL 	= 	"https://hihelloapp.com/";
+const APP_URL 	= 	"https://developer.hihelloapp.com/";
 // const APP_URL 	= 	"http://localhost:8000/";
 
 app.use(express.static(path.join(__dirname, 'public')));
