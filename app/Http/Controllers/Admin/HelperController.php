@@ -20,7 +20,7 @@ class HelperController extends Controller
         // $url = Storage::temporaryUrl( $path, now()->addMinutes(5) );
 
         // For AWS CDN
-        if( !empty(env('AWS_URl')) && !empty(env('FILESYSTEM_DRIVER')) && env('FILESYSTEM_DRIVER') == 's3' ){
+        if( !empty($path) && !empty(env('AWS_URl')) && !empty(env('FILESYSTEM_DRIVER')) && env('FILESYSTEM_DRIVER') == 's3' ){
             // $url = Storage::disk('s3')->url($path);
             $url = env('AWS_URl').$path;
         }
