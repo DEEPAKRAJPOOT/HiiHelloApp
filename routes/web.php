@@ -66,4 +66,8 @@ Route::group(['prefix' => 'webhook', 'as' => 'webhooks.', 'namespace' => 'WebHoo
 
     // iOS Web Hooks
         Route::any('ios/test', 'IosWebHook@getTestRequest');
+
+    // RazorPay (Android) Web Hooks
+        Route::any('android', 'AndroidWebHook@storeDetails');
 });
+
