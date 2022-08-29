@@ -226,6 +226,8 @@ class LikeController extends Controller
                 if (!Auth::guest()) {
                     if (Auth::user()->is_subscribed == 'y' && Auth::user()->subscription_end_date >= \Carbon\Carbon::today()->format('Y-m-d')) {
                         $is_subscribed = true;
+                    } elseif (Auth::user()->gender == 'Female'){
+                        $is_subscribed = true;
                     }
                     $subscription_end_date = Auth::user()->subscription_end_date ?? "";
                 }

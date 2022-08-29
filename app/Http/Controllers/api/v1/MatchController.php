@@ -90,9 +90,9 @@ class MatchController extends Controller
                     ->pluck('users.custom_id')->toArray();
 
                 $likes_count = count($likes);
-                if ($likes_count > $max_limit) {
-                    $max_limit = $likes_count;
-                }
+                // if ($likes_count > $max_limit) {
+                //     $max_limit = $likes_count;
+                // }
 
                 $matches = User::with('userTranslation:id,locale,user_id,full_name')
                     ->where('id', '!=', $auth_id)                 // Not Own Profile
@@ -107,17 +107,19 @@ class MatchController extends Controller
                     $matches = $matches->whereNotIn('id', $restricted_ids);
                 }
 
-                $matches = $matches->whereIsActive('y')
+                $matches = $matches->whereIsActive('y');
                     // ->where('is_subscribed','y')            // Subscription
                     // ->where('subscription_end_date','>=', \Carbon\Carbon::today()->format('Y-m-d'))
 
-                    ->where(function ($query)
-                    use ($user, $likes, $age_from, $age_to, $match_percentage, $interests, $personalities) {
+                if($likes_count > 0){
+                   $matches = $matches->whereIn('custom_id', $likes);   // Someone likes me and I like him/her 
+                }
 
-                        $query->orWhereIn('custom_id', $likes)                                   // Someone likes me and I like him/her 
-                            ->orWhere('language_id', $user->language_id)                         // Language
+                $matches =  $matches->where(function ($query)
+                    use ($user, $age_from, $age_to, $match_percentage, $interests, $personalities) {
+                        $query->orWhere('language_id', $user->language_id)                         // Language
                             ->orWhere('location_id', $user->location_id)                         // Location
-                            ->orWhereBetween('birth_date', array($age_from, $age_to))             // Age / Birth Date
+                            // ->orWhereBetween('birth_date', array($age_from, $age_to))             // Age / Birth Date
                             ->orWhere('profile_percentage', '>=', $match_percentage)              // Profile completion
                             ->orWhere('verify_status', 'verified')                               // Verified/Unverified  
 
@@ -165,6 +167,9 @@ class MatchController extends Controller
 
                 $matches        =   $matches->latest();
                 if ($max_limit_apply) {
+                    if($likes_count != 0 && $count > $max_limit){
+                        $max_limit = $count;
+                    }
                     $matches    =   $matches->limit($max_limit)->get();
                 } else {
                     $matches    =   $matches->limit($request->limit ?? config('utility.pagination.limit'))

@@ -17,6 +17,8 @@ class CallReceiverResource extends JsonResource
         $is_subscribed = false;
         if( $this->is_subscribed == 'y' && $this->subscription_end_date >= \Carbon\Carbon::today()->format('Y-m-d') ){
             $is_subscribed = true;
+        } elseif ($this->gender == 'Female'){
+            $is_subscribed = true;
         }
         
         return [

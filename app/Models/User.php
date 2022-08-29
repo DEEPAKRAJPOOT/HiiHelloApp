@@ -12,6 +12,7 @@ use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Auth;
 use Laravel\Sanctum\HasApiTokens;
 use App\Models\Like;
+use App\Models\Subscription;
 use Carbon\Carbon;
 use App\Jobs\NotificationJob;
 use App\Http\Traits\TwillioSmsTrait;
@@ -267,6 +268,39 @@ class User extends Authenticatable implements MustVerifyEmail, TranslatableContr
             $language = Language::select('id')->whereLangCode(app()->getLocale())->first();
             if($language){
                 $this->language_id = $language->id;
+                $this->save();
+            }
+        }
+    }
+
+    // Buy Subscription For Girls
+    public function buyFreeSubscription(){
+        $free_subscription = config('utility.subscription.free_for_girls');
+        if($free_subscription && $this->gender == 'Female'){
+
+            $plan = SubscriptionPlan::where('is_default_for_girl','y')->first();
+            if($plan){
+
+                $new_subscription_start_date = \Carbon\Carbon::today()->format('Y-m-d');
+                if ($this->subscription_end_date >= $new_subscription_start_date) {
+                    $new_subscription_start_date = $this->subscription_end_date;
+                }
+
+                Subscription::firstOrCreate([
+                    'user_id'       =>  $this->id ?? NULL,
+                    'plan_id'       =>  $plan->id ?? NULL,
+                    'months'        =>  $plan->months,
+                    'amount'        =>  $plan->amount,
+                    'start_date'    =>  $new_subscription_start_date,
+                    'end_date'      =>  NULL,
+                    'payment_date'  =>  now(),
+                    'payment_type'  =>  '',
+                    'status'        =>  'active',
+                ], [
+                    'custom_id'     =>  getUniqueString('subscriptions'),
+                ]);
+
+                $this->is_subscribed = 'y';
                 $this->save();
             }
         }

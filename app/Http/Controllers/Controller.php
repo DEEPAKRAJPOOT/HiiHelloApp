@@ -208,6 +208,8 @@ class Controller extends BaseController
             if( !Auth::guest() ) {
                 if( Auth::user()->is_subscribed == 'y' && Auth::user()->subscription_end_date >= \Carbon\Carbon::today()->format('Y-m-d') ){
                     $is_subscribed = true;
+                } elseif (Auth::user()->gender == 'Female'){
+                    $is_subscribed = true;
                 }
                 $subscription_end_date = Auth::user()->subscription_end_date;
             }
@@ -230,6 +232,8 @@ class Controller extends BaseController
         $subscription_end_date = "";
         if( !Auth::guest() ) {
             if( Auth::user()->is_subscribed == 'y' && Auth::user()->subscription_end_date >= \Carbon\Carbon::today()->format('Y-m-d') ){
+                $is_subscribed = true;
+            } elseif (Auth::user()->gender == 'Female'){
                 $is_subscribed = true;
             }
             $subscription_end_date = Auth::user()->subscription_end_date;
