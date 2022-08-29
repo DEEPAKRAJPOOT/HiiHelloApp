@@ -8,7 +8,7 @@ use App\Http\Resources\v1\{UserProfile, LoginResource, SignUpResource};
 use Illuminate\Database\Eloquent\{ModelNotFoundException};
 use Illuminate\Support\Facades\{Storage, Auth, Hash};
 use App\Http\Requests\Api\Authentication\{LoginRequest, RegisterRequest, SocialLoginRequest};
-use App\Models\{User, Country, UserDetail, Location, Interest, UserInterest, Language, ProfileDetail, DeviceToken};
+use App\Models\{User, Country, UserDetail, Location, Interest, UserInterest, Language, ProfileDetail, DeviceToken, Subscription, SubscriptionPlan};
 use Illuminate\Support\Str;
 
 class AuthenticationController extends Controller
@@ -123,6 +123,11 @@ class AuthenticationController extends Controller
                         $user->account_id = Str::slug(substr($full_name, 0, 4), "_") . '_' . time();
                     }
                     $user->is_trans_full_name = 'n';
+                }
+
+                // Buy Subscription For Girls
+                if($user->wasRecentlyCreated){
+                    $user->buyFreeSubscription();
                 }
 
                 if ($user->wasRecentlyCreated && !empty($user->country_code) && !empty($user->contact_no)) {

@@ -241,6 +241,11 @@ class UsersController extends Controller
 
             $user->profile_percentage = $user->calculateProfilePercent();
 
+            // Buy Subscription For Girls
+            if($user->wasRecentlyCreated){
+                $user->buyFreeSubscription();
+            }
+
             if ($user->save()) {
                 DB::commit();
                 flash('User account created successfully!')->success();
