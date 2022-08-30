@@ -50,10 +50,7 @@
                                 <tr>
                                     <td>
                                         <p style="margin: 0px; font-weight: 400; font-size: 14px; line-height: 20px; color: #645A8F; letter-spacing: 0.006em;
-                                ">As you are aware we take profile verification very seriously and for this purpose of
-                                            improved security, we’re asking all users to verify their email. This
-                                            verification will be required to use the app, manage your profile and get
-                                            verified matches.</p>
+                                ">As you are aware we take profile verification very seriously and for this purpose of improved security, we’re asking all users to verify their email. This verification will be required to use the app, manage your profile and get verified matches.</p>
                                     </td>
                                 </tr>
                                 <tr style="height: 32px;"></tr>
@@ -82,8 +79,7 @@
                                 <tr>
                                     <td>
                                         <p style="margin: 0px; font-weight: 400; font-size: 14px; line-height: 20px; color: #645A8F; letter-spacing: 0.006em;
-                                    ">Until you verify your email, you will be unable to access and fully use the Hi
-                                            Hello App. We will begin sending out reminders after a period of time.</p>
+                                    ">Until you verify your email, you will be unable to access and fully use the Hi Hello App. We will begin sending out reminders after a period of time.</p>
                                     </td>
                                 </tr>
                                 <tr style="height: 30px;"></tr>
@@ -95,7 +91,7 @@
                                     <td>
                                         <h1
                                             style="margin: 0px; font-weight: 700; font-size: 16px; line-height: 22px; letter-spacing: 0.006em; color: #170A52;">
-                                            Hi Hello Team</h1>
+                                            Team Hi Hello</h1>
                                     </td>
                                 </tr>
                                 <tr style="height: 50px;"></tr>

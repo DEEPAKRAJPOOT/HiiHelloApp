@@ -35,7 +35,7 @@
                                     <td>
                                         <h1
                                             style="margin: 0px; font-weight: 700; font-size: 16px; line-height: 22px; letter-spacing: 0.006em; color: #170A52;">
-                                            Hello @if($data['userTransEn']){{ $data['userTransEn']['full_name'] }}@endif,</h1>
+                                            Hi Hello @if($data['userTransEn']){{ $data['userTransEn']['full_name'] }}@endif,</h1>
                                     </td>
                                 </tr>
                                 <tr style="height: 32px;"></tr>
@@ -86,7 +86,7 @@
                                     <td>
                                         <h1
                                             style="margin: 0px; font-weight: 700; font-size: 16px; line-height: 22px; letter-spacing: 0.006em; color: #170A52;">
-                                            Hi Hello Team</h1>
+                                            Team Hi Hello</h1>
                                     </td>
                                 </tr>
                                 <tr style="height: 50px;"></tr>

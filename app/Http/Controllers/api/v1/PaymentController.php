@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\{Auth, DB};
 use App\Http\Requests\Api\General\{PaginationRequest};
 use App\Http\Resources\v1\{SubscriptionPlanResource, RazorPayOrderResource};
 use App\Models\{SubscriptionPlan, Subscription, Transaction};
+use App\Jobs\{SubscriptionPurchasedJob};
 use Razorpay\Api\Api;
 use Razorpay\Api\Errors\SignatureVerificationError;
 use Monolog\Handler\StreamHandler;
@@ -162,6 +163,10 @@ class PaymentController extends Controller
                     $user->save();
 
                     DB::commit();
+
+                    // Email
+                    $subscriptionPurchasedJob = new SubscriptionPurchasedJob($user);
+                    dispatch($subscriptionPurchasedJob);
 
                     // Notify
                     $subscription->notifySubScriptionPurchase('success');
