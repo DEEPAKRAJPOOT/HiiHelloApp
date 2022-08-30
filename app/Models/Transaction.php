@@ -18,6 +18,7 @@ class Transaction extends Model
     
     public function getRouteKeyName(){ return 'custom_id'; }
     
+    public function subscription(){ return $this->belongsTo('App\Models\Subscription', 'subscription_id', 'id'); }
     public function subscriptionPlan(){ return $this->belongsTo('App\Models\SubscriptionPlan', 'plan_id', 'id'); }
     public function user(){ return $this->belongsTo('App\Models\User'); }
 }
