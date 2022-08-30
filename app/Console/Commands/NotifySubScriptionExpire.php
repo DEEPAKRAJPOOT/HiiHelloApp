@@ -48,23 +48,25 @@ class NotifySubScriptionExpire extends Command
         User::select('id','custom_id','subscription_end_date')->with(['deviceToken','userTransEn:id,user_id,full_name'])
                 ->whereNotNull('subscription_end_date')
                 ->where(function($query) use($one_week_before_notify, $one_day_before_notify) {
-                    $query->where('subscription_end_date',\Carbon\Carbon::today()->addDays($one_week_before_notify)->format('Y-m-d')) 
-                        ->orWhere('subscription_end_date',\Carbon\Carbon::today()->addDays($one_day_before_notify)->format('Y-m-d')) 
-                        ->orWhere('subscription_end_date','<=',\Carbon\Carbon::today()->format('Y-m-d'));
+                    $query
+                        // ->where('subscription_end_date',\Carbon\Carbon::today()->addDays($one_week_before_notify)->format('Y-m-d')) 
+                        // ->orWhere('subscription_end_date',\Carbon\Carbon::today()->addDays($one_day_before_notify)->format('Y-m-d')) 
+                        ->where('subscription_end_date','<=',\Carbon\Carbon::today()->format('Y-m-d'));
                 })    
                 ->chunk(100, function($users) use ($message) {
             if($users->isNotEmpty()){
                 foreach($users as $user){
 
-                    if($user->subscription_end_date >= \Carbon\Carbon::today()->format('Y-m-d')){
-                        $title      =   trans('api.notify_message.subscription_expire.title');
-                        $message    =   trans('api.notify_message.subscription_expire.message');
-                        $type       =   config('utility.notification.type.subscription_expire');
+                    // if($user->subscription_end_date >= \Carbon\Carbon::today()->format('Y-m-d')){
+                    //     $title      =   trans('api.notify_message.subscription_expire.title');
+                    //     $message    =   trans('api.notify_message.subscription_expire.message');
+                    //     $type       =   config('utility.notification.type.subscription_expire');
 
-                        // Email
-                        $subscriptionExpiringJob = new SubscriptionExpiringJob($user);
-                        dispatch($subscriptionExpiringJob);
-                    }else{
+                    //     // Email
+                    //     $subscriptionExpiringJob = new SubscriptionExpiringJob($user);
+                    //     dispatch($subscriptionExpiringJob);
+                    // }else{
+
                         $title      =   trans('api.notify_message.subscription_already_expire.title');
                         $message    =   trans('api.notify_message.subscription_already_expire.message');
                         $type       =   config('utility.notification.type.subscription_already_expire');
@@ -72,7 +74,7 @@ class NotifySubScriptionExpire extends Command
                         // Email
                         $subscriptionExpiredJob = new SubscriptionExpiredJob($user);
                         dispatch($subscriptionExpiredJob);
-                    }
+                    // }
 
                     $notification = [
                         'custom_id'     =>  getUniqueString('notifications'),

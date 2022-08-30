@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use Illuminate\Console\Command;
 use App\Models\User;
 use App\Jobs\NotificationJob;
+use App\Jobs\HappyBirthDayJob;
 
 class BirthDayWish extends Command
 {
@@ -41,16 +42,22 @@ class BirthDayWish extends Command
     {
         $message = 'No birthday wishes found !!!';
 
-        User::select('id','custom_id','country_code','contact_no')->with(['userTranslation','deviceToken'])
+        User::select('id','custom_id','email','birth_date')
+                ->with(['userTransEn:id,user_id,full_name'])
                 ->whereMonth('birth_date', '=', \Carbon\Carbon::now()->format('m'))
                 ->whereDay('birth_date', '=', \Carbon\Carbon::now()->format('d'))
                 ->chunk(100, function($users) {
             if($users->isNotEmpty()){
                 foreach($users as $user){
-                    $status = $user->sendBirthDayWishSMS();
-                    if($status){
-                        $message = 'birthday greetings notified successfully.';
-                    }
+                    // Email
+                    $happyBirthDayJob = new HappyBirthDayJob($user);
+                    dispatch($happyBirthDayJob);
+
+                    $message = 'birthday greetings email send successfully.';
+
+                    // $status = $user->sendBirthDayWishSMS();
+                    // if($status){
+                    // }
                 }
             }
         });

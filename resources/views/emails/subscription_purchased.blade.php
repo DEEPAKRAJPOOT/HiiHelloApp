@@ -42,31 +42,16 @@
                                 <tr>
                                     <td>
                                         <p style="margin: 0px; font-weight: 400; letter-spacing: 0.006em;
-                                font-size: 16px; line-height: 22px; color: #645A8F;">Become a subscriber! You are creating a lot of noise at Hi Hello. What’s stopping you to become a super member again to access exclusive features on Hi Hello.
+                                font-size: 16px; line-height: 22px; color: #645A8F;">Welcome to the Hi Hello club and thank you for subscribing to exclusive membership. As you know now you our privileged patron for Hi Hello where you lot of exclusive product features to play around with like unlimited likes, see who likes you, voice call, changing cities, advance profile search and many more such features.
                                         </p>
                                     </td>
                                 </tr>
                                 <tr style="height: 32px;"></tr>
-                                <tr style="height: 32px;"></tr>
                                 <tr>
                                     <td>
-                                        <table width="100%" cellpadding="0" cellspacing="0"
-                                            style="
-                                        text-align: center; background-position: center; background: url('{{ asset('frontend/email-images/action-section-bg.png') }}'); background-repeat: no-repeat; background-size: cover ; border-radius: 18px;">
-                                            <tr style="height: 30px;"></tr>
-                                            <tr>
-                                                <td
-                                                    style="text-align: center; font-weight: 600; font-size: 16px; line-height: 23px; color: #250A52;">
-                                                    Click Here to <br> Subscribe.</td>
-                                            </tr>
-                                            <tr style="height: 20px;"></tr>
-                                            <tr>
-                                                <td style="text-align: center;"><a href="#"
-                                                        style="padding: 16px 20px; font-weight: 700; font-size: 14px; line-height: 17px; display: inline-block; letter-spacing: 0.032em; text-transform: uppercase;  color: #FFFFFF; text-decoration: none; background: #250A52; border-radius: 12px; width: 184px;">Subscribe
-                                                        Now</a></td>
-                                            </tr>
-                                            <tr style="height: 30px;"></tr>
-                                        </table>
+                                        <p style="margin: 0px; font-weight: 400; letter-spacing: 0.006em;
+                                font-size: 16px; line-height: 22px; color: #645A8F;">Have fun here after all everything starts with an Hi Hello. 
+                                        </p>
                                     </td>
                                 </tr>
                                 <tr style="height: 30px;"></tr>
