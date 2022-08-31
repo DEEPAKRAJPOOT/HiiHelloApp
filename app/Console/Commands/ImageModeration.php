@@ -208,52 +208,52 @@ class ImageModeration extends Command
                 }
 
                 // Check Blure/Sharpness 
-                if($output->sharpness){
-                    $sharpness = $output->sharpness;
-                    $sharpness_condition   =   $sharpness < $sharpness_value;
+                // if($output->sharpness){
+                //     $sharpness = $output->sharpness;
+                //     $sharpness_condition   =   $sharpness < $sharpness_value;
 
-                    if($sharpness_condition){
-                        $safe_image = false; // image Is blureess/ not sharpness
-                    }
-                }
+                //     if($sharpness_condition){
+                //         $safe_image = false; // image Is blureess/ not sharpness
+                //     }
+                // }
 
                 // If Face Not Detect In Profile Images
-                if($output->faces){
-                    if( count($output->faces) == 1){   // If One Face In Image
-                        $first_face = $output->faces[0];
-                        if($first_face && $first_face->attributes){
-                            if($user){
-                                $minor_attribute    =   $first_face->attributes->minor;
-                                $minor_condition    =   $minor_attribute < $minor_value;
+                // if($output->faces){
+                //     if( count($output->faces) == 1){   // If One Face In Image
+                //         $first_face = $output->faces[0];
+                //         if($first_face && $first_face->attributes){
+                //             if($user){
+                //                 $minor_attribute    =   $first_face->attributes->minor;
+                //                 $minor_condition    =   $minor_attribute < $minor_value;
 
-                                if($minor_condition){
-                                    $female_attribute   =   $first_face->attributes->female;
-                                    $male_attribute     =   $first_face->attributes->male;
-                                    $gender = $user->gender;
+                //                 if($minor_condition){
+                //                     $female_attribute   =   $first_face->attributes->female;
+                //                     $male_attribute     =   $first_face->attributes->male;
+                //                     $gender = $user->gender;
 
-                                    if($gender == 'Female'){
-                                        $female_condition   =   $female_attribute < $female_value;
-                                        if($female_condition){
-                                            $safe_image = false; // not a female
-                                        }
-                                    }
-                                    elseif($gender == 'Male'){
-                                        $male_condition   =   $male_attribute < $male_value;
-                                        if($male_condition){
-                                            $safe_image = false; // not a male
-                                        }
-                                    }
-                                }else{
-                                    $safe_image = false; // person is minor
-                                }
-                            }
-                        }
-                    }else{
-                        $safe_image = false; // more then one face found
-                    }
-                }else{
-                    $safe_image = false;  // no face found
-                }
+                //                     if($gender == 'Female'){
+                //                         $female_condition   =   $female_attribute < $female_value;
+                //                         if($female_condition){
+                //                             $safe_image = false; // not a female
+                //                         }
+                //                     }
+                //                     elseif($gender == 'Male'){
+                //                         $male_condition   =   $male_attribute < $male_value;
+                //                         if($male_condition){
+                //                             $safe_image = false; // not a male
+                //                         }
+                //                     }
+                //                 }else{
+                //                     $safe_image = false; // person is minor
+                //                 }
+                //             }
+                //         }
+                //     }else{
+                //         $safe_image = false; // more then one face found
+                //     }
+                // }else{
+                //     $safe_image = false;  // no face found
+                // }
             }
 
             return $safe_image;
