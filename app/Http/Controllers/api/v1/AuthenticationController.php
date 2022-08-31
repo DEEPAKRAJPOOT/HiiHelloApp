@@ -126,7 +126,7 @@ class AuthenticationController extends Controller
                 }
 
                 // Buy Subscription For Girls
-                if($user->wasRecentlyCreated){
+                if($user->wasRecentlyCreated || ($user->gender == 'Female' && empty($user->subscription)) ) {
                     $user->buyFreeSubscription();
                 }
 
@@ -348,6 +348,11 @@ class AuthenticationController extends Controller
                 if ($request->has('profile_photo')) {
                     if ($user->profile_photo) if (Storage::exists($user->profile_photo)) Storage::delete($user->profile_photo);
                     $path = $request->file('profile_photo')->store('users/profile_photo');
+                }
+                
+                if($user->wasRecentlyCreated){
+                    $user->markEmailAsVerified();   // Mark Email As Verified
+                    $user->buyFreeSubscription();   // Buy Subscription For Girls
                 }
 
                 $user->profile_photo = $path;
