@@ -170,8 +170,9 @@ class User extends Authenticatable implements MustVerifyEmail, TranslatableContr
         $status = "pending";
         if($this->verify_email_send == 'y'){
             $status = "under_review";
-            if(!empty($this->email_verified_at)){ $status = "verified"; }
         }
+        if(!empty($this->email_verified_at)){ $status = "verified"; }
+        
         return $status;
     }
 
