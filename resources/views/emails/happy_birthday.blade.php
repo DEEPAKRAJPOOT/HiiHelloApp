@@ -46,6 +46,29 @@
                                         </p>
                                     </td>
                                 </tr>
+                                <tr style="height: 32px;"></tr>
+                                <tr>
+                                    <td>
+                                        <table width="100%" cellpadding="0" cellspacing="0"
+                                            style="
+                                        text-align: center; background-position: center; background: url('{{ asset('frontend/email-images/birthday.jpg') }}'); background-repeat: no-repeat; background-size: cover ; border-radius: 18px;">
+                                            <tr style="height: 30px;"></tr>
+                                            <tr>
+                                                <td
+                                                    style="text-align: center; font-weight: 600; font-size: 16px; line-height: 23px; color: #250A52;">
+                                                    Wish you a very <br> Happy Birthday</td>
+                                            </tr>
+                                            <tr style="height: 20px;"></tr>
+                                            <tr>
+                                                <td style="text-align: center;">
+                                                    <a href="#"
+                                                        style="padding: 16px 20px; font-weight: 700; font-size: 14px; line-height: 17px; display: inline-block; letter-spacing: 0.032em; text-transform: uppercase;  color: #FFFFFF; text-decoration: none; background: #250A52; border-radius: 12px; width: 184px;">@if($data['userTransEn']){{ $data['userTransEn']['full_name'] }}@endif</a>
+                                                    </td>
+                                            </tr>
+                                            <tr style="height: 30px;"></tr>
+                                        </table>
+                                    </td>
+                                </tr>
                                 <tr style="height: 30px;"></tr>
                                 <tr>
                                     <td>
