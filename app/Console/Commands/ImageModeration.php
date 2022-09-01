@@ -153,10 +153,10 @@ class ImageModeration extends Command
             $male_value     =   config('utility.image_moderation.male_value');
             $minor_value    =   config('utility.image_moderation.minor_value');
 
-            // $models         =   'nudity'; // We can also pass using comma values if we have multiple models
+            $models         =   'nudity'; // We can also pass using comma values if we have multiple models
             // $models         =   "nudity,text"; // We can also pass using comma values if we have multiple models
             // $models         =   "nudity,text,properties"; // We can also pass using comma values if we have multiple models
-            $models         =   "nudity,text,properties,face-attributes"; // We can also pass using comma values if we have multiple models
+            // $models         =   "nudity,text,properties,face-attributes"; // We can also pass using comma values if we have multiple models
             $safe_image     =   true;
 
             $client     =   new \GuzzleHttp\Client();
@@ -195,17 +195,17 @@ class ImageModeration extends Command
                 }
 
                 // Check Embedded Text 
-                if($output->text){
-                    $has_artificial =   $output->text->has_artificial;
-                    $has_natural    =   $output->text->has_natural;
+                // if($output->text){
+                //     $has_artificial =   $output->text->has_artificial;
+                //     $has_natural    =   $output->text->has_natural;
 
-                    $artificial_condition   =   $has_artificial > $artificial_value;
-                    $natural_condition      =   $has_natural < $natural_value;
+                //     $artificial_condition   =   $has_artificial > $artificial_value;
+                //     $natural_condition      =   $has_natural < $natural_value;
 
-                    if($artificial_condition && $natural_condition){
-                        $safe_image = false; // image contians any artificial text
-                    }
-                }
+                //     if($artificial_condition && $natural_condition){
+                //         $safe_image = false; // image contians any artificial text
+                //     }
+                // }
 
                 // Check Blure/Sharpness 
                 // if($output->sharpness){
