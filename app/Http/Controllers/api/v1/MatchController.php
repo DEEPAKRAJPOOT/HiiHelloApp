@@ -48,18 +48,15 @@ class MatchController extends Controller
                 $max_limit          =   config('utility.profile.match.max_limit') ?? 1;
                 $max_limit_apply    =   config('utility.profile.match.max_limit_apply') ?? true;
 
-                // Gender & It's Interest Details
-                // $find_gender    =   $user->gender ?  $user->gender == 'Female' ? 'Male' : 'Female'  : 'Female';
                 $auth_interest  =   $user->interest ? $user->interest : 'Both';
+              
+                $auth_age   =   $user->getAge();    // Blocked & Interest Details
+                $age_from   =   $auth_age - $age_min_diff;
+                $age_to     =   $auth_age + $age_max_diff;
 
-                // Blocked & Interest Details
-                $auth_age   =   $user->getAge();
-                $age_from = $auth_age - $age_min_diff;
-                $age_to = $auth_age + $age_max_diff;
-
-                $unmatched  =   UnMatch::whereUnmatchBy($auth_id)->whereNotNull('unmatch_to')->distinct()->pluck('unmatch_to')->toArray();
-                $blocked    =   BlockUser::whereBlockBy($auth_id)->whereNotNull('blocked_to')->distinct()->pluck('blocked_to')->toArray();
-                $interests  =   UserInterest::whereUserId($auth_id)->whereNotNull('interest_id')->distinct()->pluck('interest_id')->toArray();
+                $unmatched      =   UnMatch::whereUnmatchBy($auth_id)->whereNotNull('unmatch_to')->distinct()->pluck('unmatch_to')->toArray();
+                $blocked        =   BlockUser::whereBlockBy($auth_id)->whereNotNull('blocked_to')->distinct()->pluck('blocked_to')->toArray();
+                $interests      =   UserInterest::whereUserId($auth_id)->whereNotNull('interest_id')->distinct()->pluck('interest_id')->toArray();
                 $personalities  =   UserPersonality::whereUserId($auth_id)->whereNotNull('personality_id')->distinct()->pluck('personality_id')->toArray();
 
                 // if chat is open then restrict in match profiles
@@ -84,62 +81,52 @@ class MatchController extends Controller
                     ->join('users', function ($q) {
                         $q->on('users.id', "=", "likes.user_id");
                     })
-                    ->where("likes.liker_id", '=', $auth_id) //to only get users details who likes current user
+                    ->where("likes.liker_id", '=', $auth_id)                //  To only get users details who likes current user
                     ->where("likes.user_id", '!=', $auth_id)
-                    // ->where("users.gender", $find_gender) // get details from based on interest so comment for now
                     ->pluck('users.custom_id')->toArray();
 
                 $likes_count = count($likes);
-                // if ($likes_count > $max_limit) {
-                //     $max_limit = $likes_count;
-                // }
-
+                
                 $matches = User::with('userTranslation:id,locale,user_id,full_name')
-                    ->where('id', '!=', $auth_id)                 // Not Own Profile
-                    ->whereNotNull('profile_photo');            // Must Have Main Photo
-                // ->whereNotIn('id',$blocked)              // Restricted Blocked Profiles
-                // ->where('gender',$find_gender)           // Gender (Currently Stopped)
+                    ->where('id', '!=', $auth_id)                           // Not Own Profile
+                    ->whereNotNull('profile_photo')                         // Must Have Main Photo
+                    ->whereIsActive('y');
 
                 if ($auth_interest != 'Both') {
-                    $matches = $matches->where('gender', $auth_interest);
-                }    // Interested in Gender
+                    $matches = $matches->where('gender', $auth_interest);   // Interested in Gender
+                }                                           
                 if (count($restricted_ids) > 0) {
                     $matches = $matches->whereNotIn('id', $restricted_ids);
                 }
-
-                $matches = $matches->whereIsActive('y');
-                    // ->where('is_subscribed','y')            // Subscription
-                    // ->where('subscription_end_date','>=', \Carbon\Carbon::today()->format('Y-m-d'))
-
                 if($likes_count > 0){
-                   $matches = $matches->whereIn('custom_id', $likes);   // Someone likes me and I like him/her 
+                   $matches = $matches->whereIn('custom_id', $likes);       // Someone likes me and I like him/her 
                 }
 
                 $matches =  $matches->where(function ($query)
                     use ($user, $age_from, $age_to, $match_percentage, $interests, $personalities) {
-                        $query->orWhere('language_id', $user->language_id)                         // Language
-                            ->orWhere('location_id', $user->location_id)                         // Location
-                            // ->orWhereBetween('birth_date', array($age_from, $age_to))             // Age / Birth Date
-                            ->orWhere('profile_percentage', '>=', $match_percentage)              // Profile completion
-                            ->orWhere('verify_status', 'verified')                               // Verified/Unverified  
+                        $query->orWhere('language_id', $user->language_id)                          // Language
+                            ->orWhere('location_id', $user->location_id)                            // Location
+                            ->orWhereBetween(\DB::raw('TIMESTAMPDIFF(YEAR,users.birth_date,CURDATE())'),array($age_from,$age_to))  // Age / Birth Date
+                            ->orWhere('profile_percentage', '>=', $match_percentage)                // Profile completion
+                            ->orWhere('verify_status', 'verified')                                  // Verified/Unverified  
 
-                            ->orWhereHas('personalities', function ($q) use ($personalities) {     // Personality Type 
+                            ->orWhereHas('personalities', function ($q) use ($personalities) {      // Personality Type 
                                 $q->whereIn('personality_id', $personalities);
                             })
 
                             // Basic Details 
-                            ->orWhere('relationship_status_id', $user->relationship_status_id)   // Relationship status
-                            ->orWhere('you_are_here_id', $user->you_are_here_id)                 // I am here for
-                            ->orWhere('food_preference_id', $user->food_preference_id)           // Food Preference
-                            ->orWhere('drinking_id', $user->drinking_id)                         // Drinking
-                            ->orWhere('smoking_id', $user->smoking_id)                           // Smoking
-                            ->orWhere('pet_id', $user->pet_id)                                   // Pet
-                            ->orWhere('education_id', $user->education_id)                       // Education
-                            ->orWhere('university_id', $user->university_id)                     // University/College
-                            ->orWhere('profession_id', $user->profession_id)                     // Profession
-                            ->orWhere('star_sign_id', $user->star_sign_id)                       // Star Sign
+                            ->orWhere('relationship_status_id', $user->relationship_status_id)      // Relationship status
+                            ->orWhere('you_are_here_id', $user->you_are_here_id)                    // I am here for
+                            ->orWhere('food_preference_id', $user->food_preference_id)              // Food Preference
+                            ->orWhere('drinking_id', $user->drinking_id)                            // Drinking
+                            ->orWhere('smoking_id', $user->smoking_id)                              // Smoking
+                            ->orWhere('pet_id', $user->pet_id)                                      // Pet
+                            ->orWhere('education_id', $user->education_id)                          // Education
+                            ->orWhere('university_id', $user->university_id)                        // University/College
+                            ->orWhere('profession_id', $user->profession_id)                        // Profession
+                            ->orWhere('star_sign_id', $user->star_sign_id)                          // Star Sign
 
-                            ->orWhereHas('interests', function ($q) use ($interests) {             // My Interests
+                            ->orWhereHas('interests', function ($q) use ($interests) {              // My Interests
                                 $q->whereIn('interest_id', $interests);
                             });
                     });
@@ -162,10 +149,13 @@ class MatchController extends Controller
                     if (count($restricted_ids) > 0) {
                         $matches = $matches->whereNotIn('id', $restricted_ids);
                     }
-                    $count = $matches->count();
+
+                    if ($max_limit_apply) { $count = $max_limit; } 
+                    else{ $count = $matches->count(); }
                 }
 
-                $matches        =   $matches->latest();
+                $matches = $matches->latest();
+
                 if ($max_limit_apply) {
                     if($likes_count != 0 && $count > $max_limit){
                         $max_limit = $count;
