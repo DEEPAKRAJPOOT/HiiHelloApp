@@ -285,6 +285,19 @@ Breadcrumbs::register('dashboard', function ($breadcrumbs) {
 		$breadcrumbs->push('Subscription View', route('admin.subscription-lists.show', $id));
 	});
 
+	// Call Logs ------------------------------------------------------------------
+	Breadcrumbs::register('call_log_list', function($breadcrumbs)
+	{
+		$breadcrumbs->parent('dashboard');
+		$breadcrumbs->push('Call Logs', route(Auth::getDefaultDriver().'.call-logs.index'));
+	});
+
+	Breadcrumbs::register('call_log_view', function($breadcrumbs,$id)
+	{
+		$breadcrumbs->parent('call_log_list');
+		$breadcrumbs->push('Call Logs View', route('admin.call-logs.show', $id));
+	});
+
 	//Transactions -------------------------------------------------------------------------------------
 	Breadcrumbs::register('transaction_list', function($breadcrumbs)
 	{

@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\ProfileReport;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Response;
 
 class ProfileReportController extends Controller
 {
@@ -127,5 +129,47 @@ class ProfileReportController extends Controller
             ];
         }
         return $records;
+    }
+    public function csvDownload(Request $request)
+    {
+        $down_file_name = 'Profile Report';
+        $profile_reports = ProfileReport::with('user.userTransDefault','reportedUser.userTransDefault')->get();
+        if (!$profile_reports->isEmpty()) {
+            foreach ($profile_reports as $profile_report) {
+                $data[] = [
+                    'Id'                =>  $profile_report->id,
+                    'User name'           =>  $profile_report->user ? $profile_report->user->userTransDefault ? $profile_report->user->userTransDefault->full_name : "" : "",
+                    'Reported User name'  =>  $profile_report->reportedUser ? $profile_report->reportedUser->userTransDefault ? $profile_report->reportedUser->userTransDefault->full_name : "" : "",
+                    'Message'       =>  $profile_report->message,
+                    'Status'        =>  $profile_report->status,
+                    'Reported At'    =>  $profile_report->created_at,
+                    ];
+            }
+
+            if (!File::exists(public_path() . "/files")) {
+                File::makeDirectory(public_path() . "/files");
+            }
+
+            $filename = public_path('files/' . $down_file_name . ".csv");
+            $handle   = fopen($filename, 'w+');
+            fputcsv($handle, array(
+                'User name', 'Reported User name', 'Message', 'Status','Reported At'  
+            ));
+            foreach ($data as $row) {
+                fputcsv($handle, array(
+                    $row['User name'], $row['Reported User name'], $row['Message'], $row['Status'], $row['Reported At']
+                ));
+            }
+            fclose($handle);
+
+            $headers = array(
+                'Content-Type' => 'text/csv',
+            );
+
+            return Response::download($filename, $down_file_name . ".csv", $headers);
+        } else {
+            flash('Unable to generate transaction csv file. Try again later')->error();
+        }
+        return redirect(route('admin.subscription-lists.index'));
     }
 }

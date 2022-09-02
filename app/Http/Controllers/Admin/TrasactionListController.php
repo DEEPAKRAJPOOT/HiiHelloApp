@@ -4,7 +4,10 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Transaction;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Response;
 
 class TrasactionListController extends Controller
 {
@@ -76,5 +79,70 @@ class TrasactionListController extends Controller
             ];
         }
         return $records;
+    }
+    public function csvDownload(Request $request)
+    {
+        $down_file_name = 'Transactions';
+        $transactions = Transaction::with(['subscriptionPlan', 'user', 'user.userTransDefault', 'subscriptionPlan.subscriptionPlanTranslation'])->get();
+        if (!$transactions->isEmpty()) {
+            
+            foreach ($transactions as $transaction) {
+                $data[] = [
+                    'Account Id'                =>  $transaction->user ? ($transaction->user->account_id ?? "") :  "",
+                    'Name'                      =>  $transaction->user ? ($transaction->user->userTransDefault ? $transaction->user->userTransDefault->full_name : "") : "",
+                    'Email'                     =>  $transaction->email ?? "--",
+                    'Plan Name'                 =>  $transaction->subscriptionPlan ? ($transaction->subscriptionPlan->subscriptionPlanTranslation ? $transaction->subscriptionPlan->subscriptionPlanTranslation->name : "N/A") : "",
+                    'Months'                    =>  $transaction->subscriptionPlan ? ($transaction->subscriptionPlan ? $transaction->subscriptionPlan->months : "N/A") : "",
+                    'Amount'                    =>  $transaction->subscriptionPlan ? ($transaction->subscriptionPlan ? $transaction->subscriptionPlan->amount : "N/A") : "",                    
+                    'Payment Type'              =>  $transaction->payment_type ?? "",
+                    'Razorpay Order Id'         =>  $transaction->razorpay_order_id ?? "",
+                    'Razorpay Payment Id'              =>  $transaction->razorpay_payment_id ?? "",
+                    'Razorpay Signature'              =>  $transaction->razorpay_signature ?? "",
+                    'Transaction Id'              =>  $transaction->transaction_id ?? "",
+                    'Original Transaction Id'              =>  $transaction->original_transaction_id ?? "",
+                    'Web Order Line Item Id'              =>  $transaction->web_order_line_item_id ?? "",
+                    'Purchase Date'              =>  $transaction->purchase_date ?? "",
+                    'Original Purchase Date'              =>  $transaction->original_purchase_date ?? "",
+                    'Subscription End DAte'              =>  $transaction->subscription_end_date ?? "",
+                    'Receipt Data'              =>  $transaction->receipt_data ?? "",
+                    'In App Ownership Type'              =>  $transaction->in_app_ownership_type ?? "",
+                    'Subscription Group Identifier'              =>  $transaction->subscription_group_identifier ?? "",
+                    'Status'                    =>  $transaction->status ?? "",
+                    'Created at'                =>  $transaction->created_at ? Carbon::parse($transaction->created_at)->format('Y-m-d') : ""
+                ];
+                
+            }
+
+            if (!File::exists(public_path() . "/files")) {
+                File::makeDirectory(public_path() . "/files");
+            }
+
+            $filename = public_path('files/' . $down_file_name . ".csv");
+            $handle   = fopen($filename, 'w+');
+            fputcsv($handle, array(
+                'Account Id', 'Name', 'Email', 'Plan Name', 'Months', 'Amount', 'Payment Type', 'Razorpay Order Id','Razorpay Paymentb Id','Transaction Id',
+                'Original Transaction Id','Web Order Line Item Id','Purchase Date','Original Purchase Date','Subscription End DAte','Payment Date', 'Receipt Data',
+                'In App Ownership Type','Subscription Group Identifier','Status','Created at'  
+            ));
+
+            foreach ($data as $row) {
+                fputcsv($handle, array(
+                    $row['Account Id'], $row['Name'], $row['Email'], $row['Plan Name'], $row['Months'], $row['Amount'],
+                    $row['Payment Type'], $row['Razorpay Order Id'], $row['Razorpay Payment Id'], $row['Razorpay Signature'], $row['Transaction Id'],
+                    $row['Original Transaction Id'],$row['Subscription End DAte'], $row['Receipt Data'],$row['In App Ownership Type'],
+                    $row['Subscription Group Identifier'], $row['Status'], $row['Created at']
+                ));
+            }
+            fclose($handle);
+
+            $headers = array(
+                'Content-Type' => 'text/csv',
+            );
+
+            return Response::download($filename, $down_file_name . ".csv", $headers);
+        } else {
+            flash('Unable to generate transaction csv file. Try again later')->error();
+        }
+        return redirect(route('admin.transaction-lists.index'));
     }
 }
