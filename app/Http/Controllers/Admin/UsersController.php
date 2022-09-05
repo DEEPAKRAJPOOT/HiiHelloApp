@@ -805,17 +805,17 @@ class UsersController extends Controller
                     'Contact Verified Date' =>  $user->contact_verified_at ?? "",
                     'Photo Verified Date'   =>  $user->photo_verified_at ?? "",
                     'Video Verified Date'   =>  $user->video_verified_at ?? "",
-                    'Device Type'           =>  $user->deviceToken ? $user->deviceToken->type ?? "" : "",
                     'Device Name'           =>  $user->deviceToken ? $user->deviceToken->device_name ?? "" : "",
+                    'Device Type'           =>  $user->deviceToken ? $user->deviceToken->type ?? "" : "",
                     'Device App Version'    =>  $user->deviceToken ? $user->deviceToken->app_version ?? "" : "",
                     'Device OS Name'        =>  $user->deviceToken ? $user->deviceToken->os_name ?? "" : "",
                     'Device OS Version'     =>  $user->deviceToken ? $user->deviceToken->os_version ?? "" : "",
                     'Subscription plan'     =>  $user->subscription ? $user->subscription->subscriptionPlan ? ($user->subscription->subscriptionPlan->subscriptionPlanTranslation ? $user->subscription->subscriptionPlan->subscriptionPlanTranslation->name : "N/A") : "" : "",
                     'Subscription month'    =>  $user->subscription ? $user->subscription->months ? : "" : "" ,
-                    'Subscription amount'    =>  $user->subscription ? $user->subscription->amount ? : "" : "" ,
-                    'Subscription end date'    =>  $user->subscription ? $user->subscription->end_date ? : "" : "" ,
-                    'Subscription status'    =>  $user->subscription ? $user->subscription->status ? : "" : "" ,
-                    'Active'                =>  $user->is_avtive == 'y' ? 'y' : 'n'
+                    'Subscription amount'   =>  $user->subscription ? $user->subscription->amount ? : "" : "" ,
+                    'Subscription end date' =>  $user->subscription ? $user->subscription->end_date ? : "" : "" ,
+                    'Subscription status'   =>  $user->subscription ? $user->subscription->status ? : "" : "" ,
+                    'Active'                =>  $user->is_active == 'y' ? 'y' : 'n'
                 ];
             }
 
@@ -826,17 +826,17 @@ class UsersController extends Controller
             $filename = public_path('files/' . $down_file_name . ".csv");
             $handle   = fopen($filename, 'w+');
             fputcsv($handle, array(
-                'Account Id', 'Name', 'Email', 'Contact No', 'Verify Video Status', 'Verify Photo Status', 'Gender', 'Location', 
+                'Account Id', 'Name', 'Email', 'Birth Date', 'Contact No', 'Verify Video Status', 'Verify Photo Status', 'Gender', 'Location', 
                 'Intrest', 'Verify Status', 'Profile Percentage', 'Language', 'Langauge Code', 'Swipe Count', 'Like Count', 'Match Count', 
                 'Chat Count', 'Is Social User', 'Is Subscribed', 'Subscription End Date', 'Email Verified Date', 'Contact Verified Date',
-                'Photo Verified Date', 'Video Verified Date', 'Device Name', 'Device Type', 'Device App Version', 'Device OS name', 'Device OS Version',
+                'Photo Verified Date', 'Video Verified Date', 'Device Name', 'Device Type', 'Device App Version', 'Device OS Name', 'Device OS Version',
                 'Subscription plan','Subscription month','Subscription amount','Subscription status','Active'
             ));
 
             foreach ($data as $row) {
                 fputcsv($handle, array(
-                    $row['Account Id'], $row['Name'], $row['Email'], $row['Contact No'], $row['Verify Video Status'], $row['Verify Photo Status'], $row['Gender'], $row['Location'], $row['Intrest'], $row['Verify Status'], $row['Profile Percentage'], $row['Language'], $row['Langauge Code'], $row['Swipe Count'], $row['Like Count'], $row['Match Count'], $row['Chat Count'], $row['Is Social User'], $row['Is Subscribed'], $row['Subscription End Date'], $row['Email Verified Date'], $row['Contact Verified Date'], $row['Photo Verified Date'], $row['Video Verified Date'], $row['Device Name'], $row['Device Type'], $row['Device App Version'], $row['Device OS Name'], $row['Device OS Version'], $row['Active'],
-                    $row['Subscription plan'],$row['Subscription month'],$row['Subscription amount'],$row['Subscription status'],
+                    $row['Account Id'], $row['Name'], $row['Email'], $row['Birth Date'], $row['Contact No'], $row['Verify Video Status'], $row['Verify Photo Status'], $row['Gender'], $row['Location'], $row['Intrest'], $row['Verify Status'], $row['Profile Percentage'], $row['Language'], $row['Langauge Code'], $row['Swipe Count'], $row['Like Count'], $row['Match Count'], $row['Chat Count'], $row['Is Social User'], $row['Is Subscribed'], $row['Subscription End Date'], $row['Email Verified Date'], $row['Contact Verified Date'], $row['Photo Verified Date'], $row['Video Verified Date'], $row['Device Name'], $row['Device Type'], $row['Device App Version'], $row['Device OS Name'], $row['Device OS Version'], 
+                    $row['Subscription plan'],$row['Subscription month'],$row['Subscription amount'],$row['Subscription status'], $row['Active'],
                 ));
             }
             fclose($handle);
