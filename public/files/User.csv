@@ -1,74 +1,74 @@
-"Account Id",Name,Email,"Contact No","Verify Video Status","Verify Photo Status",Gender,Location,Intrest,"Verify Status","Profile Percentage",Language,"Langauge Code","Swipe Count","Like Count","Match Count","Chat Count","Is Social User","Is Subscribed","Subscription End Date","Email Verified Date","Contact Verified Date","Photo Verified Date","Video Verified Date","Device Name","Device Type","Device App Version","Device OS name","Device OS Version","Subscription plan","Subscription month","Subscription amount","Subscription status",Active
-,,," ",pending,pending,,,,pending,5,,,0,0,0,0,y,n,,"2022-08-31 10:07:27",,,,,,,,,n,,,,
-swar_1661921029,"Swara Prajapati",,"91 123456798",pending,pending,Female,Ahmedabad,Male,pending,10,English,en,0,0,0,0,n,y,,,,,,,,,,,n,Super,1,99,incomplete
-,"Ketul Patel",,"91 6351445046",pending,pending,Male,Ahmedabad,Female,pending,0,English,en,0,0,0,0,n,n,,,,,,,,,,,n,,,,
-vira_1659621316,"Viraj Kumar",,"91 9989895946",pending,pending,Male,Rajkot,Female,pending,15,ગુજરાતી,gu,0,0,0,0,n,n,,,"2022-08-05 00:55:16",,,,,,,,n,,,,
-raje_1659621061,"Rajeshkumar Shah",,"91 8966567977",pending,pending,Male,Rajkot,Female,pending,15,English,en,0,0,0,0,n,n,,,"2022-08-05 00:51:01",,,,,,,,n,,,,
-raju_1659620913,"Raju Kumar",,"91 9864676464",pending,pending,Male,Rajkot,Female,pending,15,English,en,0,0,0,0,n,n,,,"2022-08-05 00:48:33",,,,,,,,n,,,,
-prat_1659620115,"Pratik Gajjar",,"91 9865316464",pending,pending,Male,Rajkot,Female,pending,15,English,en,0,0,0,0,n,n,,,"2022-08-05 00:35:15",,,,,,,,n,,,,
-subh_1659619748,"Subhas Rao",,"91 7897897899",pending,pending,Male,Rajkot,Female,pending,15,English,en,0,0,0,0,n,n,,,"2022-08-05 00:29:08",,,,,,,,n,,,,
-kart_1659619585,"Kartikkumar Prajapati",,"91 7777888899",pending,pending,Male,Rajkot,Female,pending,15,English,en,0,0,0,0,n,n,,,"2022-08-05 00:26:25",,,,,,,,n,,,,
-prat_1659620378,"Prateek Jaiswal",,"91 9998881324",under_review,under_review,Male,Rajkot,Female,under_review,15,English,en,0,0,0,0,n,n,,,"2022-08-05 00:15:06",,,,,,,,n,,,,
-pank_1659620353,"Pankaj Viramgama",,"91 9898980000",under_review,under_review,Male,Rajkot,Both,under_review,15,English,en,0,0,0,0,n,y,2023-02-04,,"2022-08-05 00:09:57",,,,,,,,n,Premium,6,299,active
-jign_1659618231,"Jignesh Gajjar",,"91 9877766600",pending,pending,Male,Rajkot,Female,pending,15,English,en,0,0,0,0,n,y,2022-09-04,,"2022-08-05 00:03:51",,,,,,,,n,Super,1,99,active
-om_p_1659617881,"Om Patel",,"91 8888444422",pending,pending,Male,Rajkot,Male,pending,15,English,en,0,0,0,0,n,y,2023-08-04,,"2022-08-04 23:58:01",,,,,,,,n,Platinum,12,399,active
-salm_1659616959,"Salman Patel",,"91 9798789898",pending,pending,Male,Rajkot,Female,pending,15,English,en,0,0,0,0,n,y,2022-09-04,,"2022-08-04 23:42:39",,,,,,,,n,Super,1,99,active
-raj_1659504737,"Raj Patel",,"91 8659865686",pending,pending,Male,Rajkot,Both,pending,10,English,en,0,0,0,0,n,n,,,"2022-08-03 16:32:17",,,,,,,,n,,,,
-anki_1658940243,"Ankit Aman",,"91 9035548758",pending,pending,Male,Darbhanga,Female,pending,10,English,en,0,0,0,0,n,n,,,"2022-07-28 03:44:03",,,,,,,,n,Super,1,99,incomplete
-aksh_1659673395,"Akshay Prajapati",,"91 9727446012",pending,pending,Male,Ahmedabad,Both,verified,15,English,en,3,2,0,0,n,n,,,"2022-07-27 02:55:10",,,,,,,,n,Platinum,12,399,incomplete
-vive_1658838367,"Vivek Patel",," ",pending,pending,Male,Rajkot,Female,pending,10,English,en,0,2,0,10,y,n,,,,,,,,,,,n,,,,
-kama_1658823927,"Kamal Patel",,"91 9856565656",pending,pending,Male,Rajkot,Female,pending,62,English,en,0,2,0,2,n,y,2022-08-26,,"2022-07-26 19:25:27",,,,,,,,n,Super,1,99,active
-rajk_1658823552,"Rajkumar Shah",,"91 8282828282",pending,pending,Male,Rajkot,Female,pending,10,English,en,0,0,0,0,n,n,,,"2022-07-26 19:19:12",,,,,,,,n,,,,
-vidh_1658818792,"Vidhyut Patel",,"91 9786544444",pending,pending,Male,Rajkot,Female,pending,15,English,en,0,2,0,0,n,y,2022-08-26,,"2022-07-26 17:59:52",,,,,,,,n,Super,1,99,active
-kuna_1658816299,"kunal shah",,"91 9876666666",pending,pending,Male,Rajkot,Both,pending,20,English,en,0,2,0,0,n,y,2022-08-26,,"2022-07-26 17:18:19",,,,,,,,n,Super,1,99,active
-vira_1658814985,"Viraj Kamani",virajk@gmail.com,"91 9877777777",under_review,under_review,Male,Rajkot,Female,under_review,15,English,en,0,2,0,0,n,y,2022-08-26,,"2022-07-26 16:56:25",,,,,,,,n,Super,1,99,active
-koma_1658814924,"Komal Patel",,"91 9888888888",pending,pending,Female,Rajkot,Male,pending,15,ગુજરાતી,gu,0,6,0,4,n,y,,,"2022-07-26 16:55:24",,,,,,,,n,Platinum,12,399,active
-raje_1658756928,"rajesh patel",,"91 9666666666",pending,pending,Male,Rajkot,Female,pending,15,English,en,0,0,0,0,n,y,2022-08-25,,"2022-07-26 00:48:48",,,,,,,,n,Super,1,99,active
-hire_1658499665,"Hiren Thanki",vabit94031@galotv.com,"91 9639999999",verified,verified,Male,Rajkot,Female,under_review,29,English,en,0,1,0,3,n,y,2022-08-25,"2022-07-23 01:09:32","2022-07-23 00:37:04",,,,,,,,n,Super,1,99,active
-rahu_1658499469,"Rahul Gandhi",vyagnik99@gmail.com,"91 8181818181",unverified,verified,Male,Mumbai,Female,unverified,20,English,en,0,2,0,0,n,n,,"2022-07-23 00:08:58","2022-07-23 00:05:07",,,,,,,,n,,,,
-keyu_1658130301,"Keyur Patel",,"91 9898258369",pending,pending,Male,Vadodara,Female,pending,15,English,en,0,2,0,0,n,y,2023-01-18,,"2022-07-18 18:44:06",,,,,,,,n,Premium,6,299,active
-vira_1657863011,"VIraj Shah",,"91 9639639999",pending,pending,Male,Agra,Female,pending,15,English,en,0,3,0,0,n,y,2023-01-15,,"2022-07-15 16:30:11",,,,,,,,n,Premium,6,299,active
-rajv_1657861103,"Rajvi Patel",,"91 9639639666",pending,pending,Female,Agra,Male,pending,15,English,en,0,0,0,38,n,y,,,"2022-07-15 15:58:23",,,,,,,,n,Platinum,12,399,active
-keve_1657805120,"Kevel bhai Testing",,"91 1234567890",pending,pending,Female,Ahmedabad,Male,pending,15,English,en,0,0,0,0,n,y,,,"2022-07-15 00:25:20",,,,,,,,n,Platinum,12,399,active
-purv_1657802510,"Purvi Sanghani",vadgamay33@gmail.com,"91 9639639633",under_review,under_review,Female,Agra,Male,under_review,40,বাংলা,bn,0,1,0,17,n,y,,"2022-07-22 22:56:41","2022-07-14 23:41:50",,,,,,,,n,Platinum,12,399,active
-vipu_1659673561,"Vipul Prajapati",," ",pending,pending,Male,Ahmedabad,Female,pending,10,English,en,0,4,0,0,y,n,,,,,,,,,,,n,,,,
-saum_1657530515,"Saumya Singh",,"91 9898654321",under_review,under_review,Female,Mumbai,Male,under_review,53,English,en,0,13,0,1,n,y,,,"2022-07-11 18:21:26",,,,,,,,n,Platinum,12,399,active
-temp_1657186525,"Temp Check",,"91 7878787878",pending,pending,Male,Rajkot,Female,pending,15,English,en,0,0,0,0,n,n,2022-07-07,,"2022-07-07 20:35:25",,,,,,,,n,Super,1,99,unpaid
-radh_1657179001,"Radhika Patel",,"91 9879879879",pending,pending,Female,Rajkot,Male,pending,16,English,en,0,13,0,11,n,y,,,"2022-07-07 18:29:24",,,,,,,,n,Platinum,12,399,active
-chec_1658309478,Checking,,"91 8688688686",under_review,under_review,Male,Rajkot,Female,under_review,15,English,en,0,0,0,0,n,y,2022-07-07,,"2022-07-07 16:57:13",,,,,,,,n,Super,1,99,active
-nilo_1657113456,"Nilofer Kumar",,"91 9898984321",pending,pending,Female,Bengaluru,Male,pending,66,English,en,0,6,0,5,n,y,,,"2022-07-07 00:17:36",,,,,,,,n,Platinum,12,399,active
-suna_1657112701,"Sunayana Shetty",,"91 9898981234",pending,pending,Female,Bengaluru,Male,pending,72,English,en,0,7,0,0,n,y,,,"2022-07-07 00:04:21",,,,,,,,n,Platinum,12,399,active
-giti_1657265544,"Gitika Singh",,"91 9898543210",verified,verified,Female,Gurugram,Male,verified,83,English,en,0,0,1,0,n,y,,,"2022-06-27 12:44:00","2022-07-08 18:32:24","2022-07-08 18:32:24",,,,,,n,Platinum,12,399,active
-sang_1656333002,"Sangram Tomar",,"91 9898123450",under_review,under_review,Male,Gurugram,Male,under_review,71,English,en,0,8,0,0,n,n,,,"2022-06-27 12:37:30",,,,,,,,n,,,,
-aram_1657518901,"Araman Malik",,"91 1234509876",under_review,under_review,Male,Rajkot,Female,verified,31,English,en,0,3,0,0,n,y,2022-07-25,,"2022-06-23 18:12:00",,,,,,,,n,Super,1,99,active
-janv_1657519204,"janvi kapoor",,"91 0000000000",under_review,under_review,Female,Rajkot,Male,verified,31,English,en,0,29,2,1,n,y,,,"2022-06-22 21:06:38",,,,,,,,n,Platinum,12,399,active
-shya_1656329125,"Shyam Tallamraju",,"91 9789777983",pending,pending,Male,Mumbai,Female,pending,15,English,en,0,0,0,7,n,y,2022-12-31,,"2022-06-22 11:51:08",,,,,,,,n,,,,
-ravi_1656329115,"Ravi Booked",,"91 8866577985",pending,pending,Male,Ahmedabad,Male,pending,78,English,en,0,14,0,2,n,n,,,"2022-06-21 21:41:55",,,,,,,,n,Premium,6,199,incomplete
-sanj_1655706896,"Sanjna Ramani",,"91 8866210256",pending,pending,Female,Mussoorie,Male,pending,18,English,en,0,7,0,12,n,y,2022-07-22,,"2022-06-20 12:04:56",,,,,,,,n,Super,1,99,active
-rama_1655302574,"Raman Rai",,"91 8888666612",pending,pending,Male,Rajkot,Female,pending,15,English,en,0,20,0,1,n,n,,,"2022-06-15 19:46:14",,,,,,,,n,,,,
-riya_1655305485,"Riya Rai",,"91 9999888811",under_review,under_review,Female,Rajkot,Both,under_review,21,English,en,0,10,0,3,n,y,,,"2022-06-15 18:59:00",,,,,,,,n,Platinum,12,399,active
-tila_1656657542,"Tilak Ruparelli",,"91 9909295180",pending,pending,Male,Vadodara,Female,pending,15,English,en,0,12,0,0,n,n,,,"2022-06-15 12:39:41",,,,,,,,n,,,,
-kish_1657519287,"Kishan Rawal",,"91 7600787089",under_review,under_review,Male,Vadodara,Female,verified,31,English,en,0,13,2,1,n,n,,,"2022-06-15 10:26:02",,,,,,,,n,,,,
-avan_1657519041,"Avani Shah",,"91 8849111310",under_review,under_review,Female,Vadodara,Male,verified,31,English,en,0,25,1,3,n,y,,,"2022-06-15 10:24:28",,,,,,,,n,Platinum,12,399,active
-asha_1657518984,"Ashay Pandya",,"91 8153094573",under_review,under_review,Male,Ahmedabad,Female,verified,36,English,en,0,20,1,1,n,n,,,"2022-06-15 10:14:39",,,,,,,,n,,,,
-hars_1657519152,"Harshit Patel",,"91 8488076699",under_review,under_review,Male,Ahmedabad,Male,verified,31,English,en,0,13,0,4,n,n,,,"2022-06-15 10:07:14",,,,,,,,n,,,,
-vika_1655269562,"Vikas Yadav",,"91 8975644552",under_review,under_review,Male,Ahmedabad,Female,under_review,15,English,en,0,23,1,1,n,n,,,"2022-06-15 10:03:17",,,,,,,,n,,,,
-pran_1655268422,"Pranav Talsania",,"91 9723890269",under_review,under_review,Male,Ahmedabad,Female,under_review,15,English,en,0,12,2,0,n,n,,,"2022-06-15 10:02:58",,,,,,,,n,,,,
-ravi_1657697191,"Ravi Bokade",ravi.bokade@yudiz.com,"91 9909977985",under_review,under_review,Male,Ahmedabad,Both,under_review,85,English,en,0,4,0,2,n,n,,"2022-06-14 16:09:28","2022-06-14 16:00:32",,,,,,,,n,,,,
-jign_1657549085,"Jigna Shah",,"91 9326110491",verified,verified,Female,Rajkot,Male,verified,71,English,en,0,0,0,3,n,y,,,"2022-06-14 14:40:13","2022-07-12 01:18:05","2022-07-12 01:18:05",,,,,,n,Platinum,12,399,active
-pink_1655270942,"pinky Rathod",,"91 9157648668",under_review,under_review,Female,Ahmedabad,Female,under_review,15,English,en,0,23,0,10,n,y,,,"2022-06-14 13:43:43",,,,,,,,n,Platinum,12,399,active
-part_1655271358,"Test QA",testqa1947@gmail.com,"91 8320645436",under_review,under_review,Male,Vadodara,Female,under_review,10,English,en,0,13,0,0,y,n,,,,,,,,,,,n,,,,
-ruhi_1656741422,"Ruhi Shah",,"91 9999999999",under_review,under_review,Female,Ahmedabad,Male,under_review,10,English,en,0,15,0,1,n,y,,,,,,,,,,,n,Platinum,12,399,active
-raj_1655117642,"Raj Mavani",,"91 8866576288",pending,pending,Male,Vadodara,Female,pending,15,English,en,0,11,1,0,n,n,,,"2022-06-13 16:23:27",,,,,,,,n,,,,
-keva_1655269862,"Keval Jaiswal",keval.j@yudiz.in,"91 8866989782",under_review,under_review,Male,Vadodara,Male,under_review,83,English,en,0,0,0,7,n,y,2023-01-20,"2022-06-15 17:21:44","2022-06-13 13:51:32",,,,,,,,n,Premium,6,199,active
-user_1655108192,"Himani Patel",,"91 9825086834",under_review,under_review,Female,Bhavnagar,Female,under_review,15,English,en,0,22,0,5,n,y,,,"2022-06-13 13:46:32",,,,,,,,n,Platinum,12,399,active
-shlo_1655107682,"Shlok Rawal",,"91 8200912345",under_review,under_review,Male,Ahmedabad,Male,under_review,15,English,en,0,22,1,0,n,n,,,"2022-06-13 13:37:56",,,,,,,,n,,,,
-soum_1654868582,Soumik,,"91 9867175525",pending,pending,Male,Mumbai,Female,pending,79,ગુજરાતી,gu,0,0,0,0,n,y,2023-12-31,,"2022-06-10 19:12:06",,,,,,,,n,Platinum,12,399,active
-vipu_1654856042,"Vipul Patel",,"91 789456123",under_review,under_review,Male,face,Both,under_review,15,English,en,0,13,1,5,n,n,,,"2022-06-10 15:41:53",,,,,,,,n,,,,
-anil_1659616443,"Anil Patel",,"91 9876543210",under_review,under_review,Male,Ahmedabad,Female,verified,29,English,en,0,18,0,0,n,n,,,"2022-06-10 15:39:23",,,,,,,,n,,,,
-rajk_1655356703,"Rajkumar Rao",test@gmail.com,"91 9173091730",under_review,under_review,Male,Ahmedabad,Both,under_review,58,English,en,0,0,0,0,n,y,2022-08-26,,,,,,,,,,n,Super,1,99,active
-divy_1655205062,"Divya Gol",,"91 1122334455",under_review,under_review,Female,Rajkot,Male,under_review,76,English,en,0,0,1,8,n,y,,,"2022-06-04 13:19:22",,,,,,,,n,Platinum,12,399,active
-vish_1657195862,"Vishal Prajapati",vishal.p@yudiz.in,"91 9978876871",verified,verified,Male,Ahmedabad,Both,under_review,90,ગુજરાતી,gu,8,0,0,134,n,n,,"2022-08-30 11:53:50","2022-06-03 18:15:19","2022-06-13 18:37:44","2022-08-16 12:02:27",iPhone,android,1.0.0,"iOS 15.3",15.3,n,Super,1,99,unpaid
-jina_1656479462,"Jinal Patel",,"91 9988776655",under_review,under_review,Female,face,Male,under_review,66,English,en,0,7,0,0,n,y,,,"2022-06-03 17:32:21",,,,,,,,n,Platinum,12,399,active
-yagn_1658304381,"Yagnik Vadgama",abcxyz@gmail.com,"91 7567849289",verified,verified,Male,Rajkot,Both,under_review,90,English,en,0,0,0,11,n,y,2022-08-25,,"2022-06-03 17:30:04",,"2022-06-29 17:46:38",,,,,,n,Super,1,99,active
-anna_1657518317,"Annaya Pande",,"91 8866123450",unverified,unverified,Female,Rajkot,Male,unverified,78,English,en,0,0,0,0,n,y,,,"2022-06-03 16:07:20",,,,,,,,n,Platinum,12,399,active
+"Account Id",Name,Email,"Birth Date","Contact No","Verify Video Status","Verify Photo Status",Gender,Location,Intrest,"Verify Status","Profile Percentage",Language,"Langauge Code","Swipe Count","Like Count","Match Count","Chat Count","Is Social User","Is Subscribed","Subscription End Date","Email Verified Date","Contact Verified Date","Photo Verified Date","Video Verified Date","Device Name","Device Type","Device App Version","Device OS Name","Device OS Version","Subscription plan","Subscription month","Subscription amount","Subscription status",Active
+,,,," ",pending,pending,,,,pending,5,,,0,0,0,0,y,n,,"2022-08-31 10:07:27",,,,,,,,,,,,,y
+swar_1661921029,"Swara Prajapati",,1994-11-25,"91 123456798",pending,pending,Female,Ahmedabad,Male,pending,10,English,en,0,0,0,0,n,y,,,,,,,,,,,Super,1,99,incomplete,y
+,"Ketul Patel",,1993-10-13,"91 6351445046",pending,pending,Male,Ahmedabad,Female,pending,0,English,en,0,0,0,0,n,n,,,,,,,,,,,,,,,y
+vira_1659621316,"Viraj Kumar",,1994-08-18,"91 9989895946",pending,pending,Male,Rajkot,Female,pending,15,ગુજરાતી,gu,0,0,0,0,n,n,,,"2022-08-05 00:55:16",,,,,,,,,,,,y
+raje_1659621061,"Rajeshkumar Shah",,2003-08-04,"91 8966567977",pending,pending,Male,Rajkot,Female,pending,15,English,en,0,0,0,0,n,n,,,"2022-08-05 00:51:01",,,,,,,,,,,,y
+raju_1659620913,"Raju Kumar",,1997-08-06,"91 9864676464",pending,pending,Male,Rajkot,Female,pending,15,English,en,0,0,0,0,n,n,,,"2022-08-05 00:48:33",,,,,,,,,,,,y
+prat_1659620115,"Pratik Gajjar",,1993-08-19,"91 9865316464",pending,pending,Male,Rajkot,Female,pending,15,English,en,0,0,0,0,n,n,,,"2022-08-05 00:35:15",,,,,,,,,,,,y
+subh_1659619748,"Subhas Rao",,1996-08-07,"91 7897897899",pending,pending,Male,Rajkot,Female,pending,15,English,en,0,0,0,0,n,n,,,"2022-08-05 00:29:08",,,,,,,,,,,,y
+kart_1659619585,"Kartikkumar Prajapati",,1996-08-14,"91 7777888899",pending,pending,Male,Rajkot,Female,pending,15,English,en,0,0,0,0,n,n,,,"2022-08-05 00:26:25",,,,,,,,,,,,y
+prat_1659620378,"Prateek Jaiswal",,2000-08-04,"91 9998881324",under_review,under_review,Male,Rajkot,Female,under_review,15,English,en,0,0,0,0,n,n,,,"2022-08-05 00:15:06",,,,,,,,,,,,y
+pank_1659620353,"Pankaj Viramgama",,1999-08-04,"91 9898980000",under_review,under_review,Male,Rajkot,Both,under_review,15,English,en,0,0,0,0,n,y,2023-02-04,,"2022-08-05 00:09:57",,,,,,,,Premium,6,299,active,y
+jign_1659618231,"Jignesh Gajjar",,1995-08-04,"91 9877766600",pending,pending,Male,Rajkot,Female,pending,15,English,en,0,0,0,0,n,y,2022-09-04,,"2022-08-05 00:03:51",,,,,,,,Super,1,99,active,y
+om_p_1659617881,"Om Patel",,1994-08-04,"91 8888444422",pending,pending,Male,Rajkot,Male,pending,15,English,en,0,0,0,0,n,y,2023-08-04,,"2022-08-04 23:58:01",,,,,,,,Platinum,12,399,active,y
+salm_1659616959,"Salman Patel",,1996-08-08,"91 9798789898",pending,pending,Male,Rajkot,Female,pending,15,English,en,0,0,0,0,n,y,2022-09-04,,"2022-08-04 23:42:39",,,,,,,,Super,1,99,active,y
+raj_1659504737,"Raj Patel",,1993-08-18,"91 8659865686",pending,pending,Male,Rajkot,Both,pending,10,English,en,0,0,0,0,n,n,,,"2022-08-03 16:32:17",,,,,,,,,,,,y
+anki_1658940243,"Ankit Aman",,1993-02-12,"91 9035548758",pending,pending,Male,Darbhanga,Female,pending,10,English,en,0,0,0,0,n,n,,,"2022-07-28 03:44:03",,,,,,,,Super,1,99,incomplete,y
+aksh_1659673395,"Akshay Prajapati",,1996-09-29,"91 9727446012",pending,pending,Male,Ahmedabad,Both,verified,15,English,en,3,2,0,0,n,n,,,"2022-07-27 02:55:10",,,,,,,,Platinum,12,399,incomplete,y
+vive_1658838367,"Vivek Patel",,2001-07-26," ",pending,pending,Male,Rajkot,Female,pending,10,English,en,0,2,0,10,y,n,,,,,,,,,,,,,,,y
+kama_1658823927,"Kamal Patel",,1996-07-10,"91 9856565656",pending,pending,Male,Rajkot,Female,pending,62,English,en,0,2,0,2,n,y,2022-08-26,,"2022-07-26 19:25:27",,,,,,,,Super,1,99,active,y
+rajk_1658823552,"Rajkumar Shah",,1997-07-26,"91 8282828282",pending,pending,Male,Rajkot,Female,pending,10,English,en,0,0,0,0,n,n,,,"2022-07-26 19:19:12",,,,,,,,,,,,y
+vidh_1658818792,"Vidhyut Patel",,1996-07-10,"91 9786544444",pending,pending,Male,Rajkot,Female,pending,15,English,en,0,2,0,0,n,y,2022-08-26,,"2022-07-26 17:59:52",,,,,,,,Super,1,99,active,y
+kuna_1658816299,"kunal shah",,1996-07-10,"91 9876666666",pending,pending,Male,Rajkot,Both,pending,20,English,en,0,2,0,0,n,y,2022-08-26,,"2022-07-26 17:18:19",,,,,,,,Super,1,99,active,y
+vira_1658814985,"Viraj Kamani",virajk@gmail.com,1994-07-14,"91 9877777777",under_review,under_review,Male,Rajkot,Female,under_review,15,English,en,0,2,0,0,n,y,2022-08-26,,"2022-07-26 16:56:25",,,,,,,,Super,1,99,active,y
+koma_1658814924,"Komal Patel",,1993-07-08,"91 9888888888",pending,pending,Female,Rajkot,Male,pending,15,ગુજરાતી,gu,0,6,0,4,n,y,,,"2022-07-26 16:55:24",,,,,,,,Platinum,12,399,active,y
+raje_1658756928,"rajesh patel",,1993-07-15,"91 9666666666",pending,pending,Male,Rajkot,Female,pending,15,English,en,0,0,0,0,n,y,2022-08-25,,"2022-07-26 00:48:48",,,,,,,,Super,1,99,active,y
+hire_1658499665,"Hiren Thanki",vabit94031@galotv.com,1996-07-18,"91 9639999999",verified,verified,Male,Rajkot,Female,under_review,29,English,en,0,1,0,3,n,y,2022-08-25,"2022-07-23 01:09:32","2022-07-23 00:37:04",,,,,,,,Super,1,99,active,y
+rahu_1658499469,"Rahul Gandhi",vyagnik99@gmail.com,2001-07-22,"91 8181818181",unverified,verified,Male,Mumbai,Female,unverified,20,English,en,0,2,0,0,n,n,,"2022-07-23 00:08:58","2022-07-23 00:05:07",,,,,,,,,,,,y
+keyu_1658130301,"Keyur Patel",,1985-07-18,"91 9898258369",pending,pending,Male,Vadodara,Female,pending,15,English,en,0,2,0,0,n,y,2023-01-18,,"2022-07-18 18:44:06",,,,,,,,Premium,6,299,active,y
+vira_1657863011,"VIraj Shah",,1995-01-30,"91 9639639999",pending,pending,Male,Agra,Female,pending,15,English,en,0,3,0,0,n,y,2023-01-15,,"2022-07-15 16:30:11",,,,,,,,Premium,6,299,active,y
+rajv_1657861103,"Rajvi Patel",,1999-01-30,"91 9639639666",pending,pending,Female,Agra,Male,pending,15,English,en,0,0,0,38,n,y,,,"2022-07-15 15:58:23",,,,,,,,Platinum,12,399,active,y
+keve_1657805120,"Kevel bhai Testing",,1999-04-13,"91 1234567890",pending,pending,Female,Ahmedabad,Male,pending,15,English,en,0,0,0,0,n,y,,,"2022-07-15 00:25:20",,,,,,,,Platinum,12,399,active,n
+purv_1657802510,"Purvi Sanghani",vadgamay33@gmail.com,1999-12-13,"91 9639639633",under_review,under_review,Female,Agra,Male,under_review,40,বাংলা,bn,0,1,0,17,n,y,,"2022-07-22 22:56:41","2022-07-14 23:41:50",,,,,,,,Platinum,12,399,active,y
+vipu_1659673561,"Vipul Prajapati",,1991-05-23," ",pending,pending,Male,Ahmedabad,Female,pending,10,English,en,0,4,0,0,y,n,,,,,,,,,,,,,,,y
+saum_1657530515,"Saumya Singh",,1995-07-11,"91 9898654321",under_review,under_review,Female,Mumbai,Male,under_review,53,English,en,0,13,0,1,n,y,,,"2022-07-11 18:21:26",,,,,,,,Platinum,12,399,active,y
+temp_1657186525,"Temp Check",,2002-07-07,"91 7878787878",pending,pending,Male,Rajkot,Female,pending,15,English,en,0,0,0,0,n,n,2022-07-07,,"2022-07-07 20:35:25",,,,,,,,Super,1,99,unpaid,n
+radh_1657179001,"Radhika Patel",,1996-07-10,"91 9879879879",pending,pending,Female,Rajkot,Male,pending,16,English,en,0,13,0,11,n,y,,,"2022-07-07 18:29:24",,,,,,,,Platinum,12,399,active,y
+chec_1658309478,Checking,,2003-04-07,"91 8688688686",under_review,under_review,Male,Rajkot,Female,under_review,15,English,en,0,0,0,0,n,y,2022-07-07,,"2022-07-07 16:57:13",,,,,,,,Super,1,99,active,n
+nilo_1657113456,"Nilofer Kumar",,1998-04-11,"91 9898984321",pending,pending,Female,Bengaluru,Male,pending,66,English,en,0,6,0,5,n,y,,,"2022-07-07 00:17:36",,,,,,,,Platinum,12,399,active,y
+suna_1657112701,"Sunayana Shetty",,1999-04-08,"91 9898981234",pending,pending,Female,Bengaluru,Male,pending,72,English,en,0,7,0,0,n,y,,,"2022-07-07 00:04:21",,,,,,,,Platinum,12,399,active,y
+giti_1657265544,"Gitika Singh",,2001-08-04,"91 9898543210",verified,verified,Female,Gurugram,Male,verified,83,English,en,0,0,1,0,n,y,,,"2022-06-27 12:44:00","2022-07-08 18:32:24","2022-07-08 18:32:24",,,,,,Platinum,12,399,active,y
+sang_1656333002,"Sangram Tomar",,2001-11-04,"91 9898123450",under_review,under_review,Male,Gurugram,Male,under_review,71,English,en,0,8,0,0,n,n,,,"2022-06-27 12:37:30",,,,,,,,,,,,y
+aram_1657518901,"Araman Malik",,2001-06-23,"91 1234509876",under_review,under_review,Male,Rajkot,Female,verified,31,English,en,0,3,0,0,n,y,2022-07-25,,"2022-06-23 18:12:00",,,,,,,,Super,1,99,active,y
+janv_1657519204,"janvi kapoor",,1993-05-13,"91 0000000000",under_review,under_review,Female,Rajkot,Male,verified,31,English,en,0,29,2,1,n,y,,,"2022-06-22 21:06:38",,,,,,,,Platinum,12,399,active,y
+shya_1656329125,"Shyam Tallamraju",,1979-07-18,"91 9789777983",pending,pending,Male,Mumbai,Female,pending,15,English,en,0,0,0,7,n,y,2022-12-31,,"2022-06-22 11:51:08",,,,,,,,,,,,y
+ravi_1656329115,"Ravi Booked",,1987-11-19,"91 8866577985",pending,pending,Male,Ahmedabad,Male,pending,78,English,en,0,14,0,2,n,n,,,"2022-06-21 21:41:55",,,,,,,,Premium,6,199,incomplete,y
+sanj_1655706896,"Sanjna Ramani",,1997-01-28,"91 8866210256",pending,pending,Female,Mussoorie,Male,pending,18,English,en,0,7,0,12,n,y,2022-07-22,,"2022-06-20 12:04:56",,,,,,,,Super,1,99,active,y
+rama_1655302574,"Raman Rai",,2001-06-15,"91 8888666612",pending,pending,Male,Rajkot,Female,pending,15,English,en,0,20,0,1,n,n,,,"2022-06-15 19:46:14",,,,,,,,,,,,y
+riya_1655305485,"Riya Rai",,2002-06-15,"91 9999888811",under_review,under_review,Female,Rajkot,Both,under_review,21,English,en,0,10,0,3,n,y,,,"2022-06-15 18:59:00",,,,,,,,Platinum,12,399,active,y
+tila_1656657542,"Tilak Ruparelli",,1970-06-15,"91 9909295180",pending,pending,Male,Vadodara,Female,pending,15,English,en,0,12,0,0,n,n,,,"2022-06-15 12:39:41",,,,,,,,,,,,y
+kish_1657519287,"Kishan Rawal",,1970-06-15,"91 7600787089",under_review,under_review,Male,Vadodara,Female,verified,31,English,en,0,13,2,1,n,n,,,"2022-06-15 10:26:02",,,,,,,,,,,,y
+avan_1657519041,"Avani Shah",,1995-06-15,"91 8849111310",under_review,under_review,Female,Vadodara,Male,verified,31,English,en,0,25,1,3,n,y,,,"2022-06-15 10:24:28",,,,,,,,Platinum,12,399,active,y
+asha_1657518984,"Ashay Pandya",,1995-04-01,"91 8153094573",under_review,under_review,Male,Ahmedabad,Female,verified,36,English,en,0,20,1,1,n,n,,,"2022-06-15 10:14:39",,,,,,,,,,,,y
+hars_1657519152,"Harshit Patel",,2003-06-15,"91 8488076699",under_review,under_review,Male,Ahmedabad,Male,verified,31,English,en,0,13,0,4,n,n,,,"2022-06-15 10:07:14",,,,,,,,,,,,y
+vika_1655269562,"Vikas Yadav",,1999-07-25,"91 8975644552",under_review,under_review,Male,Ahmedabad,Female,under_review,15,English,en,0,23,1,1,n,n,,,"2022-06-15 10:03:17",,,,,,,,,,,,y
+pran_1655268422,"Pranav Talsania",,1999-05-24,"91 9723890269",under_review,under_review,Male,Ahmedabad,Female,under_review,15,English,en,0,12,2,0,n,n,,,"2022-06-15 10:02:58",,,,,,,,,,,,y
+ravi_1657697191,"Ravi Bokade",ravi.bokade@yudiz.com,1987-11-19,"91 9909977985",under_review,under_review,Male,Ahmedabad,Both,under_review,85,English,en,0,4,0,2,n,n,,"2022-06-14 16:09:28","2022-06-14 16:00:32",,,,,,,,,,,,y
+jign_1657549085,"Jigna Shah",,1990-06-06,"91 9326110491",verified,verified,Female,Rajkot,Male,verified,71,English,en,0,0,0,3,n,y,,,"2022-06-14 14:40:13","2022-07-12 01:18:05","2022-07-12 01:18:05",,,,,,Platinum,12,399,active,y
+pink_1655270942,"pinky Rathod",,1992-10-22,"91 9157648668",under_review,under_review,Female,Ahmedabad,Female,under_review,15,English,en,0,23,0,10,n,y,,,"2022-06-14 13:43:43",,,,,,,,Platinum,12,399,active,y
+part_1655271358,"Test QA",testqa1947@gmail.com,1994-06-14,"91 8320645436",under_review,under_review,Male,Vadodara,Female,under_review,10,English,en,0,13,0,0,y,n,,,,,,,,,,,,,,,y
+ruhi_1656741422,"Ruhi Shah",,1999-02-02,"91 9999999999",under_review,under_review,Female,Ahmedabad,Male,under_review,10,English,en,0,15,0,1,n,y,,,,,,,,,,,Platinum,12,399,active,y
+raj_1655117642,"Raj Mavani",,1995-06-13,"91 8866576288",pending,pending,Male,Vadodara,Female,pending,15,English,en,0,11,1,0,n,n,,,"2022-06-13 16:23:27",,,,,,,,,,,,y
+keva_1655269862,"Keval Jaiswal",keval.j@yudiz.in,1995-07-25,"91 8866989782",under_review,under_review,Male,Vadodara,Male,under_review,83,English,en,0,0,0,7,n,y,2023-01-20,"2022-06-15 17:21:44","2022-06-13 13:51:32",,,,,,,,Premium,6,199,active,y
+user_1655108192,"Himani Patel",,1997-06-24,"91 9825086834",under_review,under_review,Female,Bhavnagar,Female,under_review,15,English,en,0,22,0,5,n,y,,,"2022-06-13 13:46:32",,,,,,,,Platinum,12,399,active,y
+shlo_1655107682,"Shlok Rawal",,1997-11-18,"91 8200912345",under_review,under_review,Male,Ahmedabad,Male,under_review,15,English,en,0,22,1,0,n,n,,,"2022-06-13 13:37:56",,,,,,,,,,,,y
+soum_1654868582,Soumik,,1980-11-04,"91 9867175525",pending,pending,Male,Mumbai,Female,pending,79,ગુજરાતી,gu,0,0,0,0,n,y,2023-12-31,,"2022-06-10 19:12:06",,,,,,,,Platinum,12,399,active,y
+vipu_1654856042,"Vipul Patel",,1998-05-12,"91 789456123",under_review,under_review,Male,face,Both,under_review,15,English,en,0,13,1,5,n,n,,,"2022-06-10 15:41:53",,,,,,,,,,,,y
+anil_1659616443,"Anil Patel",,1997-04-10,"91 9876543210",under_review,under_review,Male,Ahmedabad,Female,verified,29,English,en,0,18,0,0,n,n,,,"2022-06-10 15:39:23",,,,,,,,,,,,y
+rajk_1655356703,"Rajkumar Rao",test@gmail.com,1999-03-09,"91 9173091730",under_review,under_review,Male,Ahmedabad,Both,under_review,58,English,en,0,0,0,0,n,y,2022-08-26,,,,,,,,,,Super,1,99,active,y
+divy_1655205062,"Divya Gol",,1994-06-04,"91 1122334455",under_review,under_review,Female,Rajkot,Male,under_review,76,English,en,0,0,1,8,n,y,,,"2022-06-04 13:19:22",,,,,,,,Platinum,12,399,active,y
+vish_1657195862,"Vishal Prajapati",vishal.p@yudiz.in,1998-01-08,"91 9978876871",verified,verified,Male,Ahmedabad,Both,under_review,90,ગુજરાતી,gu,8,0,0,134,n,n,,"2022-08-30 11:53:50","2022-06-03 18:15:19","2022-06-13 18:37:44","2022-08-16 12:02:27",iPhone,android,1.0.0,"iOS 15.3",15.3,Super,1,99,unpaid,y
+jina_1656479462,"Jinal Patel",,1995-07-18,"91 9988776655",under_review,under_review,Female,face,Male,under_review,66,English,en,0,7,0,0,n,y,,,"2022-06-03 17:32:21",,,,,,,,Platinum,12,399,active,y
+yagn_1658304381,"Yagnik Vadgama",abcxyz@gmail.com,1997-10-06,"91 7567849289",verified,verified,Male,Rajkot,Both,under_review,90,English,en,0,0,0,11,n,y,2022-08-25,,"2022-06-03 17:30:04",,"2022-06-29 17:46:38",,,,,,Super,1,99,active,y
+anna_1657518317,"Annaya Pande",,1995-02-16,"91 8866123450",unverified,unverified,Female,Rajkot,Male,unverified,78,English,en,0,0,0,0,n,y,,,"2022-06-03 16:07:20",,,,,,,,Platinum,12,399,active,y
