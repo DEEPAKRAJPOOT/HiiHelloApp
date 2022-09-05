@@ -812,10 +812,10 @@ class UsersController extends Controller
                     'Device OS Version'     =>  $user->deviceToken ? $user->deviceToken->os_version ?? "" : "",
                     'Subscription plan'     =>  $user->subscription ? $user->subscription->subscriptionPlan ? ($user->subscription->subscriptionPlan->subscriptionPlanTranslation ? $user->subscription->subscriptionPlan->subscriptionPlanTranslation->name : "N/A") : "" : "",
                     'Subscription month'    =>  $user->subscription ? $user->subscription->months ? : "" : "" ,
-                    'Subscription amount'    =>  $user->subscription ? $user->subscription->amount ? : "" : "" ,
-                    'Subscription end date'    =>  $user->subscription ? $user->subscription->end_date ? : "" : "" ,
-                    'Subscription status'    =>  $user->subscription ? $user->subscription->status ? : "" : "" ,
-                    'Active'                =>  $user->is_avtive == 'y' ? 'y' : 'n'
+                    'Subscription amount'   =>  $user->subscription ? $user->subscription->amount ? : "" : "" ,
+                    'Subscription end date' =>  $user->subscription ? $user->subscription->end_date ? : "" : "" ,
+                    'Subscription status'   =>  $user->subscription ? $user->subscription->status ? : "" : "" ,
+                    'Active'                =>  $user->is_active == 'y' ? 'y' : 'n'
                 ];
             }
 
