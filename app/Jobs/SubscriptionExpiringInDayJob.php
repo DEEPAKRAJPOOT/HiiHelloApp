@@ -8,10 +8,10 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
-use App\Mail\SubscriptionExpiringEmail;
+use App\Mail\SubscriptionExpiringInDayEmail;
 use Mail;
 
-class SubscriptionExpiringJob implements ShouldQueue
+class SubscriptionExpiringInDayJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
     protected $data;
@@ -21,7 +21,7 @@ class SubscriptionExpiringJob implements ShouldQueue
      *
      * @return void
      */
-     public function __construct($data)
+    public function __construct($data)
     {
         $this->data = $data;
     }
@@ -33,6 +33,6 @@ class SubscriptionExpiringJob implements ShouldQueue
      */
     public function handle()
     {
-        Mail::to($this->data->email)->queue(new SubscriptionExpiringEmail($this->data));
+        Mail::to($this->data->email)->queue(new SubscriptionExpiringInDayEmail($this->data));
     }
 }
