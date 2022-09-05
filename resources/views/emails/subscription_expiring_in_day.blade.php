@@ -42,7 +42,7 @@
                                 <tr>
                                     <td>
                                         <p style="margin: 0px; font-weight: 400; letter-spacing: 0.006em;
-                                font-size: 16px; line-height: 22px; color: #645A8F;">Your Hi Hello Membership is expiring soon.
+                                font-size: 16px; line-height: 22px; color: #645A8F;">Hey beautiful! Only 24 hrs of exclusive experiences remain at Hi Hello as your subscription comes to an end. Continue enjoying the sweet experiences and matches that you are having with the Hi Hello community by subscribing soon.  
                                         </p>
                                     </td>
                                 </tr>
@@ -62,8 +62,7 @@
                                             <tr style="height: 20px;"></tr>
                                             <tr>
                                                 <td style="text-align: center;"><a href="#"
-                                                        style="padding: 16px 20px; font-weight: 700; font-size: 14px; line-height: 17px; display: inline-block; letter-spacing: 0.032em; text-transform: uppercase;  color: #FFFFFF; text-decoration: none; background: #250A52; border-radius: 12px; width: 184px;">Subscribe
-                                                        Now</a></td>
+                                                        style="padding: 16px 20px; font-weight: 700; font-size: 14px; line-height: 17px; display: inline-block; letter-spacing: 0.032em; text-transform: uppercase;  color: #FFFFFF; text-decoration: none; background: #250A52; border-radius: 12px; width: 184px;">Subscribe Soon</a></td>
                                             </tr>
                                             <tr style="height: 30px;"></tr>
                                         </table>

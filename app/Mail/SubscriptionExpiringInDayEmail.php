@@ -7,7 +7,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
 
-class SubscriptionExpiringEmail extends Mailable
+class SubscriptionExpiringInDayEmail extends Mailable
 {
     use Queueable, SerializesModels;
     protected $data;
@@ -30,7 +30,7 @@ class SubscriptionExpiringEmail extends Mailable
      */
     public function build()
     {
-        return $this->view('emails.subscription_expiring')
+        return $this->view('emails.subscription_expiring_in_day')
             ->with([
                 'data'  => $this->data,
             ]);
