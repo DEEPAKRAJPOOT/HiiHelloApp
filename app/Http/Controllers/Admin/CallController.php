@@ -24,7 +24,7 @@ class CallController extends Controller
      */
     public function show($custom_id)
     {
-        $call = CallLog::with(['room'])
+        $call = CallLog::with(['room.creator.userTransDefault', 'room.participator.userTransDefault',])
                     ->whereCustomId($custom_id)->firstOrFail();
         return view('admin.pages.call-logs.view', compact('call'))->with(['custom_title' => 'Call Logs']);
     }
@@ -41,10 +41,10 @@ class CallController extends Controller
                     ->orWhere('start_time', 'like', "%{$search}%")
                     ->orWhere('end_time', 'like', "%{$search}%")
                     ->orWhere('remaining_time', 'like', "%{$search}%")
-                    ->orWhereHas('room.creator.user.userTranslations', function ($query1) use ($search) {
+                    ->orWhereHas('room.creator.userTranslations', function ($query1) use ($search) {
                         $query1->where('full_name', 'like', "%{$search}%");
                     })
-                    ->orWhereHas('room.participator.user.userTranslations', function ($query1) use ($search) {
+                    ->orWhereHas('room.participator.userTranslations', function ($query1) use ($search) {
                         $query1->where('full_name', 'like', "%{$search}%");
                     });
                     
@@ -63,10 +63,10 @@ class CallController extends Controller
                 
             $records['data'][] = [
                 'id' => $call_log->custom_id,
-                'creator_name' =>  $call_log->room ? $call_log->room->creator ? $call_log->room->creator->userTransEn ? $call_log->room->creator->userTransEn->full_name : "" : "" : "",
-                'participator_name' =>  $call_log->room ? $call_log->room->participator ? $call_log->room->participator->userTransEn ? $call_log->room->participator->userTransEn->full_name : "" : "" : "",
-                'date' => $call_log->date,
-                'remaining_time' => $call_log->remaining_time,
+                'creator_name' =>  $call_log->room ? $call_log->room->creator ? $call_log->room->creator->userTransEn ? $call_log->room->creator->userTransEn->full_name : "-" : "-" : "-",
+                'participator_name' =>  $call_log->room ? $call_log->room->participator ? $call_log->room->participator->userTransEn ? $call_log->room->participator->userTransEn->full_name : "-" : "-" : "-",
+                'date' => $call_log->date ?? '--',
+                'remaining_time' => $call_log->remaining_time ?? '--',
                 'action' => view('admin.layouts.includes.actions')->with(['custom_title' => 'Call Logs', 'id' => $call_log->custom_id], $call_log)->render(),
 
             ];
@@ -78,11 +78,10 @@ class CallController extends Controller
     {
         $down_file_name = 'Call Log';
         $call_logs = CallLog::with('room','room.creator.userTransEn', 'room.participator.userTransEn', 'room.creator','room.participator')->get();
+
         if (!$call_logs->isEmpty()) {
             foreach ($call_logs as $call_log) {
                 $data[] = [
-                    
-                    'Id' => $call_log->custom_id,
                     'Creator name' =>  $call_log->room ? $call_log->room->creator ? $call_log->room->creator->userTransEn ? $call_log->room->creator->userTransEn->full_name : "" : "" : "",
                     'Participator name' =>  $call_log->room ? $call_log->room->participator ? $call_log->room->participator->userTransEn ? $call_log->room->participator->userTransEn->full_name : "" : "" : "",
                     'Date' => $call_log->date,
@@ -99,12 +98,10 @@ class CallController extends Controller
 
             $filename = public_path('files/' . $down_file_name . ".csv");
             $handle   = fopen($filename, 'w+');
-            fputcsv($handle, array(
-                'Id', 'Creator name', 'Participator name', 'Date', 'Start time', 'End time', 'Remaining time','Created at'));
+            fputcsv($handle, array('Creator name', 'Participator name', 'Date', 'Start time', 'End time', 'Remaining time','Created at'));
 
             foreach ($data as $row) {
-                fputcsv($handle, array(
-                    $row['Id'], $row['Creator name'], $row['Participator name'], $row['Date'], $row['Start time'], $row['End time'], $row['Remaining time'], $row['Created at'],
+                fputcsv($handle, array($row['Creator name'], $row['Participator name'], $row['Date'], $row['Start time'], $row['End time'], $row['Remaining time'], $row['Created at'],
                 ));
             }
             fclose($handle);

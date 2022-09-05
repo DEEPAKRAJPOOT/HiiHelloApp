@@ -13,37 +13,37 @@ function getPermissions($user_type = 'normal')
             2 =>[ // Users
                 'permissions' => 'access,view,add,edit,delete'
             ],
-            3 =>[ //Role Management
+            3 =>[ // Role Management
                 'permissions' => 'access,add,edit,delete'
             ],
-            4 =>[ //Passion Management
+            4 =>[ // Passion Management
                 'permissions' => 'access,add,edit,delete'
             ],
-            5 =>[ //Country
+            5 =>[ // Country
                 'permissions' => 'access,add,edit,delete'
             ],
-            6 =>[ //Profile Details
+            6 =>[ // Profile Details
                 'permissions' => 'access,add,edit,delete'
             ],
-            7 =>[ //Interests
+            7 =>[ // Interests
                 'permissions' => 'access,add,edit,delete'
             ],
-            8 =>[ //Locations
+            8 =>[ // Locations
                 'permissions' => 'access,add,edit,delete'
             ],
-            9 =>[ //Profile Reports
+            9 =>[ // Profile Reports
                 'permissions' => 'access,view,edit'
             ],
-            10 =>[ //Faqs
+            10 =>[ // Faqs
                 'permissions' => 'access,add,edit,delete'
             ],
-            11 =>[ //State
+            11 =>[ // State
                 'permissions' => 'access,add,edit,delete'
             ],
-            12 =>[ //Personality Types
+            12 =>[ // Personality Types
                 'permissions' => 'access,add,edit,delete'
             ],
-            13 =>[ //City
+            13 =>[ // City
                 'permissions' => 'access,add,edit,delete'
             ],
             14 =>[ // Push Notification
@@ -55,22 +55,21 @@ function getPermissions($user_type = 'normal')
             16 =>[ // Subscriptions
                 'permissions' => 'access,view'
             ],
-            17 =>[ //Trasactions
+            17 =>[ // Trasactions
                 'permissions' => 'access,view'
             ],
-            18 =>[ // App Details
+            18 =>[ // Call Logs
+                'permissions' => 'access,view'
+            ],
+            19 =>[ // App Details
                 'permissions' => 'access,add,view'
             ],
-            19 =>[ //CMS Pages
+            20 =>[ // CMS Pages
                 'permissions' => 'access,edit'
             ],
-            20 =>[ //Site Configurations
+            21 =>[ // Site Configurations
                 'permissions' => 'access'
             ],
-            21 =>[ //Site Configurations
-                'permissions' => 'access,view'
-            ],
-
         ];
     }
 

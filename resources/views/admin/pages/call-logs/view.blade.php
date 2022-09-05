@@ -22,7 +22,7 @@
                         <div class="form-group col-md-6">
                             <b>Creator Detail</b>
                             <div class="mb-2">
-                                @if ($call->room->creator->userTransEn && $call->room->creator->profile_photo)
+                                @if ($call->room && $call->room->creator && $call->room->creator->profile_photo)
                                     <div class="symbol symbol-120 mr-5">
                                         <a href="{{ generateURL($call->room->creator->profile_photo) }}" target="_blank"
                                             style="margin: 10px;">
@@ -37,7 +37,7 @@
                             <div class="mb-2">
                                 <label class="control-label"><span class="mendatory" style="font-size: 20px;"></span>Full
                                     Name : <b>
-                                        @if ($call->room->creator && $call->room->creator->userTransDefault)
+                                        @if ($call->room && $call->room->creator && $call->room->creator->userTransDefault)
                                             {{ $call->room->creator->userTransDefault ? $call->room->creator->userTransDefault->full_name : 'N/A' }}
                                         @else
                                             -
@@ -48,7 +48,7 @@
                             <div class="mb-2">
                                 <label class="control-label"><span class="mendatory" style="font-size: 20px;"></span>Account
                                     Id : <b>
-                                        @if ($call->room->creator && $call->room->creator->account_id)
+                                        @if ($call->room && $call->room->creator && $call->room->creator->account_id)
                                             {{ $call->room->creator->account_id }}
                                         @else
                                             -
@@ -58,7 +58,7 @@
                             <div class="mb-2">
                                 <label class="control-label"><span class="mendatory" style="font-size: 20px;"></span>Email:
                                     <b>
-                                        @if ($call->room->creator && $call->room->creator->email)
+                                        @if ($call->room && $call->room->creator && $call->room->creator->email)
                                             {{ $call->room->creator->email }}
                                         @else
                                             -
@@ -71,7 +71,7 @@
                         <div class="form-group col-md-6">
                             <b>Participator Detail</b>
                             <div class="mb-2">
-                                @if ($call->room->participator->userTransEn && $call->room->participator->profile_photo)
+                                @if ($call->room && $call->room->participator &&  $call->room->participator->userTransEn && $call->room->participator->profile_photo)
                                     <div class="symbol symbol-120 mr-5">
                                         <a href="{{ generateURL($call->room->participator->profile_photo) }}" target="_blank"
                                             style="margin: 10px;">
@@ -86,7 +86,7 @@
                             <div class="mb-2">
                                 <label class="control-label"><span class="mendatory" style="font-size: 20px;"></span>Full
                                     Name : <b>
-                                        @if ($call->room->participator && $call->room->participator->userTransDefault)
+                                        @if ($call->room && $call->room->participator && $call->room->participator->userTransDefault)
                                             {{ $call->room->participator->userTransDefault ? $call->room->participator->userTransDefault->full_name : 'N/A' }}
                                         @else
                                             -
@@ -97,7 +97,7 @@
                             <div class="mb-2">
                                 <label class="control-label"><span class="mendatory" style="font-size: 20px;"></span>Account
                                     Id : <b>
-                                        @if ($call->room->participator && $call->room->participator->account_id)
+                                        @if ($call->room && $call->room->participator && $call->room->participator->account_id)
                                             {{ $call->room->participator->account_id }}
                                         @else
                                             -
@@ -107,7 +107,7 @@
                             <div class="mb-2">
                                 <label class="control-label"><span class="mendatory" style="font-size: 20px;"></span>Email:
                                     <b>
-                                        @if ($call->room->participator && $call->room->participator->email)
+                                        @if ($call->room && $call->room->participator && $call->room->participator->email)
                                             {{ $call->room->participator->email }}
                                         @else
                                             -

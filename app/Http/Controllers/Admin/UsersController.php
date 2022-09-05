@@ -775,7 +775,8 @@ class UsersController extends Controller
     public function csvDownload(Request $request)
     {
         $down_file_name = 'User';
-        $users = User::with('userTransEn', 'deviceToken', 'country', 'location', 'language','subscription','subscriptionPlan','subscriptionPlanTranslation')->orderBy('created_at','desc')->get();
+        $users = User::with('userTransEn', 'deviceToken', 'country', 'location', 'language','subscription.subscriptionPlan.subscriptionPlanTranslation')
+            ->orderBy('created_at','desc')->get();
         if (!$users->isEmpty()) {
             foreach ($users as $user) {
                 $data[] = [
@@ -815,11 +816,7 @@ class UsersController extends Controller
                     'Subscription end date'    =>  $user->subscription ? $user->subscription->end_date ? : "" : "" ,
                     'Subscription status'    =>  $user->subscription ? $user->subscription->status ? : "" : "" ,
                     'Active'                =>  $user->is_avtive == 'y' ? 'y' : 'n'
-
-
-          
                 ];
-                
             }
 
             if (!File::exists(public_path() . "/files")) {
