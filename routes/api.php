@@ -70,6 +70,7 @@ Route::group(['namespace' => 'v1', 'prefix' => 'v1', 'middleware' => 'auth:sanct
     Route::post('user/delete-account', [UserController::class,'deletAccount'])->name('api.user.delete-account');
 
     // Discovery
+    Route::post('discovery/set-location', [DiscoveryController::class,'setDiscoveryLocation'])->name('api.discovery.set-location');
     Route::post('discovery/set-detail', [DiscoveryController::class,'setDiscoveryDetail'])->name('api.discovery.set-detail');
     Route::post('discovery/get-detail', [DiscoveryController::class,'getDiscoveryDetail'])->name('api.discovery.get-detail');
 
