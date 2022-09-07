@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\{Request, Response};
 use Illuminate\Database\Eloquent\{ModelNotFoundException};
 use Illuminate\Support\Facades\{Auth};
-use App\Http\Requests\Api\Discovery\{SetDiscoveryRequest};
+use App\Http\Requests\Api\Discovery\{SetDiscoveryRequest, SetDiscoveryLocationRequest};
 use App\Http\Resources\v1\{DiscoveryResource};
 use App\Models\{User, UserSetting, Location, Language};
 
@@ -14,6 +14,41 @@ class DiscoveryController extends Controller
 {
     private $version = "v.1.0";
     public function getVersion(){ return $this->version; }
+
+    public function setDiscoveryLocation(Request $request)
+    {
+        $setDiscoveryLocationRequest = new SetDiscoveryLocationRequest();
+        if ($this->apiValidator($request->all(), $setDiscoveryLocationRequest->rules())) {
+            try {
+                $user = $request->user();
+                $location = Location::select('id')->whereCustomId($request->location)->whereIsActive('y')->firstOrFail();
+                $user->discover_location_id = $location->id;
+                $user->save();
+
+                return ([
+                    'data'  => NULL,
+                    'meta' => [
+                        'url'       =>  url()->current(),
+                        'api'       =>  $this->getVersion(),
+                        'language'  =>  app()->getLocale(),
+                        'message'   =>  trans('api.add', ['entity' => __('Location')]),
+                    ]
+                ]);
+            } catch (ModelNotFoundException $exception) {
+                switch ($exception->getModel()) {
+                    case 'App\Models\Location':
+                        $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("Location")]);
+                        break;
+                    default:
+                        $this->response['meta']['message'] = trans('api.went_wrong');
+                        break;
+                };
+            } catch (\Exception $e) {
+                $this->storeErrorLog($e, 'set_discovery_location');
+            }
+        }
+        return $this->returnResponse();
+    }
 
     public function setDiscoveryDetail(Request $request)
     {
