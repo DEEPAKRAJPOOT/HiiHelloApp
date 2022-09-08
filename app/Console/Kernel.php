@@ -11,6 +11,7 @@ use App\Console\Commands\BirthDayWish;
 use App\Console\Commands\NotifySubScriptionExpire;
 use App\Console\Commands\RenewSwipeLimit;
 use App\Console\Commands\ChatMediaCheker;
+use App\Console\Commands\AutoVerifyProfile;
 
 class Kernel extends ConsoleKernel
 {
@@ -27,6 +28,7 @@ class Kernel extends ConsoleKernel
         NotifySubScriptionExpire::class,
         RenewSwipeLimit::class,
         ChatMediaCheker::class,
+        AutoVerifyProfile::class,
     ];
 
     /**
@@ -61,6 +63,12 @@ class Kernel extends ConsoleKernel
             $scheculeCommand->handle();
         })->everyMinute();
         // ->everyFiveMinutes();
+
+        // Auto Verify Profiles Command
+        $schedule->call(function () {
+            $scheculeCommand = new AutoVerifyProfile;
+            $scheculeCommand->handle();
+        })->everyMinute();
 
         // Birthday Wise At Every Night 12 AM
         $schedule->call(function () {
