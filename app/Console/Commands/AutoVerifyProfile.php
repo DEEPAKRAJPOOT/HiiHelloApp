@@ -80,27 +80,31 @@ class AutoVerifyProfile extends Command
                         $photo_verified = true;
                     }
 
-                    if($user->verify_video_status == 'under_review'){
-                        $verify_video = generateURL($user->verify_video);
+                    // if($user->verify_video_status == 'under_review'){
+                    //     $verify_video = generateURL($user->verify_video);
 
-                        if(!empty($verify_video)){
-                            $safe_verify_video = $this->checkVideoModeration($verify_video);
-                            if($safe_verify_video == true){
-                                $video_verified = true;
-                                $user->verify_video_status = 'verified';
-                                $user->video_verified_at = \Carbon\Carbon::now();
-                            }else{
-                                $video_verified = false;
-                                $user->verify_video_status = 'unverified';
-                                $user->video_verified_at = NULL;
-                            }
-                            $user->save();
-                        }
-                    }elseif($user->verify_video_status == 'verified'){
-                        $video_verified = true;
-                    }
+                    //     if(!empty($verify_video)){
+                    //         $safe_verify_video = $this->checkVideoModeration($verify_video);
+                    //         if($safe_verify_video == true){
+                    //             $video_verified = true;
+                    //             $user->verify_video_status = 'verified';
+                    //             $user->video_verified_at = \Carbon\Carbon::now();
+                    //         }else{
+                    //             $video_verified = false;
+                    //             $user->verify_video_status = 'unverified';
+                    //             $user->video_verified_at = NULL;
+                    //         }
+                    //         $user->save();
+                    //     }
+                    // }elseif($user->verify_video_status == 'verified'){
+                    //     $video_verified = true;
+                    // }
 
-                    if($photo_verified && $video_verified){
+                    // if($photo_verified && $video_verified){
+                    //     $verify_status = 'verified';
+                    // }
+
+                    if($photo_verified){
                         $verify_status = 'verified';
                     }
 
