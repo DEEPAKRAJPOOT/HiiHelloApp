@@ -583,6 +583,7 @@ class GeneralController extends Controller
     {
         $getDeviceTokenRequest = new GetDeviceTokenRequest();
         if ($this->apiValidator($request->all(), $getDeviceTokenRequest->rules())) {
+            $this->status = Response::HTTP_NOT_FOUND;
             try {
                 $user_id = $request->user_id;
                 $deviceToken = DeviceToken::whereHas('user', function ($query) use ($user_id) {
