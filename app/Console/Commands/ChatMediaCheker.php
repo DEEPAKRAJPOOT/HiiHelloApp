@@ -102,7 +102,7 @@ class ChatMediaCheker extends Command
             $chatImgModerationLog->error($file, ['error' => $e->getMessage()]);
         }
 
-        $this->info($message);
+        // $this->info($message);
         return $message;
     }
 

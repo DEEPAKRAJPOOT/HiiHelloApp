@@ -147,7 +147,7 @@ class GoogleTransForAdmin extends Command
             }
         });
 
-        $this->info($message);
+        // $this->info($message);
         return $message;
     }
 

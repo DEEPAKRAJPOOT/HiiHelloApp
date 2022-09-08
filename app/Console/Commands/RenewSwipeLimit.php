@@ -53,7 +53,7 @@ class RenewSwipeLimit extends Command
             $iqTrackingLog->error($file, ['error' => $e->getMessage()]);
         }
 
-        $this->info($message);
+        // $this->info($message);
         return $message;
     }
 }

@@ -115,7 +115,7 @@ class AutoVerifyProfile extends Command
                     $this->sendProfileVerifyNotification($user);
                         
                     $message = 'Profile verification details updated successfully.';
-                    $this->info($message);
+                    // $this->info($message);
                 }
             }
         });

@@ -95,7 +95,7 @@ class VideoModeration extends Command
             $imgModerationLog->error($file, ['error' => $e->getMessage()]);
         }
 
-        $this->info($message);
+        // $this->info($message);
         return $message;
     }
 
