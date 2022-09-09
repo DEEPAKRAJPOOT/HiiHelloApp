@@ -13,13 +13,13 @@ class HomeResource extends JsonResource
      * @return array|\Illuminate\Contracts\Support\Arrayable|\JsonSerializable
      */
     public function toArray($request)
-    {     
+    {  
         return [
             'id'                =>  $this->custom_id ?? "",
             'full_name'         =>  $this->userTranslation ? $this->userTranslation->full_name : "",
             'age'               =>  $this->getAge(),
             'gender'            =>  $this->gender ?? "",
-            'isProfileVerified' =>  generateURL($this->profile_photo) !="" ? true : false,
+            'isProfileVerified' =>  ($this->emailVerifyStatus()=='verified' && $this->contactVerifyStatus()=='verified' && $this->verify_photo_status=='verified') ? true : false,
             'location'          =>  new LocationResource($this->location),
             'interests'         =>  HomeInterestResource::collection($this->interests),
             'profile_photo'     =>  generateURL($this->profile_photo) ?? "",            
