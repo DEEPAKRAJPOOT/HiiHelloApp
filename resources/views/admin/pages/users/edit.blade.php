@@ -25,7 +25,7 @@
                 {{-- Full Name --}}
                 <div class="form-group">
                     <label for="full_name">{!!$mend_sign!!}Full Name:</label>
-                    <input type="text" class="form-control @error('full_name') is-invalid @enderror" id="full_name" name="full_name" value="{{ old('full_name') != null ? old('full_name') : $user->userTransDefault ? $user->userTransDefault->full_name : ''}}" placeholder="Enter full name" autocomplete="full_name" spellcheck="false" autocapitalize="sentences" tabindex="0" autofocus />
+                    <input type="text" class="form-control @error('full_name') is-invalid @enderror" id="full_name" name="full_name" value="{{ old('full_name') != null ? old('full_name') : ($user->userTransDefault ? $user->userTransDefault->full_name : '')}}" placeholder="Enter full name" autocomplete="full_name" spellcheck="false" autocapitalize="sentences" tabindex="0" autofocus />
                     @if ($errors->has('full_name'))
                         <span class="help-block">
                             <strong class="form-text">{{ $errors->first('full_name') }}</strong>
@@ -216,7 +216,7 @@
             {{-- Fav movie --}}
             <div class="form-group">
                 <label for="fav_movie">Favourite Movie:</label>
-                <textarea type="text" class="form-control @error('fav_movie') is-invalid @enderror" id="fav_movie" name="fav_movie" placeholder="Enter favourite movie" autocomplete="fav_movie" spellcheck="false" autocapitalize="sentences" tabindex="0" autofocus>{{ old('fav_movie') != null ? old('fav_movie') : $user->userTransDefault ? $user->userTransDefault->fav_movie : '' }}</textarea>
+                <textarea type="text" class="form-control @error('fav_movie') is-invalid @enderror" id="fav_movie" name="fav_movie" placeholder="Enter favourite movie" autocomplete="fav_movie" spellcheck="false" autocapitalize="sentences" tabindex="0" autofocus>{{ old('fav_movie') != null ? old('fav_movie') : ($user->userTransDefault ? $user->userTransDefault->fav_movie : '') }}</textarea>
                 @if ($errors->has('fav_movie'))
                     <span class="help-block">
                         <strong class="form-text">{{ $errors->first('fav_movie') }}</strong>
@@ -227,7 +227,7 @@
             {{-- About Me --}}
             <div class="form-group">
                 <label for="about_me">About Me:</label>
-                <textarea type="text" class="form-control @error('about_me') is-invalid @enderror" id="about_me" name="about_me" placeholder="Enter favourite movie" autocomplete="about_me" spellcheck="false" autocapitalize="sentences" tabindex="0" autofocus>{{ old('about_me') != null ? old('about_me') : $user->userTransDefault ? $user->userTransDefault->about_me : '' }}</textarea>
+                <textarea type="text" class="form-control @error('about_me') is-invalid @enderror" id="about_me" name="about_me" placeholder="Enter favourite movie" autocomplete="about_me" spellcheck="false" autocapitalize="sentences" tabindex="0" autofocus>{{ old('about_me') != null ? old('about_me') : ($user->userTransDefault ? $user->userTransDefault->about_me : '') }}</textarea>
                 @if ($errors->has('about_me'))
                     <span class="help-block">
                         <strong class="form-text">{{ $errors->first('about_me') }}</strong>
