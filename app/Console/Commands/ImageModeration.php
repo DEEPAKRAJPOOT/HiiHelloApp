@@ -68,7 +68,8 @@ class ImageModeration extends Command
                                 $user->save();
 
                                 // Notify User
-                                $this->sendImageAlertNotification($user);
+                                //09 SEP : DISABLED NOTIFICATION ON IMATE MODERATION FALSE
+                                //$this->sendImageAlertNotification($user);
                             }
                             $user->is_media_checked = 'y';
                             $user->save();
@@ -113,7 +114,8 @@ class ImageModeration extends Command
                     
                     // Notify User
                     if($need_to_notify && $media_image->user){
-                        $this->sendImageAlertNotification($media_image->user);
+                        //09 SEP : DISABLED NOTIFICATION ON IMATE MODERATION FALSE 
+                        //$this->sendImageAlertNotification($media_image->user);
                     }
                 }
             });
