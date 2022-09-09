@@ -280,9 +280,12 @@ class AutoVerifyProfile extends Command
                 'type'          =>  $type,
             ];
 
+             //09 SEP : STOP SENDING NOTIFICATION FOR PROFILE NOT VERIFIED
             // Notify
-            $notificationJob = new NotificationJob($notification, $user);
-            dispatch($notificationJob);
+            if ($user->verify_status == 'verified') {
+                $notificationJob = new NotificationJob($notification, $user);
+                dispatch($notificationJob);
+            }
         }
 
         // Notify Photo
