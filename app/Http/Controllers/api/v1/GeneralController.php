@@ -185,7 +185,7 @@ class GeneralController extends Controller
                     ->where('location_translations.name', 'like', "{$search}%")
                     ->orderBy('location_translations.name');
 
-              /*  if (!empty($search)) {
+              /*  if (!empty($search)) { 
                     $locations = $locations->whereHas('locationTranslation', function ($query) use ($search) {
                        // echo $search; exit;
                         $query->where('name', 'like', "{$search}%");
