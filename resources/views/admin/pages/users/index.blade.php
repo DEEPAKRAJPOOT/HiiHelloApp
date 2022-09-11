@@ -64,7 +64,7 @@
             ajax: {
                 url: "{{ route('admin.users.listing') }}",
                 data: {
-                    columnsDef: ['checkbox', 'country_code', 'contact_no', 'gender', 'active', 'action'],
+                    columnsDef: ['checkbox', 'country_code', 'contact_no', 'gender','Created At', 'active', 'action'],
                 },
             },
             columns: [
@@ -75,6 +75,7 @@
                 { data: 'contact_no' },
                 { data: 'email' },
                 { data: 'gender' },
+                { data: 'created_at' },
                 { data: 'active' },
                 { data: 'action', responsivePriority: -1 },
             ],
@@ -87,7 +88,8 @@
                 { targets: 4, title: 'Contact Number', orderable: true },
                 { targets: 5, title: 'E-mail', orderable: true },
                 { targets: 6, title: 'Gender', orderable: true },
-                { targets: 7, title: 'Active', orderable: false },
+                { targets: 7, title: 'Created At', orderable: true },
+                { targets: 8, title: 'Active', orderable: false },
                 // Action buttons
                 { targets: -1, title: 'Action',
                 orderable: false },

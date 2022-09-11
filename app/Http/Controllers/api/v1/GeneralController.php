@@ -171,8 +171,8 @@ class GeneralController extends Controller
         $locationRequest = new LocationRequest();
         if ($this->apiValidator($request->all(), $locationRequest->rules())) {
             try {
-                $search = $request->search;
-                $lang = app()->getLocale();
+                 $search = $request->search; 
+                $lang = 'en';//app()->getLocale();
 
                 $locations = Location::select(
                     'locations.id',
@@ -182,13 +182,16 @@ class GeneralController extends Controller
                 )
                     ->join('location_translations', 'locations.id', '=', 'location_translations.location_id')
                     ->where('location_translations.locale', $lang)
+                    ->where('location_translations.name', 'like', "{$search}%")
                     ->orderBy('location_translations.name');
 
-                if (!empty($search)) {
+              /*  if (!empty($search)) {
                     $locations = $locations->whereHas('locationTranslation', function ($query) use ($search) {
+                       // echo $search; exit;
                         $query->where('name', 'like', "{$search}%");
                     });
-                }
+                   
+                }*/
                 $count = $locations->count();
                 $locations = $locations->limit($request->limit ?? config('utility.pagination.limit'))
                     ->offset($request->offset ?? config('utility.pagination.offset'))
