@@ -23,7 +23,7 @@ class SubscriptionResource extends JsonResource
             'end_date'      =>  $this->end_date ?? "",
             'status'        =>  $this->status ?? "",
             'name'          =>  $this->subscriptionPlan ? 
-                                    $this->subscriptionPlan->subscriptionPlanTranslation ? $this->subscriptionPlan->subscriptionPlanTranslation->name : ""  
+                                    $this->subscriptionPlan->subscriptionPlanTransEn ? $this->subscriptionPlan->subscriptionPlanTransEn->name : ""  
                                 : "",
             'type'          =>  $this->subscriptionPlan ? 
                                     $this->subscriptionPlan->subscriptionPlanTransEn ? $this->subscriptionPlan->subscriptionPlanTransEn->name : ""  
