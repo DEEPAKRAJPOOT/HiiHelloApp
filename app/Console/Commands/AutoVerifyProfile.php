@@ -45,6 +45,7 @@ class AutoVerifyProfile extends Command
     public function handle()
     {
         $message = 'No pending profile verification found !!!';
+        
 
         User::select('id','custom_id','verify_photo','verify_video','verify_photo_status','verify_video_status','verify_status')
                 ->with(['deviceToken'])
@@ -56,10 +57,12 @@ class AutoVerifyProfile extends Command
                 ->chunk(100, function($users) {
             if($users->isNotEmpty()){
                 foreach($users as $user){
+
                     $verify_status      =   'unverified';
                     $photo_verified     =   false;
                     $video_verified     =   false;
 
+                    
                     if($user->verify_photo_status == 'under_review'){
                         $verify_photo = generateURL($user->verify_photo);
 
@@ -80,6 +83,11 @@ class AutoVerifyProfile extends Command
                         }
                     }elseif($user->verify_photo_status == 'verified'){
                         //$photo_verified = true;
+                    }
+                    
+                    if($user->contactVerifyStatus() == 'verified' && $user->emailVerifyStatus() == 'verified' && $user->verify_photo_status == 'verified')
+                    {
+                        $photo_verified = true;
                     }
 
                     // if($user->verify_video_status == 'under_review'){
@@ -109,6 +117,18 @@ class AutoVerifyProfile extends Command
                     if($photo_verified){
                         $verify_status = 'verified';
                     }
+
+                    /*
+                    if($photo_verified)
+                    {
+                        echo "Profile Verified True";
+                    }
+                    else
+                    {
+                        echo "Profile Verified false";
+                    }
+                    exit;
+                    */
 
                     $user->verify_status = $verify_status;
                     $user->save();
