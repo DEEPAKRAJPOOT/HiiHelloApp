@@ -65,7 +65,8 @@ class AutoVerifyProfile extends Command
 
                         if(!empty($verify_photo)){
                             $safe_verify_photo = $this->checkImageModeration($verify_photo);
-                            if($safe_verify_photo == true){
+                            
+                            /*if($safe_verify_photo == true){
                                 $photo_verified = true;
                                 $user->verify_photo_status = 'verified';
                                 $user->photo_verified_at = \Carbon\Carbon::now();
@@ -75,9 +76,10 @@ class AutoVerifyProfile extends Command
                                 $user->photo_verified_at = NULL;
                             }
                             $user->save();
+                            */
                         }
                     }elseif($user->verify_photo_status == 'verified'){
-                        $photo_verified = true;
+                        //$photo_verified = true;
                     }
 
                     // if($user->verify_video_status == 'under_review'){
