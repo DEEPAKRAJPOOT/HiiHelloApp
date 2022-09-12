@@ -21,6 +21,10 @@
             </div>
 
             <div class="card-toolbar">
+                <div class="form-check form-switch">
+                  <input class="form-check-input getpendingprofile"  type="checkbox" role="switch" id="is_profile_under_review" >
+                  <label class="form-check-label" for="is_profile_under_review">Profile Under Review&nbsp;&nbsp;</label>
+                </div>
                 @if (in_array('delete', $permissions))
                 <a href="{{ route('admin.users.destroy', 0) }}" name="del_select" id="del_select"
                     class="btn btn-sm btn-light-danger font-weight-bolder text-uppercase mr-2 delete_all_link">
@@ -64,8 +68,11 @@
             ajax: {
                 url: "{{ route('admin.users.listing') }}",
                 data: {
-                    columnsDef: ['checkbox', 'country_code', 'contact_no', 'gender','Created At', 'active', 'action'],
+                    columnsDef: ['checkbox', 'country_code', 'contact_no', 'gender','Created At', 'active', 'action'],                    
                 },
+                data: function(data) {
+                    data.flgPendingProfile = $(".getpendingprofile").is(':checked') ? 1 : 0;
+               }                
             },
             columns: [
                 { data: 'checkbox' },
@@ -103,6 +110,10 @@
             ],
             pageLength: 10,
         });
+    });
+
+    $(document).on("click", ".getpendingprofile", function (){
+        oTable.draw();
     });
 </script>
 @endpush
