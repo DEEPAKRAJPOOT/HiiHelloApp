@@ -331,6 +331,7 @@ class UsersController extends Controller
                 }
                 return response()->json($content);
             } else {
+
                 $verify_notify = $verify_photo_notify = $verify_video_notify = false;
                 if ($user->verify_status == 'under_review') {
                     $verify_notify = true;
@@ -546,10 +547,12 @@ class UsersController extends Controller
 
                 $finalVerificationStatus = ($user->emailVerifyStatus()=='verified' && $user->contactVerifyStatus()=='verified' && $user->verify_photo_status=='verified')? true : false; 
 
-                //echo "<Br> Email : ".$user->emailVerifyStatus();
-                //echo "<Br> Email : ".$user->emailVerifyStatus();
-                //echo ("<br> Status => " . $finalVerificationStatus);
-                //exit;
+                if($user->verify_photo_status=="verified" && $finalVerificationStatus==true)
+                {
+                    $user->verify_status = "verified";
+                }
+
+
                 if ($user->save()) {
                     // Notify Profile Verification
                     if ($verify_notify && $user->verify_status != 'under_review') {
@@ -657,7 +660,8 @@ class UsersController extends Controller
             // if( $user->profile_photo ){
             //     Storage::delete($user->profile_photo);
             // }
-            $user->forceDelete();
+            //$user->forceDelete();
+            $user->delete();
             if (request()->ajax()) {
                 $content = array('status' => 200, 'message' => "User deleted successfully.", 'count' => User::all()->count());
                 return response()->json($content);
