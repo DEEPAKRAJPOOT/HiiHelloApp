@@ -47,12 +47,10 @@ class AutoVerifyProfile extends Command
         $message = 'No pending profile verification found !!!';
         
 
-        User::select('id','custom_id','verify_photo','verify_video','verify_photo_status','verify_video_status','verify_status')
+        User::select('id','custom_id','verify_photo','verify_video','verify_photo_status','verify_video_status','verify_status','contact_verified_at','verify_email_send','email_verified_at')
                 ->with(['deviceToken'])
                 ->where(function($query) {
-                    $query->where('verify_photo_status','under_review') 
-                        ->orWhere('verify_video_status','under_review') 
-                        ->orWhere('verify_status','under_review');
+                    $query->Where('verify_status','!=','verified');
                 })
                 ->chunk(100, function($users) {
             if($users->isNotEmpty()){
