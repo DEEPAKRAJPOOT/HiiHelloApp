@@ -316,6 +316,7 @@ class UsersController extends Controller
      */
     public function update(UserRequest $request, User $user)
     {
+
         try {
             DB::beginTransaction();
             if (!empty($request->action) && $request->action == 'change_status') {
@@ -543,6 +544,12 @@ class UsersController extends Controller
 
                 $user->profile_percentage = $user->calculateProfilePercent();
 
+                $finalVerificationStatus = ($user->emailVerifyStatus()=='verified' && $user->contactVerifyStatus()=='verified' && $user->verify_photo_status=='verified')? true : false; 
+
+                //echo "<Br> Email : ".$user->emailVerifyStatus();
+                //echo "<Br> Email : ".$user->emailVerifyStatus();
+                //echo ("<br> Status => " . $finalVerificationStatus);
+                //exit;
                 if ($user->save()) {
                     // Notify Profile Verification
                     if ($verify_notify && $user->verify_status != 'under_review') {
@@ -661,9 +668,28 @@ class UsersController extends Controller
         }
     }
 
+    public function bindDataToQuery($queryItem){
+        $query = $queryItem['query'];
+        $bindings = $queryItem['bindings'];
+        $arr = explode('?',$query);
+        $res = '';
+        foreach($arr as $idx => $ele){
+            if($idx < count($arr) - 1){
+                $res = $res.$ele."'".$bindings[$idx]."'";
+            }
+        }
+        $res = $res.$arr[count($arr) -1];
+        return $res;
+    }
+
     public function listing(Request $request)
     {
         extract($this->DTFilters($request->all()));
+
+        DB::enableQueryLog();
+
+        $flgPendingProfile = $request->flgPendingProfile;
+
         $records = [];
         $users = User::with('userTransDefault')->orderBy($sort_column, $sort_order);
 
@@ -682,15 +708,27 @@ class UsersController extends Controller
             });
         }
 
+        // For Pending Profile Verify
+        if($flgPendingProfile > 0) {
+            //verify_photo not null
+            $users->where('verify_photo_status', '=' , 'under_review')->where('verify_photo', '!=' , '');
+        }
+
         $count = $users->count();
 
         $records['recordsTotal'] = $count;
         $records['recordsFiltered'] = $count;
         $records['data'] = [];
 
+       
         $users = $users->offset($offset)->limit($limit)->orderBy($sort_column, $sort_order);
 
         $users = $users->get();
+
+
+        //dd(DB::getQueryLog());
+        //exit();
+
         foreach ($users as $user) {
 
             $params = [
