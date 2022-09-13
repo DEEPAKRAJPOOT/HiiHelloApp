@@ -245,8 +245,8 @@ class UserController extends Controller
         if( $this->apiValidator($request->all(), $setLatLongRequest->rules()) ) {
             try{
                 $user = $request->user();
-                $user->latitude = $request->latitude;
-                $user->longitude = $request->longitude;
+                $user->current_latitude = $request->latitude;
+                $user->current_longitude = $request->longitude;
                 $user->save(); 
                 return ([
                     'data'  =>  NULL,
