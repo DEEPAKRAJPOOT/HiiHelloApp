@@ -24,7 +24,7 @@ class EmailVerifyRequest extends FormRequest
     public function rules()
     {
         return  [
-            'email'      =>  'required|email|max:150',
+            //'email'      =>  'required|email|max:150',
         ];
     }
 }

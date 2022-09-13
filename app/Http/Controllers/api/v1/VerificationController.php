@@ -129,21 +129,34 @@ class VerificationController extends Controller
         if ($this->apiValidator($request->all(), $emailVerifyRequest->rules())) {
             $user = $request->user();
             try {
-                if (!empty($user->email) && $user->email != $request->email) {
-                    $this->response['meta']['message']  =   trans('api.invalid', ['entity' => __("email")]);
-                    $this->status = Response::HTTP_NOT_FOUND;
-                    return $this->returnResponse();
-                } else {
-                    $email_exist = User::select('id')->whereEmail($request->email)->first();
-                    if (!$email_exist) {
-                        $user->email = $request->email;
-                        $user->save();
-                    } else {
-                        $this->response['meta']['message']  =   trans('api.already_exists', ['entity' => __("email")]);
+
+                if(empty($request->email))
+                {
+                    if (empty($user->email))
+                    {                        
+                        $this->response['meta']['message']  =   trans('api.not_found', ['entity' => __("email")]);
                         $this->status = Response::HTTP_NOT_FOUND;
                         return $this->returnResponse();
-                    }
+                    }                       
                 }
+                else
+                {
+                    if (!empty($user->email) && $user->email != $request->email) {
+                        $this->response['meta']['message']  =   trans('api.invalid', ['entity' => __("email")]);
+                        $this->status = Response::HTTP_NOT_FOUND;
+                        return $this->returnResponse();
+                    } else {
+                        $email_exist = User::select('id')->whereEmail($request->email)->first();
+                        if (!$email_exist) {
+                            $user->email = $request->email;
+                            $user->save();
+                        } else {
+                            $this->response['meta']['message']  =   trans('api.already_exists', ['entity' => __("email")]);
+                            $this->status = Response::HTTP_NOT_FOUND;
+                            return $this->returnResponse();
+                        }
+                    }
+                }    
 
                 /* Send Verification */
                 $user->sendEmailVerificationNotification();
