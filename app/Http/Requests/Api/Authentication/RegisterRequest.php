@@ -38,6 +38,8 @@ class RegisterRequest extends FormRequest
             'profile_photo'     =>  'required|mimes:jpg,jpeg,png',
             'country_code'      =>  'nullable|max:100',
             'contact_no'        =>  'nullable|digits_between:6,16',
+            'latitude'          =>  'required|max:250',
+            'longitude'         =>  'required|max:250',
         ];
     }
 }

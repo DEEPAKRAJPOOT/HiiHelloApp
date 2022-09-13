@@ -28,8 +28,9 @@ class HomeController extends Controller
                 if ($is_swipe_allow) {
                     $auth_interest = $user->interest ? $user->interest : 'Both';
                     $radius = $user->discover_distance;
-                    $latitude = $user->latitude;
-                    $longitude = $user->longitude;
+                    
+                    $latitude = $user->current_latitude;
+                    $longitude = $user->current_longitude;
 
                     // $blocked    =   BlockUser::whereBlockBy($auth_id)->whereNotNull('blocked_to')->distinct()->pluck('blocked_to')->toArray();
                     $languages  =   UserSetting::whereUserId($auth_id)->whereNotNull('language_id')->distinct()->pluck('language_id')->toArray();
