@@ -568,8 +568,8 @@ class UsersController extends Controller
                         ];
 
                         // Notify
-                        $notificationJob = new NotificationJob($notification, $user);
-                        dispatch($notificationJob);
+                       /* $notificationJob = new NotificationJob($notification, $user);
+                        dispatch($notificationJob);*/
                     }
 
                     // Notify Photo
@@ -586,8 +586,8 @@ class UsersController extends Controller
                         ];
 
                         // Notify
-                        $notificationJob = new NotificationJob($notification, $user);
-                        dispatch($notificationJob);
+                        /*$notificationJob = new NotificationJob($notification, $user);
+                        dispatch($notificationJob);*/
                     }
 
                     // Notify Video

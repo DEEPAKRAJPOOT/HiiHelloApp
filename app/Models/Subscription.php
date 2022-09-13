@@ -44,8 +44,8 @@ class Subscription extends Model
             ];
 
             // Notify
-            $notificationJob = new NotificationJob($notification, $this->user);
-            dispatch($notificationJob);
+           /* $notificationJob = new NotificationJob($notification, $this->user);
+            dispatch($notificationJob);*/
         }
     }
 

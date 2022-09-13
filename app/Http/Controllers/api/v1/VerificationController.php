@@ -173,8 +173,8 @@ class VerificationController extends Controller
                 ];
 
                 // Notify
-                $notificationJob = new NotificationJob($notification, $user);
-                dispatch($notificationJob);
+               /* $notificationJob = new NotificationJob($notification, $user);
+                dispatch($notificationJob);*/
 
                 $this->response['meta']['message'] = trans('api.link_not_send');
                 $this->storeErrorLog($e, 'verify_email');
