@@ -146,6 +146,9 @@ class AuthenticationController extends Controller
                     $user->is_media_checked = 'n';
                 }
 
+                $user->latitude = $request->latitude;
+                $user->longitude = $request->longitude;
+
                 // Set Default Discover
                 $user->discover_distance    =   config('utility.profile.detail.discover_distance');
                 $user->discover_start_age   =   config('utility.profile.detail.discover_start_age');

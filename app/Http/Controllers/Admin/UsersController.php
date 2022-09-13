@@ -660,8 +660,8 @@ class UsersController extends Controller
             // if( $user->profile_photo ){
             //     Storage::delete($user->profile_photo);
             // }
-            //$user->forceDelete();
-            $user->delete();
+            $user->forceDelete();
+            //$user->delete();
             if (request()->ajax()) {
                 $content = array('status' => 200, 'message' => "User deleted successfully.", 'count' => User::all()->count());
                 return response()->json($content);
