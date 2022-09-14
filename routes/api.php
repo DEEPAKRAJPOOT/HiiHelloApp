@@ -32,6 +32,11 @@ Route::group(['namespace' => 'v1', 'prefix' => 'v1'], function () {
     Route::post('get/personalities',[GeneralController::class,'getPersonalities'])->name('api.get-personalities');
     Route::post('get/faqs',[GeneralController::class,'getFaqs'])->name('api.get-faqs');
 
+
+    Route::post('set/check-location',[GeneralController::class,'setLocation'])->name('api.check-location');
+
+
+
     // Route::post('get/languages', [GeneralController::class,'getLanguages'])->name('api.get-languages');
 
     // General Profile Listing
