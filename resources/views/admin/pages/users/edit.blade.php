@@ -912,15 +912,22 @@
                 <div class="form-group">
                     <label for="verify_status">Active Subscription Plan:</label>   
                     <input type="hidden" name="user_active_plan" id="user_active_plan" value="{{ $user_active_plan_id }} ">                 
-                    <select type="text"class="form-control" 
+                    <select  @if($user->gender=="Female") disabled @endif type="text"class="form-control" 
                     id="subcription_plan" name="subcription_plan" value="@if(old('subcription_plan')){{ old('subcription_plan') }}@else{{ $user_active_plan_id }}@endif"
-                    placeholder="Select Subcription Plan" spellcheck="false" autocapitalize="sentences" tabindex="0" autofocus />
-                            <option value="0" selected>No Plan</option>
-                             @foreach($subscription_plans as $plan)
-                            <option  <?php if($user_active_plan_id==$plan->id){ echo " selected=selected"; }  ?> value="{{ $plan->id }}">{{ $plan->name }}</option>                            
-                            @endforeach                       
+                    placeholder="Select Subcription Plan" spellcheck="false" autocapitalize="sentences" tabindex="0" autofocus />                           
+                        
+                        @if($user->gender=="Male")
+                                <option value="0" selected>No Plan</option>
+                        @elseif($user->gender=="Female")                   
+                                <option value="-1" selected>No Plan</option>          
+                        @endif                                    
+                        @foreach($subscription_plans as $plan)
+                        <option  <?php if($user_active_plan_id==$plan->id){ echo " selected=selected"; }  ?> value="{{ $plan->id }}">{{ $plan->name }}</option>
+                        @endforeach                       
+                          
                     </select>                    
                 </div>
+                 <label for="video_suggestion">Paid from : {{ $plan_paid_from }} </label>
             </div>
             <div class="card-footer">
                 <button type="submit" class="btn btn-primary mr-2">Update {{ $custom_title }}</button>
