@@ -316,16 +316,18 @@ class UsersController extends Controller
         //echo "<br> User Is Subscribe :".$user->is_subscribed;
         //echo "<br> User Is Subscribe End Date:".$user->subscription_end_date;
         $user_active_plan_id = 0;
-        if($user->is_subscribed=='y' && $user->subscription_end_date > \Carbon\Carbon::today()->format('Y-m-d'))
+        $plan_paid_from = "";
+        if($user->is_subscribed=='y')
         {   
             $user_active_plan_id = isset($user->subscription->plan_id) ?  $user->subscription->plan_id : 0;
+            $plan_paid_from = $user->subscription->payment_type;
         }
-        //CHNAGE USER SUBCRIPTION PLAN 14:SEP END        
+        //CHNAGE USER SUBCRIPTION PLAN 14:SEP END    
 
         //user interest
         $user_interest = UserInterest::where('user_id', $user->id)->pluck('interest_id')->toArray();
         $user_personality = UserPersonality::where('user_id', $user->id)->pluck('personality_id')->toArray();
-        return view('admin.pages.users.edit', compact('user', 'user_personality', 'personalities', 'user_interest', 'interests', 'attributes', 'countries', 'locations', 'languages','subscription_plans','user_active_plan_id'))->with(['custom_title' => 'Users']);
+        return view('admin.pages.users.edit', compact('user', 'user_personality', 'personalities', 'user_interest', 'interests', 'attributes', 'countries', 'locations', 'languages','subscription_plans','user_active_plan_id','plan_paid_from'))->with(['custom_title' => 'Users']);
     }
 
     /**
@@ -354,16 +356,17 @@ class UsersController extends Controller
             } else {
 
                 //UPDATE SUBSCRIPTION FOR USER START
-                if($request->user_active_plan != $request->subcription_plan)
+                if(isset($request->subcription_plan) && ($request->user_active_plan != $request->subcription_plan))
                 {
 
-                    if($request->subcription_plan==0)
-                    {
+                    if(intval($request->subcription_plan)==0)
+                    {                                 
                             $user->is_subscribed='n';
                             $user->subscription_end_date= NULL;                             
                     }
                     else
                     {
+                     
                             $plan = SubscriptionPlan::whereId($request->subcription_plan)->whereIsActive('y')->firstOrFail();                   
 
                             $new_subscription_start_date = \Carbon\Carbon::today()->format('Y-m-d');
