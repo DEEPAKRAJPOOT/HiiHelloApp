@@ -893,11 +893,40 @@
                         </span>
                     @endif
                 </div>
+            </div>            
+    </div>
+
+     <br><br>
+    <div class="card card-custom">
+        <div class="card-header">
+            <div class="card-title">
+                <span class="card-icon">
+                    <i class="fas fa-rupee-sign text-primary"></i>
+                </span>
+                <h3 class="card-label text-uppercase">Subscription Details</h3>
+            </div>
+        </div>
+            <div class="card-body">
+
+                {{-- Subscriptoin Plan Status --}}
+                <div class="form-group">
+                    <label for="verify_status">Active Subscription Plan:</label>   
+                    <input type="hidden" name="user_active_plan" id="user_active_plan" value="{{ $user_active_plan_id }} ">                 
+                    <select type="text"class="form-control" 
+                    id="subcription_plan" name="subcription_plan" value="@if(old('subcription_plan')){{ old('subcription_plan') }}@else{{ $user_active_plan_id }}@endif"
+                    placeholder="Select Subcription Plan" spellcheck="false" autocapitalize="sentences" tabindex="0" autofocus />
+                            <option value="0" selected>No Plan</option>
+                             @foreach($subscription_plans as $plan)
+                            <option  <?php if($user_active_plan_id==$plan->id){ echo " selected=selected"; }  ?> value="{{ $plan->id }}">{{ $plan->name }}</option>                            
+                            @endforeach                       
+                    </select>                    
+                </div>
             </div>
             <div class="card-footer">
                 <button type="submit" class="btn btn-primary mr-2">Update {{ $custom_title }}</button>
                 <a href="{{ route('admin.users.index') }}" class="btn btn-secondary">Cancel</a>
             </div>
+
         </form>
         <!--end::Form-->
     </div>
