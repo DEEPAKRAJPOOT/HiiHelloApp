@@ -13,6 +13,11 @@ use App\Models\UserPersonality;
 use App\Models\Language;
 use App\Models\Location;
 use App\Models\Country;
+use App\Models\SubscriptionPlanTranslation;
+use App\Models\SubscriptionPlan;
+use App\Models\Subscription;
+
+
 use Exception;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
@@ -292,7 +297,7 @@ class UsersController extends Controller
      */
     public function edit(User $user)
     {
-        $user = User::with('userTransDefault')->whereId($user->id)->firstOrFail();
+        $user = User::with('userTransDefault','subscription.subscriptionPlan')->whereId($user->id)->firstOrFail();
         $personalities = Personality::with('personalityTransDefault')->where('is_active', 'y')->get();
         $attributes = ProfileDetail::with(['profileDetailTransDefault'])->where(['is_active' => 'y'])->get();
         $interests = Interest::with(['subInterests.interestTransDefault', 'subInterests.subInterests.interestTransDefault'])
@@ -301,10 +306,26 @@ class UsersController extends Controller
         $locations = Location::with(['locationTransDefault'])->where(['is_active' => 'y'])->get();
         $languages = Language::where(['is_active' => 'y'])->get();
 
+
+        //CHNAGE USER SUBCRIPTION PLAN 14:SEP START
+
+        $subscription_plans = SubscriptionPlanTranslation::where(['locale' => 'en'])->get();
+        //is_subscribed
+        //subscription_end_date
+        //dd($user->subscription->plan_id);
+        //echo "<br> User Is Subscribe :".$user->is_subscribed;
+        //echo "<br> User Is Subscribe End Date:".$user->subscription_end_date;
+        $user_active_plan_id = 0;
+        if($user->is_subscribed=='y' && $user->subscription_end_date > \Carbon\Carbon::today()->format('Y-m-d'))
+        {   
+            $user_active_plan_id = isset($user->subscription->plan_id) ?  $user->subscription->plan_id : 0;
+        }
+        //CHNAGE USER SUBCRIPTION PLAN 14:SEP END        
+
         //user interest
         $user_interest = UserInterest::where('user_id', $user->id)->pluck('interest_id')->toArray();
         $user_personality = UserPersonality::where('user_id', $user->id)->pluck('personality_id')->toArray();
-        return view('admin.pages.users.edit', compact('user', 'user_personality', 'personalities', 'user_interest', 'interests', 'attributes', 'countries', 'locations', 'languages'))->with(['custom_title' => 'Users']);
+        return view('admin.pages.users.edit', compact('user', 'user_personality', 'personalities', 'user_interest', 'interests', 'attributes', 'countries', 'locations', 'languages','subscription_plans','user_active_plan_id'))->with(['custom_title' => 'Users']);
     }
 
     /**
@@ -331,6 +352,44 @@ class UsersController extends Controller
                 }
                 return response()->json($content);
             } else {
+
+                //UPDATE SUBSCRIPTION FOR USER START
+                if($request->user_active_plan != $request->subcription_plan)
+                {
+
+                    if($request->subcription_plan==0)
+                    {
+                            $user->is_subscribed='n';
+                            $user->subscription_end_date= NULL;                             
+                    }
+                    else
+                    {
+                            $plan = SubscriptionPlan::whereId($request->subcription_plan)->whereIsActive('y')->firstOrFail();                   
+
+                            $new_subscription_start_date = \Carbon\Carbon::today()->format('Y-m-d');
+                            $subscription_end_date = strtotime("+".$plan->months." months", strtotime($new_subscription_start_date)); // returns timestamp
+                            $subscription_end_date = date('Y-m-d',$subscription_end_date); // formatted version
+                            
+                            $subscription =  Subscription::create([
+                                'custom_id'                 =>  getUniqueString('subscriptions'),
+                                'user_id'                   =>  $user->id ?? NULL,
+                                'plan_id'                   =>  $plan->id ?? NULL,
+                                'email'                     =>  $user->email,
+                                'months'                    =>  $plan->months,
+                                'amount'                    =>  0,
+                                'start_date'                =>  $new_subscription_start_date,
+                                'end_date'                  =>  $subscription_end_date,
+                                'payment_date'              =>  now(),
+                                'payment_type'              =>  'admin',
+                                'receipt_data'              =>  "",
+                                'status'                    =>  "active",
+                            ]);
+
+                            $user->is_subscribed='y';
+                            $user->subscription_end_date=$subscription_end_date;                    
+                     }       
+                }
+                //UPDATE SUBSCRIPTION FOR USER END
 
                 $verify_notify = $verify_photo_notify = $verify_video_notify = false;
                 if ($user->verify_status == 'under_review') {
