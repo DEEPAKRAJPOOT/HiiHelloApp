@@ -7,7 +7,7 @@ use Illuminate\Http\{Request, Response};
 use Illuminate\Support\Facades\{Storage};
 use Illuminate\Database\Eloquent\{ModelNotFoundException};
 use App\Http\Resources\v1\{LanguageResource, CmsResource, CountryResource, LocationResource, InterestResource, FaqResource, ProfileDetailResource, PersonalityResource, LocationTransResource, LocationSearchResource, DeviceTokenResource};
-use App\Http\Requests\Api\General\{PaginationRequest, LocationRequest, ProfileDetailRequest, InterestRequest};
+use App\Http\Requests\Api\General\{PaginationRequest, LocationRequest, ProfileDetailRequest, InterestRequest,CheckLocationRequest};
 use App\Http\Requests\Api\User\{AddDeviceTokenRequest, GetDeviceTokenRequest};
 use App\Models\{User, Language, CmsPage, Country, Location, Interest, Faq, DeviceToken, ProfileDetail, AppDetail, Personality, LocationTranslation};
 use Illuminate\Support\Facades\Redis;
@@ -670,6 +670,82 @@ class GeneralController extends Controller
                 $this->response['meta']['message'] = trans('api.went_wrong');
             }
         }
+        return $this->returnResponse();
+    }
+
+    public function setLocation(Request $request)
+    {
+        
+        $locationRequest = new CheckLocationRequest();
+        if ($this->apiValidator($request->all(), $locationRequest->rules())) {    
+
+             try {
+               
+                $location_name = $request->location; 
+                $lang = 'en';//app()->getLocale();
+
+                $locations = Location::select(                    
+                    'locations.custom_id',
+                    'locations.is_active',
+                    'location_translations.name as location_name'
+                )
+                    ->join('location_translations', 'locations.id', '=', 'location_translations.location_id')
+                    ->where('location_translations.locale', $lang)
+                    ->where('location_translations.name', 'like', "{$location_name}%")
+                    ->orderBy('location_translations.name');
+                $locations = $locations->get();
+                
+                if ($locations->isEmpty())
+                {                    
+                    $data = $this->getLangStoreData($request);
+                    $data['custom_id'] = getUniqueString('locations');
+                    $data['name'] = $location_name;
+                    Location::create($data);
+
+                     $locations = Location::select(                    
+                        'locations.custom_id',
+                        'locations.is_active',
+                        'location_translations.name as location_name'
+                     )
+                        ->join('location_translations', 'locations.id', '=', 'location_translations.location_id')
+                        ->where('location_translations.locale', $lang)
+                        ->where('location_translations.name', 'like', "{$location_name}%")
+                        ->orderBy('location_translations.name');
+                        $locations = $locations->get();
+
+                }
+
+
+
+                if ($locations->isNotEmpty()) {
+                    return (LocationSearchResource::collection($locations))->additional([
+                        'meta' => [                            
+                            'url'       =>  url()->current(),
+                            'api'       =>  $this->getVersion(),
+                            'language'  =>  app()->getLocale(),
+                            'message'   =>  trans('api.list', ['entity' => __('Locations')]),
+                        ]
+                    ]);
+                } else {
+                    $this->response['meta']['message']  =   trans('api.not_found', ['entity' => __('Locations')]);
+                    $this->status = Response::HTTP_NOT_FOUND;
+                }
+            } catch (ModelNotFoundException $exception) {
+                switch ($exception->getModel()) {
+                    case 'App\Models\Location':
+                        $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("Locations")]);
+                        break;
+                    default:
+                        $this->response['meta']['message'] = trans('api.went_wrong');
+                        break;
+                };
+            } catch (\Exception $e) {
+                $this->storeErrorLog($e, 'get_locations');
+            }
+      
+
+        }
+            
         return $this->returnResponse();
     }
 
