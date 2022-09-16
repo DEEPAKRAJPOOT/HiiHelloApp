@@ -98,6 +98,9 @@ Route::group(['namespace' => 'v1', 'prefix' => 'v1', 'middleware' => 'auth:sanct
     Route::post('match/new-matches',[MatchController::class,'getNewMatches'])->name('api.new-matches');
     Route::post('match/remove-match',[MatchController::class,'removeMatch'])->name('api.remove-match');
 
+    //UPDATE IS-CONNECTED FOR SYSTEM MATCH TABLE.
+    Route::post('match/system-match-connected',[MatchController::class,'setIsConnectedForSystemMatch'])->name('api.system-match-connected');
+
     // Search Match/Chat
     // Route::post('search/match-chat',[SearchController::class,'searchMatchAndChat'])->name('api.search.match-chat');
 
