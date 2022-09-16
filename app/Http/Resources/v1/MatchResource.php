@@ -20,9 +20,12 @@ class MatchResource extends JsonResource
                 'id'            =>  $this->custom_id ?? "",
                 'full_name'     =>  $this->userTranslation ? $this->userTranslation->full_name : "",
                 'profile_photo' =>  generateURL($this->profile_photo) ?? "",
+                'is_system_generated' =>  $this->is_system_generated,
+                'system_match_user_key' =>  $this->system_match_user_key,
                 // 'id'            =>  $this->user_custom_id ?? "",
                 // 'full_name'     =>  $this->user_full_name ?? "",
                 // 'profile_photo' =>  generateURL($this->user_profile_photo) ?? "",
+
             ],
             'created_at'    =>  $this->created_at ?? "",
         ];
