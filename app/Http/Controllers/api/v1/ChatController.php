@@ -191,7 +191,7 @@ class ChatController extends Controller
                 } else {
                     $this->response['meta']['remaining_time']  = $callLog ? $callLog->remaining_time : config('utility.twillio.allow_call_time');
                     $this->response['meta']['message']  =   trans('api.not_found', ['entity' => __('Chat history')]);
-                    $this->status = Response::HTTP_NOT_FOUND;
+                    $this->status = Response::HTTP_OK;
                 }
             } catch (ModelNotFoundException $exception) {
                 switch ($exception->getModel()) {

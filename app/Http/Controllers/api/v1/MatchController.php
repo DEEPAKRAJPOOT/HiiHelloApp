@@ -23,10 +23,13 @@ class MatchController extends Controller
      */
     public function getNewMatches(Request $request)
     {
+        //return $request; exit;
         $getMatchRequest = new GetMatchRequest();
         if ($this->apiValidator($request->all(), $getMatchRequest->rules())) {
             try {
-                $user = $request->user();
+               
+                 $user = $request->user(); 
+              
 
                 // Match Not Allowed
                 if(!$user->isNewMatchAllow()){
@@ -41,7 +44,7 @@ class MatchController extends Controller
                 $user->save();
 
                 // Config Details
-                $backup_logic       =   config('utility.profile.match.backup_logic') ?? true;
+                $backup_logic       =   config('utility.profile.match.backup_logic') ?? true; 
                 $match_percentage   =   config('utility.profile.match.match_percentage') ?? 20;
                 $age_min_diff       =   config('utility.profile.match.age_min_diff') ?? 1;
                 $age_max_diff       =   config('utility.profile.match.age_max_diff') ?? 1;
