@@ -102,9 +102,9 @@ class MatchController extends Controller
                 if (count($restricted_ids) > 0) {
                     $matches = $matches->whereNotIn('id', $restricted_ids);
                 }
-                if($likes_count > 0){
-                   $matches = $matches->whereIn('custom_id', $likes);       // Someone likes me and I like him/her 
-                }
+                
+                $matches = $matches->whereIn('custom_id', $likes);       // Someone likes me and I like him/her - changed - 16-09
+                
 
                 $matches =  $matches->where(function ($query)
                     use ($user, $age_from, $age_to, $match_percentage, $interests, $personalities) {
