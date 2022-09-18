@@ -42,7 +42,7 @@ class MyProfile extends JsonResource
                 'community'             =>  new ProfileDetailResource($this->community),
             ],
             'my_basics'         =>  [
-                'personalities'         =>  UserPersonalityResource::collection($this->personalities),
+                //'personalities'         =>  UserPersonalityResource::collection($this->personalities),
                 'education'             =>  new ProfileDetailResource($this->education),
                 'university_college'    =>  new ProfileDetailResource($this->university),
                 'profession'            =>  new ProfileDetailResource($this->profession),
