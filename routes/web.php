@@ -26,7 +26,7 @@ Route::get('login', 'AdminAuth\LoginController@showLoginForm')->name('login');
 Route::get('/email/verify/{id}/{hash}', function (Request $request, $id) {
     $user = User::findOrFail($id);
     $user->markEmailAsVerified();    
-    return Redirect::to('https://www.hihelloapp.com/');
+    return Redirect::to('https://www.hihelloapp.com/email-verify');
     //return redirect(route('home'));
 })->name('verification.verify');
 
