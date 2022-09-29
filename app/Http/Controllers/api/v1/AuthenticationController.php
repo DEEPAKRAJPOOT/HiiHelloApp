@@ -299,7 +299,7 @@ class AuthenticationController extends Controller
                 $account_del = false;
                 $traslate_data = [];
 
-                if (!empty($request->email)) {
+                /* if (!empty($request->email)) {
                     $deleted = User::onlyTrashed()->pluck('email')->toArray();
                     if (in_array($request->email, $deleted)) {
                         $account_del = true;
@@ -315,7 +315,7 @@ class AuthenticationController extends Controller
                     $this->response['meta']['message']  =  trans('api.account_deleted');
                     $this->status = Response::HTTP_FORBIDDEN;
                     return $this->returnResponse();
-                }
+                } */
 
                 $user = User::query();
                 if (!empty($request->type)) {
