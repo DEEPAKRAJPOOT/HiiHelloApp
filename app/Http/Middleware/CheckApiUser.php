@@ -7,6 +7,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 class CheckApiUser
 {
+    private $version = "v.1.0";
+    public function getVersion(){ return $this->version; }
+
     /**
      * Handle an incoming request.
      *
@@ -22,7 +25,18 @@ class CheckApiUser
             if($user->is_active == 'y'){
                 return $next($request);
             }
-            return response()->json(['msg'=>'You are blocked. please contact administrative', 'status' =>'0']);
+            return response()->json([
+                // 'data'  =>  [
+                //     'max_date'  =>  array(),
+                //     'min_date'  =>  $common_age->min_date ?? NULL,
+                // ],
+                'meta' => [
+                    'api'       =>  $this->getVersion(),
+                    'url'       =>  url()->current(),
+                    'language'  =>  app()->getLocale(),
+                    'message'   =>  trans('api.in_active'),
+                    'is_ban'    => true
+                ] ]);
         }
         return response()->json(['msg'=>'Login data not found.', 'status' =>'0']);
     }
