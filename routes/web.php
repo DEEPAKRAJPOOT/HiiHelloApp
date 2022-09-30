@@ -34,6 +34,7 @@ Route::get('/email/verify/{id}/{hash}', function (Request $request, $id) {
 Route::post('profile-details/csv-upload','Admin\ProfileDetailController@csvUpload')->name('admin.profile-details.csv-upload');
 Route::get('profile-details/sample-csv-download','Admin\ProfileDetailController@sampleCsvDownload')->name('admin.profile-details.sample-csv-download');
 Route::get('users/csv-download', 'Admin\UsersController@csvDownload')->name('admin.users.csv-download');
+Route::get('users/csv-download-unde-review', 'Admin\UsersController@csvDownloadUndeReview')->name('admin.users.csv-download-unde-review');
 Route::get('subscription-lists/csv-download', 'Admin\SubscriptionListController@csvDownload')->name('admin.subscriptions.csv-download');
 Route::get('transaction/csv-download', 'Admin\TrasactionListController@csvDownload')->name('admin.transactions.csv-download');
 Route::get('profile-report/csv-download', 'Admin\ProfileReportController@csvDownload')->name('admin.profile-report.csv-download');

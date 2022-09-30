@@ -74,6 +74,7 @@ class Kernel extends HttpKernel
         'revalidate' => \App\Http\Middleware\RevalidateBackHistory::class,
         'check_subscriptions' => \App\Http\Middleware\CheckSubscriptions::class,
         'change_language' => \App\Http\Middleware\ChangeLanguage::class,
+        'checkapiuser' => \App\Http\Middleware\CheckApiUser::class,
         
     ];
 }
