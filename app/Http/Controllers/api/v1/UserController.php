@@ -57,14 +57,17 @@ class UserController extends Controller
                             ->additional([
                             'meta' => [
                                 'message'  =>  trans('api.success', ['entity' => __("User")]),
+                                'is_ban'    =>  false,
                             ] ]);
             } catch(ModelNotFoundException $exception) {                
                 switch ($exception->getModel()) {
                     case 'App\Models\User':
                         $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("User")]);
+                        $this->response['meta']['is_ban'] = false;
                         break;
                     default:
                         $this->response['meta']['message'] = trans('api.went_wrong');
+                        $this->response['meta']['is_ban'] = false;
                         break;
                 };
             } catch (\Exception $e) {
@@ -105,6 +108,7 @@ class UserController extends Controller
                             'url'       =>  url()->current(),
                             'api'       =>  $this->getVersion(),
                             'language'  =>  app()->getLocale(),
+                            'is_ban'    =>  false,
                             'message'   =>  trans('api.report.success'),
                     ] ]);
                 }else{
@@ -115,9 +119,11 @@ class UserController extends Controller
                 switch ($exception->getModel()) {
                     case 'App\Models\User':
                         $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("User")]);
+                        $this->response['meta']['is_ban'] = false;
                         break;
                     default:
                         $this->response['meta']['message'] = trans('api.went_wrong');
+                        $this->response['meta']['is_ban'] = false;
                         break;
                 };
             } catch (\Exception $e) {
@@ -188,14 +194,17 @@ class UserController extends Controller
             return (new MyProfile($user))
                 ->additional(['meta' => [
                     'message'   =>  trans('api.success', ['entity' => __("Profile")]),
+                    'is_ban'    =>  false,
                 ] ]);
         } catch(ModelNotFoundException $exception) {                
             switch ($exception->getModel()) {
                 case 'App\Models\User':
                     $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("Users")]);
+                    $this->response['meta']['is_ban'] = false;
                     break;
                 default:
                     $this->response['meta']['message'] = trans('api.went_wrong');
+                    $this->response['meta']['is_ban'] = false;
                     break;
             };
         } catch (\Exception $e) {
@@ -220,15 +229,18 @@ class UserController extends Controller
                         'url'       =>  url()->current(),
                         'api'       =>  $this->getVersion(),
                         'language'  =>  app()->getLocale(),
+                        'is_ban'    =>  false,
                         'message'   =>  trans('api.delete', ['entity' => __('Your Account')]),
                     ] ]);
             } catch(ModelNotFoundException $exception) {                
                 switch ($exception->getModel()) {
                     case 'App\Models\User':
                         $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("User")]);
+                        $this->response['meta']['is_ban'] = false;
                         break;
                     default:
                         $this->response['meta']['message'] = trans('api.went_wrong');
+                        $this->response['meta']['is_ban'] = false;
                         break;
                 };
             } catch (\Exception $e) {
@@ -254,15 +266,18 @@ class UserController extends Controller
                         'url'       =>  url()->current(),
                         'api'       =>  $this->getVersion(),
                         'language'  =>  app()->getLocale(),
+                        'is_ban'    =>  false,
                         'message'   =>  trans('api.add', ['entity' => __('Current location')]),
                     ] ]);
             } catch(ModelNotFoundException $exception) {                
                 switch ($exception->getModel()) {
                     case 'App\Models\User':
                         $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("User")]);
+                        $this->response['meta']['is_ban'] = false;
                         break;
                     default:
                         $this->response['meta']['message'] = trans('api.went_wrong');
+                        $this->response['meta']['is_ban'] = false;
                         break;
                 };
             } catch (\Exception $e) {
@@ -283,13 +298,16 @@ class UserController extends Controller
             
             $this->status = Response::HTTP_OK;
             $this->response['meta']['message']  =   trans('api.update',['entity' => __("Notification")]); 
+            $this->response['meta']['is_ban'] = false;
         } catch(ModelNotFoundException $exception) {
             switch ($exception->getModel()) {
                 case 'App\Models\NotificationStatus':
                     $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("Notification")]);
+                    $this->response['meta']['is_ban'] = false;
                     break;
                 default:
                     $this->response['meta']['message'] = trans('api.went_wrong');
+                    $this->response['meta']['is_ban'] = false;
                     break;
             };
         }

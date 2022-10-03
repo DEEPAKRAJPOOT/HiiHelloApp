@@ -57,10 +57,12 @@ class TwillioController extends Controller
                     ->additional([
                         'meta' => [
                             'message'   =>  trans('api.list', ['entity' => __("Twilio Access Token")]),
+                            'is_ban'    =>  false,
                         ]
                     ]);
             } catch (\Exception $e) {
                 $this->response['meta']['message'] = trans('api.went_wrong');
+                $this->response['meta']['is_ban'] = false;
                 $this->status = Response::HTTP_NOT_FOUND;
                 $this->storeErrorLog($e, 'twilio_create_aceess_token');
             }
@@ -226,15 +228,18 @@ class TwillioController extends Controller
                     ->additional([
                         'meta' => [
                             'message'   =>  trans('api.success', ['entity' => __("Call log")]),
+                            'is_ban'    =>  false,
                         ]
                     ]);
             } catch (ModelNotFoundException $exception) {
                 switch ($exception->getModel()) {
                     case 'App\Models\ChatRoom':
                         $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("Chat room")]);
+                        $this->response['meta']['is_ban'] = false;
                         break;
                     default:
                         $this->response['meta']['message'] = trans('api.went_wrong');
+                        $this->response['meta']['is_ban'] = false;
                         break;
                 };
             } catch (\Exception $e) {
@@ -295,18 +300,22 @@ class TwillioController extends Controller
                     ->additional([
                         'meta' => [
                             'message'   =>  trans('api.add', ['entity' => __("Call log")]),
+                            'is_ban'    =>  false,
                         ]
                     ]);
             } catch (ModelNotFoundException $exception) {
                 switch ($exception->getModel()) {
                     case 'App\Models\ChatRoom':
                         $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("Chat room")]);
+                        $this->response['meta']['is_ban'] = false;
                         break;
                     case 'App\Models\CallLog':
                         $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("Call log")]);
+                        $this->response['meta']['is_ban'] = false;
                         break;
                     default:
                         $this->response['meta']['message'] = trans('api.went_wrong');
+                        $this->response['meta']['is_ban'] = false;
                         break;
                 };
             } catch (\Exception $e) {
@@ -346,15 +355,18 @@ class TwillioController extends Controller
                     ->additional([
                         'meta' => [
                             'message'   =>  trans('api.list', ['entity' => __("User")]),
+                            'is_ban'    =>  false,
                         ]
                     ]);
             } catch (ModelNotFoundException $exception) {
                 switch ($exception->getModel()) {
                     case 'App\Models\User':
                         $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("User")]);
+                        $this->response['meta']['is_ban'] = false;
                         break;
                     default:
                         $this->response['meta']['message'] = trans('api.went_wrong');
+                        $this->response['meta']['is_ban'] = false;
                         break;
                 };
             } catch (\Exception $e) {

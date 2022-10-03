@@ -105,6 +105,7 @@ class FilterController extends Controller
                                 'url'       =>  url()->current(),
                                 'api'       =>  $this->getVersion(),
                                 'language'  =>  app()->getLocale(),
+                                'is_ban'    =>  false,
                                 'message'   =>  trans('api.list', ['entity' => __('Users')]),
                             ]
                         ]);
@@ -116,18 +117,22 @@ class FilterController extends Controller
                 } else {
                     $this->response['meta']['is_swipe_allow'] = $is_swipe_allow;
                     $this->response['meta']['message']  =   trans('api.swipe_over');
+                    $this->response['meta']['is_ban'] = false;
                     $this->status = Response::HTTP_FORBIDDEN;
                 }
             } catch (ModelNotFoundException $exception) {
                 switch ($exception->getModel()) {
                     case 'App\Models\User':
                         $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("Users")]);
+                        $this->response['meta']['is_ban'] = false;
                         break;
                     case 'App\Models\Location':
                         $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("Location")]);
+                        $this->response['meta']['is_ban'] = false;
                         break;
                     default:
                         $this->response['meta']['message'] = trans('api.went_wrong');
+                        $this->response['meta']['is_ban'] = false;
                         break;
                 };
             } catch (\Exception $e) {

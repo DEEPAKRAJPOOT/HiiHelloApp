@@ -144,20 +144,25 @@ class ProfileController extends Controller
                 return (new UserFullProfile($user))
                     ->additional(['meta'  => [
                         'message'       =>  trans('api.profile_setuped'),
+                        'is_ban'        =>  false,
                     ]]);
             } catch (ModelNotFoundException $exception) {
                 switch ($exception->getModel()) {
                     case 'App\Models\Personality':
                         $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("Personality details")]);
+                        $this->response['meta']['is_ban'] = false;
                         break;
                     case 'App\Models\ProfileDetail':
                         $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("Profile details")]);
+                        $this->response['meta']['is_ban'] = false;
                         break;
                     case 'App\Models\User':
                         $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("User")]);
+                        $this->response['meta']['is_ban'] = false;
                         break;
                     default:
                         $this->response['meta']['message'] = trans('api.went_wrong');
+                        $this->response['meta']['is_ban'] = false;
                         break;
                 };
             } catch (\Exception $e) {
@@ -230,6 +235,7 @@ class ProfileController extends Controller
                         'url'       =>  url()->current(),
                         'api'       =>  $this->getVersion(),
                         'language'  =>  app()->getLocale(),
+                        'is_ban'    =>  false,
                         'message'   =>  trans('api.profile_setuped'),
                     ]
                 ]);
@@ -237,15 +243,19 @@ class ProfileController extends Controller
                 switch ($exception->getModel()) {
                     case 'App\Models\Interest':
                         $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("Interest details")]);
+                        $this->response['meta']['is_ban'] = false;
                         break;
                     case 'App\Models\UserInterest':
                         $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("User interest")]);
+                        $this->response['meta']['is_ban'] = false;
                         break;
                     case 'App\Models\User':
                         $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("User")]);
+                        $this->response['meta']['is_ban'] = false;
                         break;
                     default:
                         $this->response['meta']['message'] = trans('api.went_wrong');
+                        $this->response['meta']['is_ban'] = false;
                         break;
                 };
             } catch (\Exception $e) {
@@ -399,17 +409,21 @@ class ProfileController extends Controller
                 return (new MediaResource($user))
                     ->additional(['meta'  => [
                         'message'       =>  trans('api.profile_setuped'),
+                        'is_ban'        =>  false,
                     ]]);
             } catch (ModelNotFoundException $exception) {
                 switch ($exception->getModel()) {
                     case 'App\Models\UserDetail':
                         $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("User details")]);
+                        $this->response['meta']['is_ban'] = false;
                         break;
                     case 'App\Models\User':
                         $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("User")]);
+                        $this->response['meta']['is_ban'] = false;
                         break;
                     default:
                         $this->response['meta']['message'] = trans('api.went_wrong');
+                        $this->response['meta']['is_ban'] = false;
                         break;
                 };
             } catch (\Exception $e) {
