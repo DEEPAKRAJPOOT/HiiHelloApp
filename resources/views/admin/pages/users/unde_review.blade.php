@@ -21,32 +21,10 @@
             </div>
 
             <div class="card-toolbar">
-                <div class="form-check form-switch">
-                  <input class="form-check-input getpendingprofile"  type="checkbox" role="switch" id="is_profile_under_review" >
-                  <label class="form-check-label" for="is_profile_under_review">Profile Under Review&nbsp;&nbsp;</label>
-                </div>
-                @if (in_array('delete', $permissions))
-                <a href="{{ route('admin.users.destroy', 0) }}" name="del_select" id="del_select"
-                    class="btn btn-sm btn-light-danger font-weight-bolder text-uppercase mr-2 delete_all_link">
-                    <i class="far fa-trash-alt"></i> Delete Selected
-                </a>
-                @endif
-                @if (in_array('add', $permissions))
-                <a href="{{ route('admin.users.create') }}"
-                    class="btn btn-sm btn-primary font-weight-bolder text-uppercase">
-                    <i class="fas fa-plus"></i>
-                    Add {{ $custom_title }}
-                </a>
-                @endif
-                <a href="{{ route('admin.users.csv-download') }}"
+                <a href="{{ route('admin.users.csv-download-unde-review') }}"
                     class="btn btn-sm btn-primary font-weight-bolder text-uppercase ml-2">
                     <i class="fas fa-arrow-down"></i>
                     Download CSV
-                </a>
-                <a href="{{ route('admin.users.unde-review') }}"
-                    class="btn btn-sm btn-warning font-weight-bolder text-uppercase ml-2">
-                    <i class="menu-icon icon-users"></i>
-                    Profile Under Review
                 </a>
             </div>
         </div>
@@ -76,11 +54,10 @@
                     columnsDef: ['checkbox', 'country_code', 'contact_no', 'gender','Created At', 'active', 'action'],                    
                 },
                 data: function(data) {
-                    data.flgPendingProfile = $(".getpendingprofile").is(':checked') ? 1 : 0;
+                    data.flgPendingProfile = 1;
                }                
             },
             columns: [
-                { data: 'checkbox' },
                 { data: 'account_id' },
                 { data: 'full_name' },
                 { data: 'profile_percentage' },
@@ -93,21 +70,20 @@
             ],
             columnDefs: [
                 // Specify columns titles here...
-                { targets: 0, title: "<center><input type='checkbox' class='all_select'></center>", orderable: false },
-                { targets: 1, title: 'Account Id', orderable: true },
-                { targets: 2, title: 'Name', orderable: false },
-                { targets: 3, title: 'Profile Percentage', orderable: true },
-                { targets: 4, title: 'Contact Number', orderable: true },
-                { targets: 5, title: 'E-mail', orderable: true },
-                { targets: 6, title: 'Gender', orderable: true },
-                { targets: 7, title: 'Created At', orderable: true },
-                { targets: 8, title: 'Ban', orderable: false },
+                { targets: 0, title: 'Account Id', orderable: true },
+                { targets: 1, title: 'Name', orderable: false },
+                { targets: 2, title: 'Profile Percentage', orderable: true },
+                { targets: 3, title: 'Contact Number', orderable: true },
+                { targets: 4, title: 'E-mail', orderable: true },
+                { targets: 5, title: 'Gender', orderable: true },
+                { targets: 6, title: 'Created At', orderable: true },
+                { targets: 7, title: 'Ban', orderable: false },
                 // Action buttons
                 { targets: -1, title: 'Action',
                 orderable: false },
             ],
             order: [
-                [7, 'DESC']
+                [6, 'DESC']
             ],
             lengthMenu: [
                 [10, 20, 50, 100],

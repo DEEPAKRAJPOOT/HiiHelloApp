@@ -35,6 +35,7 @@ class MatchController extends Controller
                 // Match Not Allowed
                 if(!$user->isNewMatchAllow()){
                     $this->response['meta']['message']  =   trans('api.not_found', ['entity' => __('New Matches')]);
+                    $this->response['meta']['is_ban'] = false;
                     $this->status = Response::HTTP_OK;
                     return $this->returnResponse();
                 }
@@ -332,16 +333,20 @@ class MatchController extends Controller
                             'url'       =>  url()->current(),
                             'api'       =>  $this->getVersion(),
                             'language'  =>  app()->getLocale(),
+                            'is_ban'    =>  false,
                             'message'   =>  trans('api.list', ['entity' =>  __('New Matches')]),
                         ]
                     ]);
                 } else {
                     $this->response['meta']['message']  =   trans('api.not_found', ['entity' => __('New Matches')]);
+                    $this->response['meta']['is_ban'] = false;
                     $this->status = Response::HTTP_OK;
                 }
             } catch (ModelNotFoundException $exception) {
                 $this->response['meta']['message'] = trans('api.went_wrong');
+                $this->response['meta']['is_ban'] = false;
             } catch (\Exception $e) {
+                $this->response['meta']['is_ban'] = false;
                 $this->storeErrorLog($e, 'new_matches');
             }
         }
@@ -402,6 +407,7 @@ class MatchController extends Controller
                         'url'       =>  url()->current(),
                         'api'       =>  $this->getVersion(),
                         'language'  =>  app()->getLocale(),
+                        'is_ban'    =>  false,
                         'message'   =>  trans('api.delete', ['entity' =>  __('Unmatch')]),
                     ]
                 ]);
@@ -411,12 +417,15 @@ class MatchController extends Controller
                 switch ($exception->getModel()) {
                     case 'App\Models\ChatRoom':
                         $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("Chat room")]);
+                        $this->response['meta']['is_ban'] = false;
                         break;
                     case 'App\Models\User':
                         $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("User")]);
+                        $this->response['meta']['is_ban'] = false;
                         break;
                     default:
                         $this->response['meta']['message'] = trans('api.went_wrong');
+                        $this->response['meta']['is_ban'] = false;
                         break;
                 };
             } catch (\Exception $e) {
@@ -450,6 +459,7 @@ class MatchController extends Controller
                             'url'       =>  url()->current(),
                             'api'       =>  $this->getVersion(),
                             'language'  =>  app()->getLocale(),
+                            'is_ban'    =>  false,
                             'message'   =>  trans('api.update', ['entity' =>  __('Is Connected')]),
                         ]
                     ]);
@@ -464,6 +474,7 @@ class MatchController extends Controller
                                 'url'       =>  url()->current(),
                                 'api'       =>  $this->getVersion(),
                                 'language'  =>  app()->getLocale(),
+                                'is_ban'    =>  false,
                                 'message'   =>  trans('api.not_found', ['entity' =>  __('System Match User Key')]),
                             ]
                         ]);
@@ -474,14 +485,17 @@ class MatchController extends Controller
                 switch ($exception->getModel()) {
                     case 'App\Models\SystemMatch':
                         $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("System Match")]);
+                        $this->response['meta']['is_ban'] = false;
                         break;
                     default:
                         $this->response['meta']['message'] = trans('api.went_wrong');
+                        $this->response['meta']['is_ban'] = false;
                         break;
                 };
             } catch (\Exception $e) {
                 DB::rollback();
                 $this->status = Response::HTTP_OK;
+                $this->response['meta']['is_ban'] = false;
                 $this->storeErrorLog($e, 'delete_match');
             }
         }

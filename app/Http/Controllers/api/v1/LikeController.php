@@ -96,31 +96,38 @@ class LikeController extends Controller
                                 'url'       =>  url()->current(),
                                 'api'       =>  $this->getVersion(),
                                 'language'  =>  app()->getLocale(),
+                                'is_ban'    =>  false,
                                 'message'   =>  trans('api.liked', ['entity' => __("User")]),
                             ]
                         ]);
                     } else {
                         $this->response['meta']['message']  =   trans('api.not_found', ['entity' => __('User')]);
+                        $this->response['meta']['is_ban'] = false;
                         $this->status = Response::HTTP_NOT_FOUND;
                     }
                 } else {
                     $this->response['data']['is_swipe_allow']  =  $is_swipe_allow;
                     $this->response['meta']['message']  =   trans('api.block.no_action', ['entity' => __('like')]);
+                    $this->response['meta']['is_ban'] = false;
                     $this->status = Response::HTTP_OK;
                 }
             } catch (ModelNotFoundException $exception) {
                 switch ($exception->getModel()) {
                     case 'App\Models\BlockUser':
                         $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("User")]);
+                        $this->response['meta']['is_ban'] = false;
                         break;
                     case 'App\Models\User':
                         $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("User")]);
+                        $this->response['meta']['is_ban'] = false;
                         break;
                     case 'App\Models\Like':
                         $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("User")]);
+                        $this->response['meta']['is_ban'] = false;
                         break;
                     default:
                         $this->response['meta']['message'] = trans('api.went_wrong');
+                        $this->response['meta']['is_ban'] = false;
                         break;
                 };
             } catch (\Exception $e) {
@@ -176,31 +183,38 @@ class LikeController extends Controller
                                 'url'       =>  url()->current(),
                                 'api'       =>  $this->getVersion(),
                                 'language'  =>  app()->getLocale(),
+                                'is_ban'    =>  false,
                                 'message'   =>  trans('api.dis-liked', ['entity' => __("User")]),
                             ]
                         ]);
                     } else {
                         $this->response['meta']['message']  =   trans('api.not_found', ['entity' => __('User')]);
+                        $this->response['meta']['is_ban'] = false;
                         $this->status = Response::HTTP_NOT_FOUND;
                     }
                 } else {
                     $this->response['data']['is_swipe_allow']  =  $is_swipe_allow;
                     $this->response['meta']['message']  =   trans('api.block.no_action', ['entity' => __('Dis-liked')]);
+                    $this->response['meta']['is_ban'] = false;
                     $this->status = Response::HTTP_OK;
                 }
             } catch (ModelNotFoundException $exception) {
                 switch ($exception->getModel()) {
                     case 'App\Models\BlockUser':
                         $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("User")]);
+                        $this->response['meta']['is_ban'] = false;
                         break;
                     case 'App\Models\User':
                         $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("User")]);
+                        $this->response['meta']['is_ban'] = false;
                         break;
                     case 'App\Models\DisLike':
                         $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("User")]);
+                        $this->response['meta']['is_ban'] = false;
                         break;
                     default:
                         $this->response['meta']['message'] = trans('api.went_wrong');
+                        $this->response['meta']['is_ban'] = false;
                         break;
                 };
             } catch (\Exception $e) {
@@ -271,24 +285,29 @@ class LikeController extends Controller
                                 'url'           =>  url()->current(),
                                 'language'      =>  app()->getLocale(),
                                 'is_subscribed' =>  $is_subscribed,
+                                'is_ban'        =>  false,
                                 'subscription_end_date'     =>  $subscription_end_date,
                                 'message'       =>  trans('api.list', ['entity' => __("Users")]),
                             ]
                         ]);
                 } else {
                     $this->response['meta']['message']  =   trans('api.not_found', ['entity' => __("Users")]);
+                    $this->response['meta']['is_ban'] = false;
                     $this->status = Response::HTTP_NOT_FOUND;
                 }
             } catch (ModelNotFoundException $exception) {
                 switch ($exception->getModel()) {
                     case 'App\Models\User':
                         $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("Users")]);
+                        $this->response['meta']['is_ban'] = false;
                         break;
                     case 'App\Models\Like':
                         $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("Users")]);
+                        $this->response['meta']['is_ban'] = false;
                         break;
                     default:
                         $this->response['meta']['message'] = trans('api.went_wrong');
+                        $this->response['meta']['is_ban'] = false;
                         break;
                 };
             } catch (\Exception $e) {

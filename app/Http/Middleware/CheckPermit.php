@@ -39,7 +39,7 @@ class CheckPermit
 
 
         // Permissions 
-        $access = ['index', 'listing', 'showSetting', 'change-setting', 'trashed', 'trasheddata','actor-list','singer-list'];
+        $access = ['index', 'listing', 'showSetting', 'change-setting', 'trashed', 'trasheddata','actor-list','singer-list','unde-review'];
         $add = ['store', 'create'];
         $update = ['edit', 'update'];
         $view = ['show'];
@@ -58,7 +58,7 @@ class CheckPermit
                 && !empty($current_permission[$role->id]['permissions'])
                 && in_array($permission, explode(',', $current_permission[$role->id]['permissions']))
             )
-                return $next($request);
+            return $next($request);
         }
         return redirect('admin/dashboard');
     }

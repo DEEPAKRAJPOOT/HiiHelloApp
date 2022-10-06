@@ -70,6 +70,9 @@ function getPermissions($user_type = 'normal')
             21 =>[ // Site Configurations
                 'permissions' => 'access'
             ],
+            22 =>[ // User Under review
+                'permissions' => 'access'
+            ],
         ];
     }
 

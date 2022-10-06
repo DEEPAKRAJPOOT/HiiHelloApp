@@ -12,16 +12,20 @@ Route::group(['middleware' => ['revalidate']], function () {
 	// Quick Link
 	Route::get('quickLink', 'Admin\PagesController@quickLink')->name('quickLink');
 	Route::post('link/update', 'Admin\PagesController@updateQuickLink')->name('update-quickLink');
+
+	
 });
 
-Route::group(['namespace' => 'Admin', 'middleware' => ['check_permit', 'revalidate']], function () {
 
+Route::group(['namespace' => 'Admin', 'middleware' => ['check_permit', 'revalidate']], function () {
+	
 	/* Dashboard */
 	Route::get('/', 'PagesController@dashboard')->name('dashboard.index');
 	Route::get('/dashboard', 'PagesController@dashboard')->name('dashboard.index');
-
+	
 	/* User */
 	Route::get('users/listing', 'UsersController@listing')->name('users.listing');
+	Route::get('users/unde_review', 'UsersController@unde_review')->name('users.unde-review');
 	Route::resource('users', 'UsersController');
 
 	/* Role Management */

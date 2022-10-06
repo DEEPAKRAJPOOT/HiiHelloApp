@@ -571,9 +571,11 @@ class GeneralController extends Controller
                     'app_version'   =>  $request->app_version,
                 ]);
                 $this->response['meta']['message'] = trans('api.add', ['entity' => __('Device token')]);
+                $this->response['meta']['is_ban'] = false;
                 $this->status = Response::HTTP_OK;
             } catch (\Exception $e) {
                 $this->response['meta']['message'] = trans('api.went_wrong');
+                $this->response['meta']['is_ban'] = false;
                 $this->status = Response::HTTP_NOT_FOUND;
                 $this->storeErrorLog($e, 'add_device_token');
             }
@@ -638,6 +640,7 @@ class GeneralController extends Controller
             } else {
                 $this->status = Response::HTTP_FORBIDDEN;
                 $this->response['meta']['message'] = trans('api.went_wrong');
+                $this->response['meta']['is_ban'] = false;
                 return $this->returnResponse();
             }
 
@@ -665,9 +668,11 @@ class GeneralController extends Controller
                 $this->response['data']['timestamp'] = $time;
                 $this->response['data']['exipry_time'] = config('utility.s3.upload_expiry');
                 $this->response['meta']['message'] = trans('api.dynamic-link.success');
+                $this->response['meta']['is_ban'] = false;
                 $this->status = Response::HTTP_OK;
             } catch (Exception $exception) {
                 $this->response['meta']['message'] = trans('api.went_wrong');
+                $this->response['meta']['is_ban'] = false;
             }
         }
         return $this->returnResponse();
