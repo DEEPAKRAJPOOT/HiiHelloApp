@@ -6,8 +6,6 @@ on:
   pull_request:
     branches: [ "dev-branch" ]
     
-#this runs the command to deploy
-
 jobs:
   laravel-tests:
 
