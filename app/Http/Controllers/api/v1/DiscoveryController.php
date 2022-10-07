@@ -31,6 +31,7 @@ class DiscoveryController extends Controller
                         'url'       =>  url()->current(),
                         'api'       =>  $this->getVersion(),
                         'language'  =>  app()->getLocale(),
+                        'is_ban'    =>  false,
                         'message'   =>  trans('api.add', ['entity' => __('Location')]),
                     ]
                 ]);
@@ -38,9 +39,11 @@ class DiscoveryController extends Controller
                 switch ($exception->getModel()) {
                     case 'App\Models\Location':
                         $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("Location")]);
+                        $this->response['meta']['is_ban'] = false;
                         break;
                     default:
                         $this->response['meta']['message'] = trans('api.went_wrong');
+                        $this->response['meta']['is_ban'] = false;
                         break;
                 };
             } catch (\Exception $e) {
@@ -90,6 +93,7 @@ class DiscoveryController extends Controller
                         'url'       =>  url()->current(),
                         'api'       =>  $this->getVersion(),
                         'language'  =>  app()->getLocale(),
+                        'is_ban'    =>  false,
                         'message'   =>  trans('api.add', ['entity' => __('Discovery')]),
                     ]
                 ]);
@@ -97,12 +101,15 @@ class DiscoveryController extends Controller
                 switch ($exception->getModel()) {
                     case 'App\Models\Location':
                         $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("Location")]);
+                        $this->response['meta']['is_ban'] = false;
                         break;
                     case 'App\Models\Language':
                         $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("Language")]);
+                        $this->response['meta']['is_ban'] = false;
                         break;
                     default:
                         $this->response['meta']['message'] = trans('api.went_wrong');
+                        $this->response['meta']['is_ban'] = false;
                         break;
                 };
             } catch (\Exception $e) {
@@ -136,15 +143,18 @@ class DiscoveryController extends Controller
                 ->additional([
                     'meta' => [
                         'message'       =>  trans('api.list', ['entity' => __("Discovery")]),
+                        'is_ban'        =>  false,
                     ]
                 ]);
         } catch (ModelNotFoundException $exception) {
             switch ($exception->getModel()) {
                 case 'App\Models\User':
                     $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("User")]);
+                    $this->response['meta']['is_ban'] = false;
                     break;
                 default:
                     $this->response['meta']['message'] = trans('api.went_wrong');
+                    $this->response['meta']['is_ban'] = false;
                     break;
             };
         } catch (\Exception $e) {

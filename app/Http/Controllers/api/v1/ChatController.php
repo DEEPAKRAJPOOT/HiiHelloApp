@@ -54,18 +54,22 @@ class ChatController extends Controller
                 return (new ChatRoomResource($chat_room))->additional([
                     'meta'  =>  [
                         'message'   =>  trans('api.save', ['entity' =>  __('Chat room')]),
+                        'is_ban'    =>  false,
                     ]
                 ]);
             } catch (ModelNotFoundException $exception) {
                 switch ($exception->getModel()) {
                     case 'App\Models\ChatRoom':
                         $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("Chat room")]);
+                        $this->response['meta']['is_ban'] = false;
                         break;
                     case 'App\Models\User':
                         $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("User")]);
+                        $this->response['meta']['is_ban'] = false;
                         break;
                     default:
                         $this->response['meta']['message'] = trans('api.went_wrong');
+                        $this->response['meta']['is_ban'] = false;
                         break;
                 };
             } catch (\Exception $e) {
@@ -126,24 +130,29 @@ class ChatController extends Controller
                             'url'       =>  url()->current(),
                             'api'       =>  $this->getVersion(),
                             'language'  =>  app()->getLocale(),
+                            'is_ban'    =>  false,
                             'message'   =>  trans('api.list', ['entity' =>  __('Chat rooms')]),
                         ]
                     ]);
                 } else {
                     $this->status = Response::HTTP_OK;  // Return 200 because android can handle popup screen
                     $this->response['meta']['message']  =   trans('api.not_found', ['entity' => __('Chat rooms')]);
+                    $this->response['meta']['is_ban'] = false;
                 }
             } catch (ModelNotFoundException $exception) {
                 $this->status = Response::HTTP_OK;
                 switch ($exception->getModel()) {
                     case 'App\Models\ChatRoom':
                         $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("Chat rooms")]);
+                        $this->response['meta']['is_ban'] = false;
                         break;
                     case 'App\Models\User':
                         $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("User")]);
+                        $this->response['meta']['is_ban'] = false;
                         break;
                     default:
                         $this->response['meta']['message'] = trans('api.went_wrong');
+                        $this->response['meta']['is_ban'] = false;
                         break;
                 };
             } catch (\Exception $e) {
@@ -185,27 +194,33 @@ class ChatController extends Controller
                             'url'       =>  url()->current(),
                             'api'       =>  $this->getVersion(),
                             'language'  =>  app()->getLocale(),
+                            'is_ban'    =>  false,
                             'message'   =>  trans('api.list', ['entity' => __('Chat history')])
                         ],
                     ]);
                 } else {
                     $this->response['meta']['remaining_time']  = $callLog ? $callLog->remaining_time : config('utility.twillio.allow_call_time');
                     $this->response['meta']['message']  =   trans('api.not_found', ['entity' => __('Chat history')]);
+                    $this->response['meta']['is_ban'] = false;
                     $this->status = Response::HTTP_OK;
                 }
             } catch (ModelNotFoundException $exception) {
                 switch ($exception->getModel()) {
                     case 'App\Models\ChatRoom':
                         $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("Chat rooms")]);
+                        $this->response['meta']['is_ban'] = false;
                         break;
                     case 'App\Models\ChatMessage':
                         $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("Chat history")]);
+                        $this->response['meta']['is_ban'] = false;
                         break;
                     case 'App\Models\User':
                         $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("User")]);
+                        $this->response['meta']['is_ban'] = false;
                         break;
                     default:
                         $this->response['meta']['message'] = trans('api.went_wrong');
+                        $this->response['meta']['is_ban'] = false;
                         break;
                 };
             } catch (\Exception $e) {
@@ -238,6 +253,7 @@ class ChatController extends Controller
                         'url'       =>  url()->current(),
                         'api'       =>  $this->getVersion(),
                         'language'  =>  app()->getLocale(),
+                        'is_ban'    =>  false,
                         'message'   =>  trans('api.chat_room.delete'),
                     ]
                 ]);
@@ -245,9 +261,11 @@ class ChatController extends Controller
                 switch ($exception->getModel()) {
                     case 'App\Models\ChatRoom':
                         $this->response['meta']['message'] = trans('api.chat_room.not_found');
+                        $this->response['meta']['is_ban'] = false;
                         break;
                     default:
                         $this->response['meta']['message'] = trans('api.went_wrong');
+                        $this->response['meta']['is_ban'] = false;
                         break;
                 };
             } catch (\Exception $e) {

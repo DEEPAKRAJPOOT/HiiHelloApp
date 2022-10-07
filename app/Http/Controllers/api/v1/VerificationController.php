@@ -55,20 +55,24 @@ class VerificationController extends Controller
                             'url'       =>  url()->current(),
                             'api'       =>  $this->getVersion(),
                             'language'  =>  app()->getLocale(),
+                            'is_ban'    =>  false,
                             'message'   =>  trans('api.verification_upload.success'),
                         ]
                     ]);
                 } else {
                     $this->response['meta']['message']  =   trans('api.verification_upload.fail');
+                    $this->response['meta']['is_ban'] = false;
                     $this->status = Response::HTTP_NOT_FOUND;
                 }
             } catch (ModelNotFoundException $exception) {
                 switch ($exception->getModel()) {
                     case 'App\Models\User':
                         $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("User")]);
+                        $this->response['meta']['is_ban'] = false;
                         break;
                     default:
                         $this->response['meta']['message'] = trans('api.went_wrong');
+                        $this->response['meta']['is_ban'] = false;
                         break;
                 };
             } catch (\Exception $e) {
@@ -100,6 +104,7 @@ class VerificationController extends Controller
                         'url'       =>  url()->current(),
                         'api'       =>  $this->getVersion(),
                         'language'  =>  app()->getLocale(),
+                        'is_ban'    =>  false,
                         'message'   =>  trans('api.verification.success', ['entity' => __("Contact number")]),
                     ]
                 ]);
@@ -107,12 +112,15 @@ class VerificationController extends Controller
                 switch ($exception->getModel()) {
                     case 'App\Models\Country':
                         $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("Country")]);
+                        $this->response['meta']['is_ban'] = false;
                         break;
                     case 'App\Models\User':
                         $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("User")]);
+                        $this->response['meta']['is_ban'] = false;
                         break;
                     default:
                         $this->response['meta']['message'] = trans('api.went_wrong');
+                        $this->response['meta']['is_ban'] = false;
                         break;
                 };
             } catch (\Exception $e) {
@@ -135,6 +143,7 @@ class VerificationController extends Controller
                     if (empty($user->email))
                     {                        
                         $this->response['meta']['message']  =   trans('api.not_found', ['entity' => __("email")]);
+                        $this->response['meta']['is_ban'] = false;
                         $this->status = Response::HTTP_NOT_FOUND;
                         return $this->returnResponse();
                     }                       
@@ -143,6 +152,7 @@ class VerificationController extends Controller
                 {
                     if (!empty($user->email) && $user->email != $request->email) {
                         $this->response['meta']['message']  =   trans('api.invalid', ['entity' => __("email")]);
+                        $this->response['meta']['is_ban'] = false;
                         $this->status = Response::HTTP_NOT_FOUND;
                         return $this->returnResponse();
                     } else {
@@ -152,6 +162,7 @@ class VerificationController extends Controller
                             $user->save();
                         } else {
                             $this->response['meta']['message']  =   trans('api.already_exists', ['entity' => __("email")]);
+                            $this->response['meta']['is_ban'] = false;
                             $this->status = Response::HTTP_NOT_FOUND;
                             return $this->returnResponse();
                         }
@@ -170,6 +181,7 @@ class VerificationController extends Controller
                         'url'       =>  url()->current(),
                         'api'       =>  $this->getVersion(),
                         'language'  =>  app()->getLocale(),
+                        'is_ban'    =>  false,
                         'message'   =>  trans('api.link_sent', ['entity' => __('Verification email')]),
                     ]
                 ]);
@@ -204,10 +216,12 @@ class VerificationController extends Controller
             return (new VerificationResource($user))->additional([
                 'meta'  =>  [
                     'message'   =>  trans('api.list', ['entity' =>  __('Verification details')]),
+                    'is_ban'    =>  false,
                 ]
             ]);
         } catch (\Exception $e) {
             $this->response['meta']['message'] = trans('api.link_not_send');
+            $this->response['meta']['is_ban'] = false;
             $this->storeErrorLog($e, 'get_verify_detail');
         }
         return $this->returnResponse();

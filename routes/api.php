@@ -53,7 +53,7 @@ Route::group(['namespace' => 'v1', 'prefix' => 'v1'], function () {
     Route::post('chat/send-push/{chatmessage}/{message?}', [ChatController::class,'sendChatPush'])->name('chat.send-push');
 });
 
-Route::group(['namespace' => 'v1', 'prefix' => 'v1', 'middleware' => 'auth:sanctum'], function () {
+Route::group(['namespace' => 'v1', 'prefix' => 'v1', 'middleware' => ['auth:sanctum','checkapiuser']], function () {
     Route::post('logout',[AuthenticationController::class,'logout'])->name('api.user.logout'); 
 
     // Home List

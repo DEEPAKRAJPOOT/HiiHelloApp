@@ -28,8 +28,9 @@ class AdminComposer
 
 	public function __construct()
 	{
-		// print_r(serialize(getPermissions('admin')));exit;
+		// echo "<pre>"; print_r(serialize(getPermissions('admin')));exit;
 		$user = Auth::guard('admin')->user();
+		// echo "<pre>"; print_r($user);exit;
 		$roleId = "";
 		$routeName = Route::currentRouteName();
 		$extra_slug = (!empty(Route::current()) ? Route::current()->parameters() : null);
@@ -112,6 +113,8 @@ class AdminComposer
 
 	public function compose(View $view)
 	{
+		// echo "<pre>"; print_r($this->menuItems);exit;
+		// echo "<pre>"; print_r($this->permissions);exit;
 		$data = [
 			'menu' => $this->menuItems,
 			'permissions' => $this->permissions,
