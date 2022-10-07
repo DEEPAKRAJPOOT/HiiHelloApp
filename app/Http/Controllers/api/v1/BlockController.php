@@ -62,11 +62,13 @@ class BlockController extends Controller
                                 'url'       =>  url()->current(),
                                 'api'       =>  $this->getVersion(),
                                 'language'  =>  app()->getLocale(),
+                                'is_ban'    =>  false,
                                 'message'   =>  trans('api.block.success'),
                             ]
                         ]);
                     } else {
                         $this->response['meta']['message']  =   rans('api.block.fail');
+                        $this->response['meta']['is_ban'] = false;
                         $this->status = Response::HTTP_NOT_FOUND;
                     }
                 }
@@ -91,11 +93,13 @@ class BlockController extends Controller
                                 'url'       =>  url()->current(),
                                 'api'       =>  $this->getVersion(),
                                 'language'  =>  app()->getLocale(),
+                                'is_ban'    =>  false,
                                 'message'   =>  trans('api.unblock.success'),
                             ]
                         ]);
                     } else {
                         $this->response['meta']['message']  =   rans('api.unblock.fail');
+                        $this->response['meta']['is_ban'] = false;
                         $this->status = Response::HTTP_NOT_FOUND;
                     }
                 }
@@ -104,12 +108,15 @@ class BlockController extends Controller
                 switch ($exception->getModel()) {
                     case 'App\Models\BlockUser':
                         $this->response['meta']['message'] = trans('api.block.not_able');
+                        $this->response['meta']['is_ban'] = false;
                         break;
                     case 'App\Models\User':
                         $this->response['meta']['message'] = trans('api.block.not_able');
+                        $this->response['meta']['is_ban'] = false;
                         break;
                     default:
                         $this->response['meta']['message'] = trans('api.went_wrong');
+                        $this->response['meta']['is_ban'] = false;
                         break;
                 };
             } catch (\Exception $e) {
@@ -152,20 +159,24 @@ class BlockController extends Controller
                             'url'       =>  url()->current(),
                             'api'       =>  $this->getVersion(),
                             'language'  =>  app()->getLocale(),
+                            'is_ban'    =>  false,
                             'message'   =>  trans('api.list', ['entity' => __('Block list')]),
                         ]
                     ]);
                 } else {
                     $this->response['meta']['message']  =   trans('api.not_found', ['entity' => __('Block list')]);
+                    $this->response['meta']['is_ban'] = false;
                     $this->status = Response::HTTP_NOT_FOUND;
                 }
             } catch (ModelNotFoundException $exception) {
                 switch ($exception->getModel()) {
                     case 'App\Models\BlockUser':
                         $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("Block list")]);
+                        $this->response['meta']['is_ban'] = false;
                         break;
                     default:
                         $this->response['meta']['message'] = trans('api.went_wrong');
+                        $this->response['meta']['is_ban'] = false;
                         break;
                 };
             } catch (\Exception $e) {

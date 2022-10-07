@@ -85,18 +85,22 @@ class PaymentController extends Controller
                     ->additional([
                         'meta' => [
                             'message'   =>  trans('api.razorpay.order.success'),
+                            'is_ban'    =>  false,
                         ]
                     ]);
             } catch (ModelNotFoundException $exception) {
                 switch ($exception->getModel()) {
                     case 'App\Models\SubscriptionPlan':
                         $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("Subscription plan")]);
+                        $this->response['meta']['is_ban'] = false;
                         break;
                     default:
                         $this->response['meta']['message'] = trans('api.went_wrong');
+                        $this->response['meta']['is_ban'] = false;
                         break;
                 };
             } catch (\Exception $e) {
+                $this->response['meta']['is_ban'] = false;
                 $this->storeErrorLog($e, 'razorpay_create_order');
             }
         }
@@ -189,10 +193,12 @@ class PaymentController extends Controller
                     $this->status = Response::HTTP_OK;
                     $this->response['data']['status'] = $subscription->status;
                     $this->response['meta']['message'] = trans('api.razorpay.verify_signature.success');
+                    $this->response['meta']['is_ban'] = false;
                     return $this->returnResponse();
                 } else {
                     $this->status = Response::HTTP_NOT_FOUND;
                     $this->response['meta']['message']  =   trans('api.not_found', ['entity' => __('Subscription plan')]);
+                    $this->response['meta']['is_ban'] = false;
                     return $this->returnResponse();
                 }
             } catch (SignatureVerificationError $e) {
@@ -217,6 +223,7 @@ class PaymentController extends Controller
 
                 $file = 'payment_' . $user->id;
                 $this->storeErrorLog($e, $file, $e->getMessage());
+                
             }
         }
         return $this->returnResponse();
@@ -247,20 +254,24 @@ class PaymentController extends Controller
                                 'url'       =>  url()->current(),
                                 'api'       =>  $this->getVersion(),
                                 'language'  =>  app()->getLocale(),
+                                'is_ban'    =>  false,
                                 'message'   =>  trans('api.list', ['entity' => __('Subscription plans')]),
                             ]
                         ]);
                 } else {
                     $this->response['meta']['message']  =   trans('api.not_found', ['entity' => __('Subscription plans')]);
+                    $this->response['meta']['is_ban'] = false;
                     $this->status = Response::HTTP_NOT_FOUND;
                 }
             } catch (ModelNotFoundException $exception) {
                 switch ($exception->getModel()) {
                     case 'App\Models\SubscriptionPlan':
                         $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("Subscription plans")]);
+                        $this->response['meta']['is_ban'] = false;
                         break;
                     default:
                         $this->response['meta']['message'] = trans('api.went_wrong');
+                        $this->response['meta']['is_ban'] = false;
                         break;
                 };
             } catch (\Exception $e) {

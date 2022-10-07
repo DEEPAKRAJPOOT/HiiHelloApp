@@ -40,6 +40,7 @@ class SubscriptionController extends Controller
                     && $latest_subscription->end_date >= today()->format('Y-m-d')
                 ) {
                     $this->response['meta']['message']  =  trans('api.subscription.pan_purchased');
+                    $this->response['meta']['is_ban']  = false;
                     $this->status = Response::HTTP_FORBIDDEN;
                     return $this->returnResponse();
                 }
@@ -139,6 +140,7 @@ class SubscriptionController extends Controller
                             ->additional([
                                 'meta' => [
                                     'message'   =>  trans('api.ios_payment.success'),
+                                    'is_ban'    =>  false,
                                 ]
                             ]);
                     } else {
@@ -157,6 +159,7 @@ class SubscriptionController extends Controller
                         $subscription->notifySubScriptionPurchase('fail');
 
                         $this->response['meta']['message']  =  trans('api.ios_payment.fail');
+                        $this->response['meta']['is_ban']  = false;
                         $this->status = Response::HTTP_FORBIDDEN;
                     }
 
@@ -177,6 +180,7 @@ class SubscriptionController extends Controller
                     $paymentLog->info($file, ['success' => $transaction_data]);
                 } else {
                     $this->response['meta']['message']  =  trans('api.went_wrong');
+                    $this->response['meta']['is_ban']  = false;
                     $this->status = Response::HTTP_GATEWAY_TIMEOUT;
                 }
             } catch (\Exception $e) {
@@ -194,6 +198,7 @@ class SubscriptionController extends Controller
                 $this->storeErrorLog($e, $file, $e->getMessage());
 
                 $this->response['meta']['message']  =  trans('api.went_wrong');
+                $this->response['meta']['is_ban']  = false;
                 $this->status = Response::HTTP_GATEWAY_TIMEOUT;
             }
         }
@@ -219,13 +224,16 @@ class SubscriptionController extends Controller
 
                 $this->status = Response::HTTP_OK;
                 $this->response['meta']['message'] = trans('api.subscription.restore');
+                $this->response['meta']['is_ban']  = false;
             } catch (ModelNotFoundException $exception) {
                 switch ($exception->getModel()) {
                     case 'App\Models\Subscription':
                         $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("Subscription")]);
+                        $this->response['meta']['is_ban']  = false;
                         break;
                     default:
                         $this->response['meta']['message'] = trans('api.went_wrong');
+                        $this->response['meta']['is_ban']  = false;
                         break;
                 };
             } catch (\Exception $e) {
@@ -243,15 +251,18 @@ class SubscriptionController extends Controller
             return (new SubscriptionResource($subscription))->additional([
                 'meta' => [
                     'message'   =>  trans('api.list', ['entity' => __('Subscription')]),
+                    'is_ban'    =>  false,
                 ]
             ]);
         } catch (ModelNotFoundException $exception) {
             switch ($exception->getModel()) {
                 case 'App\Models\Subscription':
                     $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("Subscription")]);
+                    $this->response['meta']['is_ban']  = false;
                     break;
                 default:
                     $this->response['meta']['message'] = trans('api.went_wrong');
+                    $this->response['meta']['is_ban']  = false;
                     break;
             };
         } catch (\Exception $e) {

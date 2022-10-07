@@ -43,6 +43,11 @@
                     <i class="fas fa-arrow-down"></i>
                     Download CSV
                 </a>
+                <a href="{{ route('admin.users.unde-review') }}"
+                    class="btn btn-sm btn-warning font-weight-bolder text-uppercase ml-2">
+                    <i class="menu-icon icon-users"></i>
+                    Profile Under Review
+                </a>
             </div>
         </div>
         <div class="card-body">
@@ -96,13 +101,13 @@
                 { targets: 5, title: 'E-mail', orderable: true },
                 { targets: 6, title: 'Gender', orderable: true },
                 { targets: 7, title: 'Created At', orderable: true },
-                { targets: 8, title: 'Active', orderable: false },
+                { targets: 8, title: 'Ban', orderable: false },
                 // Action buttons
                 { targets: -1, title: 'Action',
                 orderable: false },
             ],
             order: [
-                [1, 'asc']
+                [7, 'DESC']
             ],
             lengthMenu: [
                 [10, 20, 50, 100],

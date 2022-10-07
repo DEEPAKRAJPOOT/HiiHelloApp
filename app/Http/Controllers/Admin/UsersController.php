@@ -16,8 +16,6 @@ use App\Models\Country;
 use App\Models\SubscriptionPlanTranslation;
 use App\Models\SubscriptionPlan;
 use App\Models\Subscription;
-
-
 use Exception;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
@@ -956,4 +954,93 @@ class UsersController extends Controller
         }
         return redirect(route('admin.users.index'));
     }
+
+    public function unde_review()
+    {
+        return view('admin.pages.users.unde_review')->with(['custom_title' => 'Profile Under Review']);
+    }
+
+    public function csvDownloadUndeReview(Request $request)
+    {
+        $down_file_name = 'User Unde Review';
+        $users = User::with('userTransEn', 'deviceToken', 'country', 'location', 'language','subscription.subscriptionPlan.subscriptionPlanTranslation')
+            ->orderBy('created_at','desc');
+        $users->where('verify_photo_status', '=' , 'under_review')->where('verify_photo', '!=' , '');    
+        $users = $users->get();
+        // echo "<pre>"; print_r($users->toArray()); die();
+        if (!$users->isEmpty()) {
+            foreach ($users as $user) {
+                $data[] = [
+                    'Account Id'            =>  $user->account_id ?? "",
+                    'Name'                  =>  $user->userTransEn ? $user->userTransEn->full_name ?? "" : "",
+                    'Email'                 =>  $user->email ?? "",
+                    'Birth Date'            =>  $user->birth_date,
+                    'Contact No'            =>  $user->country_code." ".$user->contact_no ?? "",
+                    'Verify Video Status'   =>  $user->verify_video_status ?? "",
+                    'Verify Photo Status'   =>  $user->verify_photo_status ?? "",
+                    'Gender'                =>  $user->gender ?? "",
+                    'Location'              =>  $user->location->name ?? "",
+                    'Intrest'               =>  $user->interest ?? "",
+                    'Verify Status'         =>  $user->verify_status ?? "",
+                    'Profile Percentage'    =>  $user->profile_percentage ?? "",
+                    'Language'              =>  $user->language ? $user->language->language ?? "" : "",
+                    'Langauge Code'         =>  $user->language ? $user->language->lang_code ?? "" : "",
+                    'Swipe Count'           =>  $user->swipe_count ?? "",
+                    'Like Count'            =>  $user->like_count ?? "",
+                    'Match Count'           =>  $user->match_count ?? "",
+                    'Chat Count'            =>  $user->chat_count ?? "",
+                    'Is Social User'        =>  $user->is_social_user ?? "",
+                    'Is Subscribed'         =>  $user->is_subscribed ?? "",
+                    'Subscription End Date' =>  $user->subscription_end_date ?? "",
+                    'Email Verified Date'   =>  $user->email_verified_at ?? "",
+                    'Contact Verified Date' =>  $user->contact_verified_at ?? "",
+                    'Photo Verified Date'   =>  $user->photo_verified_at ?? "",
+                    'Video Verified Date'   =>  $user->video_verified_at ?? "",
+                    'Device Name'           =>  $user->deviceToken ? $user->deviceToken->device_name ?? "" : "",
+                    'Device Type'           =>  $user->deviceToken ? $user->deviceToken->type ?? "" : "",
+                    'Device App Version'    =>  $user->deviceToken ? $user->deviceToken->app_version ?? "" : "",
+                    'Device OS Name'        =>  $user->deviceToken ? $user->deviceToken->os_name ?? "" : "",
+                    'Device OS Version'     =>  $user->deviceToken ? $user->deviceToken->os_version ?? "" : "",
+                    'Subscription plan'     =>  $user->subscription ? $user->subscription->subscriptionPlan ? ($user->subscription->subscriptionPlan->subscriptionPlanTranslation ? $user->subscription->subscriptionPlan->subscriptionPlanTranslation->name : "N/A") : "" : "",
+                    'Subscription month'    =>  $user->subscription ? $user->subscription->months ? : "" : "" ,
+                    'Subscription amount'   =>  $user->subscription ? $user->subscription->amount ? : "" : "" ,
+                    'Subscription end date' =>  $user->subscription ? $user->subscription->end_date ? : "" : "" ,
+                    'Subscription status'   =>  $user->subscription ? $user->subscription->status ? : "" : "" ,
+                    'Active'                =>  $user->is_active == 'y' ? 'y' : 'n'
+                ];
+            }
+
+            if (!File::exists(public_path() . "/files")) {
+                File::makeDirectory(public_path() . "/files");
+            }
+
+            $filename = public_path('files/' . $down_file_name . ".csv");
+            $handle   = fopen($filename, 'w+');
+            fputcsv($handle, array(
+                'Account Id', 'Name', 'Email', 'Birth Date', 'Contact No', 'Verify Video Status', 'Verify Photo Status', 'Gender', 'Location', 
+                'Intrest', 'Verify Status', 'Profile Percentage', 'Language', 'Langauge Code', 'Swipe Count', 'Like Count', 'Match Count', 
+                'Chat Count', 'Is Social User', 'Is Subscribed', 'Subscription End Date', 'Email Verified Date', 'Contact Verified Date',
+                'Photo Verified Date', 'Video Verified Date', 'Device Name', 'Device Type', 'Device App Version', 'Device OS Name', 'Device OS Version',
+                'Subscription plan','Subscription month','Subscription amount','Subscription status','Active'
+            ));
+
+            foreach ($data as $row) {
+                fputcsv($handle, array(
+                    $row['Account Id'], $row['Name'], $row['Email'], $row['Birth Date'], $row['Contact No'], $row['Verify Video Status'], $row['Verify Photo Status'], $row['Gender'], $row['Location'], $row['Intrest'], $row['Verify Status'], $row['Profile Percentage'], $row['Language'], $row['Langauge Code'], $row['Swipe Count'], $row['Like Count'], $row['Match Count'], $row['Chat Count'], $row['Is Social User'], $row['Is Subscribed'], $row['Subscription End Date'], $row['Email Verified Date'], $row['Contact Verified Date'], $row['Photo Verified Date'], $row['Video Verified Date'], $row['Device Name'], $row['Device Type'], $row['Device App Version'], $row['Device OS Name'], $row['Device OS Version'], 
+                    $row['Subscription plan'],$row['Subscription month'],$row['Subscription amount'],$row['Subscription status'], $row['Active'],
+                ));
+            }
+            fclose($handle);
+
+            $headers = array(
+                'Content-Type' => 'text/csv',
+            );
+
+            return Response::download($filename, $down_file_name . ".csv", $headers);
+        } else {
+            flash('Unable to generate user csv. Try again later')->error();
+        }
+        return redirect(route('admin.users.index'));
+    }
+
 }

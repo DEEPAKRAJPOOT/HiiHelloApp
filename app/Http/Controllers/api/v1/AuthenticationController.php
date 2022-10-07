@@ -391,13 +391,16 @@ class AuthenticationController extends Controller
 
             $this->status = Response::HTTP_OK;
             $this->response['meta']['message'] = trans('api.logout');
+            $this->response['meta']['is_ban'] = false;
         } catch (ModelNotFoundException $exception) {
             switch ($exception->getModel()) {
                 case 'App\Models\User':
                     $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("User")]);
+                    $this->response['meta']['is_ban'] = false;
                     break;
-                default:
+                    default:
                     $this->response['meta']['message'] = trans('api.went_wrong');
+                    $this->response['meta']['is_ban'] = false;
                     break;
             };
         } catch (\Exception $e) {
