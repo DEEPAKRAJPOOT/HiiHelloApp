@@ -160,9 +160,9 @@ $cfg['SaveDir'] = '';
  */
 
 $i++;
-$cfg['Servers'][$i]['host'] = 'hihellapp.cx3wyfpc93bh.ap-south-1.rds.amazonaws.com';
+$cfg['Servers'][$i]['host'] = 'staginghelloapp.cx3wyfpc93bh.ap-south-1.rds.amazonaws.com';
 $cfg['Servers'][$i]['port'] = '3306';
-$cfg['Servers'][$i]['verbose'] = 'HIhello';
+$cfg['Servers'][$i]['verbose'] = 'Staging';
 $cfg['Servers'][$i]['connect_type'] = 'tcp';
 $cfg['Servers'][$i]['extension'] = 'mysql';
 $cfg['Servers'][$i]['compress'] = TRUE;
