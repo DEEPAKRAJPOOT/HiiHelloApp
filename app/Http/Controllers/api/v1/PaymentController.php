@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\{ModelNotFoundException};
 use Illuminate\Support\Facades\{Auth, DB};
 use App\Http\Requests\Api\General\{PaginationRequest};
 use App\Http\Resources\v1\{SubscriptionPlanResource, RazorPayOrderResource};
-use App\Models\{SubscriptionPlan, Subscription, Transaction};
+use App\Models\{User,SubscriptionPlan, Subscription, Transaction};
 use App\Jobs\{SubscriptionPurchasedJob};
 use Razorpay\Api\Api;
 use Razorpay\Api\Errors\SignatureVerificationError;
@@ -279,5 +279,105 @@ class PaymentController extends Controller
             }
         }
         return $this->returnResponse();
+    }
+
+    public function instamojo_pay(Request $request){
+        $rules = [
+            'plan_id'   =>  'required',
+        ];
+
+        if ($this->apiValidator($request->all(), $rules)) {
+            try {
+                $user = $request->user();
+                $matches = User::with('userTranslation:id')
+                    ->where('id', '=', $user->id)
+                    ->first();
+                // echo "<pre>"; print_r($matches->full_name); die();
+                // echo "<pre>"; print_r($matches->toArray()); die();
+                // echo "<pre>"; print_r($matches->id); die();
+                $plan = SubscriptionPlan::whereCustomId($request->plan_id)->whereIsActive('y')->firstOrFail();
+                // echo "<pre>"; print_r($plan); die();
+                $access_token = $this->generate_access_token();
+                // echo $access_token; die();
+
+                $ch = curl_init();
+
+                curl_setopt($ch, CURLOPT_URL, 'https://test.instamojo.com/v2/payment_requests/');
+                curl_setopt($ch, CURLOPT_HEADER, FALSE);
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
+                curl_setopt($ch, CURLOPT_FOLLOWLOCATION, TRUE);
+                curl_setopt($ch, CURLOPT_HTTPHEADER,array('Authorization: Bearer '.$access_token));
+
+                $payload = array(
+                  'purpose' => $plan->months.' month subscription plan',
+                  'amount' => $plan->amount,
+                  'buyer_name' => isset($matches->full_name) ? $matches->full_name : '',
+                  'email' => isset($user->email) ? $user->email : '',
+                  'phone' => isset($user->contact_no) ? $user->contact_no : '',
+                  'redirect_url' => 'https://localhost/api-and-admin-laravel/',
+                  'send_email' => 'True',
+                  'send_sms' => 'True',
+                  'allow_repeated_payments' => 'False',
+                );
+                // echo "<pre>"; print_r($payload); die();
+                curl_setopt($ch, CURLOPT_POST, true);
+                curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($payload));
+                $response_ch = curl_exec($ch);
+                curl_close($ch); 
+
+                $result_api = json_decode($response_ch);
+                // echo "<pre>"; print_r($result_api); die();
+                // return redirect($result_api->longurl);
+                // $this->status = Response::HTTP_OK;
+                // $this->response['data']['payment_url'] = $result_api->longurl;
+                // $this->response['meta']['message'] = "success";
+                // $this->response['meta']['is_ban'] = false;
+                // return $this->returnResponse();
+
+                $this->status = Response::HTTP_OK;
+                $this->response['data']['longurl'] = isset($result_api->longurl) ? $result_api->longurl : '';
+                $this->response['meta']['message'] = $result_api->message;
+                $this->response['meta']['is_ban'] = false;
+            } catch (ModelNotFoundException $exception) {
+                switch ($exception->getModel()) {
+                    case 'App\Models\SubscriptionPlan':
+                        $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("Subscription plan")]);
+                        $this->response['meta']['is_ban'] = false;
+                        break;
+                    default:
+                        $this->response['meta']['message'] = trans('api.went_wrong');
+                        $this->response['meta']['is_ban'] = false;
+                        break;
+                };
+            } catch (\Exception $e) {
+                $this->response['meta']['is_ban'] = false;
+                $this->storeErrorLog($e, 'razorpay_create_order');
+            }
+        }
+        return $this->returnResponse();
+    }
+
+    public function generate_access_token()
+    {
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, 'https://test.instamojo.com/oauth2/token/');     
+        curl_setopt($ch, CURLOPT_HEADER, FALSE);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, TRUE);
+
+        $payload = Array(
+            'grant_type' => 'client_credentials',
+            'client_id' => 'test_td6wIza0rhNmktBQrUPIlK6roekMNdIMOfD',
+            'client_secret' => 'test_GW0fwbDwe8pny3ui9zkoNMDxJNeDgxH7UiEYhQQB6aIgTWEBStWRm5RnJE5t4qMka5XsY2YEcqitYP9Dp1R9634nYDsNWphqMfHrfmtb7tcPDCyNu5ytpm4G32z'
+          );
+
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($payload));
+        $response = curl_exec($ch);
+        curl_close($ch); 
+        $result = json_decode($response);
+
+        return $result->access_token;
+        // echo "<pre>"; print_r($result);
     }
 }

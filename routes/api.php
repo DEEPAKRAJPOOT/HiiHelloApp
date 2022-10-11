@@ -133,6 +133,10 @@ Route::group(['namespace' => 'v1', 'prefix' => 'v1', 'middleware' => ['auth:sanc
     // AWS S3 STORAGE
     Route::post('aws/generate-url', [GeneralController::class,'generateAwsUrl'])->name('aws.generate-url');
 
+
+    // payment getway
+    // instamojo 
+    Route::post('instamojo/pay',[PaymentController::class,'instamojo_pay'])->name('api.instamojo.pay');
     /******************************************************** EXTRA ************************************************************/
 
     /* Twillio Testing Apis (Not Used Right Now) */
