@@ -281,6 +281,88 @@ class PaymentController extends Controller
         return $this->returnResponse();
     }
 
+    public function create_order(Request $request)
+    {
+        $plan_ids = SubscriptionPlan::whereIsActive('y')->pluck('custom_id')->toArray();
+        $rules = [
+            'plan_id'   =>  'required|in:' . implode(',', $plan_ids),
+        ];
+
+        if ($this->apiValidator($request->all(), $rules)) {
+            try {
+                $user = $request->user();
+                $plan = SubscriptionPlan::whereCustomId($request->plan_id)->whereIsActive('y')->firstOrFail();
+
+                $keyId              =   config('utility.razorpay.api_key');
+                $keySecret          =   config('utility.razorpay.api_secret');
+                $partial_payment    =   config('utility.razorpay.partial_payment');
+                $currency           =   config('utility.razorpay.currency');
+                $time               =   \Carbon\Carbon::now()->timestamp;
+                $amount             =   $plan->amount;
+
+                // Create the Razorpay Order
+                $api = new Api($keyId, $keySecret);
+
+                $orderData = [
+                    'receipt'         =>    'receipt_' . $user->custom_id . '_' . $time,
+                    'amount'          =>    $amount * 100, // 2000 * 100  = 2000 rupees in paise
+                    'currency'        =>    $currency,
+                    'payment_capture' =>    $partial_payment // auto capture
+                ];
+
+                $razorpayOrder = $api->order->create($orderData);
+
+                $new_subscription_start_date = \Carbon\Carbon::today()->format('Y-m-d');
+                if ($user->subscription_end_date >= $new_subscription_start_date) {
+                    $new_subscription_start_date = $user->subscription_end_date;
+                }
+
+                $subscription_end_date = !empty($user->subscription_end_date)
+                    ? \Carbon\Carbon::parse($new_subscription_start_date)->addMonth($plan->months)->format('Y-m-d')
+                    : \Carbon\Carbon::today()->addMonth($plan->months)->format('Y-m-d');
+
+                $subscription =  Subscription::firstOrCreate([
+                    'user_id'       =>  $user->id ?? NULL,
+                    'plan_id'       =>  $plan->id ?? NULL,
+                    'months'        =>  $plan->months,
+                    'amount'        =>  $plan->amount,
+                    'start_date'    =>  $new_subscription_start_date,
+                    'end_date'      =>  $subscription_end_date,
+                    'payment_date'  =>  NULL,
+                    'payment_type'  =>  'android',
+                    'status'        =>  'incomplete',
+                ], [
+                    'custom_id'     =>  getUniqueString('subscriptions'),
+                ]);
+
+                $razorpayOrder['subscription'] = $subscription;
+
+                return (new RazorPayOrderResource($razorpayOrder))
+                    ->additional([
+                        'meta' => [
+                            'message'   =>  trans('api.razorpay.order.success'),
+                            'is_ban'    =>  false,
+                        ]
+                    ]);
+            } catch (ModelNotFoundException $exception) {
+                switch ($exception->getModel()) {
+                    case 'App\Models\SubscriptionPlan':
+                        $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("Subscription plan")]);
+                        $this->response['meta']['is_ban'] = false;
+                        break;
+                    default:
+                        $this->response['meta']['message'] = trans('api.went_wrong');
+                        $this->response['meta']['is_ban'] = false;
+                        break;
+                };
+            } catch (\Exception $e) {
+                $this->response['meta']['is_ban'] = false;
+                $this->storeErrorLog($e, 'razorpay_create_order');
+            }
+        }
+        return $this->returnResponse();
+    }
+
     public function instamojo_pay(Request $request){
         $rules = [
             'plan_id'   =>  'required',

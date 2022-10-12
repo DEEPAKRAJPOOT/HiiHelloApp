@@ -14,6 +14,7 @@ Route::group(['middleware' => ['revalidate']], function () {
 	Route::post('link/update', 'Admin\PagesController@updateQuickLink')->name('update-quickLink');
 
 	
+	
 });
 
 
@@ -103,6 +104,8 @@ Route::group(['namespace' => 'Admin', 'middleware' => ['check_permit', 'revalida
 	Route::resource('call-logs', 'CallController');
 
 });
+Route::get('genderprlisting', 'Admin\PagesController@gender_pr_listing')->name('genderprlisting');
+Route::get('locationprlisting', 'Admin\PagesController@location_pr_listing')->name('locationprlisting');
 
 //User Exception
 Route::get('users-error-listing', 'Admin\ErrorController@listing')->name('error.listing');

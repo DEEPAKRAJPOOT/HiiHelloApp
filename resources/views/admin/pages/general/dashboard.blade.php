@@ -116,7 +116,6 @@
       </div>
     </div>
     <!--end::first count-->
-
   </div>
 
   <!--end::first raw-->
@@ -171,7 +170,7 @@
         <div class="card-header h-auto border-0">
           <!--begin::Title-->
           <div class="card-title py-5">
-            <div class="card-label">Active - Deactive Users</div>
+            <div class="card-label">Male & Female Users</div>
           </div>
           <!--end::Title-->
         </div>
@@ -205,8 +204,8 @@
                   <!--end::Symbol-->
                   <!--begin::Title-->
                   <div>
-                    <div class="font-size-h4 text-dark-75 font-weight-bolder" id="active_user_count">0</div>
-                    <div class="font-size-sm text-muted font-weight-bold mt-1">Active Users</div>
+                    <div class="font-size-h4 text-dark-75 font-weight-bolder" id="active_user_count">{{ $user['total_male'] ?? 0 }}</div>
+                    <div class="font-size-sm text-muted font-weight-bold mt-1">Male Users</div>
                   </div>
                   <!--end::Title-->
                 </div>
@@ -236,8 +235,8 @@
                   <!--end::Symbol-->
                   <!--begin::Title-->
                   <div>
-                    <div class="font-size-h4 text-dark-75 font-weight-bolder" id="deactive_user_count">0</div>
-                    <div class="font-size-sm text-muted font-weight-bold mt-1">Deactive Users</div>
+                    <div class="font-size-h4 text-dark-75 font-weight-bolder" id="deactive_user_count">{{ $user['total_unsubscribed'] ?? 0 }}</div>
+                    <div class="font-size-sm text-muted font-weight-bold mt-1">Female Users</div>
                   </div>
                   <!--end::Title-->
                 </div>
@@ -251,6 +250,82 @@
     </div>
 
   </div>
+
+  <div class="row">
+    <div class="col-lg-12">
+      <div class="card card-custom gutter-b">
+        <div class="card-header flex-wrap border-0 py-5">
+          <div class="card-title">
+            <h3 class="card-label">Total Subscription </h3>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-sm-12">
+              <table class="table table-separate table-head-custom table-checkable dataTable no-footer dtr-inline">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Paid</th>
+                    <th>Fee</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>Users</td>
+                    <td>{{ $user['total_subscribed'] ?? 0 }}</td>
+                    <td>{{ $user['total_unsubscribed'] ?? 0 }}</td>
+                  </tr>
+                  <tr>
+                    <td>Percentage (%) </td>
+                    <td>{{ number_format($user['total_subscribed'] / $user['total_male'] * 100,2) ?? 0 }}%</td>
+                    <td>{{ number_format($user['total_unsubscribed'] / $user['total_male'] * 100,2) ?? 0 }}%</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-12">
+      <div class="card card-custom gutter-b">
+        <div class="card-header flex-wrap border-0 py-5">
+          <div class="card-title">
+            <h3 class="card-label">Gender </h3>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-sm-12">
+              <table class="table table-separate table-head-custom table-checkable dataTable no-footer dtr-inline" id="city_pr_DT">
+                
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-12">
+      <div class="card card-custom gutter-b">
+        <div class="card-header flex-wrap border-0 py-5">
+          <div class="card-title">
+            <h3 class="card-label">Location </h3>
+          </div>
+
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-sm-12">
+              <table class="table table-separate table-head-custom table-checkable dataTable no-footer dtr-inline" id="location_pr_DT">
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!--end::second raw-->
   <!--begin::third row-->
   <div class="row">
@@ -353,6 +428,126 @@
     });
 
 
+  });
+</script>
+
+<script type="text/javascript">
+  $(function() {
+    var table = $('#city_pr_DT');
+
+
+    oTable = table.dataTable({
+      "processing": true,
+      "serverSide": true,
+      "language": {
+        "lengthMenu": "_MENU_ entries",
+        "paginate": {
+          "previous": '<i class="fa fa-angle-left" ></i>',
+          "next": '<i class="fa fa-angle-right" ></i>'
+        }
+      },
+      "columns": [{
+          "title": "Id",
+          "data": "id",
+          visible: false
+        },
+        {
+          "title": "City",
+          "data": "city_name",
+        },
+        {
+          "title": "Male",
+          "data": "total_male_pr",
+        },
+        {
+          "title": "Female",
+          "data": "total_female_pr",
+        },
+      ],
+      responsive: true,
+      "lengthMenu": [
+        [10, 20, 50, 100],
+        [10, 20, 50, 100]
+      ],
+      "pageLength": 10,
+      "ajax": {
+        "data": {},
+        "url": "{{route('admin.genderprlisting')}}", // ajax source
+      },
+      drawCallback: function(oSettings) {
+        $('.status-switch').bootstrapSwitch();
+        $('.status-switch').bootstrapSwitch('onColor', 'success');
+        $('.status-switch').bootstrapSwitch('offColor', 'danger');
+      },
+      "dom": "<'row' <'col-md-12'>><'row'<'col-md-6 col-sm-12'l><'col-md-6 col-sm-12'f>r><'table-scrollable't><'row'<'col-md-5 col-sm-12'i><'col-md-7 col-sm-12'p>>", // horizobtal scrollable datatable
+    });
+  });
+</script>
+<script type="text/javascript">
+  $(function() {
+    var table = $('#location_pr_DT');
+
+
+    oTable = table.dataTable({
+      "processing": true,
+      "serverSide": true,
+      "language": {
+        "lengthMenu": "_MENU_ entries",
+        "paginate": {
+          "previous": '<i class="fa fa-angle-left" ></i>',
+          "next": '<i class="fa fa-angle-right" ></i>'
+        }
+      },
+      "columns": [{
+          "title": "Id",
+          "data": "id",
+          visible: false
+        },
+        {
+          "title": "City",
+          "data": "city_name",
+        },
+        {
+          "title": "State",
+          "data": "state_name",
+        },
+        {
+          "title": "Male",
+          "data": "total_male_user",
+        },
+        {
+          "title": "Female",
+          "data": "total_female_user",
+        },
+        {
+          "title": "Total",
+          "data": "total_users",
+        },
+        {
+          "title": "%",
+          "data": "pr",
+        },
+      ],
+      responsive: true,
+      "order": [
+          [5, 'DESC']
+      ],
+      "lengthMenu": [
+        [10, 20, 50, 100],
+        [10, 20, 50, 100]
+      ],
+      "pageLength": 10,
+      "ajax": {
+        "data": {},
+        "url": "{{route('admin.locationprlisting')}}", // ajax source
+      },
+      drawCallback: function(oSettings) {
+        $('.status-switch').bootstrapSwitch();
+        $('.status-switch').bootstrapSwitch('onColor', 'success');
+        $('.status-switch').bootstrapSwitch('offColor', 'danger');
+      },
+      "dom": "<'row' <'col-md-12'>><'row'<'col-md-6 col-sm-12'l><'col-md-6 col-sm-12'f>r><'table-scrollable't><'row'<'col-md-5 col-sm-12'i><'col-md-7 col-sm-12'p>>", // horizobtal scrollable datatable
+    });
   });
 </script>
 @endpush
