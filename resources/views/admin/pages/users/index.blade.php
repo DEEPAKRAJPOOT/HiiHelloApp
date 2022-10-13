@@ -90,7 +90,7 @@
                 { data: 'city' },
                 { data: 'created_at' },
                 { data: 'active' },
-                { data: 'action', responsivePriority: -1 },
+                { data: 'action'},
             ],
             columnDefs: [
                 // Specify columns titles here...
@@ -105,7 +105,7 @@
                 { targets: 8, title: 'Created At', orderable: true },
                 { targets: 9, title: 'Ban', orderable: false },
                 // Action buttons
-                { targets: -1, title: 'Action',
+                { targets: 10, title: 'Action',
                 orderable: false },
             ],
             order: [

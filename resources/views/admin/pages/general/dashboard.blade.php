@@ -6,6 +6,7 @@
 
 @push('extra-css-styles')
 <link rel="stylesheet" type="text/css" href="{{ asset('assets/plugins/custom/datatables/datatables.bundle.css') }}" />
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.12.1/css/dataTables.bootstrap5.min.css" />
 @endpush
 
 @section('content')
@@ -299,7 +300,24 @@
           <div class="row">
             <div class="col-sm-12">
               <table class="table table-separate table-head-custom table-checkable dataTable no-footer dtr-inline" id="city_pr_DT">
-                
+                <thead>
+                  <tr>
+                    <th>City</th>
+                    <th>Male</th>
+                    <th>Female</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @if(count($user['city_result']) > 0)
+                      @foreach($user['city_result'] as $val)
+                      <tr>
+                        <td>{{ $val['city_name']}}</td>
+                        <td>{{ $val['total_male_pr']}}%</td>
+                        <td>{{ $val['total_female_pr']}}%</td>
+                      </tr>
+                    @endforeach
+                  @endif
+                </tbody>
               </table>
             </div>
           </div>
@@ -318,6 +336,46 @@
           <div class="row">
             <div class="col-sm-12">
               <table class="table table-separate table-head-custom table-checkable dataTable no-footer dtr-inline" id="location_pr_DT">
+                <thead>
+                  <tr>
+                    <th>City</th>
+                    <th>State</th>
+                    <th>Male</th>
+                    <th>Female</th>
+                    <th>Total</th>
+                    <th>%</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <?php $total_males = 0;
+                      $total_females = 0; 
+                  ?>
+                  @if(count($user['location_result']) > 0)
+                    @foreach($user['location_result'] as $val)
+                      <?php $total_males += $val['total_male_user']; 
+                        $total_females += $val['total_female_user']; 
+                      ?>
+                    <tr>
+                      <td>{{ $val['city_name']}}</td>
+                      <td>{{ $val['state_name']}}</td>
+                      <td>{{ $val['total_male_user']}}</td>
+                      <td>{{ $val['total_female_user']}}</td>
+                      <td>{{ $val['total_users']}}</td>
+                      <td>{{ $val['pr']}}%</td>
+                    </tr>
+                  @endforeach
+                @endif
+                </tbody>
+                <tfoot>
+                  <tr>
+                    <th>Total</th>
+                    <th></th>
+                    <th>{{ $total_males }}</th>
+                    <th>{{ $total_females }}</th>
+                    <th></th>
+                    <th></th>
+                  </tr>
+                </tfoot> 
               </table>
             </div>
           </div>
@@ -326,6 +384,7 @@
     </div>
   </div>
 
+@if(auth()->user()->type == 'admin')
   <!--end::second raw-->
   <!--begin::third row-->
   <div class="row">
@@ -349,11 +408,13 @@
     </div>
   </div>
   <!--end::third raw-->
-
+@endif
 </div>
 @endsection
 @push('extra-js-scripts')
 <script src="{{ asset('admin/plugins/chart/userchart.js') }}"></script>
+<script src="https://cdn.datatables.net/1.12.1/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.12.1/js/dataTables.bootstrap5.min.js"></script>
 <script type="text/javascript">
   $(function() {
     var table = $('#error_DT');
@@ -430,123 +491,15 @@
 
   });
 </script>
-
-<script type="text/javascript">
-  $(function() {
-    var table = $('#city_pr_DT');
-
-
-    oTable = table.dataTable({
-      "processing": true,
-      "serverSide": true,
-      "language": {
-        "lengthMenu": "_MENU_ entries",
-        "paginate": {
-          "previous": '<i class="fa fa-angle-left" ></i>',
-          "next": '<i class="fa fa-angle-right" ></i>'
-        }
-      },
-      "columns": [{
-          "title": "Id",
-          "data": "id",
-          visible: false
-        },
-        {
-          "title": "City",
-          "data": "city_name",
-        },
-        {
-          "title": "Male",
-          "data": "total_male_pr",
-        },
-        {
-          "title": "Female",
-          "data": "total_female_pr",
-        },
-      ],
-      responsive: true,
-      "lengthMenu": [
-        [10, 20, 50, 100],
-        [10, 20, 50, 100]
-      ],
-      "pageLength": 10,
-      "ajax": {
-        "data": {},
-        "url": "{{route('admin.genderprlisting')}}", // ajax source
-      },
-      drawCallback: function(oSettings) {
-        $('.status-switch').bootstrapSwitch();
-        $('.status-switch').bootstrapSwitch('onColor', 'success');
-        $('.status-switch').bootstrapSwitch('offColor', 'danger');
-      },
-      "dom": "<'row' <'col-md-12'>><'row'<'col-md-6 col-sm-12'l><'col-md-6 col-sm-12'f>r><'table-scrollable't><'row'<'col-md-5 col-sm-12'i><'col-md-7 col-sm-12'p>>", // horizobtal scrollable datatable
+<script>
+  $(document).ready(function () {
+    $('#city_pr_DT').DataTable({
+        order: [[1, 'desc']],
     });
   });
-</script>
-<script type="text/javascript">
-  $(function() {
-    var table = $('#location_pr_DT');
-
-
-    oTable = table.dataTable({
-      "processing": true,
-      "serverSide": true,
-      "language": {
-        "lengthMenu": "_MENU_ entries",
-        "paginate": {
-          "previous": '<i class="fa fa-angle-left" ></i>',
-          "next": '<i class="fa fa-angle-right" ></i>'
-        }
-      },
-      "columns": [{
-          "title": "Id",
-          "data": "id",
-          visible: false
-        },
-        {
-          "title": "City",
-          "data": "city_name",
-        },
-        {
-          "title": "State",
-          "data": "state_name",
-        },
-        {
-          "title": "Male",
-          "data": "total_male_user",
-        },
-        {
-          "title": "Female",
-          "data": "total_female_user",
-        },
-        {
-          "title": "Total",
-          "data": "total_users",
-        },
-        {
-          "title": "%",
-          "data": "pr",
-        },
-      ],
-      responsive: true,
-      "order": [
-          [5, 'DESC']
-      ],
-      "lengthMenu": [
-        [10, 20, 50, 100],
-        [10, 20, 50, 100]
-      ],
-      "pageLength": 10,
-      "ajax": {
-        "data": {},
-        "url": "{{route('admin.locationprlisting')}}", // ajax source
-      },
-      drawCallback: function(oSettings) {
-        $('.status-switch').bootstrapSwitch();
-        $('.status-switch').bootstrapSwitch('onColor', 'success');
-        $('.status-switch').bootstrapSwitch('offColor', 'danger');
-      },
-      "dom": "<'row' <'col-md-12'>><'row'<'col-md-6 col-sm-12'l><'col-md-6 col-sm-12'f>r><'table-scrollable't><'row'<'col-md-5 col-sm-12'i><'col-md-7 col-sm-12'p>>", // horizobtal scrollable datatable
+  $(document).ready(function () {
+    $('#location_pr_DT').DataTable({
+        order: [[4, 'desc']],
     });
   });
 </script>

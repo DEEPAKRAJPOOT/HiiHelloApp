@@ -21,7 +21,7 @@ class PagesController extends Controller
 {
 
     public function dashboard()
-    {
+    {   
         $location_result = array();
         $city_result = array(); 
 
@@ -248,8 +248,8 @@ class PagesController extends Controller
                 $results[] = array(
                     'id' => $val->id,
                     'city_name' => $val->name,
-                    'total_male_pr' => number_format($male_pr,2),
-                    'total_female_pr' => number_format($female_pr,2),
+                    'total_male_pr' => number_format($male_pr,2)."%",
+                    'total_female_pr' => number_format($female_pr,2)."%",
                 );
             }
         }
@@ -285,7 +285,7 @@ class PagesController extends Controller
                     'total_male_user' => $total_male_user,
                     'total_female_user' => $total_female_user,
                     'total_users' => $total_users,
-                    'pr' => number_format($pr,2),
+                    'pr' => number_format($pr,2)."%",
                 );
             }
         }
