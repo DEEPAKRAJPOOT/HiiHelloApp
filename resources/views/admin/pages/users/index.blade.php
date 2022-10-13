@@ -87,9 +87,10 @@
                 { data: 'contact_no' },
                 { data: 'email' },
                 { data: 'gender' },
+                { data: 'city' },
                 { data: 'created_at' },
                 { data: 'active' },
-                { data: 'action', responsivePriority: -1 },
+                { data: 'action'},
             ],
             columnDefs: [
                 // Specify columns titles here...
@@ -100,14 +101,15 @@
                 { targets: 4, title: 'Contact Number', orderable: true },
                 { targets: 5, title: 'E-mail', orderable: true },
                 { targets: 6, title: 'Gender', orderable: true },
-                { targets: 7, title: 'Created At', orderable: true },
-                { targets: 8, title: 'Ban', orderable: false },
+                { targets: 7, title: 'City', orderable: true },
+                { targets: 8, title: 'Created At', orderable: true },
+                { targets: 9, title: 'Ban', orderable: false },
                 // Action buttons
-                { targets: -1, title: 'Action',
+                { targets: 10, title: 'Action',
                 orderable: false },
             ],
             order: [
-                [7, 'DESC']
+                [8, 'DESC']
             ],
             lengthMenu: [
                 [10, 20, 50, 100],

@@ -6,6 +6,7 @@
 
 @push('extra-css-styles')
 <link rel="stylesheet" type="text/css" href="{{ asset('assets/plugins/custom/datatables/datatables.bundle.css') }}" />
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.12.1/css/dataTables.bootstrap5.min.css" />
 @endpush
 
 @section('content')
@@ -116,7 +117,6 @@
       </div>
     </div>
     <!--end::first count-->
-
   </div>
 
   <!--end::first raw-->
@@ -171,7 +171,7 @@
         <div class="card-header h-auto border-0">
           <!--begin::Title-->
           <div class="card-title py-5">
-            <div class="card-label">Active - Deactive Users</div>
+            <div class="card-label">Male & Female Users</div>
           </div>
           <!--end::Title-->
         </div>
@@ -205,8 +205,8 @@
                   <!--end::Symbol-->
                   <!--begin::Title-->
                   <div>
-                    <div class="font-size-h4 text-dark-75 font-weight-bolder" id="active_user_count">0</div>
-                    <div class="font-size-sm text-muted font-weight-bold mt-1">Active Users</div>
+                    <div class="font-size-h4 text-dark-75 font-weight-bolder" id="active_user_count">{{ $user['total_male'] ?? 0 }}</div>
+                    <div class="font-size-sm text-muted font-weight-bold mt-1">Male Users</div>
                   </div>
                   <!--end::Title-->
                 </div>
@@ -236,8 +236,8 @@
                   <!--end::Symbol-->
                   <!--begin::Title-->
                   <div>
-                    <div class="font-size-h4 text-dark-75 font-weight-bolder" id="deactive_user_count">0</div>
-                    <div class="font-size-sm text-muted font-weight-bold mt-1">Deactive Users</div>
+                    <div class="font-size-h4 text-dark-75 font-weight-bolder" id="deactive_user_count">{{ $user['total_unsubscribed'] ?? 0 }}</div>
+                    <div class="font-size-sm text-muted font-weight-bold mt-1">Female Users</div>
                   </div>
                   <!--end::Title-->
                 </div>
@@ -251,6 +251,140 @@
     </div>
 
   </div>
+
+  <div class="row">
+    <div class="col-lg-12">
+      <div class="card card-custom gutter-b">
+        <div class="card-header flex-wrap border-0 py-5">
+          <div class="card-title">
+            <h3 class="card-label">Total Subscription </h3>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-sm-12">
+              <table class="table table-separate table-head-custom table-checkable dataTable no-footer dtr-inline">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Paid</th>
+                    <th>Fee</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>Users</td>
+                    <td>{{ $user['total_subscribed'] ?? 0 }}</td>
+                    <td>{{ $user['total_unsubscribed'] ?? 0 }}</td>
+                  </tr>
+                  <tr>
+                    <td>Percentage (%) </td>
+                    <td>{{ number_format($user['total_subscribed'] / $user['total_male'] * 100,2) ?? 0 }}%</td>
+                    <td>{{ number_format($user['total_unsubscribed'] / $user['total_male'] * 100,2) ?? 0 }}%</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-12">
+      <div class="card card-custom gutter-b">
+        <div class="card-header flex-wrap border-0 py-5">
+          <div class="card-title">
+            <h3 class="card-label">Gender </h3>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-sm-12">
+              <table class="table table-separate table-head-custom table-checkable dataTable no-footer dtr-inline" id="city_pr_DT">
+                <thead>
+                  <tr>
+                    <th>City</th>
+                    <th>Male</th>
+                    <th>Female</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @if(count($user['city_result']) > 0)
+                      @foreach($user['city_result'] as $val)
+                      <tr>
+                        <td>{{ $val['city_name']}}</td>
+                        <td>{{ $val['total_male_pr']}}%</td>
+                        <td>{{ $val['total_female_pr']}}%</td>
+                      </tr>
+                    @endforeach
+                  @endif
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-12">
+      <div class="card card-custom gutter-b">
+        <div class="card-header flex-wrap border-0 py-5">
+          <div class="card-title">
+            <h3 class="card-label">Location </h3>
+          </div>
+
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-sm-12">
+              <table class="table table-separate table-head-custom table-checkable dataTable no-footer dtr-inline" id="location_pr_DT">
+                <thead>
+                  <tr>
+                    <th>City</th>
+                    <th>State</th>
+                    <th>Male</th>
+                    <th>Female</th>
+                    <th>Total</th>
+                    <th>%</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <?php $total_males = 0;
+                      $total_females = 0; 
+                  ?>
+                  @if(count($user['location_result']) > 0)
+                    @foreach($user['location_result'] as $val)
+                      <?php $total_males += $val['total_male_user']; 
+                        $total_females += $val['total_female_user']; 
+                      ?>
+                    <tr>
+                      <td>{{ $val['city_name']}}</td>
+                      <td>{{ $val['state_name']}}</td>
+                      <td>{{ $val['total_male_user']}}</td>
+                      <td>{{ $val['total_female_user']}}</td>
+                      <td>{{ $val['total_users']}}</td>
+                      <td>{{ $val['pr']}}%</td>
+                    </tr>
+                  @endforeach
+                @endif
+                </tbody>
+                <tfoot>
+                  <tr>
+                    <th>Total</th>
+                    <th></th>
+                    <th>{{ $total_males }}</th>
+                    <th>{{ $total_females }}</th>
+                    <th></th>
+                    <th></th>
+                  </tr>
+                </tfoot> 
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+@if(auth()->user()->type == 'admin')
   <!--end::second raw-->
   <!--begin::third row-->
   <div class="row">
@@ -274,11 +408,13 @@
     </div>
   </div>
   <!--end::third raw-->
-
+@endif
 </div>
 @endsection
 @push('extra-js-scripts')
 <script src="{{ asset('admin/plugins/chart/userchart.js') }}"></script>
+<script src="https://cdn.datatables.net/1.12.1/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.12.1/js/dataTables.bootstrap5.min.js"></script>
 <script type="text/javascript">
   $(function() {
     var table = $('#error_DT');
@@ -353,6 +489,18 @@
     });
 
 
+  });
+</script>
+<script>
+  $(document).ready(function () {
+    $('#city_pr_DT').DataTable({
+        order: [[1, 'desc']],
+    });
+  });
+  $(document).ready(function () {
+    $('#location_pr_DT').DataTable({
+        order: [[4, 'desc']],
+    });
   });
 </script>
 @endpush

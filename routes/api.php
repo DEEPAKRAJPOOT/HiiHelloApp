@@ -107,6 +107,7 @@ Route::group(['namespace' => 'v1', 'prefix' => 'v1', 'middleware' => ['auth:sanc
     // Razorpay Android
     Route::post('get/subscription-plans',[PaymentController::class,'getSubscriptionPlans'])->name('api.get-subscription-plans');
     Route::post('payment/create-order',[PaymentController::class,'createOrder'])->name('api.payment.create-order');
+    Route::post('payment/createorder',[PaymentController::class,'create_order'])->name('api.payment.createorder');
     Route::post('payment/varify-signature',[PaymentController::class,'verifySignature'])->name('api.payment.varify-signature');
 
     // subscription 
@@ -133,6 +134,10 @@ Route::group(['namespace' => 'v1', 'prefix' => 'v1', 'middleware' => ['auth:sanc
     // AWS S3 STORAGE
     Route::post('aws/generate-url', [GeneralController::class,'generateAwsUrl'])->name('aws.generate-url');
 
+
+    // payment getway
+    // instamojo 
+    Route::post('instamojo/pay',[PaymentController::class,'instamojo_pay'])->name('api.instamojo.pay');
     /******************************************************** EXTRA ************************************************************/
 
     /* Twillio Testing Apis (Not Used Right Now) */
