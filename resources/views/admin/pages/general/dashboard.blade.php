@@ -268,7 +268,7 @@
                   <tr>
                     <th>#</th>
                     <th>Paid</th>
-                    <th>Fee</th>
+                    <th>Non Paid</th>
                   </tr>
                 </thead>
                 <tbody>
