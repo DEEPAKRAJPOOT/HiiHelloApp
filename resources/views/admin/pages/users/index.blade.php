@@ -101,7 +101,7 @@
                 { targets: 4, title: 'Contact Number', orderable: true },
                 { targets: 5, title: 'E-mail', orderable: true },
                 { targets: 6, title: 'Gender', orderable: true },
-                { targets: 7, title: 'City', orderable: true },
+                { targets: 7, title: 'City', orderable: false },
                 { targets: 8, title: 'Created At', orderable: true },
                 { targets: 9, title: 'Ban', orderable: false },
                 // Action buttons
