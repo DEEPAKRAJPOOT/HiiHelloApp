@@ -15,6 +15,19 @@ use App\Models\ { User };
 | contains the "web" middleware group. Now create something great!
 |
 */
+// cache clear
+Route::get('/cache', function () {
+    Artisan::call('config:clear');
+    Artisan::call('route:clear');
+    Artisan::call('view:clear');
+    Artisan::call('event:clear');
+    Artisan::call('cache:clear');
+    Artisan::call('config:clear');
+    Artisan::call('optimize');
+    dd("Cache is cleared");
+});
+
+
 Auth::routes(['register' => false, 'login' => false]);
 
 // Twilio Voice Response

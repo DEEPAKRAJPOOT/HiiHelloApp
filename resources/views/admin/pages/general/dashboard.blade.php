@@ -347,11 +347,13 @@
                 <tbody>
                   <?php $total_males = 0;
                       $total_females = 0; 
+                      $total_na = 0; 
                   ?>
                   @if(count($user['location_result']) > 0)
                     @foreach($user['location_result'] as $val)
                       <?php $total_males += $val['total_male_user']; 
                         $total_females += $val['total_female_user']; 
+                        $total_na += $val['total_na_user']; 
                       ?>
                     <tr>
                       <td>{{ $val['city_name']}}</td>
@@ -371,6 +373,7 @@
                     <th></th>
                     <th>{{ $total_males }}</th>
                     <th>{{ $total_females }}</th>
+                    <th>{{ $total_na }}</th>
                     <th></th>
                     <th></th>
                   </tr>

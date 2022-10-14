@@ -30,10 +30,23 @@ Route::get('/cache', function () {
 });
 
 
+// cache clear
+Route::get('/cache', function () {
+	Artisan::call('config:clear');
+	Artisan::call('route:clear');
+	Artisan::call('view:clear');
+	Artisan::call('event:clear');
+	Artisan::call('cache:clear');
+	Artisan::call('config:clear');
+	Artisan::call('optimize');
+	dd("Cache is cleared");
+});
+
+
 Route::group(['namespace' => 'Admin', 'middleware' => ['check_permit', 'revalidate']], function () {
-	
+
 	/* Dashboard */
-	Route::get('/', 'PagesController@dashboard')->name('dashboard.index');
+	// Route::get('/', 'PagesController@dashboard')->name('dashboard.index');
 	Route::get('/dashboard', 'PagesController@dashboard')->name('dashboard.index');
 	
 	/* User */
@@ -116,8 +129,6 @@ Route::group(['namespace' => 'Admin', 'middleware' => ['check_permit', 'revalida
 	Route::resource('call-logs', 'CallController');
 
 });
-Route::get('genderprlisting', 'Admin\PagesController@gender_pr_listing')->name('genderprlisting');
-Route::get('locationprlisting', 'Admin\PagesController@location_pr_listing')->name('locationprlisting');
 
 //User Exception
 Route::get('users-error-listing', 'Admin\ErrorController@listing')->name('error.listing');
