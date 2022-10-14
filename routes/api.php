@@ -15,6 +15,19 @@ use App\Http\Controllers\api\v1\ { AuthenticationController, GeneralController, 
 | is assigned the "api" middleware group. Enjoy building your API!
 |
 */
+
+// cache clear
+Route::get('/cache', function () {
+    Artisan::call('config:clear');
+    Artisan::call('route:clear');
+    Artisan::call('view:clear');
+    Artisan::call('event:clear');
+    Artisan::call('cache:clear');
+    Artisan::call('config:clear');
+    Artisan::call('optimize');
+    dd("Cache is cleared");
+});
+
 Route::group(['namespace' => 'v1', 'prefix' => 'v1'], function () {
     // Authentication
     Route::post('login', [AuthenticationController::class,'login'])->name('api.user.login');
