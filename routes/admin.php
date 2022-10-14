@@ -17,6 +17,18 @@ Route::group(['middleware' => ['revalidate']], function () {
 	
 });
 
+// cache clear
+Route::get('/cache', function () {
+	Artisan::call('config:clear');
+	Artisan::call('route:clear');
+	Artisan::call('view:clear');
+	Artisan::call('event:clear');
+	Artisan::call('cache:clear');
+	Artisan::call('config:clear');
+	Artisan::call('optimize');
+	dd("Cache is cleared");
+});
+
 
 Route::group(['namespace' => 'Admin', 'middleware' => ['check_permit', 'revalidate']], function () {
 	
