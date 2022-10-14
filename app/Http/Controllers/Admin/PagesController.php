@@ -101,8 +101,8 @@ class PagesController extends Controller
         }
 
 
-        $user['location_result'] = $location_result;
-        $user['city_result'] = $city_result;
+        $user['location_result'] = [];
+        $user['city_result'] = [];
         // echo "<pre>"; print_r($location_result); die();
         cache()->forget('oldest-record'); //forget cache recorde change on development
         $old_date = cache()->rememberForever('oldest-record', function () {
