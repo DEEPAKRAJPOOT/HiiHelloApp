@@ -37,8 +37,6 @@ class PagesController extends Controller
         $city_list = City::with(['state.stateTransDefault','cityTransDefault'])->get();
         if(count($city_list) > 0){
             foreach ($city_list as $key => $val) {
-                $total_users        = User::where('location_id','=',$val->id)
-                                    ->count();
                 $all_users          = User::count();
                 $total_male_user    = User::where('location_id','=',$val->id)
                                     ->where('gender','=','Male')
@@ -46,12 +44,18 @@ class PagesController extends Controller
                 $total_female_user  = User::where('location_id','=',$val->id)
                                     ->where('gender','=','Female')
                                     ->count();
+                $total_na_user      = User::where('location_id','=',$val->id)
+                                    ->whereNull('gender')
+                                    ->count();
+                                    
+                $total_users = $total_male_user + $total_female_user + $total_na_user;
                 $pr = $total_users/$all_users * 100;
                 $location_result[] = array(
                     'city_name' => $val->name,
                     'state_name' =>  $val->state ? $val->state->stateTransDefault ? $val->state->stateTransDefault->name : "" : "",
                     'total_male_user' => $total_male_user,
                     'total_female_user' => $total_female_user,
+                    'total_na_user' => $total_na_user,
                     'total_users' => $total_users,
                     'pr' => number_format($pr,2),
                 );
@@ -289,6 +293,9 @@ class PagesController extends Controller
                 $total_female_user  = User::where('location_id','=',$val->id)
                                     ->where('gender','=','Female')
                                     ->count();
+                $total_na_user  = User::where('location_id','=',$val->id)
+                                    ->whereNull('gender')
+                                    ->count();
                 $pr = $total_users/$all_users * 100;
                 $location_result[] = array(
                     'id' => $val->id,
@@ -296,6 +303,7 @@ class PagesController extends Controller
                     'state_name' =>  $val->state ? $val->state->stateTransDefault ? $val->state->stateTransDefault->name : "" : "",
                     'total_male_user' => $total_male_user,
                     'total_female_user' => $total_female_user,
+                    'total_na_user' => $total_na_user,
                     'total_users' => $total_users,
                     'pr' => number_format($pr,2)."%",
                 );

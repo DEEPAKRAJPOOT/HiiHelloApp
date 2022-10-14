@@ -339,6 +339,7 @@
                     <th>State</th>
                     <th>Male</th>
                     <th>Female</th>
+                    <th>N/A</th>
                     <th>Total</th>
                     <th>%</th>
                   </tr>
@@ -357,6 +358,7 @@
                       <td>{{ $val['state_name']}}</td>
                       <td>{{ $val['total_male_user']}}</td>
                       <td>{{ $val['total_female_user']}}</td>
+                      <td>{{ $val['total_na_user']}}</td>
                       <td>{{ $val['total_users']}}</td>
                       <td>{{ $val['pr']}}%</td>
                     </tr>
@@ -532,7 +534,7 @@
   });
   $(document).ready(function () {
     $('#location_pr_DT').DataTable({
-        order: [[4, 'desc']],
+        order: [[5, 'desc']],
     });
   });
 </script>
