@@ -120,6 +120,8 @@ Route::group(['namespace' => 'Admin', 'middleware' => ['check_permit', 'revalida
 
 //User Exception
 Route::get('users-error-listing', 'Admin\ErrorController@listing')->name('error.listing');
+Route::get('gender-listing', 'Admin\PagesController@gender_listing')->name('gender.listing');
+Route::get('location-listing', 'Admin\PagesController@location_listing')->name('location.listing');
 //Chart routes
 Route::get('register-users-chart', 'Admin\ChartController@getRegisterUser')->name('users.registerchart');
 Route::get('active-deactive-users-chart', 'Admin\ChartController@getActiveDeactiveUser')->name('users.activeDeactiveChart');

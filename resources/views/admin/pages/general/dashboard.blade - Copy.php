@@ -6,7 +6,7 @@
 
 @push('extra-css-styles')
 <link rel="stylesheet" type="text/css" href="{{ asset('assets/plugins/custom/datatables/datatables.bundle.css') }}" />
-<!-- <link rel="stylesheet" type="text/css" href="{{ asset('assets/css/dataTables.bootstrap5.min.css') }}" /> -->
+<link rel="stylesheet" type="text/css" href="{{ asset('assets/css/dataTables.bootstrap5.min.css') }}" />
 @endpush
 
 @section('content')
@@ -451,8 +451,8 @@
 @endsection
 @push('extra-js-scripts')
 <script src="{{ asset('admin/plugins/chart/userchart.js') }}"></script>
-<!-- <script src="{{ asset('admin/js/jquery.dataTables.min.js') }}"></script> -->
-<!-- <script src="{{ asset('admin/js/dataTables.bootstrap5.min.js') }}"></script> -->
+<script src="{{ asset('admin/js/jquery.dataTables.min.js') }}"></script>
+<script src="{{ asset('admin/js/dataTables.bootstrap5.min.js') }}"></script>
 <script type="text/javascript">
   $(function() {
     var table = $('#error_DT');
@@ -516,6 +516,64 @@
       "pageLength": 10,
       "ajax": {
         "data": {},
+        "url": "{{route('admin.gender.listing')}}", // ajax source
+      },
+      drawCallback: function(oSettings) {
+        $('.status-switch').bootstrapSwitch();
+        $('.status-switch').bootstrapSwitch('onColor', 'success');
+        $('.status-switch').bootstrapSwitch('offColor', 'danger');
+      },
+      "dom": "<'row' <'col-md-12'>><'row'<'col-md-6 col-sm-12'l><'col-md-6 col-sm-12'f>r><'table-scrollable't><'row'<'col-md-5 col-sm-12'i><'col-md-7 col-sm-12'p>>", // horizobtal scrollable datatable
+    });
+
+
+  });
+</script>
+<script type="text/javascript">
+  $(function() {
+    var table = $('#city_pr_DT');
+
+
+    oTable = table.dataTable({
+      "processing": true,
+      "serverSide": true,
+      "language": {
+        "lengthMenu": "_MENU_ entries",
+        "paginate": {
+          "previous": '<i class="fa fa-angle-left" ></i>',
+          "next": '<i class="fa fa-angle-right" ></i>'
+        }
+      },
+      "columns": [{
+          "title": "Id",
+          "data": "id",
+          visible: false
+        },
+        {
+          "title": "City",
+          "data": "city",
+        },
+        {
+          "title": "Male",
+          "data": "male",
+        },
+        {
+          "title": "Female",
+          "data": "female",
+        },
+        {
+          "title": "N/A",
+          "data": "na",
+        },
+      ],
+      responsive: true,
+      "lengthMenu": [
+        [10, 20, 50, 100],
+        [10, 20, 50, 100]
+      ],
+      "pageLength": 10,
+      "ajax": {
+        "data": {},
         "url": "{{route('admin.error.listing')}}", // ajax source
       },
       drawCallback: function(oSettings) {
@@ -529,16 +587,16 @@
 
   });
 </script>
-<!-- <script>
-  $(document).ready(function () {
-    $('#city_pr_DT').DataTable({
-        order: [[1, 'desc']],
-    });
-  });
+<script>
+  // $(document).ready(function () {
+  //   $('#city_pr_DT').DataTable({
+  //       order: [[1, 'desc']],
+  //   });
+  // });
   $(document).ready(function () {
     $('#location_pr_DT').DataTable({
         order: [[5, 'desc']],
     });
   });
-</script> -->
+</script>
 @endpush
