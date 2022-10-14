@@ -6,7 +6,7 @@
 
 @push('extra-css-styles')
 <link rel="stylesheet" type="text/css" href="{{ asset('assets/plugins/custom/datatables/datatables.bundle.css') }}" />
-<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.12.1/css/dataTables.bootstrap5.min.css" />
+<link rel="stylesheet" type="text/css" href="{{ asset('assets/css/dataTables.bootstrap5.min.css') }}" />
 @endpush
 
 @section('content')
@@ -451,8 +451,8 @@
 @endsection
 @push('extra-js-scripts')
 <script src="{{ asset('admin/plugins/chart/userchart.js') }}"></script>
-<script src="https://cdn.datatables.net/1.12.1/js/jquery.dataTables.min.js"></script>
-<script src="https://cdn.datatables.net/1.12.1/js/dataTables.bootstrap5.min.js"></script>
+<script src="{{ asset('admin/js/jquery.dataTables.min.js') }}"></script>
+<script src="{{ asset('admin/js/dataTables.bootstrap5.min.js') }}"></script>
 <script type="text/javascript">
   $(function() {
     var table = $('#error_DT');
