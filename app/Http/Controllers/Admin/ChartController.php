@@ -118,11 +118,12 @@ class ChartController extends Controller
 
     public function getActiveDeactiveUser()
     {
-        $datasetLabel = "Male Female Users";
-        $labels = ["Male", "Female"];
+        $datasetLabel = "Male & Female Users";
+        $labels = ["Male", "Female","N/A"];
         $active_users = User::where('gender','=','Male')->whereNull('deleted_at')->count();
         $deactive_users = User::where('gender','=','Female')->whereNull('deleted_at')->count();
-        $data = [$active_users, $deactive_users];
+        $na_users = User::whereNull('gender')->whereNull('deleted_at')->count();;
+        $data = [$active_users, $deactive_users,$na_users];
 
         return response()->json(compact('datasetLabel', 'labels', 'data'));
     }

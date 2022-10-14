@@ -30,6 +30,7 @@ class PagesController extends Controller
         $user['total_city'] = City::count();
         $user['total_male'] = User::where('gender','=','Male')->whereNull('deleted_at')->count();
         $user['total_female'] = User::where('gender','=','Female')->whereNull('deleted_at')->count();
+        $user['total_na_user'] = User::whereNull('gender')->whereNull('deleted_at')->count();
         $user['total_subscribed'] = User::where('gender','=','Male')->where('is_subscribed','=','y')->whereNull('deleted_at')->count();
         $user['total_unsubscribed'] = User::where('gender','=','Male')->where('is_subscribed','!=','y')->whereNull('deleted_at')->count();
         
@@ -61,20 +62,30 @@ class PagesController extends Controller
         if(count($city_lists) > 0){
             foreach ($city_lists as $key => $val) {
                 $total_users        = User::where('location_id','=',$val->id)
-                                    ->count();
-                $all_users          = User::count();
+                                        ->whereNull('deleted_at')
+                                        ->count();
+                $all_users          = User::whereNull('deleted_at')->count();
                 $total_male_user    = User::where('location_id','=',$val->id)
-                                    ->where('gender','=','Male')
-                                    ->count();
+                                        ->where('gender','=','Male')
+                                        ->whereNull('deleted_at')
+                                        ->count();
                 $total_female_user  = User::where('location_id','=',$val->id)
-                                    ->where('gender','=','Female')
-                                    ->count();
+                                        ->where('gender','=','Female')
+                                        ->whereNull('deleted_at')
+                                        ->count();
+                $total_na_user      = User::where('location_id','=',$val->id)
+                                        ->whereNull('gender')
+                                        ->whereNull('deleted_at')
+                                        ->count();
+
                 $male_pr = $total_male_user/$all_users * 100;
                 $female_pr = $total_female_user/$all_users * 100;
+                $na_pr = $total_na_user/$all_users * 100;
                 $city_result[] = array(
                     'city_name' => $val->name,
                     'total_male_pr' => number_format($male_pr,2),
                     'total_female_pr' => number_format($female_pr,2),
+                    'total_na_pr' => number_format($na_pr,2),
                 );
             }
         }
@@ -93,10 +104,10 @@ class PagesController extends Controller
 
             //diffInDays same date return 0 day and if date 4 and 5 diffInDays return 1 day
             $diffInDays = $diffInDays + 1;
-            $user['PerDayCount'] = $diffInDays >= 1 ? number_format_short(floor(($user['Count'] / $diffInDays))) : 0; //Per Day Register User
-            $user['PerWeekCount'] = $diffInDays >= 7 ? number_format_short(floor(($user['Count'] / ($diffInDays / 7)))) : 0; //Per Week Register User
-            $user['Per30DayCount'] = $diffInDays >= 30 ? number_format_short(floor(($user['Count'] / ($diffInDays / 30)))) : 0; //Per 30 Day Register User
-            $user['Count'] = number_format_short($user['Count']);
+            $user['PerDayCount'] = $diffInDays >= 1 ? number_format(floor(($user['Count'] / $diffInDays))) : 0; //Per Day Register User
+            $user['PerWeekCount'] = $diffInDays >= 7 ? number_format(floor(($user['Count'] / ($diffInDays / 7)))) : 0; //Per Week Register User
+            $user['Per30DayCount'] = $diffInDays >= 30 ? number_format(floor(($user['Count'] / ($diffInDays / 30)))) : 0; //Per 30 Day Register User
+            $user['Count'] = number_format($user['Count']);
         }
         return view('admin.pages.general.dashboard', compact('user'))->with(['custom_title' => __('Dashboard')]);
     }

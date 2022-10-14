@@ -1,11 +1,11 @@
-$(document).ready(function () {
+$(document).ready(function() {
     var userBarChartUrl = "register-users-chart";
     var userPieChartUrl = "active-deactive-users-chart";
 
     $('input[name="registercustomdates"]').daterangepicker({
         maxDate: new Date(),
     });
-    $('input[name="registercustomdates"]').on("change", function () {
+    $('input[name="registercustomdates"]').on("change", function() {
         var customDate = $(this).val();
         var dates = customDate.split(" - ");
         var startDate = dates[0];
@@ -20,12 +20,10 @@ $(document).ready(function () {
             type: "bar",
             height: "300px",
         },
-        series: [
-            {
-                name: "register users",
-                data: [],
-            },
-        ],
+        series: [{
+            name: "register users",
+            data: [],
+        }, ],
         xaxis: {
             categories: [],
             // tickPlacement: 'on'
@@ -50,19 +48,17 @@ $(document).ready(function () {
             position: "bottom",
         },
         labels: [],
-        responsive: [
-            {
-                breakpoint: 480,
-                options: {
-                    chart: {
-                        width: 200,
-                    },
-                    legend: {
-                        position: "bottom",
-                    },
+        responsive: [{
+            breakpoint: 480,
+            options: {
+                chart: {
+                    width: 200,
+                },
+                legend: {
+                    position: "bottom",
                 },
             },
-        ],
+        }, ],
     };
 
     var userBarChart = new ApexCharts(
@@ -76,7 +72,7 @@ $(document).ready(function () {
     userBarChart.render();
     userPieChart.render();
 
-    $("#horizontalSwitch").on("click", function () {
+    $("#horizontalSwitch").on("click", function() {
         let switchValue = false;
         let height = "350px";
         if ($(this).prop("checked") == true) {
@@ -96,7 +92,7 @@ $(document).ready(function () {
         });
     });
 
-    var updateUserBarChart = function (
+    var updateUserBarChart = function(
         filterBy = "week",
         startDate = "",
         endDate = ""
@@ -113,18 +109,16 @@ $(document).ready(function () {
                 startDate: startDate,
                 endDate: endDate,
             },
-            success: function (data) {
+            success: function(data) {
                 var horizontalSwitch = false;
                 if ($("#horizontalSwitch").prop("checked") == true) {
                     horizontalSwitch = true;
                 }
                 userBarChart.updateOptions({
-                    series: [
-                        {
-                            name: "register users",
-                            data: data.data,
-                        },
-                    ],
+                    series: [{
+                        name: "register users",
+                        data: data.data,
+                    }, ],
                     xaxis: {
                         categories: data.labels,
                     },
@@ -138,13 +132,13 @@ $(document).ready(function () {
                     },
                 });
             },
-            error: function (data) {
+            error: function(data) {
                 console.log(data);
             },
         });
     };
 
-    var updateUserPieChart = function () {
+    var updateUserPieChart = function() {
         $.ajax({
             url: userPieChartUrl,
             type: "GET",
@@ -153,22 +147,23 @@ $(document).ready(function () {
                 "X-CSRF-TOKEN": $('meta[name="csrf-token"]').attr("content"),
             },
             data: {},
-            success: function (data) {
+            success: function(data) {
                 $("#active_user_count").text(data.data[0]);
                 $("#deactive_user_count").text(data.data[1]);
+                $("#na_user_count").text(data.data[2]);
                 userPieChart.updateOptions({
                     labels: data.labels,
                     series: data.data,
-                    colors: ["rgb(0, 183, 70)", "rgb(239, 64, 60)"],
+                    colors: ["rgb(0, 183, 70)", "rgb(239, 64, 60)", "rgb(255,204,0)"],
                 });
             },
-            error: function (data) {
+            error: function(data) {
                 console.log(data);
             },
         });
     };
 
-    $("#registerUserChart").on("change", function () {
+    $("#registerUserChart").on("change", function() {
         var filterBy = $(this).val();
         if (filterBy != "custom") {
             $(".register-user-date").hide();
