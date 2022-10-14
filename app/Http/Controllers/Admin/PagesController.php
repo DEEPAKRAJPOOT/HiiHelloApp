@@ -35,10 +35,10 @@ class PagesController extends Controller
         $user['total_subscribed'] = User::where('gender','=','Male')->where('is_subscribed','=','y')->whereNull('deleted_at')->count();
         $user['total_unsubscribed'] = User::where('gender','=','Male')->where('is_subscribed','!=','y')->whereNull('deleted_at')->count();
         
-        $city_list = Location::with(['locationTranslation'])->get();
+        $city_list = City::with(['state.stateTransDefault','cityTransDefault'])->get();
         if(count($city_list) > 0){
             foreach ($city_list as $key => $val) {
-                $all_users          = User::count();
+                $all_users              = User::count();
                 $total_male_user    = User::where('location_id','=',$val->id)
                                     ->where('gender','=','Male')
                                     ->count();
@@ -52,7 +52,7 @@ class PagesController extends Controller
                 $total_users = $total_male_user + $total_female_user + $total_na_user;
                 $pr = $total_users/$all_users * 100;
                 if($total_users > 0){
-                    $location_result[] = array(
+                    $location_result[] = [
                         'city_name' => $val->name,
                         'state_name' =>  $val->state ? $val->state->stateTransDefault ? $val->state->stateTransDefault->name : "" : "",
                         'total_male_user' => $total_male_user,
@@ -60,17 +60,17 @@ class PagesController extends Controller
                         'total_na_user' => $total_na_user,
                         'total_users' => $total_users,
                         'pr' => number_format($pr,2),
-                    );
+                    ];
                 }
             }
         }
 
-        $city_lists = Location::with(['locationTranslation'])->get();
+        $city_lists = City::get();
         if(count($city_lists) > 0){
             foreach ($city_lists as $key => $val) {
                 $total_users        = User::where('location_id','=',$val->id)
-                                        ->whereNull('deleted_at')
-                                        ->count();
+                                    ->whereNull('deleted_at')
+                                    ->count();
                 $all_users          = User::whereNull('deleted_at')->count();
                 $total_male_user    = User::where('location_id','=',$val->id)
                                         ->where('gender','=','Male')
@@ -90,15 +90,17 @@ class PagesController extends Controller
                 $na_pr = $total_na_user/$all_users * 100;
                 $total_users = $total_male_user + $total_female_user + $total_na_user;
                 if($total_users > 0){
-                    $city_result[] = array(
+                    $city_result[] = [
                         'city_name' => $val->name,
                         'total_male_pr' => number_format($male_pr,2),
                         'total_female_pr' => number_format($female_pr,2),
                         'total_na_pr' => number_format($na_pr,2),
-                    );
+                    ];
                 }
             }
         }
+
+
         $user['location_result'] = $location_result;
         $user['city_result'] = $city_result;
         // echo "<pre>"; print_r($location_result); die();
@@ -247,5 +249,93 @@ class PagesController extends Controller
         }
         flash(trans('flash_message.update', ['entity' => 'Settings']))->success();
         return redirect()->route('admin.settings.index');
+    }
+
+    public function gender_listing(Request $request)
+    {
+
+        extract($this->DTFilters($request->all()));
+        $city_lists = Location::with(['locationTranslation']);
+        $count = $city_lists->count();
+        $records = [];
+        $records['recordsTotal'] = $count;
+        $records['recordsFiltered'] = $count;
+        $records['data'] = [];
+
+        $city_lists = $city_lists->offset($offset)->limit($limit);
+        $city_lists = $city_lists->get();
+        foreach ($city_lists as $val) {
+            $total_users        = User::where('location_id','=',$val->id)
+                                    ->whereNull('deleted_at')
+                                    ->count();
+            $all_users          = User::whereNull('deleted_at')->count();
+            $total_male_user    = User::where('location_id','=',$val->id)
+                                    ->where('gender','=','Male')
+                                    ->whereNull('deleted_at')
+                                    ->count();
+            $total_female_user  = User::where('location_id','=',$val->id)
+                                    ->where('gender','=','Female')
+                                    ->whereNull('deleted_at')
+                                    ->count();
+            $total_na_user      = User::where('location_id','=',$val->id)
+                                    ->whereNull('gender')
+                                    ->whereNull('deleted_at')
+                                    ->count();
+
+            $male_pr = $total_male_user/$all_users * 100;
+            $female_pr = $total_female_user/$all_users * 100;
+            $na_pr = $total_na_user/$all_users * 100;
+            $total_users = $total_male_user + $total_female_user + $total_na_user;
+            if($total_users > 0){
+                $records['data'][] = [
+                    'city_name' => $val->name,
+                    'total_male_pr' => number_format($male_pr,2),
+                    'total_female_pr' => number_format($female_pr,2),
+                    'total_na_pr' => number_format($na_pr,2),
+                ];
+            }
+        }
+        return $records;
+    }
+
+    public function location_listing(Request $request)
+    {
+        extract($this->DTFilters($request->all()));
+        $city_lists = Location::with(['locationTranslation']);
+        $count = $city_lists->count();
+        $records = [];
+        $records['recordsTotal'] = $count;
+        $records['recordsFiltered'] = $count;
+        $records['data'] = [];
+
+        $city_lists = $city_lists->offset($offset)->limit($limit);
+        $city_lists = $city_lists->get();
+        foreach ($city_lists as $val) {
+                $all_users              = User::count();
+                $total_male_user    = User::where('location_id','=',$val->id)
+                                    ->where('gender','=','Male')
+                                    ->count();
+                $total_female_user  = User::where('location_id','=',$val->id)
+                                    ->where('gender','=','Female')
+                                    ->count();
+                $total_na_user      = User::where('location_id','=',$val->id)
+                                    ->whereNull('gender')
+                                    ->count();
+                                    
+                $total_users = $total_male_user + $total_female_user + $total_na_user;
+                $pr = $total_users/$all_users * 100;
+                if($total_users > 0){
+                    $records['data'][] = [
+                        'city_name' => $val->name,
+                        'state_name' =>  $val->state ? $val->state->stateTransDefault ? $val->state->stateTransDefault->name : "" : "",
+                        'total_male_user' => $total_male_user,
+                        'total_female_user' => $total_female_user,
+                        'total_na_user' => $total_na_user,
+                        'total_users' => $total_users,
+                        'pr' => number_format($pr,2),
+                    ];
+                }
+        }
+        return $records;
     }
 }
