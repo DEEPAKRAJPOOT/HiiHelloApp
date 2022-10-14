@@ -6,7 +6,7 @@
 
 @push('extra-css-styles')
 <link rel="stylesheet" type="text/css" href="{{ asset('assets/plugins/custom/datatables/datatables.bundle.css') }}" />
-<link rel="stylesheet" type="text/css" href="{{ asset('assets/css/dataTables.bootstrap5.min.css') }}" />
+<!-- <link rel="stylesheet" type="text/css" href="{{ asset('assets/css/dataTables.bootstrap5.min.css') }}" /> -->
 @endpush
 
 @section('content')
@@ -451,8 +451,8 @@
 @endsection
 @push('extra-js-scripts')
 <script src="{{ asset('admin/plugins/chart/userchart.js') }}"></script>
-<script src="{{ asset('admin/js/jquery.dataTables.min.js') }}"></script>
-<script src="{{ asset('admin/js/dataTables.bootstrap5.min.js') }}"></script>
+<!-- <script src="{{ asset('admin/js/jquery.dataTables.min.js') }}"></script> -->
+<!-- <script src="{{ asset('admin/js/dataTables.bootstrap5.min.js') }}"></script> -->
 <script type="text/javascript">
   $(function() {
     var table = $('#error_DT');
@@ -529,7 +529,7 @@
 
   });
 </script>
-<script>
+<!-- <script>
   $(document).ready(function () {
     $('#city_pr_DT').DataTable({
         order: [[1, 'desc']],
@@ -540,5 +540,5 @@
         order: [[5, 'desc']],
     });
   });
-</script>
+</script> -->
 @endpush
