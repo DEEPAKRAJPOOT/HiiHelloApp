@@ -9,5 +9,5 @@ class LocationTranslation extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name'];
+    protected $fillable = ['id','locale','location_id','name'];
 }
