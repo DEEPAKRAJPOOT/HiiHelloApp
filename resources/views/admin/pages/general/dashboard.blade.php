@@ -288,33 +288,14 @@
       <div class="card card-custom gutter-b">
         <div class="card-header flex-wrap border-0 py-5">
           <div class="card-title">
-            <h3 class="card-label">Gender </h3>
+            <h3 class="card-label">Location </h3>
           </div>
+
         </div>
         <div class="card-body">
           <div class="row">
             <div class="col-sm-12">
-              <table class="table table-separate table-head-custom table-checkable dataTable no-footer dtr-inline" id="city_pr_DT">
-                <thead>
-                  <tr>
-                    <th>City</th>
-                    <th>Male</th>
-                    <th>Female</th>
-                    <th>N/A</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  @if(count($user['city_result']) > 0)
-                      @foreach($user['city_result'] as $val)
-                      <tr>
-                        <td>{{ $val['city_name']}}</td>
-                        <td>{{ $val['total_male_pr']}}%</td>
-                        <td>{{ $val['total_female_pr']}}%</td>
-                        <td>{{ $val['total_na_pr']}}%</td>
-                      </tr>
-                    @endforeach
-                  @endif
-                </tbody>
+              <table class="table table-separate table-head-custom table-checkable dataTable no-footer dtr-inline" id="location_DT">
               </table>
             </div>
           </div>
@@ -325,65 +306,20 @@
       <div class="card card-custom gutter-b">
         <div class="card-header flex-wrap border-0 py-5">
           <div class="card-title">
-            <h3 class="card-label">Location </h3>
+            <h3 class="card-label">Gender </h3>
           </div>
-
         </div>
         <div class="card-body">
           <div class="row">
             <div class="col-sm-12">
-              <table class="table table-separate table-head-custom table-checkable dataTable no-footer dtr-inline" id="location_pr_DT">
-                <thead>
-                  <tr>
-                    <th>City</th>
-                    <th>State</th>
-                    <th>Male</th>
-                    <th>Female</th>
-                    <th>N/A</th>
-                    <th>Total</th>
-                    <th>%</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <?php $total_males = 0;
-                      $total_females = 0; 
-                      $total_na = 0; 
-                  ?>
-                  @if(count($user['location_result']) > 0)
-                    @foreach($user['location_result'] as $val)
-                      <?php $total_males += $val['total_male_user']; 
-                        $total_females += $val['total_female_user']; 
-                        $total_na += $val['total_na_user']; 
-                      ?>
-                    <tr>
-                      <td>{{ $val['city_name']}}</td>
-                      <td>{{ $val['state_name']}}</td>
-                      <td>{{ $val['total_male_user']}}</td>
-                      <td>{{ $val['total_female_user']}}</td>
-                      <td>{{ $val['total_na_user']}}</td>
-                      <td>{{ $val['total_users']}}</td>
-                      <td>{{ $val['pr']}}%</td>
-                    </tr>
-                  @endforeach
-                @endif
-                </tbody>
-                <tfoot>
-                  <tr>
-                    <th>Total</th>
-                    <th></th>
-                    <th>{{ $total_males }}</th>
-                    <th>{{ $total_females }}</th>
-                    <th>{{ $total_na }}</th>
-                    <th></th>
-                    <th></th>
-                  </tr>
-                </tfoot> 
+              <table class="table table-separate table-head-custom table-checkable dataTable no-footer dtr-inline" id="gender_DT">
               </table>
             </div>
           </div>
         </div>
       </div>
     </div>
+    
     <div class="col-lg-12">
       <div class="card card-custom gutter-b">
         <div class="card-header flex-wrap border-0 py-5">
@@ -413,6 +349,86 @@
                     <td>{{ number_format($user['total_subscribed'] / $user['total_male'] * 100,2) ?? 0 }}%</td>
                     <td>{{ number_format($user['total_unsubscribed'] / $user['total_male'] * 100,2) ?? 0 }}%</td>
                   </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-12">
+      <div class="card card-custom gutter-b">
+        <div class="card-header flex-wrap border-0 py-5">
+          <div class="card-title">
+            <h3 class="card-label">No. of subscriptions</h3>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-sm-12">
+              <table class="table table-separate table-head-custom table-checkable dataTable no-footer dtr-inline">
+                <thead>
+                  <tr>
+                    <th>Subscriptions name</th>
+                    <th>No of Users</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @if(count($user['subscription_result']) > 0)
+                    @foreach($user['subscription_result'] as $val)
+                      <tr>
+                        <td>{{ $val['name'] }}</td>
+                        <td>{{ $val['total_users'] }}</td>
+                      </tr>
+                    @endforeach
+                  @endif
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-12">
+      <div class="card card-custom gutter-b">
+        <div class="card-header flex-wrap border-0 py-5">
+          <div class="card-title">
+            <h3 class="card-label">Age to male & female</h3>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-sm-12">
+              <table class="table table-separate table-head-custom table-checkable dataTable no-footer dtr-inline">
+                <thead>
+                  <tr>
+                    <th>Male <br> (18 to 25)</th>
+                    <th>Male <br> (26 to 35)</th>
+                    <th>Male <br> (36 to 45)</th>
+                    <th>Male <br> (45+)</th>
+                    <th>Female <br> (18 to 25)</th>
+                    <th>Female <br> (26 to 35)</th>
+                    <th>Female <br> (36 to 45)</th>
+                    <th>Female <br> (45+)</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @if(count($user['age_result']) > 0)
+                    @foreach($user['age_result'] as $val)
+                      <tr>
+                        <td>{{ $val['male_age_18_25'] }}</td>
+                        <td>{{ $val['male_age_26_35'] }}</td>
+                        <td>{{ $val['male_age_36_45'] }}</td>
+                        <td>{{ $val['male_age_45'] }}</td>
+                        <td>{{ $val['female_age_18_25'] }}</td>
+                        <td>{{ $val['female_age_26_35'] }}</td>
+                        <td>{{ $val['female_age_36_45'] }}</td>
+                        <td>{{ $val['female_age_45'] }}</td>
+                      </tr>
+                    @endforeach
+                  @endif
                 </tbody>
               </table>
             </div>
@@ -529,16 +545,138 @@
 
   });
 </script>
-<!-- <script>
-  $(document).ready(function () {
-    $('#city_pr_DT').DataTable({
-        order: [[1, 'desc']],
+
+<!-- gender dt -->
+<script type="text/javascript">
+  $(function() {
+    var table = $('#gender_DT');
+
+
+    oTable = table.dataTable({
+      "processing": true,
+      "serverSide": true,
+      "language": {
+        "lengthMenu": "_MENU_ entries",
+        "paginate": {
+          "previous": '<i class="fa fa-angle-left" ></i>',
+          "next": '<i class="fa fa-angle-right" ></i>'
+        }
+      },
+      "columns": [{
+          "title": "City",
+          "data": "city_name",
+          orderable: false
+        },
+        {
+          "title": "Male",
+          "data": "total_male_pr",
+          orderable: false
+        },
+        {
+          "title": "Female",
+          "data": "total_female_pr",
+          orderable: true,
+        },
+        {
+          "title": "N/A",
+          "data": "total_na_pr",
+          orderable: false
+        },
+      ],
+      responsive: true,
+      "order": [
+          [2, 'DESC']
+      ],
+      "lengthMenu": [
+        [10, 20, 50, 100],
+        [10, 20, 50, 100]
+      ],
+      "pageLength": 10,
+      "ajax": {
+        "data": {},
+        "url": "{{route('admin.gender.listing')}}", // ajax source
+      },
+      drawCallback: function(oSettings) {
+        $('.status-switch').bootstrapSwitch();
+        $('.status-switch').bootstrapSwitch('onColor', 'success');
+        $('.status-switch').bootstrapSwitch('offColor', 'danger');
+      },
+      "dom": "<'row' <'col-md-12'>><'row'<'col-md-6 col-sm-12'l><'col-md-6 col-sm-12'f>r><'table-scrollable't><'row'<'col-md-5 col-sm-12'i><'col-md-7 col-sm-12'p>>", // horizobtal scrollable datatable
     });
+
+
   });
-  $(document).ready(function () {
-    $('#location_pr_DT').DataTable({
-        order: [[5, 'desc']],
+</script>
+
+<!-- location dt -->
+<script type="text/javascript">
+  $(function() {
+    var table = $('#location_DT');
+
+
+    oTable = table.dataTable({
+      "processing": true,
+      "serverSide": true,
+      "language": {
+        "lengthMenu": "_MENU_ entries",
+        "paginate": {
+          "previous": '<i class="fa fa-angle-left" ></i>',
+          "next": '<i class="fa fa-angle-right" ></i>'
+        }
+      },
+      "columns": [{
+          "title": "City",
+          "data": "city_name",
+          orderable: false
+        },
+        {
+          "title": "Male",
+          "data": "total_male_user",
+          orderable: false
+        },
+        {
+          "title": "Female",
+          "data": "total_female_user",
+          orderable: false
+        },
+        {
+          "title": "N/A",
+          "data": "total_na_user",
+          orderable: false
+        },
+        {
+          "title": "Total",
+          "data": "total_users",
+        },
+        {
+          "title": "PR",
+          "data": "pr",
+          orderable: false
+        },
+      ],
+      responsive: true,
+      order: [
+          [4, 'DESC']
+      ],
+     // "aaSorting": [[ 4, "desc" ]],
+      "lengthMenu": [
+        [10, 20, 50, 100],
+        [10, 20, 50, 100]
+      ],
+      "pageLength": 10,
+      "ajax": {
+        "data": {},
+        "url": "{{route('admin.location.listing')}}", // ajax source
+      },
+      drawCallback: function(oSettings) {
+        $('.status-switch').bootstrapSwitch();
+        $('.status-switch').bootstrapSwitch('onColor', 'success');
+        $('.status-switch').bootstrapSwitch('offColor', 'danger');
+      },
+      "dom": "<'row' <'col-md-12'>><'row'<'col-md-6 col-sm-12'l><'col-md-6 col-sm-12'f>r><'table-scrollable't><'row'<'col-md-5 col-sm-12'i><'col-md-7 col-sm-12'p>>", // horizobtal scrollable datatable
     });
+
+
   });
-</script> -->
+</script>
 @endpush
