@@ -12,6 +12,7 @@ use App\Http\Requests\Api\User\{AddDeviceTokenRequest, GetDeviceTokenRequest};
 use App\Models\{User, Language, CmsPage, Country, Location, Interest, Faq, DeviceToken, ProfileDetail, AppDetail, Personality, LocationTranslation};
 use Illuminate\Support\Facades\Redis;
 use App\Http\Traits\RedisTrait;
+use DB;
 
 class GeneralController extends Controller
 {
@@ -681,6 +682,8 @@ class GeneralController extends Controller
     public function setLocation(Request $request)
     {
         
+        $data = array();
+        $location_data = array();
         $locationRequest = new CheckLocationRequest();
         if ($this->apiValidator($request->all(), $locationRequest->rules())) {    
 
@@ -700,23 +703,38 @@ class GeneralController extends Controller
                     ->orderBy('location_translations.name');
                 $locations = $locations->get();
                 
+                // echo "<pre>"; print_r($locations->toArray()); die();
                 if ($locations->isEmpty())
-                {                    
-                    $data = $this->getLangStoreData($request);
-                    $data['custom_id'] = getUniqueString('locations');
-                    $data['name'] = $location_name;
-                    Location::create($data);
+                {           
+                    // $data = $this->getLangStoreData($request);
+                    // $data['custom_id'] = getUniqueString('locations');
+                    // $data['is_trans_name'] = 'y';
+                    // $location_data = Location::create($data);
+                    $locationTranslation = LocationTranslation::where('name', 'like', "{$location_name}%")->first();
+                    if ($locationTranslation == '') {
+                        $location_data     = Location::create([
+                            'custom_id'     => getUniqueString('locations'),
+                            'is_trans_name' => 'y',
+                        ]);
+                        $location_id = $location_data->id;
+                        LocationTranslation::create([
+                            'locale' => $lang,
+                            'location_id' => $location_id,
+                            'name' => $location_name,
+                        ]);
+                    }
 
-                     $locations = Location::select(                    
+                    $locations = Location::select(                    
                         'locations.custom_id',
                         'locations.is_active',
                         'location_translations.name as location_name'
                      )
-                        ->join('location_translations', 'locations.id', '=', 'location_translations.location_id')
-                        ->where('location_translations.locale', $lang)
-                        ->where('location_translations.name', 'like', "{$location_name}%")
-                        ->orderBy('location_translations.name');
-                        $locations = $locations->get();
+                    ->join('location_translations', 'locations.id', '=', 'location_translations.location_id')
+                    ->where('location_translations.locale', $lang)
+                    ->where('location_translations.name', 'like', "{$location_name}%")
+                    ->orderBy('location_translations.name');
+                    $locations = $locations->get();
+                    // echo "<pre>"; print_r($locations->toArray()); die();
 
                 }
 
