@@ -33,7 +33,7 @@ jobs:
         #DB_CONNECTION: sqlite
        # DB_DATABASE: database/database.sqlite
       #run: vendor/bin/phpunit
-  deploy to staging:
+  deploy-to-staging:
      runs-on: self-hosted
      needs: [ laravel-tests]
      steps:
