@@ -710,7 +710,7 @@ class GeneralController extends Controller
                     // $data['custom_id'] = getUniqueString('locations');
                     // $data['is_trans_name'] = 'y';
                     // $location_data = Location::create($data);
-                    $locationTranslation = LocationTranslation::where('name', 'like', "{$location_name}%")->first();
+                    $locationTranslation = LocationTranslation::where('name', 'like', "{$location_name}%")->where('locale', $lang)->first();
                     if ($locationTranslation == '') {
                         $location_data     = Location::create([
                             'custom_id'     => getUniqueString('locations'),
