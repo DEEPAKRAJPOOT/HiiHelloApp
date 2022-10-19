@@ -22,6 +22,8 @@ class CreateLocationTranslationsTable extends Migration
             $table->foreign('location_id')->references('id')->on('locations')->onDelete('cascade')->onUpdate('cascade');
 
             $table->string('name')->nullable();
+            $table->string('locality')->nullable();
+            $table->string('state')->nullable();
             $table->timestamps();
         });
     }
