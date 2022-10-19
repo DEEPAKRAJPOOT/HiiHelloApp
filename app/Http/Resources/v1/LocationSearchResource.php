@@ -17,6 +17,8 @@ class LocationSearchResource extends JsonResource
         return [
             'id'            =>  $this->custom_id,
             'name'          =>  $this->location_name ? $this->location_name : "",
+            'locality'      =>  $this->location_locality ? $this->location_locality : "",
+            'state'         =>  $this->location_state ? $this->location_state : "",
             'is_active'     =>  $this->is_active,
         ];
         return parent::toArray($request);
