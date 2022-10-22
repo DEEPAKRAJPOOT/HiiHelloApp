@@ -24,7 +24,6 @@ class PagesController extends Controller
 
     public function dashboard()
     {   
-        // echo Hash::make(12345678); die();
         $location_result = array();
         $city_result = array(); 
         $subscription_result = array(); 
