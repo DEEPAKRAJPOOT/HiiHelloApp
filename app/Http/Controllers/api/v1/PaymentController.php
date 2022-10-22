@@ -505,7 +505,7 @@ class PaymentController extends Controller
                     $user->save();
 
                     $this->status = Response::HTTP_OK;
-                    $this->response['data']['status'] = 'Active';
+                    $this->response['data']['status'] = 'active';
                     $this->response['meta']['message'] = trans('api.razorpay.verify_signature.success');
                     $this->response['meta']['is_ban'] = false;
                     return $this->returnResponse();
