@@ -122,6 +122,7 @@ Route::group(['namespace' => 'v1', 'prefix' => 'v1', 'middleware' => ['auth:sanc
     Route::post('payment/create-order',[PaymentController::class,'createOrder'])->name('api.payment.create-order');
     Route::post('payment/createorder',[PaymentController::class,'create_order'])->name('api.payment.createorder');
     Route::post('payment/varify-signature',[PaymentController::class,'verifySignature'])->name('api.payment.varify-signature');
+    Route::post('payment/update-payment-status',[PaymentController::class,'update_payment_status'])->name('api.payment.update-payment-status');
 
     // subscription 
     Route::post('subscriptions/ios',[SubscriptionController::class,'buyIosSubscription'])->name('api.subscriptions-ios');
