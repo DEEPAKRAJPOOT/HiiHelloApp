@@ -741,7 +741,6 @@ class GeneralController extends Controller
                 else
                 {
                     $locationTranslation = LocationTranslation::where('name', 'like', "{$location_name}%")->first();
-                    echo $locationTranslation['state'];
                     if (empty($locationTranslation['state']) && $state != '') {
                         LocationTranslation::updateOrCreate([
                             'id'         =>  $locationTranslation->id,
