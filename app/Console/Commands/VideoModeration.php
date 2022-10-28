@@ -63,7 +63,9 @@ class VideoModeration extends Command
                             $user_id = $media_video->user ? $media_video->user->id : "";
 
                             if(!empty($media_photo)){
-                                $safe_media_video = $this->checkVideoModeration($media_photo, $media_video->user);
+                                //BYPASS SIGHT ENGINE 28 OCT //          
+                                //$safe_media_video = $this->checkVideoModeration($media_photo, $media_video->user);
+                                $safe_media_video = true;
 
                                 if($safe_media_video == true){
                                     $media_video->is_verified = 'y';
