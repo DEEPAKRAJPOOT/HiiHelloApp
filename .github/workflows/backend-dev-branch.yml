@@ -33,8 +33,8 @@ jobs:
         #DB_CONNECTION: sqlite
        # DB_DATABASE: database/database.sqlite
       #run: vendor/bin/phpunit
-  deploy:
-     runs-on: ubuntu-latest
+  deploy-to-cronserver:
+     runs-on: self-hosted
      needs: [ laravel-tests]
      steps:
            - name: connect to aws cli
@@ -50,7 +50,7 @@ jobs:
                       git pull origin dev-branch  && git checkout  dev-branch
                       
   deploy-to-backendserver:
-     runs-on: ubuntu-latest
+     runs-on: self-hosted
      needs: [ laravel-tests]
      steps:
            - name: connect to aws cli

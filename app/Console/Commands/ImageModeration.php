@@ -58,7 +58,10 @@ class ImageModeration extends Command
 
                         // Main Image
                         if(!empty($profile_photo)){
-                            $safe_main_image = $this->checkImageModeration($profile_photo, $user);
+
+                            //BYPASS SIGHT ENGINE 28 OCT //                            
+                            //$safe_main_image = $this->checkImageModeration($profile_photo, $user);                            
+                            $safe_main_image = true;
                                     
                             // IF NOT SAFE
                             if($safe_main_image == false){
@@ -94,7 +97,11 @@ class ImageModeration extends Command
                             $user_id = $media_image->user ? $media_image->user->id : "";
 
                             if(!empty($media_photo)){
-                                $safe_media_image = $this->checkImageModeration($media_photo, $media_image->user);
+
+                                //BYPASS SIGHT ENGINE 28 OCT //                                                                                    
+                                //$safe_media_image = $this->checkImageModeration($media_photo, $media_image->user);
+                                $safe_media_image = true;
+
                     
                                 if($safe_media_image == true){
                                     $media_image->is_verified = 'y';
