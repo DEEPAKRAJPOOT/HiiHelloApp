@@ -67,7 +67,11 @@ class ChatMediaCheker extends Command
                             $image = generateURL($message->other->path);
 
                             if(!empty($image)){
-                                $safe_image = $this->checkImageModeration($image);
+                               
+                                //BYPASS SIGHT ENGINE 28 OCT //
+                                //$safe_image = $this->checkImageModeration($image);
+                                $safe_image = true;
+
 
                                 // IF NOT SAFE
                                 if($safe_image == false){
