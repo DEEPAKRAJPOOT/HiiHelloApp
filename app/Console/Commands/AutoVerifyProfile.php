@@ -65,7 +65,9 @@ class AutoVerifyProfile extends Command
                         $verify_photo = generateURL($user->verify_photo);
 
                         if(!empty($verify_photo)){
-                            $safe_verify_photo = $this->checkImageModeration($verify_photo);
+                            //BYPASS SIGHT ENGINE 28 OCT //
+                            //$safe_verify_photo = $this->checkImageModeration($verify_photo);
+                            $safe_verify_photo = true;
                             
                             /*if($safe_verify_photo == true){
                                 $photo_verified = true;
