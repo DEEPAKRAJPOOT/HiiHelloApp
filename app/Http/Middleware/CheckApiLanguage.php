@@ -28,7 +28,7 @@ class CheckApiLanguage
         // 'te',       //  Telugu          =>  తెలుగు
 
         $default_lang_code = config('utility.default_lang_code');
-        $language_allowed  = ['en', 'hi', 'ta', 'mr', 'bn', 'gu', 'kn', 'ml', 'or', 'pa', 'te'];
+        $language_allowed  = ['en', 'hi', 'ta', 'mr', 'bn', 'gu', 'kn', 'ml', 'or', 'pa', 'te','as'];
         $language = request()->header()['x-language'][0] ?? $default_lang_code;
         $language = in_array($language, $language_allowed) ? $language : $default_lang_code;
         app()->setLocale($language);

@@ -41,7 +41,7 @@ class AdminLangTraslation extends Command
      */
     public function handle()
     {
-        $language_alloweds  =   ['en', 'hi', 'ta', 'mr', 'bn', 'gu', 'kn', 'ml', 'or', 'pa', 'te'];
+        $language_alloweds  =   ['en', 'hi', 'ta', 'mr', 'bn', 'gu', 'kn', 'ml', 'or', 'pa', 'te','as'];
         $default_lang_code  =   config('utility.default_lang_code');
         $message            =   'No  Admin details foundfor translated !!!';
 

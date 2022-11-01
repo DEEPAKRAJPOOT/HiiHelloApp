@@ -22,6 +22,7 @@ return [
         'or',       //  Oriya           =>  ଓଡ଼ିଆ
         'pa',       //  Punjabi         =>  पंजाबी
         'te',       //  Telugu          =>  తెలుగు
+        'as',       //  Assamese        =>  অসমীয়া
         // 'es' => [
         //     'MX', // mexican spanish
         //     'CO', // colombian spanish

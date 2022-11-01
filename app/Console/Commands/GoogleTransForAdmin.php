@@ -41,7 +41,7 @@ class GoogleTransForAdmin extends Command
      */
     public function handle()
     {
-        // $language_alloweds  =   ['en', 'hi', 'ta', 'mr', 'bn', 'gu', 'kn', 'ml', 'or', 'pa', 'te'];
+        // $language_alloweds  =   ['en', 'hi', 'ta', 'mr', 'bn', 'gu', 'kn', 'ml', 'or', 'pa', 'te','as'];
         $language_alloweds  =   ['en', 'hi'];
         $default_lang_code  =   config('utility.default_lang_code');
         $apiKey             =   config('utility.google.translate.api_key');
