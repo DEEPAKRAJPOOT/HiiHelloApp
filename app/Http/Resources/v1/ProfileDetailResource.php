@@ -15,6 +15,7 @@ class ProfileDetailResource extends JsonResource
     public function toArray($request)
     {
         return [
+            'id'            =>  $this->id,
             'slug'          =>  $this->slug,
             'attribute'     =>  $this->attribute,
             'type'          =>  $this->type,
