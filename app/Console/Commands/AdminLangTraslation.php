@@ -45,150 +45,150 @@ class AdminLangTraslation extends Command
         $default_lang_code  =   config('utility.default_lang_code');
         $message            =   'No  Admin details foundfor translated !!!';
 
-        Interest::with('interestTranslations')->chunk(100, function($interests) use ($default_lang_code, $language_alloweds) {
-            if($interests->isNotEmpty()){
-                foreach($interests as $interest){
-                    if($interest->interestTranslations->isNotEmpty()){
-                        $default_data = NULL; $available_langs = $new_details = [];
-                        $message = 'Interest details translated successfully !!!';
+        // Interest::with('interestTranslations')->chunk(100, function($interests) use ($default_lang_code, $language_alloweds) {
+        //     if($interests->isNotEmpty()){
+        //         foreach($interests as $interest){
+        //             if($interest->interestTranslations->isNotEmpty()){
+        //                 $default_data = NULL; $available_langs = $new_details = [];
+        //                 $message = 'Interest details translated successfully !!!';
 
-                        foreach($interest->interestTranslations as $interestTranslation){
-                            if(!in_array($interestTranslation->locale, $available_langs)){
-                                array_push($available_langs, $interestTranslation->locale);
-                            }
+        //                 foreach($interest->interestTranslations as $interestTranslation){
+        //                     if(!in_array($interestTranslation->locale, $available_langs)){
+        //                         array_push($available_langs, $interestTranslation->locale);
+        //                     }
 
-                            if($default_lang_code == $interestTranslation->locale){
-                                $default_data = $interestTranslation;
-                            }
-                        }
+        //                     if($default_lang_code == $interestTranslation->locale){
+        //                         $default_data = $interestTranslation;
+        //                     }
+        //                 }
 
-                        if(count($available_langs) > 0 && $default_data != NULL){
-                            foreach($language_alloweds as $language_allowed){
-                                if(!in_array($language_allowed, $available_langs)){
-                                    if ($default_data->locale == 'en') {
-                                        $success = $this->Interesttranslate($default_data->title);
-                                        if(isset($success) && !empty($success)){ 
-                                            $new_details[$language_allowed]['title'] = $success;
-                                        }
-                                        else
-                                        {
-                                            $new_details[$language_allowed]['title'] = $default_data->title;
-                                        }
-                                    }
-                                    // $new_details[$language_allowed]['title'] = $default_data->title;
-                                }
-                            }
-                        }
+        //                 if(count($available_langs) > 0 && $default_data != NULL){
+        //                     foreach($language_alloweds as $language_allowed){
+        //                         if(!in_array($language_allowed, $available_langs)){
+        //                             if ($default_data->locale == 'en') {
+        //                                 $success = $this->Interesttranslate($default_data->title);
+        //                                 if(isset($success) && !empty($success)){ 
+        //                                     $new_details[$language_allowed]['title'] = $success;
+        //                                 }
+        //                                 else
+        //                                 {
+        //                                     $new_details[$language_allowed]['title'] = $default_data->title;
+        //                                 }
+        //                             }
+        //                             // $new_details[$language_allowed]['title'] = $default_data->title;
+        //                         }
+        //                     }
+        //                 }
 
-                        if(count($new_details) > 0){
-                            $interest->update($new_details);
-                        }
-                    }
-                }
-            }
-        });
+        //                 if(count($new_details) > 0){
+        //                     $interest->update($new_details);
+        //                 }
+        //             }
+        //         }
+        //     }
+        // });
 
-        Location::with('locationTranslations')->chunk(100, function($locations) use ($default_lang_code, $language_alloweds) {
-            if($locations->isNotEmpty()){
-                foreach($locations as $location){
-                    if($location->locationTranslations->isNotEmpty()){
-                        $default_data = NULL; $available_langs = $new_details = [];
+        // Location::with('locationTranslations')->chunk(100, function($locations) use ($default_lang_code, $language_alloweds) {
+        //     if($locations->isNotEmpty()){
+        //         foreach($locations as $location){
+        //             if($location->locationTranslations->isNotEmpty()){
+        //                 $default_data = NULL; $available_langs = $new_details = [];
 
-                        foreach($location->locationTranslations as $locationTranslation){
-                            if(!in_array($locationTranslation->locale, $available_langs)){
-                                array_push($available_langs, $locationTranslation->locale);
-                            }
+        //                 foreach($location->locationTranslations as $locationTranslation){
+        //                     if(!in_array($locationTranslation->locale, $available_langs)){
+        //                         array_push($available_langs, $locationTranslation->locale);
+        //                     }
 
-                            if($default_lang_code == $locationTranslation->locale){
-                                $default_data = $locationTranslation;
-                            }
-                        }
+        //                     if($default_lang_code == $locationTranslation->locale){
+        //                         $default_data = $locationTranslation;
+        //                     }
+        //                 }
 
-                        if(count($available_langs) > 0 && $default_data != NULL){
-                            foreach($language_alloweds as $language_allowed){
-                                if(!in_array($language_allowed, $available_langs)){
-                                    if ($default_data->locale == 'en') {
-                                        $success = $this->Locationtranslate($default_data->name);
-                                        if(isset($success) && !empty($success)){ 
-                                            $new_details[$language_allowed]['name'] = $success;
-                                        }
-                                        else
-                                        {
-                                            $new_details[$language_allowed]['name'] = $default_data->name;
-                                        }
-                                    }
-                                    else
-                                    {
-                                        $new_details[$language_allowed]['name'] = $default_data->name;
-                                    }
-                                }
-                            }
-                        }
+        //                 if(count($available_langs) > 0 && $default_data != NULL){
+        //                     foreach($language_alloweds as $language_allowed){
+        //                         if(!in_array($language_allowed, $available_langs)){
+        //                             if ($default_data->locale == 'en') {
+        //                                 $success = $this->Locationtranslate($default_data->name);
+        //                                 if(isset($success) && !empty($success)){ 
+        //                                     $new_details[$language_allowed]['name'] = $success;
+        //                                 }
+        //                                 else
+        //                                 {
+        //                                     $new_details[$language_allowed]['name'] = $default_data->name;
+        //                                 }
+        //                             }
+        //                             else
+        //                             {
+        //                                 $new_details[$language_allowed]['name'] = $default_data->name;
+        //                             }
+        //                         }
+        //                     }
+        //                 }
 
-                        if(count($new_details) > 0){
-                            $location->update($new_details);
-                            $message = 'Location details translated successfully !!!';
-                        }
-                    }
-                }
-            }
-        });
+        //                 if(count($new_details) > 0){
+        //                     $location->update($new_details);
+        //                     $message = 'Location details translated successfully !!!';
+        //                 }
+        //             }
+        //         }
+        //     }
+        // });
 
-        Personality::with('personalityTranslations')->chunk(100, function($personalities) use ($default_lang_code, $language_alloweds) {
-            if($personalities->isNotEmpty()){
-                foreach($personalities as $personality){
-                    if($personality->personalityTranslations->isNotEmpty()){
-                        $default_data = NULL; $available_langs = $new_details = [];
+        // Personality::with('personalityTranslations')->chunk(100, function($personalities) use ($default_lang_code, $language_alloweds) {
+        //     if($personalities->isNotEmpty()){
+        //         foreach($personalities as $personality){
+        //             if($personality->personalityTranslations->isNotEmpty()){
+        //                 $default_data = NULL; $available_langs = $new_details = [];
 
-                        foreach($personality->personalityTranslations as $personalityTranslation){
-                            if(!in_array($personalityTranslation->locale, $available_langs)){
-                                array_push($available_langs, $personalityTranslation->locale);
-                            }
+        //                 foreach($personality->personalityTranslations as $personalityTranslation){
+        //                     if(!in_array($personalityTranslation->locale, $available_langs)){
+        //                         array_push($available_langs, $personalityTranslation->locale);
+        //                     }
 
-                            if($default_lang_code == $personalityTranslation->locale){
-                                $default_data = $personalityTranslation;
-                            }
-                        }
+        //                     if($default_lang_code == $personalityTranslation->locale){
+        //                         $default_data = $personalityTranslation;
+        //                     }
+        //                 }
 
-                        if(count($available_langs) > 0 && $default_data != NULL){
-                            foreach($language_alloweds as $language_allowed){
-                                if(!in_array($language_allowed, $available_langs)){
-                                    if ($default_data->locale == 'en') {
-                                        $title = $this->PersonalityTitletranslate($default_data->title);
-                                        if(isset($title) && !empty($title)){ 
-                                            $new_details[$language_allowed]['title'] = $title;
-                                        }
-                                        else
-                                        {
-                                            $new_details[$language_allowed]['title'] = $default_data->title;
-                                        }
+        //                 if(count($available_langs) > 0 && $default_data != NULL){
+        //                     foreach($language_alloweds as $language_allowed){
+        //                         if(!in_array($language_allowed, $available_langs)){
+        //                             if ($default_data->locale == 'en') {
+        //                                 $title = $this->PersonalityTitletranslate($default_data->title);
+        //                                 if(isset($title) && !empty($title)){ 
+        //                                     $new_details[$language_allowed]['title'] = $title;
+        //                                 }
+        //                                 else
+        //                                 {
+        //                                     $new_details[$language_allowed]['title'] = $default_data->title;
+        //                                 }
                                         
-                                        $description = $this->PersonalityDescriptiontranslate($default_data->description);
-                                        if(isset($description) && !empty($success)){ 
-                                            $new_details[$language_allowed]['description'] = $success;
-                                        }
-                                        else
-                                        {
-                                            $new_details[$language_allowed]['description'] = $default_data->description;
-                                        }
-                                    }
-                                    else
-                                    {
-                                        $new_details[$language_allowed]['title'] = $default_data->title;
-                                        $new_details[$language_allowed]['description'] = $default_data->description;
-                                    }
-                                }
-                            }
-                        }
+        //                                 $description = $this->PersonalityDescriptiontranslate($default_data->description);
+        //                                 if(isset($description) && !empty($success)){ 
+        //                                     $new_details[$language_allowed]['description'] = $success;
+        //                                 }
+        //                                 else
+        //                                 {
+        //                                     $new_details[$language_allowed]['description'] = $default_data->description;
+        //                                 }
+        //                             }
+        //                             else
+        //                             {
+        //                                 $new_details[$language_allowed]['title'] = $default_data->title;
+        //                                 $new_details[$language_allowed]['description'] = $default_data->description;
+        //                             }
+        //                         }
+        //                     }
+        //                 }
 
-                        if(count($new_details) > 0){
-                            $personality->update($new_details);
-                            $message = 'Personality details translated successfully !!!';
-                        }
-                    }
-                }
-            }
-        });
+        //                 if(count($new_details) > 0){
+        //                     $personality->update($new_details);
+        //                     $message = 'Personality details translated successfully !!!';
+        //                 }
+        //             }
+        //         }
+        //     }
+        // });
 
         ProfileDetail::with('profileDetailTranslations')->chunk(100, function($profile_details) use ($default_lang_code, $language_alloweds) {
             if($profile_details->isNotEmpty()){
