@@ -62,70 +62,70 @@ class PagesController extends Controller
         }
         // echo "<pre>"; print_r($subscription_result); die();
         // die();
-        $city_list = City::with(['state.stateTransDefault','cityTransDefault'])->get();
-        if(count($city_list) > 0){
-            foreach ($city_list as $key => $val) {
-                $all_users              = User::count();
-                $total_male_user    = User::where('location_id','=',$val->id)
-                                    ->where('gender','=','Male')
-                                    ->count();
-                $total_female_user  = User::where('location_id','=',$val->id)
-                                    ->where('gender','=','Female')
-                                    ->count();
-                $total_na_user      = User::where('location_id','=',$val->id)
-                                    ->whereNull('gender')
-                                    ->count();
+        // $city_list = City::with(['state.stateTransDefault','cityTransDefault'])->get();
+        // if(count($city_list) > 0){
+        //     foreach ($city_list as $key => $val) {
+        //         $all_users              = User::count();
+        //         $total_male_user    = User::where('location_id','=',$val->id)
+        //                             ->where('gender','=','Male')
+        //                             ->count();
+        //         $total_female_user  = User::where('location_id','=',$val->id)
+        //                             ->where('gender','=','Female')
+        //                             ->count();
+        //         $total_na_user      = User::where('location_id','=',$val->id)
+        //                             ->whereNull('gender')
+        //                             ->count();
                                     
-                $total_users = $total_male_user + $total_female_user + $total_na_user;
-                $pr = $total_users/$all_users * 100;
-                if($total_users > 0){
-                    $location_result[] = [
-                        'city_name' => $val->name,
-                        'state_name' =>  $val->state ? $val->state->stateTransDefault ? $val->state->stateTransDefault->name : "" : "",
-                        'total_male_user' => $total_male_user,
-                        'total_female_user' => $total_female_user,
-                        'total_na_user' => $total_na_user,
-                        'total_users' => $total_users,
-                        'pr' => number_format($pr,2),
-                    ];
-                }
-            }
-        }
+        //         $total_users = $total_male_user + $total_female_user + $total_na_user;
+        //         $pr = $total_users/$all_users * 100;
+        //         if($total_users > 0){
+        //             $location_result[] = [
+        //                 'city_name' => $val->name,
+        //                 'state_name' =>  $val->state ? $val->state->stateTransDefault ? $val->state->stateTransDefault->name : "" : "",
+        //                 'total_male_user' => $total_male_user,
+        //                 'total_female_user' => $total_female_user,
+        //                 'total_na_user' => $total_na_user,
+        //                 'total_users' => $total_users,
+        //                 'pr' => number_format($pr,2),
+        //             ];
+        //         }
+        //     }
+        // }
 
-        $city_lists = City::get();
-        if(count($city_lists) > 0){
-            foreach ($city_lists as $key => $val) {
-                $total_users        = User::where('location_id','=',$val->id)
-                                    ->whereNull('deleted_at')
-                                    ->count();
-                $all_users          = User::whereNull('deleted_at')->count();
-                $total_male_user    = User::where('location_id','=',$val->id)
-                                        ->where('gender','=','Male')
-                                        ->whereNull('deleted_at')
-                                        ->count();
-                $total_female_user  = User::where('location_id','=',$val->id)
-                                        ->where('gender','=','Female')
-                                        ->whereNull('deleted_at')
-                                        ->count();
-                $total_na_user      = User::where('location_id','=',$val->id)
-                                        ->whereNull('gender')
-                                        ->whereNull('deleted_at')
-                                        ->count();
+        // $city_lists = City::get();
+        // if(count($city_lists) > 0){
+        //     foreach ($city_lists as $key => $val) {
+        //         $total_users        = User::where('location_id','=',$val->id)
+        //                             ->whereNull('deleted_at')
+        //                             ->count();
+        //         $all_users          = User::whereNull('deleted_at')->count();
+        //         $total_male_user    = User::where('location_id','=',$val->id)
+        //                                 ->where('gender','=','Male')
+        //                                 ->whereNull('deleted_at')
+        //                                 ->count();
+        //         $total_female_user  = User::where('location_id','=',$val->id)
+        //                                 ->where('gender','=','Female')
+        //                                 ->whereNull('deleted_at')
+        //                                 ->count();
+        //         $total_na_user      = User::where('location_id','=',$val->id)
+        //                                 ->whereNull('gender')
+        //                                 ->whereNull('deleted_at')
+        //                                 ->count();
 
-                $male_pr = $total_male_user/$all_users * 100;
-                $female_pr = $total_female_user/$all_users * 100;
-                $na_pr = $total_na_user/$all_users * 100;
-                $total_users = $total_male_user + $total_female_user + $total_na_user;
-                if($total_users > 0){
-                    $city_result[] = [
-                        'city_name' => $val->name,
-                        'total_male_pr' => number_format($male_pr,2),
-                        'total_female_pr' => number_format($female_pr,2),
-                        'total_na_pr' => number_format($na_pr,2),
-                    ];
-                }
-            }
-        }
+        //         $male_pr = $total_male_user/$all_users * 100;
+        //         $female_pr = $total_female_user/$all_users * 100;
+        //         $na_pr = $total_na_user/$all_users * 100;
+        //         $total_users = $total_male_user + $total_female_user + $total_na_user;
+        //         if($total_users > 0){
+        //             $city_result[] = [
+        //                 'city_name' => $val->name,
+        //                 'total_male_pr' => number_format($male_pr,2),
+        //                 'total_female_pr' => number_format($female_pr,2),
+        //                 'total_na_pr' => number_format($na_pr,2),
+        //             ];
+        //         }
+        //     }
+        // }
 
         $all_users = User::select('birth_date','gender')->whereNull('deleted_at')->whereNotNull('birth_date')->whereNotNull('gender')->get();
         // echo "<pre>"; print_r($all_users->toArray()); die();

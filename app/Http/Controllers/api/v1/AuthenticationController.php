@@ -107,6 +107,7 @@ class AuthenticationController extends Controller
                         'location_id'           =>  $location_id ?? NULL,
                         'discover_location_id'  =>  $location_id ?? NULL,
                         'language_id'           =>  $language_id ?? NULL,
+                        'star_sign_id'          =>  $request->star_sign_id ?? NULL,
                         'password'              =>  Hash::make(config('utility.default_password')),
                     ]);
                 }

@@ -100,7 +100,7 @@ class Controller extends BaseController
     public function getLangStoreData($request){
         $actual_data = $data = $lang_codes = $columns = [];
         $default_lang_code = config('utility.default_lang_code');
-        $language_alloweds = ['en', 'hi', 'ta', 'mr', 'bn', 'gu', 'kn', 'ml', 'or', 'pa', 'te'];
+        $language_alloweds = ['en', 'hi', 'ta', 'mr', 'bn', 'gu', 'kn', 'ml', 'or', 'pa', 'te','as'];
 
         foreach($request->all() as $key => $req_data){
             if($req_data){
