@@ -139,8 +139,8 @@ class UtilityController extends Controller
     public function translate()
     {
         $apiKey = 'AIzaSyCnTLblh4He46O3-5NoJ0sXOzyelS76jEY';
-        $text = 'Hello world!';
-        $target_lang = ['en','hi','ta','mr','bn','gu','kn','ml','or','pa','te'];
+        $text = 'Hello Anand';
+        $target_lang = ['en','hi','ta','mr','bn','gu','kn','ml','or','pa','te','as'];
         foreach($target_lang as $lang)
         {
             echo 'lang: '.$lang;
@@ -150,7 +150,7 @@ class UtilityController extends Controller
         //for translate
         // $url = 'https://www.googleapis.com/language/translate/v2?key=' . $apiKey . '&q=' . rawurlencode($text) . '&source=en&target=te';
 
-        $url = 'https://translation.googleapis.com/language/translate/v2?key=AIzaSyCnTLblh4He46O3-5NoJ0sXOzyelS76jEY&source=en&target=hi&q=helloworld';
+        $url = 'https://translation.googleapis.com/language/translate/v2?key=AIzaSyCnTLblh4He46O3-5NoJ0sXOzyelS76jEY&source=en&target=as&q='.rawurlencode($text);
 
         //for detect
         // $url = 'https://translation.googleapis.com/language/translate/v2/detect?key=AIzaSyCnTLblh4He46O3-5NoJ0sXOzyelS76jEY&q=helloworld';
@@ -169,9 +169,12 @@ class UtilityController extends Controller
             dd('Error description: ' . $responseDecoded['error']['errors'][0]['message']);
         }
         else {
+            echo "<br>";
             dump('Source: ' . $text);
-            dd($responseDecoded);
-            dd('Translation: ' . $responseDecoded['data']['translations'][0]['translatedText']);
+            echo "<br>";
+            echo $responseDecoded['data']['translations'][0]['translatedText'];
+            // dd($responseDecoded);
+            // dd('Translation: ' . $responseDecoded['data']['translations'][0]['translatedText']);
         }
     }
 }
