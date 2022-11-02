@@ -117,7 +117,10 @@ class AdminLangTraslation extends Command
                                             $new_details[$language_allowed]['name'] = $default_data->name;
                                         }
                                     }
-                                    // $new_details[$language_allowed]['name'] = $default_data->name;
+                                    else
+                                    {
+                                        $new_details[$language_allowed]['name'] = $default_data->name;
+                                    }
                                 }
                             }
                         }
@@ -169,8 +172,11 @@ class AdminLangTraslation extends Command
                                             $new_details[$language_allowed]['description'] = $default_data->description;
                                         }
                                     }
-                                    // $new_details[$language_allowed]['title'] = $default_data->title;
-                                    // $new_details[$language_allowed]['description'] = $default_data->description;
+                                    else
+                                    {
+                                        $new_details[$language_allowed]['title'] = $default_data->title;
+                                        $new_details[$language_allowed]['description'] = $default_data->description;
+                                    }
                                 }
                             }
                         }
@@ -217,7 +223,10 @@ class AdminLangTraslation extends Command
                                             }
                                         }
                                     }
-                                    // $new_details[$language_allowed]['value'] = $default_data->value;
+                                    else
+                                    {
+                                        $new_details[$language_allowed]['value'] = $default_data->value;
+                                    }
                                 }
                             }
                         }
