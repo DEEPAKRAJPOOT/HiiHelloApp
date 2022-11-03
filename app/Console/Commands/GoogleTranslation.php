@@ -51,8 +51,8 @@ class GoogleTranslation extends Command
 
         User::select('id','custom_id','language_id','is_trans_full_name','is_trans_about_me','is_trans_fav_movie')
                                 ->with('userTranslations','language')
-                                ->where('is_trans_full_name','n')->orWhere('is_trans_about_me','n')
-                                ->orWhere('is_trans_fav_movie','n')
+                                ->where('is_trans_full_name','y')->orWhere('is_trans_about_me','y')
+                                ->orWhere('is_trans_fav_movie','y')
                                 ->chunk(100, function($users) use ($language_alloweds, $apiKey, $message) {
             if($users->isNotEmpty()){
                 foreach($users as $user){
@@ -65,15 +65,15 @@ class GoogleTranslation extends Command
                             $about_me   =   $user->userTranslations[0]->about_me;
                             $fav_movie  =   $user->userTranslations[0]->fav_movie;
 
-                            if( !empty($full_name) && $user->is_trans_full_name == 'n'){
+                            if( !empty($full_name) && $user->is_trans_full_name == 'y'){
                                 $message = $this->translateText($apiKey, $language_alloweds, $user, $detected_lang, 'full_name', $full_name );
                                 $user->is_trans_full_name = 'y';
                             }
-                            if( !empty($about_me) && $user->is_trans_about_me == 'n'){
+                            if( !empty($about_me) && $user->is_trans_about_me == 'y'){
                                 $message = $this->translateText($apiKey, $language_alloweds, $user, $detected_lang, 'about_me', $about_me );
                                 $user->is_trans_about_me = 'y';
                             }
-                            if( !empty($fav_movie) && $user->is_trans_fav_movie == 'n'){
+                            if( !empty($fav_movie) && $user->is_trans_fav_movie == 'y'){
                                 $message = $this->translateText($apiKey, $language_alloweds, $user, $detected_lang, 'fav_movie', $fav_movie );
                                 $user->is_trans_fav_movie = 'y';
                             }
