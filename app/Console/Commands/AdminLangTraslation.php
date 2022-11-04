@@ -41,7 +41,7 @@ class AdminLangTraslation extends Command
      */
     public function handle()
     {
-        $language_alloweds  =   ['en', 'hi', 'ta', 'mr', 'bn', 'gu', 'kn', 'ml', 'or', 'pa', 'te','as'];
+        $language_alloweds  =   ['en', 'hi', 'ta', 'mr', 'bn', 'gu', 'kn', 'ml', 'or', 'pa', 'te'];
         $default_lang_code  =   config('utility.default_lang_code');
         $message            =   'No  Admin details foundfor translated !!!';
 
@@ -65,16 +65,6 @@ class AdminLangTraslation extends Command
                         if(count($available_langs) > 0 && $default_data != NULL){
                             foreach($language_alloweds as $language_allowed){
                                 if(!in_array($language_allowed, $available_langs)){
-                                    // if ($default_data->locale == 'en') {
-                                    //     $success = $this->Interesttranslate($default_data->title);
-                                    //     if(isset($success) && !empty($success)){ 
-                                    //         $new_details[$language_allowed]['title'] = $success;
-                                    //     }
-                                    //     else
-                                    //     {
-                                    //         $new_details[$language_allowed]['title'] = $default_data->title;
-                                    //     }
-                                    // }
                                     $new_details[$language_allowed]['title'] = $default_data->title;
                                 }
                             }
@@ -107,20 +97,6 @@ class AdminLangTraslation extends Command
                         if(count($available_langs) > 0 && $default_data != NULL){
                             foreach($language_alloweds as $language_allowed){
                                 if(!in_array($language_allowed, $available_langs)){
-                                    // if ($default_data->locale == 'en') {
-                                    //     $success = $this->Locationtranslate($default_data->name);
-                                    //     if(isset($success) && !empty($success)){ 
-                                    //         $new_details[$language_allowed]['name'] = $success;
-                                    //     }
-                                    //     else
-                                    //     {
-                                    //         $new_details[$language_allowed]['name'] = $default_data->name;
-                                    //     }
-                                    // }
-                                    // else
-                                    // {
-                                    //     $new_details[$language_allowed]['name'] = $default_data->name;
-                                    // }
                                     $new_details[$language_allowed]['name'] = $default_data->name;
                                 }
                             }
@@ -154,30 +130,6 @@ class AdminLangTraslation extends Command
                         if(count($available_langs) > 0 && $default_data != NULL){
                             foreach($language_alloweds as $language_allowed){
                                 if(!in_array($language_allowed, $available_langs)){
-                                    // if ($default_data->locale == 'en') {
-                                    //     $title = $this->PersonalityTitletranslate($default_data->title);
-                                    //     if(isset($title) && !empty($title)){ 
-                                    //         $new_details[$language_allowed]['title'] = $title;
-                                    //     }
-                                    //     else
-                                    //     {
-                                    //         $new_details[$language_allowed]['title'] = $default_data->title;
-                                    //     }
-                                        
-                                    //     $description = $this->PersonalityDescriptiontranslate($default_data->description);
-                                    //     if(isset($description) && !empty($success)){ 
-                                    //         $new_details[$language_allowed]['description'] = $success;
-                                    //     }
-                                    //     else
-                                    //     {
-                                    //         $new_details[$language_allowed]['description'] = $default_data->description;
-                                    //     }
-                                    // }
-                                    // else
-                                    // {
-                                    //     $new_details[$language_allowed]['title'] = $default_data->title;
-                                    //     $new_details[$language_allowed]['description'] = $default_data->description;
-                                    // }
                                     $new_details[$language_allowed]['title'] = $default_data->title;
                                     $new_details[$language_allowed]['description'] = $default_data->description;
                                 }
@@ -212,25 +164,7 @@ class AdminLangTraslation extends Command
                         if(count($available_langs) > 0 && $default_data != NULL){
                             foreach($language_alloweds as $language_allowed){
                                 if(!in_array($language_allowed, $available_langs)){
-                                    if ($default_data->locale == 'en') {
-                                        if ($profile_detail->attribute == 'university_college') {
-                                            $new_details[$language_allowed]['value'] = $default_data->value;
-                                        }else{
-                                            $success = $this->translate($default_data->value);
-                                            if(isset($success) && !empty($success)){ 
-                                                $new_details[$language_allowed]['value'] = $success;
-                                            }
-                                            else
-                                            {
-                                                $new_details[$language_allowed]['value'] = $default_data->value;
-                                            }
-                                        }
-                                    }
-                                    else
-                                    {
-                                        $new_details[$language_allowed]['value'] = $default_data->value;
-                                    }
-                                    // $new_details[$language_allowed]['value'] = $default_data->value;
+                                    $new_details[$language_allowed]['value'] = $default_data->value;
                                 }
                             }
                         }
@@ -246,78 +180,5 @@ class AdminLangTraslation extends Command
 
         // $this->info($message);
         return $message;
-    }
-
-    function Interesttranslate($text)
-    {
-        $url = 'https://translation.googleapis.com/language/translate/v2?key=AIzaSyCnTLblh4He46O3-5NoJ0sXOzyelS76jEY&source=en&target=as&q='.rawurlencode($text);
-        $handle = curl_init($url);
-        curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
-        $response = curl_exec($handle);
-        $responseDecoded = json_decode($response, true);
-        $responseCode = curl_getinfo($handle, CURLINFO_HTTP_CODE);
-        // dd($url);
-        curl_close($handle);
-        if($responseCode == 200) {
-            return $responseDecoded['data']['translations'][0]['translatedText'];
-        }
-    }
-
-    function Locationtranslate($text)
-    {
-        $url = 'https://translation.googleapis.com/language/translate/v2?key=AIzaSyCnTLblh4He46O3-5NoJ0sXOzyelS76jEY&source=en&target=as&q='.rawurlencode($text);
-        $handle = curl_init($url);
-        curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
-        $response = curl_exec($handle);
-        $responseDecoded = json_decode($response, true);
-        $responseCode = curl_getinfo($handle, CURLINFO_HTTP_CODE);
-        // dd($url);
-        curl_close($handle);
-        if($responseCode == 200) {
-            return $responseDecoded['data']['translations'][0]['translatedText'];
-        }
-    }
-    function PersonalityTitletranslate($text)
-    {
-        $url = 'https://translation.googleapis.com/language/translate/v2?key=AIzaSyCnTLblh4He46O3-5NoJ0sXOzyelS76jEY&source=en&target=as&q='.rawurlencode($text);
-        $handle = curl_init($url);
-        curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
-        $response = curl_exec($handle);
-        $responseDecoded = json_decode($response, true);
-        $responseCode = curl_getinfo($handle, CURLINFO_HTTP_CODE);
-        // dd($url);
-        curl_close($handle);
-        if($responseCode == 200) {
-            return $responseDecoded['data']['translations'][0]['translatedText'];
-        }
-    }
-    function PersonalityDescriptiontranslate($text)
-    {
-        $url = 'https://translation.googleapis.com/language/translate/v2?key=AIzaSyCnTLblh4He46O3-5NoJ0sXOzyelS76jEY&source=en&target=as&q='.rawurlencode($text);
-        $handle = curl_init($url);
-        curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
-        $response = curl_exec($handle);
-        $responseDecoded = json_decode($response, true);
-        $responseCode = curl_getinfo($handle, CURLINFO_HTTP_CODE);
-        // dd($url);
-        curl_close($handle);
-        if($responseCode == 200) {
-            return $responseDecoded['data']['translations'][0]['translatedText'];
-        }
-    }
-
-    function translate($text)
-    {
-        $url = 'https://translation.googleapis.com/language/translate/v2?key=AIzaSyCnTLblh4He46O3-5NoJ0sXOzyelS76jEY&source=en&target=as&q='.rawurlencode($text);
-        $handle = curl_init($url);
-        curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
-        $response = curl_exec($handle);
-        $responseDecoded = json_decode($response, true);
-        $responseCode = curl_getinfo($handle, CURLINFO_HTTP_CODE);
-        // dd($url);
-        curl_close($handle);
-        if($responseCode == 200) {
-            return $responseDecoded['data']['translations'][0]['translatedText'];
-        }
     }
 }
