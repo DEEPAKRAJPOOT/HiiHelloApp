@@ -59,6 +59,7 @@ class GoogleTranslation extends Command
                     if($user->userTranslations->isNotEmpty()){
                         $detected_lang = $user->language ? $user->language->lang_code : 'en';
                         // $detected_lang = $user->userTranslations[0] ? $user->userTranslations[0]->locale : $detected_lang;
+
                         if($user->userTranslations[0]){
                             $full_name  =   $user->userTranslations[0]->full_name;
                             $about_me   =   $user->userTranslations[0]->about_me;
