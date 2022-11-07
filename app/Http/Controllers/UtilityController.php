@@ -139,7 +139,9 @@ class UtilityController extends Controller
     public function translate()
     {
         $apiKey = 'AIzaSyCnTLblh4He46O3-5NoJ0sXOzyelS76jEY';
-        $text = 'Hello Anand';
+        $text = 'Anand Patel';
+        $source = 'en';
+        $target = 'hi';
         $target_lang = ['en','hi','ta','mr','bn','gu','kn','ml','or','pa','te','as'];
         foreach($target_lang as $lang)
         {
@@ -150,7 +152,13 @@ class UtilityController extends Controller
         //for translate
         // $url = 'https://www.googleapis.com/language/translate/v2?key=' . $apiKey . '&q=' . rawurlencode($text) . '&source=en&target=te';
 
-        $url = 'https://translation.googleapis.com/language/translate/v2?key=AIzaSyCnTLblh4He46O3-5NoJ0sXOzyelS76jEY&source=en&target=as&q='.rawurlencode($text);
+        if ($source == $target) {
+            $url = 'https://translation.googleapis.com/language/translate/v2?key=AIzaSyCnTLblh4He46O3-5NoJ0sXOzyelS76jEY&source=en&target='.$target.'&q='.rawurlencode($text);
+        }
+        else
+        {
+        $url = 'https://translation.googleapis.com/language/translate/v2?key=AIzaSyCnTLblh4He46O3-5NoJ0sXOzyelS76jEY&source='.$source.'&target='.$target.'&q='.rawurlencode($text);
+        }
 
         //for detect
         // $url = 'https://translation.googleapis.com/language/translate/v2/detect?key=AIzaSyCnTLblh4He46O3-5NoJ0sXOzyelS76jEY&q=helloworld';
