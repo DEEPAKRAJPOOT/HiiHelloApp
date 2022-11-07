@@ -39,7 +39,7 @@ class GoogleTranslation extends Command
      */
     public function handle()
     {
-        $language_alloweds  =   ['en', 'hi', 'ta', 'mr', 'bn', 'gu', 'kn', 'ml', 'or', 'pa', 'te','as'];
+        $language_alloweds  =   ['en', 'hi', 'ta', 'mr', 'bn', 'gu', 'kn', 'ml', 'or', 'pa', 'te', 'as'];
         $default_lang_code  =   config('utility.default_lang_code');
         $apiKey             =   config('utility.google.translate.api_key');
         $message            =   'No details found to translate !!!';
@@ -59,7 +59,6 @@ class GoogleTranslation extends Command
                     if($user->userTranslations->isNotEmpty()){
                         $detected_lang = $user->language ? $user->language->lang_code : 'en';
                         // $detected_lang = $user->userTranslations[0] ? $user->userTranslations[0]->locale : $detected_lang;
-
                         if($user->userTranslations[0]){
                             $full_name  =   $user->userTranslations[0]->full_name;
                             $about_me   =   $user->userTranslations[0]->about_me;
