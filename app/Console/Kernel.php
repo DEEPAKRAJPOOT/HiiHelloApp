@@ -12,6 +12,7 @@ use App\Console\Commands\NotifySubScriptionExpire;
 use App\Console\Commands\RenewSwipeLimit;
 use App\Console\Commands\ChatMediaCheker;
 use App\Console\Commands\AutoVerifyProfile;
+use App\Console\Commands\LocationTranslations;
 
 class Kernel extends ConsoleKernel
 {
@@ -29,6 +30,7 @@ class Kernel extends ConsoleKernel
         RenewSwipeLimit::class,
         ChatMediaCheker::class,
         AutoVerifyProfile::class,
+        LocationTranslations::class,
     ];
 
     /**
@@ -67,6 +69,12 @@ class Kernel extends ConsoleKernel
         // Auto Verify Profiles Command
         $schedule->call(function () {
             $scheculeCommand = new AutoVerifyProfile;
+            $scheculeCommand->handle();
+        })->everyMinute();
+
+        // Location Translations Command
+        $schedule->call(function () {
+            $scheculeCommand = new LocationTranslations;
             $scheculeCommand->handle();
         })->everyMinute();
 

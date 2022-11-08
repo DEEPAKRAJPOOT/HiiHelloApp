@@ -12,7 +12,10 @@ use App\Models\User;
 use App\Models\City;
 use App\Models\Location;
 use App\Models\State;
+use App\Models\Subscription;
+use App\Models\SubscriptionPlan;
 use App\Models\SubscriptionPlanTranslation;
+use App\Models\UserTranslation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
@@ -37,30 +40,35 @@ class PagesController extends Controller
         $user['total_subscribed'] = User::where('gender','=','Male')->where('is_subscribed','=','y')->whereNull('deleted_at')->count();
         $user['total_unsubscribed'] = User::where('gender','=','Male')->where('is_subscribed','!=','y')->whereNull('deleted_at')->count();
         
-        $subscription_plans = SubscriptionPlanTranslation::where(['locale' => 'en'])->get();
-        // echo "<pre>"; print_r($subscription_plans->toArray()); die();
+        $subscription_plans = SubscriptionPlanTranslation::select("locale","subscription_plan_id","name")->where(['locale' => 'en'])->get();
+         // echo "<pre>"; print_r($subscription_plans->toArray()); die();
         $no_of_sub_buy = 0;
         if (count($subscription_plans) > 0) {
             foreach ($subscription_plans as $key => $val) {
-                $total_users        = User::with('userTransDefault','subscription.subscriptionPlan')->get();
-                if (count($total_users) > 0) {
-                    foreach ($total_users as $key => $row) {
-                        if($row->is_subscribed == 'y')
-                        {   
-                            $user_active_plan_id = isset($row->subscription->plan_id) ?  $row->subscription->plan_id : 0;
-                            if ($user_active_plan_id == $val->subscription_plan_id) {
-                                $no_of_sub_buy += 1;
-                            }
-                        }
-                    }
-                }
+                $total_users    = Subscription::where("plan_id",$val->subscription_plan_id)
+                                    ->where("status","active")
+                                    ->groupBy("user_id")
+                                    ->get();
+                // if (count($total_users) > 0) {
+                //     foreach ($total_users as $key => $row) {
+                //         if($row->is_subscribed == 'y')
+                //         {   
+                //             $user_active_plan_id = isset($row->subscription->plan_id) ?  $row->subscription->plan_id : 0;
+                //             if ($user_active_plan_id == $val->subscription_plan_id) {
+                //                 $no_of_sub_buy += 1;
+                //             }
+                //         }
+                //     }
+                // }
                 $subscription_result[] = [
                     'name' => $val->name,
-                    'total_users' => $no_of_sub_buy,
+                    'total_users' => count($total_users),
                 ];
                 $no_of_sub_buy = 0;
             }
         }
+        // echo "<pre>"; print_r($subscription_result); die();
+
 
         $all_users = User::select('birth_date','gender')->whereNull('deleted_at')->whereNotNull('birth_date')->whereNotNull('gender')->get();
         // echo "<pre>"; print_r($all_users->toArray()); die();
@@ -433,5 +441,70 @@ class PagesController extends Controller
         $keys = array_column($records['data'], 'total_users');
         array_multisort($keys, SORT_DESC, $records['data']);
         return $records;
+    }
+
+    public function user_translations()
+    {
+        $apiKey = 'AIzaSyCnTLblh4He46O3-5NoJ0sXOzyelS76jEY';
+        $text = 'दयाकर भंडारी';
+        $source = 'en';
+        $target = 'hi';
+        
+
+        $UserTranslation = UserTranslation::where("locale","en")->groupBy('user_id')->paginate(50);
+        // echo "<pre>"; print_r($UserTranslation->toArray()); die();
+
+        $singledata = UserTranslation::where('user_id','211292')->first();
+        echo "<pre>"; print_r($singledata); die();
+
+        if (count($UserTranslation) > 0) {
+            foreach ($UserTranslation as $key => $val) {
+                $singledata = UserTranslation::where("locale","hi")->where('user_id',$val->user_id)->first();
+                $result[] = array(
+                    "id"        => $val->id,
+                    "locale"    => $val->locale,
+                    "user_id"   => $val->user_id,
+                    "full_name" => $val->full_name,
+                    "about_me"  => $val->about_me,
+                    "fav_movie" => $val->fav_movie,
+                    "singledata"=> $singledata
+                );
+             }
+        }
+
+        echo "<pre>"; print_r($result); die();
+
+        if ($source == $target) {
+            $url = 'https://translation.googleapis.com/language/translate/v2?key=AIzaSyCnTLblh4He46O3-5NoJ0sXOzyelS76jEY&source=en&target='.$target.'&q='.rawurlencode($text);
+        }
+        else
+        {
+        $url = 'https://translation.googleapis.com/language/translate/v2?key=AIzaSyCnTLblh4He46O3-5NoJ0sXOzyelS76jEY&source='.$source.'&target='.$target.'&q='.rawurlencode($text);
+        }
+
+        //for detect
+        // $url = 'https://translation.googleapis.com/language/translate/v2/detect?key=AIzaSyCnTLblh4He46O3-5NoJ0sXOzyelS76jEY&q=helloworld';
+
+        $handle = curl_init($url);
+        curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
+        $response = curl_exec($handle);
+        $responseDecoded = json_decode($response, true);
+        $responseCode = curl_getinfo($handle, CURLINFO_HTTP_CODE);
+              //Here we fetch the HTTP response code
+        // dd($url);
+        curl_close($handle);
+        
+        if($responseCode != 200) {
+            dump('Fetching translation failed! Server response code:' . $responseCode);
+            dd('Error description: ' . $responseDecoded['error']['errors'][0]['message']);
+        }
+        else {
+            // echo "<br>";
+            // dump('Source: ' . $text);
+            // echo "<br>";
+            echo $responseDecoded['data']['translations'][0]['translatedText'];
+            // dd($responseDecoded);
+            // dd('Translation: ' . $responseDecoded['data']['translations'][0]['translatedText']);
+        }
     }
 }
