@@ -14,16 +14,16 @@ class LocationResource extends JsonResource
      */
     public function toArray($request)
     {   
-        $lang_name = "";
-        if ($this->locationTranslation) {
-            if (isset($this->locationTranslation->location_id)) {
-                $result = DB::table('location_translations')->select('name')->where('location_id',$this->locationTranslation->location_id)->where('locale','en')->first();
-                $lang_name = $result ? $result->name : '';
-            }
-        }
+        // $lang_name = "";
+        // if ($this->locationTranslation) {
+        //     if (isset($this->locationTranslation->location_id)) {
+        //         $result = DB::table('location_translations')->select('name')->where('location_id',$this->locationTranslation->location_id)->where('locale','en')->first();
+        //         $lang_name = $result ? $result->name : '';
+        //     }
+        // }
         return [
             'id'            =>  $this->custom_id,
-            'name'          =>  $lang_name,
+            'name'          =>  $this->locationTranslation ? $this->locationTranslation->name : "",
             'is_active'     =>  $this->is_active,
         ];
         return parent::toArray($request);
