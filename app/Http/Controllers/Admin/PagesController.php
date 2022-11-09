@@ -33,23 +33,18 @@ class PagesController extends Controller
         $age_result = array(); 
 
         $dashboard_data = DB::table("analytic_dashboard")->orderBy("id","DESC")->first();
-        // echo "<pre>"; print_r($dashboard_data); die();
-        // $user['Count'] = User::whereNull('deleted_at')->count();
+        $total_subscribed = $dashboard_data ? $dashboard_data->paid_users : 0;
+        $total_unsubscribed = $dashboard_data ? $dashboard_data->non_paid_users : 0;
+        $total_male = $dashboard_data ? $dashboard_data->male_users : 0;
+
         $user['Count'] = $dashboard_data ? number_format($dashboard_data->total_users) : 0;
-        // $user['total_city'] = City::count();
-        // $user['total_male'] = User::where('gender','=','Male')->whereNull('deleted_at')->count();
-        $user['total_male'] = $dashboard_data ? $dashboard_data->male_users : 0;
-        // $user['total_female'] = User::where('gender','=','Female')->whereNull('deleted_at')->count();
+        $user['total_male'] = $total_male;
         $user['total_female'] = $dashboard_data ? $dashboard_data->female_users : 0;
-        // $user['total_na_user'] = User::whereNull('gender')->whereNull('deleted_at')->count();
         $user['total_na_user'] = $dashboard_data ? $dashboard_data->na_users : 0;
-        // $user['total_subscribed'] = User::where('gender','=','Male')->where('is_subscribed','=','y')->whereNull('deleted_at')->count();
-        $user['total_subscribed'] = $dashboard_data ? $dashboard_data->paid_users : 0;
-        // $user['total_unsubscribed'] = User::where('gender','=','Male')->where('is_subscribed','!=','y')->whereNull('deleted_at')->count();
-        $user['total_unsubscribed'] = $dashboard_data ? $dashboard_data->non_paid_users : 0;
+        $user['total_subscribed'] = $total_subscribed;
+        $user['total_unsubscribed'] = $total_unsubscribed;
         
         $subscription_plans = SubscriptionPlanTranslation::select("locale","subscription_plan_id","name")->where(['locale' => 'en'])->get();
-         // echo "<pre>"; print_r($subscription_plans->toArray()); die();
         $no_of_sub_buy = 0;
         if (count($subscription_plans) > 0) {
             foreach ($subscription_plans as $key => $val) {
@@ -57,17 +52,6 @@ class PagesController extends Controller
                                     ->where("status","active")
                                     ->groupBy("user_id")
                                     ->get();
-                // if (count($total_users) > 0) {
-                //     foreach ($total_users as $key => $row) {
-                //         if($row->is_subscribed == 'y')
-                //         {   
-                //             $user_active_plan_id = isset($row->subscription->plan_id) ?  $row->subscription->plan_id : 0;
-                //             if ($user_active_plan_id == $val->subscription_plan_id) {
-                //                 $no_of_sub_buy += 1;
-                //             }
-                //         }
-                //     }
-                // }
                 $subscription_result[] = [
                     'name' => $val->name,
                     'total_users' => count($total_users),
@@ -75,66 +59,6 @@ class PagesController extends Controller
                 $no_of_sub_buy = 0;
             }
         }
-        // echo "<pre>"; print_r($subscription_result); die();
-
-
-        // $all_users = User::select('birth_date','gender')->whereNull('deleted_at')->whereNotNull('birth_date')->whereNotNull('gender')->get();
-        // // echo "<pre>"; print_r($all_users->toArray()); die();
-        // $male_age_18_25   = 0;
-        // $male_age_26_35   = 0;
-        // $male_age_36_45   = 0;
-        // $male_age_45      = 0;
-        // $female_age_18_25 = 0;
-        // $female_age_26_35 = 0;
-        // $female_age_36_45 = 0;
-        // $female_age_45    = 0;
-        // if(count($all_users) > 0){
-        //     foreach ($all_users as $key => $val) {
-        //         $age_check = $this->age_check($val->birth_date);
-        //         // echo $age_check; echo "<br>";
-        //         if ($val->gender == "Male") {
-        //             if ($age_check >= 18 && $age_check <= 25) {
-        //                 $male_age_18_25 += 1;
-        //             }
-        //             if ($age_check >= 26 && $age_check <= 35) {
-        //                 $male_age_26_35 += 1;
-        //             }
-        //             if ($age_check >= 36 && $age_check <= 45) {
-        //                 $male_age_36_45 += 1;
-        //             }
-        //             if ($age_check >= 46) {
-        //                 $male_age_45 += 1;
-        //             }
-        //         }
-
-        //         if ($val->gender == "Female") {
-        //             if ($age_check >= 18 && $age_check <= 25) {
-        //                 $female_age_18_25 += 1;
-        //             }
-        //             if ($age_check >= 26 && $age_check <= 35) {
-        //                 $female_age_26_35 += 1;
-        //             }
-        //             if ($age_check >= 36 && $age_check <= 45) {
-        //                 $female_age_36_45 += 1;
-        //             }
-        //             if ($age_check >= 46) {
-        //                 $female_age_45 += 1;
-        //             }
-        //         }
-        //     }
-            
-        //     $age_result[] = [
-        //         'male_age_18_25'    => $male_age_18_25,
-        //         'male_age_26_35'    => $male_age_26_35,
-        //         'male_age_36_45'    => $male_age_36_45,
-        //         'male_age_45'       => $male_age_45,
-        //         'female_age_18_25'  => $female_age_18_25,
-        //         'female_age_26_35'  => $female_age_26_35,
-        //         'female_age_36_45'  => $female_age_36_45,
-        //         'female_age_45'     => $female_age_45,
-        //     ];
-        // }
-
         $age_result[] = [
             'male_age_18_25'    => $dashboard_data ? $dashboard_data->male_18_25 : 0,
             'male_age_26_35'    => $dashboard_data ? $dashboard_data->male_26_35 : 0,
@@ -146,23 +70,6 @@ class PagesController extends Controller
             'female_age_45'     => $dashboard_data ? $dashboard_data->female_45 : 0,
         ];
 
-        // cache()->forget('oldest-record'); //forget cache recorde change on development
-        // $old_date = cache()->rememberForever('oldest-record', function () {
-        //     return User::selectRaw('created_at')->orderBy('created_at', 'asc')->first();
-        // });
-
-        // if (isset($old_date->created_at)) {
-        //     $startDate = Carbon::parse($old_date->created_at)->startOfDay();
-        //     $endDate = Carbon::now()->endOfDay();
-        //     $diffInDays = $startDate->diffInDays($endDate);
-
-        //     //diffInDays same date return 0 day and if date 4 and 5 diffInDays return 1 day
-        //     $diffInDays = $diffInDays + 1;
-        //     $user['PerDayCount'] = $diffInDays >= 1 ? number_format(floor(($user['Count'] / $diffInDays))) : 0; //Per Day Register User
-        //     $user['PerWeekCount'] = $diffInDays >= 7 ? number_format(floor(($user['Count'] / ($diffInDays / 7)))) : 0; //Per Week Register User
-        //     $user['Per30DayCount'] = $diffInDays >= 30 ? number_format(floor(($user['Count'] / ($diffInDays / 30)))) : 0; //Per 30 Day Register User
-        //     $user['Count'] = number_format($user['Count']);
-        // }
         $user['PerDayCount'] = $dashboard_data ? number_format($dashboard_data->per_day_users) : 0;
         $user['PerWeekCount'] = $dashboard_data ? number_format($dashboard_data->per_week_users) : 0;
         $user['Per30DayCount'] = $dashboard_data ? number_format($dashboard_data->per_30_day_users) : 0;
@@ -170,6 +77,8 @@ class PagesController extends Controller
         $user['city_result'] = [];
         $user['subscription_result'] = $subscription_result;
         $user['age_result'] = $age_result;
+        $user['paid_users_pr'] = number_format($total_subscribed / $total_male * 100,2);
+        $user['nonpaid_users_pr'] = number_format($total_unsubscribed / $total_male * 100,2);
         // echo "<pre>"; print_r($user); die();
         return view('admin.pages.general.dashboard', compact('user'))->with(['custom_title' => __('Dashboard')]);
     }
