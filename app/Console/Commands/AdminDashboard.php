@@ -39,7 +39,8 @@ class AdminDashboard extends Command
      * @return int
      */
     public function handle()
-    {   
+    {      
+        $message            =   "No Analytic dashboard records found.";
         $total_users = User::whereNull('deleted_at')->count();
         $male_users = User::where('gender','=','Male')->whereNull('deleted_at')->count();
         $female_users = User::where('gender','=','Female')->whereNull('deleted_at')->count();
@@ -134,6 +135,8 @@ class AdminDashboard extends Command
         );
          // echo "<pre>"; print_r($insert_data); die();
         DB::table('analytic_dashboard')->insert($insert_data);
+        $message            = "Analytic dashboard data update successfully.";
+        return $message;
     }
 
     public function age_check($dateOfBirth){
