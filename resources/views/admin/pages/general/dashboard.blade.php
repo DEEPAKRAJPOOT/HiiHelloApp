@@ -205,7 +205,7 @@
                   <!--end::Symbol-->
                   <!--begin::Title-->
                   <div>
-                    <div class="font-size-h4 text-dark-75 font-weight-bolder" id="active_user_count">{{ number_format($user['total_male']) ?? 0 }}</div>
+                    <div class="font-size-h4 text-dark-75 font-weight-bolder" id="active_user_count">{{ $user['total_male'] ?? 0 }}</div>
                     <div class="font-size-sm text-muted font-weight-bold mt-1">Male Users</div>
                   </div>
                   <!--end::Title-->
@@ -236,7 +236,7 @@
                   <!--end::Symbol-->
                   <!--begin::Title-->
                   <div>
-                    <div class="font-size-h4 text-dark-75 font-weight-bolder" id="deactive_user_count">{{ number_format($user['total_female']) ?? 0 }}</div>
+                    <div class="font-size-h4 text-dark-75 font-weight-bolder" id="deactive_user_count">{{ $user['total_female'] ?? 0 }}</div>
                     <div class="font-size-sm text-muted font-weight-bold mt-1">Female Users</div>
                   </div>
                   <!--end::Title-->
@@ -267,7 +267,7 @@
                   <!--end::Symbol-->
                   <!--begin::Title-->
                   <div>
-                    <div class="font-size-h4 text-dark-75 font-weight-bolder" id="na_user_count">{{ number_format($user['total_na_user']) ?? 0 }}</div>
+                    <div class="font-size-h4 text-dark-75 font-weight-bolder" id="na_user_count">{{ $user['total_na_user'] ?? 0 }}</div>
                     <div class="font-size-sm text-muted font-weight-bold mt-1">N/A Users</div>
                   </div>
                   <!--end::Title-->
