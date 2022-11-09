@@ -148,7 +148,6 @@ class PagesController extends Controller
         $user['city_result'] = [];
         $user['subscription_result'] = $subscription_result;
         $user['age_result'] = $age_result;
-        // echo "<pre>"; print_r($location_result); die();
         return view('admin.pages.general.dashboard', compact('user'))->with(['custom_title' => __('Dashboard')]);
     }
     public function profile()
