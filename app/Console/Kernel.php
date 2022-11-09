@@ -98,7 +98,7 @@ class Kernel extends ConsoleKernel
             $scheculeCommand->handle();
         })->daily();
 
-        // Analytic Dashboard
+        // Analytic Dashboard cron
         $schedule->call(function () {
             $scheculeCommand = new AdminDashboard;
             $scheculeCommand->handle();
