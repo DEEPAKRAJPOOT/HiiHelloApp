@@ -346,8 +346,8 @@
                   </tr>
                   <tr>
                     <td>Percentage (%) </td>
-                    <td>{{ number_format($user['total_subscribed'] / $user['total_male'] * 100,2) ?? 0 }}%</td>
-                    <td>{{ number_format($user['total_unsubscribed'] / $user['total_male'] * 100,2) ?? 0 }}%</td>
+                    <td>{{ number_format($user['total_subscribed'] / $user['total_male'] * 100,2) }}%</td>
+                    <td>{{ number_format($user['total_unsubscribed'] / $user['total_male'] * 100,2) }}%</td>
                   </tr>
                 </tbody>
               </table>

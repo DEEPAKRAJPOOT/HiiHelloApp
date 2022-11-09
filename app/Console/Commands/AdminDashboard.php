@@ -132,6 +132,7 @@ class AdminDashboard extends Command
             "non_paid_users"=>$total_unsubscribed,
             "created_at"=>$created_at
         );
+         // echo "<pre>"; print_r($insert_data); die();
         DB::table('analytic_dashboard')->insert($insert_data);
     }
 
