@@ -112,7 +112,7 @@ $(document).ready(function() {
             // loader code
             cache: false,
             beforeSend: function(){ 
-                $("#register-user-chart").html("<h3 style='text-align:center;margin-top:15%;'>Loading..</h3>");
+                $("#register-user-chart").html("<h3 style='text-align:center;margin-top:15%;'>Processing...</h3>");
             },
             complete: function(){
             },

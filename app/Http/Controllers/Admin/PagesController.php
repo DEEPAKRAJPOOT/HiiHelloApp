@@ -11,6 +11,7 @@ use App\Models\Setting;
 use App\Models\User;
 use App\Models\City;
 use App\Models\Location;
+use App\Models\LocationTranslation;
 use App\Models\State;
 use App\Models\Subscription;
 use App\Models\SubscriptionPlan;
@@ -27,6 +28,7 @@ class PagesController extends Controller
 
     public function dashboard()
     {   
+
         $location_result = array();
         $city_result = array(); 
         $subscription_result = array(); 
@@ -298,10 +300,10 @@ class PagesController extends Controller
     {
         extract($this->DTFilters($request->all()));
 
-        // count only no of recoad
+        //count only no of recoad
         $city_lists_count = Location::with(['locationTranslation']);
         $city_lists_count = $city_lists_count->select("users.*","locations.*","users.location_id as location_id","users.id as user_id");
-        $city_lists_count = $city_lists_count->leftJoin("users","users.location_id","=","locations.id");
+        $city_lists_count = $city_lists_count->join("users","users.location_id","=","locations.id");
         $city_lists_count = $city_lists_count->where("users.deleted_at","=",NULL);
         $city_lists_count = $city_lists_count->where("users.location_id","!=",NULL);
         $city_lists_count = $city_lists_count->where("locations.is_active","=",'y');
@@ -321,7 +323,7 @@ class PagesController extends Controller
 
         $city_lists = Location::with(['locationTranslation']);
         $city_lists = $city_lists->select("users.*","locations.*","users.location_id as location_id","users.id as user_id");
-        $city_lists = $city_lists->leftJoin("users","users.location_id","=","locations.id");
+        $city_lists = $city_lists->join("users","users.location_id","=","locations.id");
         $city_lists = $city_lists->where("users.deleted_at","=",NULL);
         $city_lists = $city_lists->where("users.location_id","!=",NULL);
         $city_lists = $city_lists->where("locations.is_active","=",'y');
@@ -437,5 +439,27 @@ class PagesController extends Controller
             // dd($responseDecoded);
             // dd('Translation: ' . $responseDecoded['data']['translations'][0]['translatedText']);
         }
+    }
+
+    public function deletelocation()
+    {
+         $locationlist = DB::table('locations')
+            ->select("locations.id")
+            ->leftJoin('users', function($join) {
+                $join->on('locations.id', '=', 'users.location_id');
+            })
+            ->whereNull('users.location_id')
+            ->get();
+            // ->paginate(5);
+        // echo "<pre>"; 
+        // print_r($locationlist);
+        // die();
+        foreach ($locationlist as $key => $val) {
+            Location::where('id',$val->id)->delete();
+            LocationTranslation::where('location_id',$val->id)->delete();
+        }
+        echo "done";
+
+        die();
     }
 }
