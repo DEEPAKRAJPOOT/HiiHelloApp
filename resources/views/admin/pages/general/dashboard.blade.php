@@ -370,10 +370,9 @@
                           <div class="ph-col-8"></div>
                           <div class="ph-col-4 empty"></div>
                         </div>
-                        <div class="ph-row ph-col-12 ph-item location-loader">
+                        <div class="ph-row ph-col-12 ph-item gender-loader">
                           <div class="ph-col-10"></div>
                           <div class="ph-col-2 empty"></div>
-                          <div class="ph-col-12"></div>
                           <div class="ph-col-12"></div>
                           <div class="ph-col-10"></div>
                           <div class="ph-col-2 empty"></div>
@@ -381,6 +380,8 @@
                           <div class="ph-col-4 empty"></div>
                           <div class="ph-col-6"></div>
                           <div class="ph-col-6 empty"></div>
+                          <div class="ph-col-4"></div>
+                          <div class="ph-col-8 empty"></div>
                         </div>
                     </tr>
                 </tbody>
@@ -668,7 +669,7 @@
         "url": "{{route('admin.gender.listing')}}", // ajax source
       },
       drawCallback: function(oSettings) {
-        $('.location-loader').hide();
+        $('.gender-loader').hide();
         $('.status-switch').bootstrapSwitch();
         $('.status-switch').bootstrapSwitch('onColor', 'success');
         $('.status-switch').bootstrapSwitch('offColor', 'danger');
@@ -741,7 +742,7 @@
         "url": "{{route('admin.location.listing')}}", // ajax source
       },
       drawCallback: function(oSettings) {
-        $('.gender-loader').hide();
+        $('.location-loader').hide();
         $('.status-switch').bootstrapSwitch();
         $('.status-switch').bootstrapSwitch('onColor', 'success');
         $('.status-switch').bootstrapSwitch('offColor', 'danger');
