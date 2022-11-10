@@ -109,6 +109,7 @@ $(document).ready(function() {
                 startDate: startDate,
                 endDate: endDate,
             },
+            // loader code
             cache: false,
             beforeSend: function(){ 
                 $("#register-user-chart").html("<h3 style='text-align:center;margin-top:15%;'>Loading..</h3>");
