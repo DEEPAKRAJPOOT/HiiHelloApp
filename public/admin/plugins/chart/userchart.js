@@ -109,6 +109,12 @@ $(document).ready(function() {
                 startDate: startDate,
                 endDate: endDate,
             },
+            cache: false,
+            beforeSend: function(){ 
+                $("#register-user-chart").html("<h3 style='text-align:center;margin-top:15%;'>Loading..</h3>");
+            },
+            complete: function(){
+            },
             success: function(data) {
                 var horizontalSwitch = false;
                 if ($("#horizontalSwitch").prop("checked") == true) {
