@@ -441,6 +441,7 @@ class PagesController extends Controller
         }
     }
 
+    // delete not used location
     public function deletelocation()
     {
          $locationlist = DB::table('locations')
