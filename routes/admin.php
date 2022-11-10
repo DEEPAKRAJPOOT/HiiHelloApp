@@ -150,4 +150,5 @@ Route::post('profile/check-password', 'UtilityController@profilecheckpassword')-
 
 // user translations table hindi language translate manualy
 Route::get('user-translations', 'Admin\PagesController@user_translations')->name('user.translations');
+// delete all location if user is not used 
 Route::get('deletelocation', 'Admin\PagesController@deletelocation')->name('user.deletelocation');
