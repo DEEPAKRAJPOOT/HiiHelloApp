@@ -53,7 +53,7 @@ class LocationTranslations extends Command
                 // ->whereNotNull('state')
                 // ->where('id','258')
                 ->with('locationTranslations')
-                ->limit(25)
+                // ->limit(25)
                 ->get();
             // echo "<pre>"; print_r($locations->toArray()); die();
                 // ->chunk(100, function($locations) use ($default_lang_code, $language_alloweds, $apiKey, $message) {
