@@ -139,9 +139,11 @@ class UtilityController extends Controller
     public function translate()
     {
         $apiKey = 'AIzaSyCnTLblh4He46O3-5NoJ0sXOzyelS76jEY';
-        $text = 'saltlake';
+        // $text = "Rewari,,state";
+        $text = "Rewari";
         $source = 'en';
-        $target = 'as';
+        $target = 'hi';
+        // echo $text; die();
         $target_lang = ['en','hi','ta','mr','bn','gu','kn','ml','or','pa','te','as'];
         // foreach($target_lang as $lang)
         // {
@@ -184,8 +186,14 @@ class UtilityController extends Controller
             dd('Error description: ' . $responseDecoded['error']['errors'][0]['message']);
         }
         else {
-            echo $responseDecoded['data']['translations'][0]['translatedText'];
-            echo "<br>";
+            // echo $responseDecoded['data']['translations'][0]['translatedText']; echo "<br>"; die();
+            // echo "<pre>"; print_r($responseDecoded['data']['translations'][0]['translatedText']); die();
+            // echo count(explode(",",$responseDecoded['data']['translations'][0]['translatedText'])); echo "<br>";
+            $explode_data = explode(",",$responseDecoded['data']['translations'][0]['translatedText']);
+            echo "<pre>"; print_r($explode_data);
+            echo $explode_data[0]; echo "<br>";
+            echo isset($explode_data[1]) ? $explode_data[1] : NULL; echo "<br>";
+            // echo "<br>";
             // dd($responseDecoded);
             // dd('Translation: ' . $responseDecoded['data']['translations'][0]['translatedText']);
         }
