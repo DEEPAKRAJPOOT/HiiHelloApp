@@ -13,6 +13,7 @@ use App\Console\Commands\RenewSwipeLimit;
 use App\Console\Commands\ChatMediaCheker;
 use App\Console\Commands\AutoVerifyProfile;
 use App\Console\Commands\LocationTranslations;
+use App\Console\Commands\AdminDashboard;
 
 class Kernel extends ConsoleKernel
 {
@@ -31,6 +32,7 @@ class Kernel extends ConsoleKernel
         ChatMediaCheker::class,
         AutoVerifyProfile::class,
         LocationTranslations::class,
+        AdminDashboard::class,
     ];
 
     /**
@@ -95,6 +97,12 @@ class Kernel extends ConsoleKernel
             $scheculeCommand = new RenewSwipeLimit;
             $scheculeCommand->handle();
         })->daily();
+
+        // Analytic Dashboard cron
+        $schedule->call(function () {
+            $scheculeCommand = new AdminDashboard;
+            $scheculeCommand->handle();
+        })->everyThirtyMinutes();
 
         // $schedule->command('inspire')->hourly();
     }

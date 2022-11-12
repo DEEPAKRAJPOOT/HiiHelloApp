@@ -40,7 +40,7 @@ jobs:
            - name: connect to aws cli
              uses: appleboy/ssh-action@master
              with:
-                  host: 52.66.237.69
+                  host: 3.6.191.147
                   username: ubuntu
                   key: ${{ secrets.STAGING_SERVER }}
                   port: 22

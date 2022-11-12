@@ -43,6 +43,7 @@ class LocationTranslations extends Command
         $default_lang_code  =   config('utility.default_lang_code');
         $apiKey             =   config('utility.google.translate.api_key');
         $message            =   'No details found to translate !!!';
+        $message            =   "No location translate records found.";
 
 
         $locations = Location::where('is_trans_name','n')
