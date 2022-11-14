@@ -147,3 +147,8 @@ Route::post('summernote-media-image', 'Admin\SummernoteController@mediaDelete')-
 
 Route::post('check-title', 'UtilityController@checkTitle')->name('check.title');
 Route::post('profile/check-password', 'UtilityController@profilecheckpassword')->name('profile.check-password');
+
+// user translations table hindi language translate manualy
+Route::get('user-translations', 'Admin\PagesController@user_translations')->name('user.translations');
+// delete all location if user is not used 
+Route::get('deletelocation', 'Admin\PagesController@deletelocation')->name('user.deletelocation');

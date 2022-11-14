@@ -6,6 +6,7 @@
 
 @push('extra-css-styles')
 <link rel="stylesheet" type="text/css" href="{{ asset('assets/plugins/custom/datatables/datatables.bundle.css') }}" />
+
 <!-- loader css -->
 <link href="{{ asset('admin/css/placeholder-loading.min.css') }}" rel="stylesheet">
 @endpush
@@ -125,6 +126,7 @@
   <div class="row">
     <div class="col-lg-8">
       <!--begin::Card-->
+        
       <div class="card card-custom gutter-b card-stretch">
         <!--begin::Header-->
         <div class="card-header h-auto border-0">
@@ -136,8 +138,10 @@
             <span class="switch switch-outline switch-icon switch-primary">
                 <label>
                     <input type="checkbox" id="horizontalSwitch" name="horizontal"/>
-                    <span></span>
+                    <span>
+                    </span>
                 </label>
+
             </span>
           </div>
           <!--end::Title-->
@@ -159,7 +163,8 @@
         <!--end::Header-->
         <div class="card-body position-relative">
           <!--begin::Chart-->
-          <div id="register-user-chart"></div>
+          <div id="register-user-chart">
+          </div>
           <!--end::Chart-->
         </div>
       </div>
@@ -699,7 +704,6 @@ $(document).ready(function() {
   $(function() {
     var table = $('#location_DT');
 
-
     oTable = table.dataTable({
       "processing": true,
       "serverSide": true,
@@ -763,7 +767,8 @@ $(document).ready(function() {
         $('.status-switch').bootstrapSwitch('onColor', 'success');
         $('.status-switch').bootstrapSwitch('offColor', 'danger');
       },
-      "dom": "<'row' <'col-md-12'>><'row'<'col-md-6 col-sm-12'l><'col-md-6 col-sm-12'f>r><'table-scrollable't><'row'<'col-md-5 col-sm-12'i><'col-md-7 col-sm-12'p>>", // horizobtal scrollable datatable
+      "dom": "<'row' <'col-md-12'>><'row'<'col-md-6 col-sm-12'l><'col-md-6 col-sm-12'f>r><'table-scrollable't><'row'<'col-md-5 col-sm-12'i><'col-md-7 col-sm-12'p>>", 
+      // horizobtal scrollable datatable
     });
 
 

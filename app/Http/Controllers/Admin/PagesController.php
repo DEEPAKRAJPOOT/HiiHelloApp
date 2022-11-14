@@ -35,6 +35,7 @@ class PagesController extends Controller
         $age_result = array(); 
 
         // analytic dashboard to get last recoad
+
         $dashboard_data = DB::table("analytic_dashboard")->orderBy("id","DESC")->first();
         $total_subscribed = $dashboard_data ? $dashboard_data->paid_users : 0;
         $total_unsubscribed = $dashboard_data ? $dashboard_data->non_paid_users : 0;
@@ -375,5 +376,93 @@ class PagesController extends Controller
         $keys = array_column($records['data'], 'total_users');
         array_multisort($keys, SORT_DESC, $records['data']);
         return $records;
+    }
+
+    public function user_translations()
+    {
+        $apiKey = 'AIzaSyCnTLblh4He46O3-5NoJ0sXOzyelS76jEY';
+        $text = 'दयाकर भंडारी';
+        $source = 'en';
+        $target = 'hi';
+        
+
+        $UserTranslation = UserTranslation::where("locale","en")->groupBy('user_id')->paginate(50);
+        // echo "<pre>"; print_r($UserTranslation->toArray()); die();
+
+        $singledata = UserTranslation::where('user_id','211292')->first();
+        echo "<pre>"; print_r($singledata); die();
+
+        if (count($UserTranslation) > 0) {
+            foreach ($UserTranslation as $key => $val) {
+                $singledata = UserTranslation::where("locale","hi")->where('user_id',$val->user_id)->first();
+                $result[] = array(
+                    "id"        => $val->id,
+                    "locale"    => $val->locale,
+                    "user_id"   => $val->user_id,
+                    "full_name" => $val->full_name,
+                    "about_me"  => $val->about_me,
+                    "fav_movie" => $val->fav_movie,
+                    "singledata"=> $singledata
+                );
+             }
+        }
+
+        echo "<pre>"; print_r($result); die();
+
+        if ($source == $target) {
+            $url = 'https://translation.googleapis.com/language/translate/v2?key=AIzaSyCnTLblh4He46O3-5NoJ0sXOzyelS76jEY&source=en&target='.$target.'&q='.rawurlencode($text);
+        }
+        else
+        {
+        $url = 'https://translation.googleapis.com/language/translate/v2?key=AIzaSyCnTLblh4He46O3-5NoJ0sXOzyelS76jEY&source='.$source.'&target='.$target.'&q='.rawurlencode($text);
+        }
+
+        //for detect
+        // $url = 'https://translation.googleapis.com/language/translate/v2/detect?key=AIzaSyCnTLblh4He46O3-5NoJ0sXOzyelS76jEY&q=helloworld';
+
+        $handle = curl_init($url);
+        curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
+        $response = curl_exec($handle);
+        $responseDecoded = json_decode($response, true);
+        $responseCode = curl_getinfo($handle, CURLINFO_HTTP_CODE);
+              //Here we fetch the HTTP response code
+        // dd($url);
+        curl_close($handle);
+        
+        if($responseCode != 200) {
+            dump('Fetching translation failed! Server response code:' . $responseCode);
+            dd('Error description: ' . $responseDecoded['error']['errors'][0]['message']);
+        }
+        else {
+            // echo "<br>";
+            // dump('Source: ' . $text);
+            // echo "<br>";
+            echo $responseDecoded['data']['translations'][0]['translatedText'];
+            // dd($responseDecoded);
+            // dd('Translation: ' . $responseDecoded['data']['translations'][0]['translatedText']);
+        }
+    }
+
+    // delete not used location
+    public function deletelocation()
+    {
+         $locationlist = DB::table('locations')
+            ->select("locations.id")
+            ->leftJoin('users', function($join) {
+                $join->on('locations.id', '=', 'users.location_id');
+            })
+            ->whereNull('users.location_id')
+            ->get();
+            // ->paginate(5);
+        // echo "<pre>"; 
+        // print_r($locationlist);
+        // die();
+        foreach ($locationlist as $key => $val) {
+            Location::where('id',$val->id)->delete();
+            LocationTranslation::where('location_id',$val->id)->delete();
+        }
+        echo "done";
+
+        die();
     }
 }

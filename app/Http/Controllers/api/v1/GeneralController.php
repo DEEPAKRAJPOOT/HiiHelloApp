@@ -686,6 +686,17 @@ class GeneralController extends Controller
         $locationRequest = new CheckLocationRequest();
         if ($this->apiValidator($request->all(), $locationRequest->rules())) {    
 
+            // $language_codes = Language::pluck('lang_code')->toArray();
+            // foreach ($language_codes as $language_code) {
+            //     LocationTranslation::create([
+            //         'locale' => $language_code,
+            //         'location_id' => $location_id,
+            //         'name' => $location_name,
+            //         'locality' => $locality,
+            //         'state' => $state,
+            //     ]);
+            // }
+
              try {
                 $location_name = $request->location; 
                 $locality = isset($request->locality) ? $request->locality : ''; 
@@ -709,18 +720,24 @@ class GeneralController extends Controller
                 {         
                     $location_Translation = LocationTranslation::where('name', 'like', "{$location_name}%")->where('state', 'like', "{$state}%")->first();
                     if (empty($location_Translation)) {
+
                         $location_data      = Location::create([
                             'custom_id'     => getUniqueString('locations'),
-                            'is_trans_name' => 'y',
+                            'is_trans_name' => 'n',
+                            'is_trans_locality' => 'n',
+                            'is_trans_state' => 'n',
                         ]);
                         $location_id = $location_data->id;
-                        LocationTranslation::create([
-                            'locale' => $lang,
-                            'location_id' => $location_id,
-                            'name' => $location_name,
-                            'locality' => $locality,
-                            'state' => $state,
-                        ]);
+                        $language_codes = Language::pluck('lang_code')->toArray();
+                        foreach ($language_codes as $language_code) {
+                            LocationTranslation::create([
+                                'locale' => $language_code,
+                                'location_id' => $location_id,
+                                'name' => $location_name,
+                                'locality' => $locality,
+                                'state' => $state,
+                            ]);
+                        }
                         $locations = Location::select(                    
                             'locations.custom_id',
                             'locations.is_active',
@@ -740,16 +757,21 @@ class GeneralController extends Controller
                         if ($locationTranslation == '') {
                             $location_data     = Location::create([
                                 'custom_id'     => getUniqueString('locations'),
-                                'is_trans_name' => 'y',
+                                'is_trans_name' => 'n',
+                                'is_trans_locality' => 'n',
+                                'is_trans_state' => 'n',
                             ]);
                             $location_id = $location_data->id;
-                            LocationTranslation::create([
-                                'locale' => $lang,
-                                'location_id' => $location_id,
-                                'name' => $location_name,
-                                'locality' => $locality,
-                                'state' => $state,
-                            ]);
+                            $language_codes = Language::pluck('lang_code')->toArray();
+                            foreach ($language_codes as $language_code) {
+                                LocationTranslation::create([
+                                    'locale' => $language_code,
+                                    'location_id' => $location_id,
+                                    'name' => $location_name,
+                                    'locality' => $locality,
+                                    'state' => $state,
+                                ]);
+                            }
                         }
 
                         $locations = Location::select(                    
