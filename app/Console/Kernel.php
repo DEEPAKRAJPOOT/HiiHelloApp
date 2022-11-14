@@ -12,6 +12,7 @@ use App\Console\Commands\NotifySubScriptionExpire;
 use App\Console\Commands\RenewSwipeLimit;
 use App\Console\Commands\ChatMediaCheker;
 use App\Console\Commands\AutoVerifyProfile;
+use App\Console\Commands\AdminDashboard;
 
 class Kernel extends ConsoleKernel
 {
@@ -29,6 +30,7 @@ class Kernel extends ConsoleKernel
         RenewSwipeLimit::class,
         ChatMediaCheker::class,
         AutoVerifyProfile::class,
+        AdminDashboard::class,
     ];
 
     /**
@@ -87,6 +89,12 @@ class Kernel extends ConsoleKernel
             $scheculeCommand = new RenewSwipeLimit;
             $scheculeCommand->handle();
         })->daily();
+
+        // Analytic Dashboard cron
+        $schedule->call(function () {
+            $scheculeCommand = new AdminDashboard;
+            $scheculeCommand->handle();
+        })->hourly();
 
         // $schedule->command('inspire')->hourly();
     }

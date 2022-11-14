@@ -6,7 +6,8 @@
 
 @push('extra-css-styles')
 <link rel="stylesheet" type="text/css" href="{{ asset('assets/plugins/custom/datatables/datatables.bundle.css') }}" />
-<!-- <link rel="stylesheet" type="text/css" href="{{ asset('assets/css/dataTables.bootstrap5.min.css') }}" /> -->
+<!-- loader css -->
+<link href="{{ asset('admin/css/placeholder-loading.min.css') }}" rel="stylesheet">
 @endpush
 
 @section('content')
@@ -205,7 +206,7 @@
                   <!--end::Symbol-->
                   <!--begin::Title-->
                   <div>
-                    <div class="font-size-h4 text-dark-75 font-weight-bolder" id="active_user_count">{{ number_format($user['total_male']) ?? 0 }}</div>
+                    <div class="font-size-h4 text-dark-75 font-weight-bolder" id="active_user_count">{{ $user['total_male'] ?? 0 }}</div>
                     <div class="font-size-sm text-muted font-weight-bold mt-1">Male Users</div>
                   </div>
                   <!--end::Title-->
@@ -236,7 +237,7 @@
                   <!--end::Symbol-->
                   <!--begin::Title-->
                   <div>
-                    <div class="font-size-h4 text-dark-75 font-weight-bolder" id="deactive_user_count">{{ number_format($user['total_female']) ?? 0 }}</div>
+                    <div class="font-size-h4 text-dark-75 font-weight-bolder" id="deactive_user_count">{{ $user['total_female'] ?? 0 }}</div>
                     <div class="font-size-sm text-muted font-weight-bold mt-1">Female Users</div>
                   </div>
                   <!--end::Title-->
@@ -267,7 +268,7 @@
                   <!--end::Symbol-->
                   <!--begin::Title-->
                   <div>
-                    <div class="font-size-h4 text-dark-75 font-weight-bolder" id="na_user_count">{{ number_format($user['total_na_user']) ?? 0 }}</div>
+                    <div class="font-size-h4 text-dark-75 font-weight-bolder" id="na_user_count">{{ $user['total_na_user'] ?? 0 }}</div>
                     <div class="font-size-sm text-muted font-weight-bold mt-1">N/A Users</div>
                   </div>
                   <!--end::Title-->
@@ -296,6 +297,42 @@
           <div class="row">
             <div class="col-sm-12">
               <table class="table table-separate table-head-custom table-checkable dataTable no-footer dtr-inline" id="location_DT">
+                <thead>
+                  <tr>
+                    <th>City</th>
+                    <th>Male</th>
+                    <th>Female</th>
+                    <th>N/A</th>
+                    <th>Total</th>
+                    <th>PR</th>
+                  </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <div class="ph-row ph-col-12 ph-item location-loader">
+                          <div class="ph-col-2"></div>
+                          <div class="ph-col-10 empty"></div>
+                          <div class="ph-col-4"></div>
+                          <div class="ph-col-8 empty"></div>
+                          <div class="ph-col-6"></div>
+                          <div class="ph-col-6 empty"></div>
+                          <div class="ph-col-8"></div>
+                          <div class="ph-col-4 empty"></div>
+                          <div class="ph-col-10"></div>
+                          <div class="ph-col-2 empty"></div>
+                          <div class="ph-col-12"></div>
+                        </div>
+                        <div class="ph-row ph-col-12 ph-item location-loader">
+                          <div class="ph-col-12"></div>
+                          <div class="ph-col-10"></div>
+                          <div class="ph-col-2 empty"></div>
+                          <div class="ph-col-8"></div>
+                          <div class="ph-col-4 empty"></div>
+                          <div class="ph-col-6"></div>
+                          <div class="ph-col-6 empty"></div>
+                        </div>
+                    </tr>
+                </tbody>
               </table>
             </div>
           </div>
@@ -313,6 +350,40 @@
           <div class="row">
             <div class="col-sm-12">
               <table class="table table-separate table-head-custom table-checkable dataTable no-footer dtr-inline" id="gender_DT">
+                <thead>
+                  <tr>
+                    <th>City</th>
+                    <th>Male</th>
+                    <th>Female</th>
+                    <th>N/A</th>
+                  </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <div class="ph-row ph-col-12 ph-item gender-loader">
+                          <div class="ph-col-2"></div>
+                          <div class="ph-col-10 empty"></div>
+                          <div class="ph-col-4"></div>
+                          <div class="ph-col-8 empty"></div>
+                          <div class="ph-col-6"></div>
+                          <div class="ph-col-6 empty"></div>
+                          <div class="ph-col-8"></div>
+                          <div class="ph-col-4 empty"></div>
+                          <div class="ph-col-10"></div>
+                          <div class="ph-col-2 empty"></div>
+                          <div class="ph-col-12"></div>
+                        </div>
+                        <div class="ph-row ph-col-12 ph-item gender-loader">
+                          <div class="ph-col-12"></div>
+                          <div class="ph-col-10"></div>
+                          <div class="ph-col-2 empty"></div>
+                          <div class="ph-col-8"></div>
+                          <div class="ph-col-4 empty"></div>
+                          <div class="ph-col-6"></div>
+                          <div class="ph-col-6 empty"></div>
+                        </div>
+                    </tr>
+                </tbody>
               </table>
             </div>
           </div>
@@ -346,8 +417,8 @@
                   </tr>
                   <tr>
                     <td>Percentage (%) </td>
-                    <td>{{ number_format($user['total_subscribed'] / $user['total_male'] * 100,2) ?? 0 }}%</td>
-                    <td>{{ number_format($user['total_unsubscribed'] / $user['total_male'] * 100,2) ?? 0 }}%</td>
+                    <td>{{ $user['paid_users_pr'] ?? 0 }}%</td>
+                    <td>{{ $user['nonpaid_users_pr'] ?? 0 }}%</td>
                   </tr>
                 </tbody>
               </table>
@@ -467,8 +538,19 @@
 @endsection
 @push('extra-js-scripts')
 <script src="{{ asset('admin/plugins/chart/userchart.js') }}"></script>
-<!-- <script src="{{ asset('admin/js/jquery.dataTables.min.js') }}"></script> -->
-<!-- <script src="{{ asset('admin/js/dataTables.bootstrap5.min.js') }}"></script> -->
+<script>
+$(document).ready(function() {
+  $("#location_DT_length").css("display","none");
+  $("#location_DT_filter").css("display","none");
+  $("#location_DT thead").hide();
+
+  $("#gender_DT_length").css("display","none");
+  $("#gender_DT_filter").css("display","none");
+  $("#gender_DT thead").hide();
+  $("#location_DT_processing").css("display","none");
+  $("#gender_DT_processing").css("display","none");
+});
+</script>
 <script type="text/javascript">
   $(function() {
     var table = $('#error_DT');
@@ -597,6 +679,10 @@
         "url": "{{route('admin.gender.listing')}}", // ajax source
       },
       drawCallback: function(oSettings) {
+        $("#gender_DT_length").css("display","block");
+        $("#gender_DT_filter").css("display","block");
+        $("#gender_DT thead").show();
+        $('.gender-loader').hide();
         $('.status-switch').bootstrapSwitch();
         $('.status-switch').bootstrapSwitch('onColor', 'success');
         $('.status-switch').bootstrapSwitch('offColor', 'danger');
@@ -669,6 +755,10 @@
         "url": "{{route('admin.location.listing')}}", // ajax source
       },
       drawCallback: function(oSettings) {
+        $("#location_DT_length").css("display","block");
+        $("#location_DT_filter").css("display","block");
+        $("#location_DT thead").show();
+        $('.location-loader').hide();
         $('.status-switch').bootstrapSwitch();
         $('.status-switch').bootstrapSwitch('onColor', 'success');
         $('.status-switch').bootstrapSwitch('offColor', 'danger');
