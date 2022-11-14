@@ -80,7 +80,7 @@ class Kernel extends ConsoleKernel
         $schedule->call(function () {
             $scheculeCommand = new LocationTranslations;
             $scheculeCommand->handle();
-        })->everyMinute();
+        })->daily();
 
         // Birthday Wise At Every Night 12 AM
         $schedule->call(function () {
