@@ -34,6 +34,8 @@ class PagesController extends Controller
         $subscription_result = array(); 
         $age_result = array(); 
 
+        // analytic dashboard to get last recoad
+
         $dashboard_data = DB::table("analytic_dashboard")->orderBy("id","DESC")->first();
         $total_subscribed = $dashboard_data ? $dashboard_data->paid_users : 0;
         $total_unsubscribed = $dashboard_data ? $dashboard_data->non_paid_users : 0;

@@ -40,7 +40,7 @@ jobs:
            - name: connect to aws cli
              uses: appleboy/ssh-action@master
              with:
-                  host: 43.204.139.59
+                  host: 65.1.31.65
                   username: ubuntu
                   key: ${{ secrets.CRON_SERVER_ACCESS }}
                   port: 22
@@ -48,6 +48,13 @@ jobs:
                       cd  /var/www/hihelloapp.com 
                       git reset --hard HEAD 
                       git pull origin dev-branch  && git checkout  dev-branch
+                      php artisan optimize:clear
+                      php artisan config:clear
+                      php artisan route:clear
+                      php artisan view:clear
+                      php artisan event:clear
+                      sudo php artisan cache:clear
+                      
                       
   deploy-to-backendserver:
      runs-on: self-hosted
@@ -64,4 +71,10 @@ jobs:
                       cd  /var/www/hihelloapp.com 
                       git reset --hard HEAD 
                       git pull origin dev-branch  && git checkout  dev-branch
+                      php artisan optimize:clear
+                      php artisan config:clear
+                      php artisan route:clear 
+                      php artisan view:clear
+                      php artisan event:clear
+                      sudo php artisan cache:clear 
                       

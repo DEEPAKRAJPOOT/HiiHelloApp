@@ -21,7 +21,8 @@ class AdminDashboard extends Command
      *
      * @var string
      */
-    protected $description = 'This Command used to analytic dashboard store data in table ';
+
+    protected $description = 'This Command used to analytic dashboard store data in table';
 
     /**
      * Create a new command instance.

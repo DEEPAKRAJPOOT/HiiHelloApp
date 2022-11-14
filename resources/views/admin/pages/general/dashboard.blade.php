@@ -6,7 +6,8 @@
 
 @push('extra-css-styles')
 <link rel="stylesheet" type="text/css" href="{{ asset('assets/plugins/custom/datatables/datatables.bundle.css') }}" />
-<!-- <link rel="stylesheet" type="text/css" href="{{ asset('assets/css/dataTables.bootstrap5.min.css') }}" /> -->
+
+<!-- loader css -->
 <link href="{{ asset('admin/css/placeholder-loading.min.css') }}" rel="stylesheet">
 @endpush
 
@@ -542,8 +543,6 @@
 @endsection
 @push('extra-js-scripts')
 <script src="{{ asset('admin/plugins/chart/userchart.js') }}"></script>
-<!-- <script src="{{ asset('admin/js/jquery.dataTables.min.js') }}"></script> -->
-<!-- <script src="{{ asset('admin/js/dataTables.bootstrap5.min.js') }}"></script> -->
 <script>
 $(document).ready(function() {
   $("#location_DT_length").css("display","none");
@@ -557,7 +556,6 @@ $(document).ready(function() {
   $("#gender_DT_processing").css("display","none");
 });
 </script>
-
 <script type="text/javascript">
   $(function() {
     var table = $('#error_DT');
