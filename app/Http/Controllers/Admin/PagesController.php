@@ -11,8 +11,12 @@ use App\Models\Setting;
 use App\Models\User;
 use App\Models\City;
 use App\Models\Location;
+use App\Models\LocationTranslation;
 use App\Models\State;
+use App\Models\Subscription;
+use App\Models\SubscriptionPlan;
 use App\Models\SubscriptionPlanTranslation;
+use App\Models\UserTranslation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
@@ -24,123 +28,61 @@ class PagesController extends Controller
 
     public function dashboard()
     {   
+
         $location_result = array();
         $city_result = array(); 
         $subscription_result = array(); 
         $age_result = array(); 
 
-        $user['Count'] = User::whereNull('deleted_at')->count();
-        // $user['total_city'] = City::count();
-        $user['total_male'] = User::where('gender','=','Male')->whereNull('deleted_at')->count();
-        $user['total_female'] = User::where('gender','=','Female')->whereNull('deleted_at')->count();
-        $user['total_na_user'] = User::whereNull('gender')->whereNull('deleted_at')->count();
-        $user['total_subscribed'] = User::where('gender','=','Male')->where('is_subscribed','=','y')->whereNull('deleted_at')->count();
-        $user['total_unsubscribed'] = User::where('gender','=','Male')->where('is_subscribed','!=','y')->whereNull('deleted_at')->count();
+        // analytic dashboard to get last recoad
+        $dashboard_data = DB::table("analytic_dashboard")->orderBy("id","DESC")->first();
+        $total_subscribed = $dashboard_data ? $dashboard_data->paid_users : 0;
+        $total_unsubscribed = $dashboard_data ? $dashboard_data->non_paid_users : 0;
+        $total_male = $dashboard_data ? $dashboard_data->male_users : 0;
+
+        $user['Count'] = $dashboard_data ? number_format($dashboard_data->total_users) : 0;
+        $user['total_male'] = $total_male;
+        $user['total_female'] = $dashboard_data ? $dashboard_data->female_users : 0;
+        $user['total_na_user'] = $dashboard_data ? $dashboard_data->na_users : 0;
+        $user['total_subscribed'] = $total_subscribed;
+        $user['total_unsubscribed'] = $total_unsubscribed;
         
-        $subscription_plans = SubscriptionPlanTranslation::where(['locale' => 'en'])->get();
-        // echo "<pre>"; print_r($subscription_plans->toArray()); die();
+        $subscription_plans = SubscriptionPlanTranslation::select("locale","subscription_plan_id","name")->where(['locale' => 'en'])->get();
         $no_of_sub_buy = 0;
         if (count($subscription_plans) > 0) {
             foreach ($subscription_plans as $key => $val) {
-                $total_users        = User::with('userTransDefault','subscription.subscriptionPlan')->get();
-                if (count($total_users) > 0) {
-                    foreach ($total_users as $key => $row) {
-                        if($row->is_subscribed == 'y')
-                        {   
-                            $user_active_plan_id = isset($row->subscription->plan_id) ?  $row->subscription->plan_id : 0;
-                            if ($user_active_plan_id == $val->subscription_plan_id) {
-                                $no_of_sub_buy += 1;
-                            }
-                        }
-                    }
-                }
+                $total_users    = Subscription::where("plan_id",$val->subscription_plan_id)
+                                    ->where("status","active")
+                                    ->groupBy("user_id")
+                                    ->get();
                 $subscription_result[] = [
                     'name' => $val->name,
-                    'total_users' => $no_of_sub_buy,
+                    'total_users' => count($total_users),
                 ];
                 $no_of_sub_buy = 0;
             }
         }
+        $age_result[] = [
+            'male_age_18_25'    => $dashboard_data ? $dashboard_data->male_18_25 : 0,
+            'male_age_26_35'    => $dashboard_data ? $dashboard_data->male_26_35 : 0,
+            'male_age_36_45'    => $dashboard_data ? $dashboard_data->male_36_45 : 0,
+            'male_age_45'       => $dashboard_data ? $dashboard_data->male_45 : 0,
+            'female_age_18_25'  => $dashboard_data ? $dashboard_data->female_18_25 : 0,
+            'female_age_26_35'  => $dashboard_data ? $dashboard_data->female_26_35 : 0,
+            'female_age_36_45'  => $dashboard_data ? $dashboard_data->female_36_45 : 0,
+            'female_age_45'     => $dashboard_data ? $dashboard_data->female_45 : 0,
+        ];
 
-        $all_users = User::select('birth_date','gender')->whereNull('deleted_at')->whereNotNull('birth_date')->whereNotNull('gender')->get();
-        // echo "<pre>"; print_r($all_users->toArray()); die();
-        $male_age_18_25   = 0;
-        $male_age_26_35   = 0;
-        $male_age_36_45   = 0;
-        $male_age_45      = 0;
-        $female_age_18_25 = 0;
-        $female_age_26_35 = 0;
-        $female_age_36_45 = 0;
-        $female_age_45    = 0;
-        if(count($all_users) > 0){
-            foreach ($all_users as $key => $val) {
-                $age_check = $this->age_check($val->birth_date);
-                // echo $age_check; echo "<br>";
-                if ($val->gender == "Male") {
-                    if ($age_check >= 18 && $age_check <= 25) {
-                        $male_age_18_25 += 1;
-                    }
-                    if ($age_check >= 26 && $age_check <= 35) {
-                        $male_age_26_35 += 1;
-                    }
-                    if ($age_check >= 36 && $age_check <= 45) {
-                        $male_age_36_45 += 1;
-                    }
-                    if ($age_check >= 46) {
-                        $male_age_45 += 1;
-                    }
-                }
-
-                if ($val->gender == "Female") {
-                    if ($age_check >= 18 && $age_check <= 25) {
-                        $female_age_18_25 += 1;
-                    }
-                    if ($age_check >= 26 && $age_check <= 35) {
-                        $female_age_26_35 += 1;
-                    }
-                    if ($age_check >= 36 && $age_check <= 45) {
-                        $female_age_36_45 += 1;
-                    }
-                    if ($age_check >= 46) {
-                        $female_age_45 += 1;
-                    }
-                }
-            }
-            
-            $age_result[] = [
-                'male_age_18_25'    => $male_age_18_25,
-                'male_age_26_35'    => $male_age_26_35,
-                'male_age_36_45'    => $male_age_36_45,
-                'male_age_45'       => $male_age_45,
-                'female_age_18_25'  => $female_age_18_25,
-                'female_age_26_35'  => $female_age_26_35,
-                'female_age_36_45'  => $female_age_36_45,
-                'female_age_45'     => $female_age_45,
-            ];
-        }
-
-        cache()->forget('oldest-record'); //forget cache recorde change on development
-        $old_date = cache()->rememberForever('oldest-record', function () {
-            return User::selectRaw('created_at')->orderBy('created_at', 'asc')->first();
-        });
-
-        if (isset($old_date->created_at)) {
-            $startDate = Carbon::parse($old_date->created_at)->startOfDay();
-            $endDate = Carbon::now()->endOfDay();
-            $diffInDays = $startDate->diffInDays($endDate);
-
-            //diffInDays same date return 0 day and if date 4 and 5 diffInDays return 1 day
-            $diffInDays = $diffInDays + 1;
-            $user['PerDayCount'] = $diffInDays >= 1 ? number_format(floor(($user['Count'] / $diffInDays))) : 0; //Per Day Register User
-            $user['PerWeekCount'] = $diffInDays >= 7 ? number_format(floor(($user['Count'] / ($diffInDays / 7)))) : 0; //Per Week Register User
-            $user['Per30DayCount'] = $diffInDays >= 30 ? number_format(floor(($user['Count'] / ($diffInDays / 30)))) : 0; //Per 30 Day Register User
-            $user['Count'] = number_format($user['Count']);
-        }
+        $user['PerDayCount'] = $dashboard_data ? number_format($dashboard_data->per_day_users) : 0;
+        $user['PerWeekCount'] = $dashboard_data ? number_format($dashboard_data->per_week_users) : 0;
+        $user['Per30DayCount'] = $dashboard_data ? number_format($dashboard_data->per_30_day_users) : 0;
         $user['location_result'] = [];
         $user['city_result'] = [];
         $user['subscription_result'] = $subscription_result;
         $user['age_result'] = $age_result;
-        // echo "<pre>"; print_r($location_result); die();
+        $user['paid_users_pr'] = number_format($total_subscribed / $total_male * 100,2);
+        $user['nonpaid_users_pr'] = number_format($total_unsubscribed / $total_male * 100,2);
+        // echo "<pre>"; print_r($user); die();
         return view('admin.pages.general.dashboard', compact('user'))->with(['custom_title' => __('Dashboard')]);
     }
     public function profile()
@@ -359,10 +301,10 @@ class PagesController extends Controller
     {
         extract($this->DTFilters($request->all()));
 
-        // count only no of recoad
+        //count only no of recoad
         $city_lists_count = Location::with(['locationTranslation']);
         $city_lists_count = $city_lists_count->select("users.*","locations.*","users.location_id as location_id","users.id as user_id");
-        $city_lists_count = $city_lists_count->leftJoin("users","users.location_id","=","locations.id");
+        $city_lists_count = $city_lists_count->join("users","users.location_id","=","locations.id");
         $city_lists_count = $city_lists_count->where("users.deleted_at","=",NULL);
         $city_lists_count = $city_lists_count->where("users.location_id","!=",NULL);
         $city_lists_count = $city_lists_count->where("locations.is_active","=",'y');
@@ -382,7 +324,7 @@ class PagesController extends Controller
 
         $city_lists = Location::with(['locationTranslation']);
         $city_lists = $city_lists->select("users.*","locations.*","users.location_id as location_id","users.id as user_id");
-        $city_lists = $city_lists->leftJoin("users","users.location_id","=","locations.id");
+        $city_lists = $city_lists->join("users","users.location_id","=","locations.id");
         $city_lists = $city_lists->where("users.deleted_at","=",NULL);
         $city_lists = $city_lists->where("users.location_id","!=",NULL);
         $city_lists = $city_lists->where("locations.is_active","=",'y');
