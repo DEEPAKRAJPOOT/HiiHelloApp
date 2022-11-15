@@ -200,21 +200,28 @@ class UtilityController extends Controller
 
     }
 
-    public function locationTranslations()
-    {
+    public function locationTranslations(Request $request)
+    {   
+        $limit = $request->limit ? $request->limit : 1;
+        $is_print = $request->is_print ? $request->is_print : 0;
+        $id = $request->id ? $request->id : '';
+
         $default_lang_code  =   config('utility.default_lang_code');
         $apiKey             =   config('utility.google.translate.api_key');
         $message            =   'No details found to translate !!!';
         $message            =   "No location translate records found.";
 
-        $locations  = DB::table("location_translations")
-                    ->where("locale","!=","en")
-                    // ->where("id","=",47067)
-                    // ->skip(20)
-                    ->limit(50)
-                    ->orderBy("name","ASC")
-                    ->get();
-         // echo "<pre>"; print_r($locations->toArray()); die();
+        $locations  = DB::table("location_translations");
+        $locations  = $locations->where("locale","!=","en");
+        if (!empty($id)) {
+            $locations  = $locations->where("id","=",$id);
+        }
+        $locations  = $locations->limit($limit);
+        $locations  = $locations->orderBy("name","ASC");
+        $locations  = $locations->get();
+        if ($is_print == 1) {
+            echo "<pre>"; print_r($locations->toArray()); die();
+        }
 
         if($locations->isNotEmpty()){
             foreach($locations as $location){
