@@ -200,8 +200,11 @@ class UtilityController extends Controller
 
     }
 
-    public function locationTranslations()
-    {
+    public function locationTranslations(Request $request)
+    {   
+        $limit = $request->limit ? $request->limit : 1;
+        $is_print = $request->is_print ? $request->is_print : 0;
+        
         $default_lang_code  =   config('utility.default_lang_code');
         $apiKey             =   config('utility.google.translate.api_key');
         $message            =   'No details found to translate !!!';
@@ -211,10 +214,12 @@ class UtilityController extends Controller
                     ->where("locale","!=","en")
                     // ->where("id","=",47067)
                     // ->skip(20)
-                    ->limit(50)
+                    ->limit($limit)
                     ->orderBy("name","ASC")
                     ->get();
-         // echo "<pre>"; print_r($locations->toArray()); die();
+        if ($is_print == 1) {
+            echo "<pre>"; print_r($locations->toArray()); die();
+        }
 
         if($locations->isNotEmpty()){
             foreach($locations as $location){
