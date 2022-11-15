@@ -7,6 +7,7 @@ use App\Models\User;
 use Carbon\CarbonPeriod;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use DB;
 
 class ChartController extends Controller
 {
@@ -117,12 +118,13 @@ class ChartController extends Controller
     }
 
     public function getActiveDeactiveUser()
-    {
+    {   
+        $dashboard_data = DB::table("analytic_dashboard")->orderBy("id","DESC")->first();
         $datasetLabel = "Male & Female Users";
         $labels = ["Male", "Female","N/A"];
-        $active_users = User::where('gender','=','Male')->whereNull('deleted_at')->count();
-        $deactive_users = User::where('gender','=','Female')->whereNull('deleted_at')->count();
-        $na_users = User::whereNull('gender')->whereNull('deleted_at')->count();;
+        $active_users = $dashboard_data ? $dashboard_data->male_users : 0;
+        $deactive_users = $dashboard_data ? $dashboard_data->female_users : 0;
+        $na_users = $dashboard_data ? $dashboard_data->na_users : 0;
         $data = [$active_users, $deactive_users,$na_users];
 
         return response()->json(compact('datasetLabel', 'labels', 'data'));
