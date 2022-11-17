@@ -208,6 +208,29 @@ $(function () {
             $(".delete_all_link").removeAttr("disabled");
         }
     });
+
+    $(document).on("change", ".table_gender", function () {
+        var gender = $(this).val();
+        var url = $(this).data("url");
+        var id = $(this).data("id");
+
+        $.ajax({
+            url: url,
+            type: "post",
+            dataType: "json",
+            data: {
+                _token: $("meta[name='csrf-token']").attr("content"),
+                id: id,
+                gender: gender,
+            },
+            cache: false,
+            success: function (success) {
+                console.log(success['message']);
+                toastr.success("Gender Changed!");
+                // oTable.DataTable().ajax.reload();
+            },
+        });
+    });
 });
 function getStatusText(code) {
     sText = "";
@@ -248,6 +271,8 @@ function getStatusText(code) {
     }
     return sText;
 }
+
+   
 
 function showMessage(sType, sText) {
     sType = getStatusText(sType);

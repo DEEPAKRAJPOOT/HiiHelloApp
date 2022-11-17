@@ -800,6 +800,10 @@ class UsersController extends Controller
                 'getaction' => $user->is_active,
                 'class' => '',
                 'id' => $user->custom_id,
+                'user_id' => $user->id,
+                'male_user' => ($user->gender == 'Male' ? 'selected' : ''),
+                'female_user' => ($user->gender == 'Female' ? 'selected' : ''),
+                'na_user' => ($user->gender == '' ? 'selected' : ''),
             ];
 
             $records['data'][] = [
@@ -809,7 +813,7 @@ class UsersController extends Controller
                 'profile_percentage' =>  $user->profile_percentage ?? 0,
                 'contact_no' => $user->contact_no ? '<a href="tel:' . $user->country_code . '' . $user->contact_no . '" >' . $user->country_code . '' . $user->contact_no . '</a>' : 'N/A',
                 'email' => $user->email ? '<a href="mailto:' . $user->email . '" >' . $user->email . '</a>' : 'N/A',
-                'gender' => $user->gender ?? 'N/A',
+                'gender' => view('admin.layouts.includes.gender', compact('params'))->render(),
                 'city' => $user->location->name ?? 'N/A',
                 'created_at' => date('Y-m-d H:i:s', strtotime($user->created_at)) ?? 'N/A',
                 'active' => view('admin.layouts.includes.switch', compact('params'))->render(),
@@ -1042,6 +1046,110 @@ class UsersController extends Controller
             flash('Unable to generate user csv. Try again later')->error();
         }
         return redirect(route('admin.users.index'));
+    }
+
+    public function gender_update(Request $request)
+    {
+        // echo "<pre>"; print_r($request->all()); die();
+
+        if ($request->id != '' && $request->gender != '') {
+            $users = User::select('id','gender','is_subscribed','subscription_end_date')->where('id',$request->id)->first();
+            if ($users != '') {
+                if ($request->gender != $users->gender) 
+                {
+                    if ($users->gender == "Male" && $request->gender == "Female") {
+                        $free_subscription = config('utility.subscription.free_for_girls');
+                        if($free_subscription && $request->gender == 'Female'){
+
+                            // create modedl object and used this function
+                            // $users->gender = ;
+                            // $users = $this->user->buyFreeSubscription();
+                            // $users->save();
+
+                            $plan = SubscriptionPlan::where('is_default_for_girl','y')->first();
+                            if($plan){
+
+                                $new_subscription_start_date = \Carbon\Carbon::today()->format('Y-m-d');
+                                if ($users->subscription_end_date >= $new_subscription_start_date) {
+                                    $new_subscription_start_date = $users->subscription_end_date;
+                                }
+
+                                // add free subscription
+                                Subscription::firstOrCreate([
+                                    'user_id'       =>  $users->id ?? NULL,
+                                    'plan_id'       =>  $plan->id ?? NULL,
+                                    'months'        =>  $plan->months,
+                                    'amount'        =>  $plan->amount,
+                                    'start_date'    =>  $new_subscription_start_date,
+                                    'end_date'      =>  NULL,
+                                    'payment_date'  =>  now(),
+                                    'payment_type'  =>  '',
+                                    'status'        =>  'active',
+                                ], [
+                                    'custom_id'     =>  getUniqueString('subscriptions'),
+                                ]);
+
+                                // update user table subscription details
+                                User::where('id',$request->id)->update([ 
+                                    'gender' =>  $request->gender ?? $users->gender,
+                                    'is_subscribed' =>  'y',
+                                ]);
+                            }
+                        }
+
+                        $content['status'] = 200;
+                        $content['message'] = "Gender updated successfully1.";
+                        return response()->json($content);
+                    }
+
+                    if ($users->gender == "Female" && $request->gender == "Male") {
+
+                        // delete subscription data
+                        Subscription::where('user_id',$users->id)->delete();
+
+                        // update user table subscription details
+                        User::where('id',$request->id)->update([ 
+                            'gender' =>  $request->gender ?? $users->gender,
+                            'is_subscribed' =>  'n',
+                            'subscription_end_date' =>  NULL,
+                        ]);
+
+                        $content['status'] = 200;
+                        $content['message'] = "Gender updated successfully1.";
+                        return response()->json($content);
+                    }
+                    
+                }
+                else
+                {
+                    $content['status'] = 200;
+                    $content['message'] = "Gender updated successfully3.";
+                    return response()->json($content);
+                }
+            }
+            else
+            {
+                $content['status'] = 404;
+                $content['message'] = "User not found.";
+                return response()->json($content);
+            }
+        }
+        else
+        {
+            $content['status'] = 404;
+            $content['message'] = "Messing required paramater..!";
+            return response()->json($content);
+        }
+        // try {
+        //     $content['status'] = 200;
+        //     $content['message'] = "Status updated successfully.";
+        //     return response()->json($content);
+        // } catch (QueryException $e) {
+        //     DB::rollback();
+        //     return redirect()->back()->flash('error', $e->getMessage());
+        // } catch (Exception $e) {
+        //     return redirect()->back()->with('error', $e->getMessage());
+        // }
     }
 
 }
