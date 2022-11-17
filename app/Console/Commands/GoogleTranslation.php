@@ -112,14 +112,16 @@ class GoogleTranslation extends Command
         foreach($language_alloweds as $language_allowed){
 
             // Translate Language
-            if ($detected_lang == $language_allowed) {
-                $traslate_url = 'https://www.googleapis.com/language/translate/v2?key=' . $apiKey . '&q=' . rawurlencode($text) . '&source=en&target='.$language_allowed;
-            }
-            else
-            {
-                $traslate_url = 'https://www.googleapis.com/language/translate/v2?key=' . $apiKey . '&q=' . rawurlencode($text) . '&source='.$detected_lang.'&target='.$language_allowed;
-            }
+            // if ($detected_lang == $language_allowed) {
+            //     $traslate_url = 'https://www.googleapis.com/language/translate/v2?key=' . $apiKey . '&q=' . rawurlencode($text) . '&source=en&target='.$language_allowed;
+            // }
+            // else
+            // {
+            //     $traslate_url = 'https://www.googleapis.com/language/translate/v2?key=' . $apiKey . '&q=' . rawurlencode($text) . '&source='.$detected_lang.'&target='.$language_allowed;
+            // }
 
+            $traslate_url = 'https://www.googleapis.com/language/translate/v2?key=' . $apiKey . '&q=' . rawurlencode($text) . '&target='.$language_allowed;
+            
             $handle = curl_init($traslate_url);
             curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
             $response = curl_exec($handle);

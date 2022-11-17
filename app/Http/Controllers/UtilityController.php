@@ -8,7 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
-
+use DB;
 class UtilityController extends Controller
 {
     public function updateProfilePicture(Request $request)
@@ -139,30 +139,39 @@ class UtilityController extends Controller
     public function translate()
     {
         $apiKey = 'AIzaSyCnTLblh4He46O3-5NoJ0sXOzyelS76jEY';
-        $text = 'Anand Patel';
+        // $text = "Rewari,,state";
+        $text = "50 Lnp";
         $source = 'en';
-        $target = 'hi';
+        $target = 'gu';
+        // echo $text; die();
         $target_lang = ['en','hi','ta','mr','bn','gu','kn','ml','or','pa','te','as'];
-        foreach($target_lang as $lang)
-        {
-            echo 'lang: '.$lang;
-            // $url = 'https://www.googleapis.com/language/translate/v2?key=' . $apiKey . '&q=' . rawurlencode($text) . '&source=en&target=' .$lang;
-        }
+        // foreach($target_lang as $lang)
+        // {
+        //     if ($lang != $source) {
+        //         $url = 'https://translation.googleapis.com/language/translate/v2?key=AIzaSyCnTLblh4He46O3-5NoJ0sXOzyelS76jEY&source=en&target='.$lang.'&q='.rawurlencode($text);
+        //         $handle = curl_init($url);
+        //         curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
+        //         $response = curl_exec($handle);
+        //         $responseDecoded = json_decode($response, true);
+        //         $responseCode = curl_getinfo($handle, CURLINFO_HTTP_CODE);
+        //               //Here we fetch the HTTP response code
+        //         // dd($url);
+        //         curl_close($handle);
+                
+        //         if($responseCode != 200) {
+        //             dump('Fetching translation failed! Server response code:' . $responseCode);
+        //             dd('Error description: ' . $responseDecoded['error']['errors'][0]['message']);
+        //         }
+        //         else {
+        //             echo $lang." ".$responseDecoded['data']['translations'][0]['translatedText'];
+        //             echo "<br>";
+        //             // dd($responseDecoded);
+        //             // dd('Translation: ' . $responseDecoded['data']['translations'][0]['translatedText']);
+        //         }
+        //     }
+        // }
 
-        //for translate
-        // $url = 'https://www.googleapis.com/language/translate/v2?key=' . $apiKey . '&q=' . rawurlencode($text) . '&source=en&target=te';
-
-        if ($source == $target) {
-            $url = 'https://translation.googleapis.com/language/translate/v2?key=AIzaSyCnTLblh4He46O3-5NoJ0sXOzyelS76jEY&source=en&target='.$target.'&q='.rawurlencode($text);
-        }
-        else
-        {
         $url = 'https://translation.googleapis.com/language/translate/v2?key=AIzaSyCnTLblh4He46O3-5NoJ0sXOzyelS76jEY&source='.$source.'&target='.$target.'&q='.rawurlencode($text);
-        }
-
-        //for detect
-        // $url = 'https://translation.googleapis.com/language/translate/v2/detect?key=AIzaSyCnTLblh4He46O3-5NoJ0sXOzyelS76jEY&q=helloworld';
-
         $handle = curl_init($url);
         curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
         $response = curl_exec($handle);
@@ -177,12 +186,88 @@ class UtilityController extends Controller
             dd('Error description: ' . $responseDecoded['error']['errors'][0]['message']);
         }
         else {
-            echo "<br>";
-            dump('Source: ' . $text);
-            echo "<br>";
-            echo $responseDecoded['data']['translations'][0]['translatedText'];
+            // echo $responseDecoded['data']['translations'][0]['translatedText']; echo "<br>"; die();
+            // echo "<pre>"; print_r($responseDecoded['data']['translations'][0]['translatedText']); die();
+            // echo count(explode(",",$responseDecoded['data']['translations'][0]['translatedText'])); echo "<br>";
+            $explode_data = explode(",",$responseDecoded['data']['translations'][0]['translatedText']);
+            echo "<pre>"; print_r($explode_data);
+            echo $explode_data[0]; echo "<br>";
+            echo isset($explode_data[1]) ? $explode_data[1] : NULL; echo "<br>";
+            // echo "<br>";
             // dd($responseDecoded);
             // dd('Translation: ' . $responseDecoded['data']['translations'][0]['translatedText']);
         }
+
+    }
+
+    public function locationTranslations(Request $request)
+    {   
+        $limit = $request->limit ? $request->limit : 1;
+        $is_print = $request->is_print ? $request->is_print : 0;
+        $id = $request->id ? $request->id : '';
+
+        $default_lang_code  =   config('utility.default_lang_code');
+        $apiKey             =   config('utility.google.translate.api_key');
+        $message            =   'No details found to translate !!!';
+        $message            =   "No location translate records found.";
+
+        $locations  = DB::table("location_translations");
+        $locations  = $locations->where("locale","!=","en");
+        if (!empty($id)) {
+            $locations  = $locations->where("id","=",$id);
+        }
+        $locations  = $locations->limit($limit);
+        $locations  = $locations->orderBy("name","ASC");
+        $locations  = $locations->get();
+        if ($is_print == 1) {
+            echo "<pre>"; print_r($locations->toArray()); die();
+        }
+
+        if($locations->isNotEmpty()){
+            foreach($locations as $location){
+                $name           =   $location->name;
+                $locality       =   $location->locality;
+                $state          =   $location->state;
+                $locationT_id   =   $location->id;
+                $detected_lang  =   $location->locale ? $location->locale : 'en';
+                $texxt = $name.",".$state;
+
+                if( !empty($name)){
+                    $success = $this->translateText($apiKey,$detected_lang,$texxt,$locationT_id);
+                }
+            }
+            $message = 'Location translate successfully.';
+        }
+        return $message;
+    }
+
+    function translateText($apiKey, $detected_lang,$text, $locationT_id)
+    {
+        $success = false;
+        $traslate_url = 'https://www.googleapis.com/language/translate/v2?key=' . $apiKey . '&q=' . rawurlencode($text) . '&source=en&target='.$detected_lang;
+
+        $handle = curl_init($traslate_url);
+        curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
+        $response = curl_exec($handle);
+        $responseDecoded = json_decode($response, true);
+        $responseCode = curl_getinfo($handle, CURLINFO_HTTP_CODE);      //Here we fetch the HTTP response code
+        curl_close($handle);
+
+        if($responseCode == 200) {
+            $translatedText = explode(",",$responseDecoded['data']['translations'][0]['translatedText']);
+            // echo "<pre>"; print_r($translatedText); die();
+            $updatename = $translatedText[0];
+            $updatestate = isset($translatedText[1]) ? $translatedText[1] : NULL;
+           
+            DB::table('location_translations')
+                ->where('id',$locationT_id)
+                ->update([
+                    'name' => $updatename,
+                    'state' => $updatestate,
+                    'updated_at' => date('Y-m-d H:i:s')
+                ]);
+            $success = true;
+        }
+        return $success;
     }
 }

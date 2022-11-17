@@ -109,6 +109,15 @@ $(document).ready(function() {
                 startDate: startDate,
                 endDate: endDate,
             },
+
+            // loader code for dashboard chart
+
+            cache: false,
+            beforeSend: function(){ 
+                $("#register-user-chart").html("<h3 style='text-align:center;margin-top:15%;'>Processing...</h3>");
+            },
+            complete: function(){
+            },
             success: function(data) {
                 var horizontalSwitch = false;
                 if ($("#horizontalSwitch").prop("checked") == true) {
