@@ -99,9 +99,9 @@ class MatchController extends Controller
                 if ($auth_interest != 'Both') {
                     $matches = $matches->where('gender', $auth_interest);   // Interested in Gender
                 }                                           
-                if (count($restricted_ids) > 0) {
-                    $matches = $matches->whereNotIn('id', $restricted_ids);
-                }
+                // if (count($restricted_ids) > 0) {
+                //     $matches = $matches->whereNotIn('id', $restricted_ids);
+                // }
                 
                 $matches = $matches->whereIn('custom_id', $likes);       // Someone likes me and I like him/her - changed - 16-09
                 
@@ -231,17 +231,16 @@ class MatchController extends Controller
 
                             if($system_data->is_connected==0)
                             {
-                                
-                                
+                            
                                 //RETURN THAT MATCH USER ID FROM SYSTEM_MATCH Table (match_id);
                                 $matches = User::with('userTranslation:id,locale,user_id,full_name')
                                     ->where('id', '!=', $auth_id)->whereNotNull('profile_photo')->whereIsActive('y')->where('id',$system_match_id);
                                 if ($auth_interest != 'Both') {
                                     $matches = $matches->where('gender', $auth_interest);
                                 }
-                                if (count($restricted_ids) > 0) {
-                                    $matches = $matches->whereNotIn('id', $restricted_ids);
-                                }
+                                // if (count($restricted_ids) > 0) {
+                                //     $matches = $matches->whereNotIn('id', $restricted_ids);
+                                // }
 
                                 if ($max_limit_apply) { $count = $max_limit; } 
                                 else{ $count = $matches->count(); }
@@ -274,7 +273,6 @@ class MatchController extends Controller
                         $system_data_connected = SystemMatch::select('custom_id','match_id','is_connected','match_date')->where('user_id', $auth_id)->where('is_connected', 0)->latest('created_at')->first();
                         if($system_data_connected)
                         {                                  
-
                                 $system_match_id = $system_data_connected->match_id;   //GET FROM SYSTEM MATCH TABLE 
                                 $array_system_match_user_custome_id[$system_match_id] = $system_data_connected->custom_id;
 
@@ -302,9 +300,9 @@ class MatchController extends Controller
                                 if ($auth_interest != 'Both') {
                                     $matches = $matches->where('gender', $auth_interest);
                                 }
-                                if (count($restricted_ids) > 0) {
-                                    $matches = $matches->whereNotIn('id', $restricted_ids);
-                                }
+                                // if (count($restricted_ids) > 0) {
+                                //     $matches = $matches->whereNotIn('id', $restricted_ids);
+                                // }
 
                                 if ($max_limit_apply) { $count = $max_limit; } 
                                 else{ $count = $matches->count(); }
@@ -326,6 +324,8 @@ class MatchController extends Controller
                                         ->offset($request->offset ?? config('utility.pagination.offset'))
                                         ->get();
                                 }
+
+                                // echo "A3"; die();
 
                                 if($sql_match)
                                 {
