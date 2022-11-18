@@ -112,7 +112,6 @@ class MatchController extends Controller
                             ->orWhere('location_id', $user->location_id)                            // Location
                             ->orWhereBetween(\DB::raw('TIMESTAMPDIFF(YEAR,users.birth_date,CURDATE())'),array($age_from,$age_to))  // Age / Birth Date
                             ->orWhere('profile_percentage', '>=', $match_percentage)                // Profile completion
-                            // ->orWhere('verify_status', 'verified')                                  // Verified/Unverified  
 
                             ->orWhereHas('personalities', function ($q) use ($personalities) {      // Personality Type 
                                 $q->whereIn('personality_id', $personalities);
@@ -160,8 +159,7 @@ class MatchController extends Controller
                     
                     $today_date = \Carbon\Carbon::today()->format('Y-m-d');
                     $system_data = SystemMatch::select('custom_id','match_id','is_connected','match_date')->whereDate('match_date', '=', $today_date)->where('user_id', $auth_id)->orderBy('created_at','DESC')->first();
-
-                        // echo "<pre>"; print_r($system_data->toArray()); die();
+                    
                     if ($system_data) {
                         $check_user = User::where('id','=',$system_data->match_id)->first();
                         if (empty($check_user)) {
