@@ -191,11 +191,11 @@ class User extends Authenticatable implements MustVerifyEmail, TranslatableContr
 
     public function isNewMatchAllow(){
         $is_match_allow = true;
-        if($this->verify_status != "verified" 
-            && $this->gender != 'Female' 
-            && $this->subscription_end_date < \Carbon\Carbon::today()->format('Y-m-d')){
-            $is_match_allow = false;
-        }
+        // if($this->verify_status != "verified" 
+        //     && $this->gender != 'Female' 
+        //     && $this->subscription_end_date < \Carbon\Carbon::today()->format('Y-m-d')){
+        //     $is_match_allow = false;
+        // }
         return $is_match_allow;   
     }
 
