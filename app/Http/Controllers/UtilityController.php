@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 use App\Admin;
 use App\Models\CmsPage;
 use App\Models\User;
+use App\Models\UserTranslation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -269,5 +270,73 @@ class UtilityController extends Controller
             $success = true;
         }
         return $success;
+    }
+
+    public function Usertranslate(Request $request)
+    {   
+        $apiKey             =   config('utility.google.translate.api_key');
+
+        $limit = isset($request->limit) ? $request->limit : 1;
+        $print = isset($request->print) ? $request->print : 0;
+        $user_list = User::select('users.id as user_id','user_translations.full_name as full_name','user_translations.about_me as about_me','user_translations.fav_movie as fav_movie','user_translations.locale as locale','user_translations.id as user_translations_id')
+                    ->join("user_translations","user_translations.user_id","=","users.id")
+                    ->where('user_translations.locale','en')
+                    ->where('users.is_trans_as','n')
+                    // ->orWhere('user_translations.locale','as')
+                    // ->where("user_translations.full_name","!=","")
+                    ->orderBy("users.id","ASC")
+                    ->limit($limit)
+                    ->get();
+        if ($print == 1) {
+            echo "<pre>"; print_r($user_list->toArray()); die();
+        }
+        if (count($user_list) > 0) {
+            foreach ($user_list as $key => $val) {
+                $user = DB::table('users')->where('id',$val->user_id)->first();
+                if (!empty($user)) {
+                    $UserTranslation = new UserTranslation();
+                    $UserTranslation->locale = 'as';
+                    $UserTranslation->user_id = $val->user_id;
+                    if(!empty($val->full_name)){
+                        $message = $this->translateUserText($apiKey,$val->full_name);
+                        $UserTranslation->full_name = $message;
+                    }
+                    if(!empty($val->about_me)){
+                        $message = $this->translateUserText($apiKey,$val->about_me);
+                        // $user->is_trans_about_me = 'y';
+                    }
+                    if(!empty($val->fav_movie)){
+                        $message = $this->translateUserText($apiKey,$val->fav_movie);
+                        $UserTranslation->fav_movie = $message;
+                    }
+                    $UserTranslation->save();
+
+                    DB::table('users')->where('id',$val->user_id)->update(array('is_trans_as' => 'y'));
+                }
+
+            }
+        }
+    }
+
+    function translateUserText($apiKey, $text)
+    {
+
+        $traslate_url = 'https://www.googleapis.com/language/translate/v2?key=' . $apiKey . '&q=' . rawurlencode($text) . '&source=en&target=as';
+        
+        $handle = curl_init($traslate_url);
+        curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
+        $response = curl_exec($handle);
+        $responseDecoded = json_decode($response, true);
+        $responseCode = curl_getinfo($handle, CURLINFO_HTTP_CODE);      //Here we fetch the HTTP response code
+        curl_close($handle);
+
+        if($responseCode == 200) {
+            $translatedText = $responseDecoded['data']['translations'][0]['translatedText'];
+            return $translatedText;
+        }else
+        {
+            return false;
+        }
+
     }
 }

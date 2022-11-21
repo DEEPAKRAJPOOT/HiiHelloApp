@@ -9,7 +9,7 @@ class UserTranslation extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['full_name', 'about_me', 'fav_movie'];
+    protected $fillable = ['id', 'locale', 'user_id', 'full_name', 'about_me', 'fav_movie'];
 
     public $timestamps = false;
 }
