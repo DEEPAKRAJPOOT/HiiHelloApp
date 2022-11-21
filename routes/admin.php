@@ -154,3 +154,4 @@ Route::get('user-translations', 'Admin\PagesController@user_translations')->name
 // delete all location if user is not used 
 Route::get('deletelocation', 'Admin\PagesController@deletelocation')->name('user.deletelocation');
 Route::get('locationTranslations', 'UtilityController@locationTranslations');
+Route::get('Usertranslate', 'UtilityController@Usertranslate');
