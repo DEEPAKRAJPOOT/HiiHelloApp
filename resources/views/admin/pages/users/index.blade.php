@@ -25,6 +25,10 @@
                   <input class="form-check-input getpendingprofile"  type="checkbox" role="switch" id="is_profile_under_review" >
                   <label class="form-check-label" for="is_profile_under_review">Profile Under Review&nbsp;&nbsp;</label>
                 </div>
+                <a href="javascript:;" id="update_gender"
+                    class="btn btn-sm btn-primary font-weight-bolder text-uppercase mr-2">
+                    <i class="far fa-edit"></i> Update Gender
+                </a>
                 @if (in_array('delete', $permissions))
                 <a href="{{ route('admin.users.destroy', 0) }}" name="del_select" id="del_select"
                     class="btn btn-sm btn-light-danger font-weight-bolder text-uppercase mr-2 delete_all_link">
@@ -124,3 +128,39 @@
     });
 </script>
 @endpush
+
+<!-- Modal id="update_gender" -->
+  <div class="modal fade" id="myModal" role="dialog" style="display: none;">
+    <div class="modal-dialog">
+    
+      <!-- Modal content-->
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h4 class="modal-title">Update Gender</h4>
+        </div>
+        <div class="modal-body">
+            
+            <form method="POST" name="frm_gender" id="frm_gender" action="{{ route('admin.users.bulk_gender_update') }}">
+                <input type="hidden" name="multi_user_id" id="multi_user_id">
+                <input type="hidden" name="_token" value="{{ csrf_token() }}">
+                <div class="form-group">
+                    <label for="exampleFormControlSelect2">Gender</label>
+                    <select name="target_gender" class="form-control">
+                        <option value="Male">Male</option>
+                        <option value="Female">Female</option>
+                    </select>
+                </div>
+              
+            </form>
+
+        </div>
+        <div class="modal-footer">
+            <span id="processing" style="display: none;">Processing...</span>
+            <button type="button" class="btn btn-primary save_frm_gender">Submit</button>
+            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        </div>
+      </div>
+      
+    </div>
+  </div>

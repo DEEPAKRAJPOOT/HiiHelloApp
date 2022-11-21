@@ -231,6 +231,82 @@ $(function () {
             },
         });
     });
+
+    $(document).on("click", "#update_gender", function (e) {
+
+        e.preventDefault();
+        
+        var searchIDs       = [];
+
+        $(".dataTable tbody input[class='small-chk']:checked").each(
+            function () {
+                searchIDs.push($(this).val());
+            }
+        );
+
+        if (searchIDs.length == 0) {
+
+            Swal.fire({                
+                text: "Please select at least one checkbox.",
+                icon: "warning",
+                showConfirmButton: true,
+            });
+
+        } else {
+
+            $("#myModal #multi_user_id").val(searchIDs);
+            $("#myModal").modal('show');
+
+            /*var ids                 = searchIDs.join();
+            var selected_gender     = searchGender.join();
+            var url                 = $(this).attr("href");
+
+            $.ajax({
+                url: url,
+                type: "post",
+                dataType: "json",
+                data: {
+                    _token: $("meta[name='csrf-token']").attr("content"),
+                    ids: ids,
+                    selected_gender: selected_gender
+                },
+                cache: false,
+                success: function (success) {
+                    console.log(success['message']);
+                    toastr.success("Gender Changed!");
+                    // oTable.DataTable().ajax.reload();
+                },
+            });*/
+        }
+    });
+
+    $(document).on("click", ".save_frm_gender", function (e) {
+
+        e.preventDefault();
+
+        $("#processing").show();
+        $(this).attr("disabled", true);
+        var data    = $('#frm_gender').serializeArray();
+        var url     = $('#frm_gender').attr('action');
+
+        $.ajax({
+            url: url,
+            type: "post",
+            dataType: "json",
+            data: data,
+            cache: false,
+            success: function (success) {
+                console.log(success['message']);
+                toastr.success("Gender Changed!");
+
+                setTimeout(function(){
+                    location.reload();
+                },1000);
+            },
+        });
+    });
+    
+
 });
 function getStatusText(code) {
     sText = "";
