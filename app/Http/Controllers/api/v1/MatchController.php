@@ -24,6 +24,7 @@ class MatchController extends Controller
      */
     public function getNewMatches(Request $request)
     {
+        
         //return $request; exit;
         $getMatchRequest = new GetMatchRequest();
         if ($this->apiValidator($request->all(), $getMatchRequest->rules())) {
@@ -49,7 +50,7 @@ class MatchController extends Controller
                 $match_percentage   =   config('utility.profile.match.match_percentage') ?? 20;
                 $age_min_diff       =   config('utility.profile.match.age_min_diff') ?? 1;
                 $age_max_diff       =   config('utility.profile.match.age_max_diff') ?? 1;
-                $max_limit          =   config('utility.profile.match.max_limit') ?? 1;
+                $max_limit          =   config('utility.profile.match.max_limit') ?? 50;
                 $max_limit_apply    =   config('utility.profile.match.max_limit_apply') ?? true;
 
                 $auth_interest  =   $user->interest ? $user->interest : 'Both';
@@ -103,6 +104,44 @@ class MatchController extends Controller
                 //     $matches = $matches->whereNotIn('id', $restricted_ids);
                 // }
                 
+
+
+                //CHECK AND GENERATE NEW  SYSTEM GENERATED USER DAILY START
+                
+                $array_system_match_user_custome_id = array();
+                $array_system_user_id = array();
+
+                if ($backup_logic == true) {                    
+                    //$this->addSystemGeneratedUserForToday($auth_id); 
+                    $this->addSystemGeneratedUserForToday($auth_id,$auth_interest,$restricted_ids,$max_limit_apply,$max_limit);
+                    //FETCH ALL SYSTEM USER WHICH IS NOT CONNECTED START                    
+                    $system_data = SystemMatch::select('custom_id','match_id','is_connected','match_date')->where('is_connected',0)->where('user_id', $auth_id)->orderBy('created_at','DESC')->get();        
+
+                     if($system_data)
+                     {
+                            
+                            foreach($system_data as $system_data_user) {                                  
+                                $array_system_match_user_custome_id[$system_data_user->match_id] = $system_data_user->custom_id;
+                                array_push($array_system_user_id,$system_data_user->match_id);
+                            }
+                     }               
+
+                } 
+                
+
+                if(count($array_system_match_user_custome_id) > 0)
+                {
+                    foreach ($array_system_match_user_custome_id as $user_key => $user_value) {                        
+                        $info_user = User::where('id','=',$user_key)->first();
+                        if ($info_user) {                        
+                            array_push($likes,$info_user['custom_id']);
+                        } 
+                    }                
+                }
+                
+                //CHECK AND GENERATE NEW  SYSTEM GENERATED USER DAILY END
+
+
                 $matches = $matches->whereIn('custom_id', $likes);       // Someone likes me and I like him/her - changed - 16-09
                 
 
@@ -143,218 +182,6 @@ class MatchController extends Controller
                 $count = $matches->count();
 
 
-                //NEED TO REMOVE ITS FOR CHECKING PURPOSE ONLY
-                //$count = 0;
-                //NEED TO REMOVE ITS FOR CHECKING PURPOSE ONLY
-
-
-                $is_system_generated = false;
-                $array_system_match_user_custome_id = array();
-
-                // BackUp Plan If No Profile Match
-                if ($count < 1 && $backup_logic == true) {
-                    
-                    //echo "Auth User :".$auth_id;
-                    $is_system_generated = true;
-                    
-                    $today_date = \Carbon\Carbon::today()->format('Y-m-d');
-                    $system_data = SystemMatch::select('custom_id','match_id','is_connected','match_date')->whereDate('match_date', '=', $today_date)->where('user_id', $auth_id)->orderBy('created_at','DESC')->first();
-                    
-                    if ($system_data) {
-                        $check_user = User::where('id','=',$system_data->match_id)->first();
-                        if (empty($check_user)) {
-                            SystemMatch::where('custom_id','=',$system_data->custom_id)->update(array('is_connected' => 2));
-
-
-                            //FIND USER AS PER IT WORKS AS IT IS NO CHANGE       
-                            $matches = User::with('userTranslation:id,locale,user_id,full_name')
-                                ->where('id', '!=', $auth_id)->whereNotNull('profile_photo')->whereIsActive('y');
-                            if ($auth_interest != 'Both') {
-                                $matches = $matches->where('gender', $auth_interest);
-                            }
-                            if (count($restricted_ids) > 0) {
-                                $matches = $matches->whereNotIn('id', $restricted_ids);
-                            }
-
-                            if ($max_limit_apply) { $count = $max_limit; } 
-                            else{ $count = $matches->count(); }
-
-
-
-                            // FOR INSERT DATA IN SYSTEM MATCH TABLE START FROM SEARCHED USER ABOVE
-                            $match_id = 0;                                
-
-                            $sql_match = $matches->latest();
-
-                            if ($max_limit_apply) {
-                                if($likes_count != 0 && $count > $max_limit){
-                                    $max_limit = $count;
-                                }
-                                $sql_match    =   $sql_match->limit($max_limit)->get();
-                            } else {
-                                $sql_match    =   $sql_match->limit($request->limit ?? config('utility.pagination.limit'))
-                                    ->offset($request->offset ?? config('utility.pagination.offset'))
-                                    ->get();
-                            }
-
-                            if($sql_match)
-                            {
-                                foreach ($sql_match as $sql_data) {                                        
-                                    $match_id = $sql_data->id;   
-
-                                        if($match_id > 0)
-                                        {
-                                            $custome_id = getUniqueString('system_match');
-
-                                            $subscription =  SystemMatch::create([
-                                                'custom_id'                 =>  $custome_id,
-                                                'user_id'                   =>  $auth_id,
-                                                'match_id'                  =>  $match_id,
-                                                'is_connected'              =>  0,
-                                                'match_date'                =>  $today_date,
-                                            ]);
-
-                                            $array_system_match_user_custome_id[$match_id] = $custome_id;
-                                        }                                        
-                                }                                    
-                            }  
-                            // FOR INSERT DATA IN SYSTEM MATCH TABLE END   
-                        }
-
-                        $system_data = SystemMatch::select('custom_id','match_id','is_connected','match_date')->whereDate('match_date', '=', $today_date)->where('user_id', $auth_id)->orderBy('created_at','DESC')->first();
-                    }
-
-                    if($system_data)
-                    {
-                            $system_match_id = $system_data->match_id;   //GET FROM SYSTEM MATCH TABLE 
-                            $array_system_match_user_custome_id[$system_match_id] = $system_data->custom_id;
-
-                            if($system_data->is_connected==0)
-                            {
-                            
-                                //RETURN THAT MATCH USER ID FROM SYSTEM_MATCH Table (match_id);
-                                $matches = User::with('userTranslation:id,locale,user_id,full_name')
-                                    ->where('id', '!=', $auth_id)->whereNotNull('profile_photo')->whereIsActive('y')->where('id',$system_match_id);
-                                if ($auth_interest != 'Both') {
-                                    $matches = $matches->where('gender', $auth_interest);
-                                }
-                                // if (count($restricted_ids) > 0) {
-                                //     $matches = $matches->whereNotIn('id', $restricted_ids);
-                                // }
-
-                                if ($max_limit_apply) { $count = $max_limit; } 
-                                else{ $count = $matches->count(); }
-                            
-                            }
-                            else  //connected user for that same date
-                            {       
-                                
-                                //FOR GET NULL QUERY OBJECT
-                                $system_match_id = -1;    
-                                
-                                //RETURN THAT MATCH USER ID FROM SYSTEM_MATCH Table (match_id);
-                                $matches = User::with('userTranslation:id,locale,user_id,full_name')
-                                    ->where('id', '!=', $auth_id)->whereNotNull('profile_photo')->whereIsActive('y')->where('id',$system_match_id);
-                                if ($auth_interest != 'Both') {
-                                    $matches = $matches->where('gender', $auth_interest);
-                                }
-                                if (count($restricted_ids) > 0) {
-                                    $matches = $matches->whereNotIn('id', $restricted_ids);
-                                }
-
-                                if ($max_limit_apply) { $count = $max_limit; } 
-                                else{ $count = $matches->count(); }
-
-                            }
-
-                    }
-                    else
-                    {                                                
-                        $system_data_connected = SystemMatch::select('custom_id','match_id','is_connected','match_date')->where('user_id', $auth_id)->where('is_connected', 0)->latest('created_at')->first();
-                        if($system_data_connected)
-                        {                                  
-                                $system_match_id = $system_data_connected->match_id;   //GET FROM SYSTEM MATCH TABLE 
-                                $array_system_match_user_custome_id[$system_match_id] = $system_data_connected->custom_id;
-
-                                 //RETURN THAT MATCH USER ID FROM SYSTEM_MATCH Table (match_id);
-                               
-                                $matches = User::with('userTranslation:id,locale,user_id,full_name')
-                                    ->where('id', '!=', $auth_id)->whereNotNull('profile_photo')->whereIsActive('y')->where('id',$system_match_id);
-                                if ($auth_interest != 'Both') {
-                                    $matches = $matches->where('gender', $auth_interest);
-                                }
-                                if (count($restricted_ids) > 0) {
-                                    $matches = $matches->whereNotIn('id', $restricted_ids);
-                                }
-
-                                if ($max_limit_apply) { $count = $max_limit; } 
-                                else{ $count = $matches->count(); }
-
-                        }
-                        else
-                        {
-                                //FIND USER AS PER IT WORKS AS IT IS NO CHANGE       
-
-                                $matches = User::with('userTranslation:id,locale,user_id,full_name')
-                                    ->where('id', '!=', $auth_id)->whereNotNull('profile_photo')->whereIsActive('y');
-                                if ($auth_interest != 'Both') {
-                                    $matches = $matches->where('gender', $auth_interest);
-                                }
-                                // if (count($restricted_ids) > 0) {
-                                //     $matches = $matches->whereNotIn('id', $restricted_ids);
-                                // }
-
-                                if ($max_limit_apply) { $count = $max_limit; } 
-                                else{ $count = $matches->count(); }
-
-
-
-                                // FOR INSERT DATA IN SYSTEM MATCH TABLE START FROM SEARCHED USER ABOVE
-                                $match_id = 0;                                
-
-                                $sql_match = $matches->latest();
-
-                                if ($max_limit_apply) {
-                                    if($likes_count != 0 && $count > $max_limit){
-                                        $max_limit = $count;
-                                    }
-                                    $sql_match    =   $sql_match->limit($max_limit)->get();
-                                } else {
-                                    $sql_match    =   $sql_match->limit($request->limit ?? config('utility.pagination.limit'))
-                                        ->offset($request->offset ?? config('utility.pagination.offset'))
-                                        ->get();
-                                }
-
-                                // echo "A3"; die();
-
-                                if($sql_match)
-                                {
-                                    foreach ($sql_match as $sql_data) {                                        
-                                        $match_id = $sql_data->id;   
-
-                                            if($match_id > 0)
-                                            {
-                                                $custome_id = getUniqueString('system_match');
-
-                                                $subscription =  SystemMatch::create([
-                                                    'custom_id'                 =>  $custome_id,
-                                                    'user_id'                   =>  $auth_id,
-                                                    'match_id'                  =>  $match_id,
-                                                    'is_connected'              =>  0,
-                                                    'match_date'                =>  $today_date,
-                                                ]);
-
-                                                $array_system_match_user_custome_id[$match_id] = $custome_id;
-                                            }                                        
-                                    }                                    
-                                }     
-
-                                // FOR INSERT DATA IN SYSTEM MATCH TABLE END
-                        }
-
-                    }
-
-                }
 
                 $matches = $matches->latest();
 
@@ -375,15 +202,18 @@ class MatchController extends Controller
 
                     //dd($array_system_match_user_custome_id);
                     foreach($matches as $item){                               
-                         $item->is_system_generated = $is_system_generated;
-                         if($is_system_generated)
+                         
+                         if(in_array($item->id,$array_system_user_id))
                          {
-                            $item->system_match_user_key  = $array_system_match_user_custome_id[$item->id];
+                              $item->is_system_generated = true;
+                              $item->system_match_user_key  = $array_system_match_user_custome_id[$item->id];
                          }
                          else
                          {
-                            $item->system_match_user_key = null;
-                         }   
+                              $item->is_system_generated = false;  
+                              $item->system_match_user_key = null;
+                         }
+
                     }
 
 
@@ -413,6 +243,80 @@ class MatchController extends Controller
             }
         }
         return $this->returnResponse();
+    }
+
+    public function addSystemGeneratedUserForToday($auth_id,$auth_interest,$restricted_ids,$max_limit_apply,$max_limit)
+    {
+
+                    $today_date = \Carbon\Carbon::today()->format('Y-m-d');
+                    $system_data = SystemMatch::select('custom_id','match_id','is_connected','match_date')->whereDate('match_date', '=', $today_date)->where('user_id', $auth_id)->orderBy('created_at','DESC')->first();                    
+                   
+                    if($system_data)
+                    {
+                            if($system_data->is_connected==0)
+                            {                            
+                                $check_user = User::where('id','=',$system_data->match_id)->first();
+                                if (empty($check_user)) {
+                                    SystemMatch::where('custom_id','=',$system_data->custom_id)->update(array('is_connected' => 2));
+                                } 
+                            }                           
+                    }
+                    else
+                    {  
+                         $system_exhisted_user_arr = array();   
+                         $system_existed_data = SystemMatch::select('match_id')->where('user_id', $auth_id)->orderBy('created_at','DESC')->get();
+                         if($system_existed_data)
+                         {                                
+                                foreach($system_existed_data as $existed_user) { 
+                                    array_push($restricted_ids,$existed_user->match_id);
+                                }
+                         } 
+                        //FIND USER AS PER IT WORKS AS IT IS NO CHANGE       
+                        $matches_system = User::with('userTranslation:id,locale,user_id,full_name,full_name')
+                            ->where('id', '!=', $auth_id)->whereNotNull('profile_photo')->whereIsActive('y');
+                        if ($auth_interest != 'Both') {
+                            $matches_system = $matches_system->where('gender', $auth_interest);
+                        }
+                        if (count($restricted_ids) > 0) {
+                             $matches_system = $matches_system->whereNotIn('id', $restricted_ids);
+                        }                        
+
+                        if ($max_limit_apply) { $count = $max_limit; } 
+                        else{ $count = $matches->count(); }
+
+                        // FOR INSERT DATA IN SYSTEM MATCH TABLE START FROM SEARCHED USER ABOVE
+                        $match_id = 0;                                
+
+                        $max_limit_systme = 1;
+                       // $sql_match = $matches_system->get();
+                        $sql_match   = $matches_system->latest();
+                        $sql_match   = $matches_system->limit($max_limit_systme)->get();
+
+                        if($sql_match)
+                        {
+                            
+                            foreach ($sql_match as $sql_data) {  
+                                    $match_id = $sql_data->id;   
+                                    if($match_id > 0)
+                                    {
+                                        $custome_id = getUniqueString('system_match');
+
+                                        $subscription =  SystemMatch::create([
+                                            'custom_id'                 =>  $custome_id,
+                                            'user_id'                   =>  $auth_id,
+                                            'match_id'                  =>  $match_id,
+                                            'is_connected'              =>  0,
+                                            'match_date'                =>  $today_date,
+                                        ]);
+
+                                        $array_system_match_user_custome_id[$match_id] = $custome_id;
+                                    }                                        
+                            }                                    
+                        }     
+
+                        // FOR INSERT DATA IN SYSTEM MATCH TABLE END
+                    }
+
     }
 
     /**
@@ -563,4 +467,5 @@ class MatchController extends Controller
         }
         return $this->returnResponse();
     }
+
 }
