@@ -19,6 +19,7 @@
     <div class="col-lg-3"></div>
     <div class="col-lg-3"></div>
     <div class="col-lg-3">
+      <span style="margin-left: 10px;">last sync : {{ $user['created_at'] }} </span>
       <a href="{{ route('admin.dashboardupdate') }}" style="float: right;font-size: 18px;">Refresh</a>
     </div>
     <!--beging::first count-->
