@@ -49,6 +49,7 @@ class PagesController extends Controller
         $user['total_na_user'] = $dashboard_data ? $dashboard_data->na_users : 0;
         $user['total_subscribed'] = $total_subscribed;
         $user['total_unsubscribed'] = $total_unsubscribed;
+        $user['created_at'] = Carbon::parse($dashboard_data->created_at)->format('d-m-Y h:i A');
         
         $subscription_plans = SubscriptionPlanTranslation::select("locale","subscription_plan_id","name")->where(['locale' => 'en'])->get();
         $no_of_sub_buy = 0;
