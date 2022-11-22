@@ -23,6 +23,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use DB;
+use Artisan;
+
 class PagesController extends Controller
 {
 
@@ -85,6 +87,13 @@ class PagesController extends Controller
         $user['nonpaid_users_pr'] = number_format($total_unsubscribed / $total_male * 100,2);
         // echo "<pre>"; print_r($user); die();
         return view('admin.pages.general.dashboard', compact('user'))->with(['custom_title' => __('Dashboard')]);
+    }
+
+    public function dashboardupdate()
+    {
+        Artisan::call('admin:dashboard');
+        flash('Dashboard details updated successfully!')->success();
+        return redirect(route('admin.dashboard.index'));
     }
     public function profile()
     {
