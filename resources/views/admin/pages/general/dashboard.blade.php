@@ -15,6 +15,12 @@
 <div class="container">
   <!-- first row -->
   <div class="row">
+    <div class="col-lg-3"></div>
+    <div class="col-lg-3"></div>
+    <div class="col-lg-3"></div>
+    <div class="col-lg-3">
+      <a href="{{ route('admin.dashboardupdate') }}" style="float: right;font-size: 18px;">Refresh</a>
+    </div>
     <!--beging::first count-->
     <div class="col-lg-3">
       <div class="card card-custom rounded-xl gutter-b bg-dark card-stretch">
