@@ -183,7 +183,7 @@
                 <h4 class="modal-title">Photo Verification</h4>
             </div>
             <div class="modal-body">
-                <form method="POST" name="frm_photo_verification" id="frm_photo_verification" action="{{ route('admin.users.bulk_photo_verification') }}">
+                <form method="POST" name="frm_photo_verification" id="frm_photo_verification" action="">
                     <input type="hidden" name="multi_user_id" id="multi_user_id">
                     <input type="hidden" name="_token" value="{{ csrf_token() }}">
                     <div class="form-group">
