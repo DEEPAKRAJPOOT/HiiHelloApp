@@ -50,8 +50,9 @@ class MatchController extends Controller
                 $match_percentage   =   config('utility.profile.match.match_percentage') ?? 20;
                 $age_min_diff       =   config('utility.profile.match.age_min_diff') ?? 1;
                 $age_max_diff       =   config('utility.profile.match.age_max_diff') ?? 1;
-                $max_limit          =   config('utility.profile.match.max_limit') ?? 50;
+                $max_limit          =   50;
                 $max_limit_apply    =   config('utility.profile.match.max_limit_apply') ?? true;
+
 
                 $auth_interest  =   $user->interest ? $user->interest : 'Both';
               
@@ -138,6 +139,8 @@ class MatchController extends Controller
                         } 
                     }                
                 }
+
+
                 
                 //CHECK AND GENERATE NEW  SYSTEM GENERATED USER DAILY END
 
@@ -183,7 +186,7 @@ class MatchController extends Controller
 
 
 
-                $matches = $matches->latest();
+                
 
                 if ($max_limit_apply) {
                     if($likes_count != 0 && $count > $max_limit){
