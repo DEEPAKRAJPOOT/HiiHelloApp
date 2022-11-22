@@ -287,10 +287,14 @@ $(function () {
                 $("#processing").hide();
 
                 var arr_id = multi_auto_user_id.split(",");
-                for(var index = 0; index < arr_id.length; index++) {
-                    console.log("===> " + arr_id[index]);
+                for(var index = 0; index < arr_id.length; index++) {                    
                     $(".dynamic_gender_"+arr_id[index]).val(target_gender);
                 }
+
+                $(".dataTable tbody input[class='small-chk']:checked").each(function () {
+                    $(this).prop('checked', false);                    
+                    $(this).parent().parent().trigger("click");
+                });
 
             },
         });
