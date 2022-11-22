@@ -303,7 +303,7 @@ class UtilityController extends Controller
                     }
                     if(!empty($val->about_me)){
                         $message = $this->translateUserText($apiKey,$val->about_me);
-                        // $user->is_trans_about_me = 'y';
+                        $UserTranslation->about_me = $message;
                     }
                     if(!empty($val->fav_movie)){
                         $message = $this->translateUserText($apiKey,$val->fav_movie);
