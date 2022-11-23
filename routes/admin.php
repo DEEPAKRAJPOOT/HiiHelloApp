@@ -48,6 +48,7 @@ Route::group(['namespace' => 'Admin', 'middleware' => ['check_permit', 'revalida
 	/* Dashboard */
 	// Route::get('/', 'PagesController@dashboard')->name('dashboard.index');
 	Route::get('/dashboard', 'PagesController@dashboard')->name('dashboard.index');
+	Route::get('dashboardupdate', 'PagesController@dashboardupdate')->name('dashboardupdate');
 	
 	/* User */
 	Route::get('users/listing', 'UsersController@listing')->name('users.listing');

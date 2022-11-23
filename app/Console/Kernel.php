@@ -104,7 +104,7 @@ class Kernel extends ConsoleKernel
         $schedule->call(function () {
             $scheculeCommand = new AdminDashboard;
             $scheculeCommand->handle();
-        })->hourly();
+        })->everyFifteenMinutes();
 
         // $schedule->command('inspire')->hourly();
     }
