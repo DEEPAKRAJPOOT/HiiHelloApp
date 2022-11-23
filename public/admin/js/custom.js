@@ -231,6 +231,124 @@ $(function () {
             },
         });
     });
+
+    $(document).on("click", "#update_gender", function (e) {
+
+        e.preventDefault();
+        
+        var searchIDs       = [];
+        var searchAutoIDs   = [];
+
+        $(".dataTable tbody input[class='small-chk']:checked").each(
+            function () {
+                searchIDs.push($(this).val());
+                searchAutoIDs.push($(this).data('id'));
+            }
+        );
+
+        if (searchIDs.length == 0) {
+
+            Swal.fire({                
+                text: "Please select at least one checkbox.",
+                icon: "warning",
+                showConfirmButton: true,
+            });
+
+        } else {
+
+            $("#myModal #multi_user_id").val(searchIDs);
+            $("#myModal #multi_auto_user_id").val(searchAutoIDs);
+            $("#myModal").modal('show');
+        }
+    });
+
+    $(document).on("click", ".save_frm_gender", function (e) {
+
+        e.preventDefault();
+
+        $("#processing").show();
+        $(this).attr("disabled", true);        
+        var data               = $('#frm_gender').serializeArray();
+        var url                = $('#frm_gender').attr('action');
+        var multi_auto_user_id = $("#myModal #multi_auto_user_id").val();
+        var target_gender      = $("select[name=target_gender] :selected").val();
+
+        $.ajax({
+            url: url,
+            type: "post",
+            dataType: "json",
+            data: data,
+            cache: false,
+            success: function (success) {
+                console.log(success['message']);
+                toastr.success("Gender Changed!");
+                $("#myModal").modal('hide');
+                $(".save_frm_gender").attr("disabled", false);
+                $("#processing").hide();
+
+                var arr_id = multi_auto_user_id.split(",");
+                for(var index = 0; index < arr_id.length; index++) {                    
+                    $(".dynamic_gender_"+arr_id[index]).val(target_gender);
+                }
+
+                $(".dataTable tbody input[class='small-chk']:checked").each(function () {
+                    $(this).prop('checked', false);                    
+                    $(this).parent().parent().trigger("click");
+                });
+
+            },
+        });
+    });
+    
+    $(document).on("click", "#photo_verification", function (e) {
+
+        e.preventDefault();
+        
+        var searchIDs       = [];
+
+        $(".dataTable tbody input[class='small-chk']:checked").each(
+            function () {
+                searchIDs.push($(this).val());
+            }
+        );
+
+        if (searchIDs.length == 0) {
+
+            Swal.fire({                
+                text: "Please select at least one checkbox.",
+                icon: "warning",
+                showConfirmButton: true,
+            });
+
+        } else {
+
+            $("#myModalPhotoVerification #multi_user_id").val(searchIDs);
+            $("#myModalPhotoVerification").modal('show');
+        }
+    });
+
+    $(document).on("click", ".save_frm_photo_verification", function (e) {
+
+        e.preventDefault();
+        $("#processing").show();
+        $(this).attr("disabled", true);
+        var data    = $('#frm_photo_verification').serializeArray();
+        var url     = $('#frm_photo_verification').attr('action');
+
+        $.ajax({
+            url: url,
+            type: "post",
+            dataType: "json",
+            data: data,
+            cache: false,
+            success: function (success) {                
+                toastr.success("Photo verification done!");
+                setTimeout(function(){
+                    location.reload();
+                },1000);
+            },
+        });
+    });
 });
 function getStatusText(code) {
     sText = "";
