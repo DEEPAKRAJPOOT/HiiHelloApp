@@ -35,8 +35,8 @@
 
                 {{-- Country Code --}}
                 <div class="form-group">
-                    <label for="country_code">{!!$mend_sign!!}Country Code</label>
-                    <select type="text" class="form-control @error('country_code') is-invalid @enderror" id="country_code" name="country_code" spellcheck="false" tabindex="0" />
+                    <label for="country_code">Country Code</label>
+                    <select type="text" class="form-control @error('country_code') @enderror" id="country_code" name="country_code" spellcheck="false" tabindex="0" />
                         <option value="">Select Country Code</option>
                         @foreach($countries as $country)
                             <option {{ $country->id == $user->country_id ? 'selected=selected' : '' }} value="{{ $country->phonecode }}">{{ $country->phonecode }}</option> 
@@ -51,8 +51,8 @@
 
                 {{-- Contact Number --}}
                 <div class="form-group">
-                    <label for="contact_no">{!!$mend_sign!!}Contact Number</label>
-                    <input type="contact_no" class="form-control @error('contact_no') is-invalid @enderror" id="contact_no" name="contact_no" value="{{ old('contact_no') != null ? old('contact_no') : $user->contact_no }}" placeholder="Enter contact number" autocomplete="contact_no" spellcheck="false" tabindex="0" />
+                    <label for="contact_no">Contact Number</label>
+                    <input type="contact_no" class="form-control @error('contact_no') @enderror" id="contact_no" name="contact_no" value="{{ old('contact_no') != null ? old('contact_no') : $user->contact_no }}" placeholder="Enter contact number" autocomplete="contact_no" spellcheck="false" tabindex="0" />
                     @if ($errors->has('contact_no'))
                         <span class="text-danger">
                             <strong class="form-text">{{ $errors->first('contact_no') }}</strong>
@@ -986,7 +986,7 @@ $(document).ready(function () {
                 email: true,
                 valid_email: true,
             },
-            country_code: {
+            /*country_code: {
                 required: true,
                 not_empty: true,
             },
@@ -996,7 +996,7 @@ $(document).ready(function () {
                 maxlength: 16,
                 minlength: 6,
                 pattern: /^(\d+)(?: ?\d+)*$/,
-            },
+            },*/
             birth_date: {
                 required: true,
                 not_empty: true,
@@ -1149,7 +1149,7 @@ $(document).ready(function () {
                 valid_email:"@lang('validation.email',['attribute'=>'email address'])",
                 remote:"@lang('validation.unique',['attribute'=>'email address'])",
             },
-            country_code: {
+            /*country_code: {
                 required: "@lang('validation.required',['attribute'=>'country code'])",
                 not_empty: "@lang('validation.not_empty',['attribute'=>'country code'])",
             },
@@ -1160,7 +1160,7 @@ $(document).ready(function () {
                 minlength:"@lang('validation.min.string',['attribute'=>'contact number','min'=>6])",
                 pattern:"@lang('validation.numeric',['attribute'=>'contact number'])",
                 remote:"@lang('validation.unique',['attribute'=>'contact number'])",
-            },
+            },*/
             birth_date: {
                 required:"@lang('validation.required',['attribute'=>'birth date'])",
                 not_empty:"@lang('validation.not_empty',['attribute'=>'birth date'])",

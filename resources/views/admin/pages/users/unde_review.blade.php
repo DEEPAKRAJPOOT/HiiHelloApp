@@ -19,13 +19,19 @@
                 </span>
                 <h3 class="card-label">{{ $custom_title }}</h3>
             </div>
-
             <div class="card-toolbar">
-                <a href="{{ route('admin.users.csv-download-unde-review') }}"
-                    class="btn btn-sm btn-primary font-weight-bolder text-uppercase ml-2">
+                <a href="javascript:;" id="photo_verification" class="btn btn-sm btn-primary font-weight-bolder text-uppercase mr-2">
+                    <i class="fa fa-check"></i> Photo Verification
+                </a>
+                <a href="javascript:;" id="update_gender" class="btn btn-sm btn-primary font-weight-bolder text-uppercase mr-2">
+                    <i class="far fa-edit"></i> Update Gender
+                </a>
+                {{--
+                <a href="{{ route('admin.users.csv-download-unde-review') }}" class="btn btn-sm btn-primary font-weight-bolder text-uppercase ml-2">
                     <i class="fas fa-arrow-down"></i>
                     Download CSV
                 </a>
+                --}}
             </div>
         </div>
         <div class="card-body">
@@ -58,32 +64,37 @@
                }                
             },
             columns: [
+                { data: 'checkbox' },
+                { data: 'profile_photo' },
+                { data: 'verify_photo' },
                 { data: 'account_id' },
                 { data: 'full_name' },
+                { data: 'gender' },
                 { data: 'profile_percentage' },
                 { data: 'contact_no' },
-                { data: 'email' },
-                { data: 'gender' },
+                { data: 'email' },                
                 { data: 'created_at' },
                 { data: 'active' },
-                { data: 'action', responsivePriority: -1 },
+                { data: 'action'},
             ],
             columnDefs: [
                 // Specify columns titles here...
-                { targets: 0, title: 'Account Id', orderable: true },
-                { targets: 1, title: 'Name', orderable: false },
-                { targets: 2, title: 'Profile Percentage', orderable: true },
-                { targets: 3, title: 'Contact Number', orderable: true },
-                { targets: 4, title: 'E-mail', orderable: true },
+                { targets: 0, title: "<center><input type='checkbox' class='all_select'></center>", orderable: false },
+                { targets: 1, title: 'Photo 1', orderable: false },
+                { targets: 2, title: 'Photo 2', orderable: false },
+                { targets: 3, title: 'Account Id', orderable: true },
+                { targets: 4, title: 'Name', orderable: false },
                 { targets: 5, title: 'Gender', orderable: true },
-                { targets: 6, title: 'Created At', orderable: true },
-                { targets: 7, title: 'Ban', orderable: false },
+                { targets: 6, title: 'Profile Percentage', orderable: true },
+                { targets: 7, title: 'Contact Number', orderable: true },
+                { targets: 8, title: 'E-mail', orderable: true },                
+                { targets: 9, title: 'Created At', orderable: true },
+                { targets: 10, title: 'Ban', orderable: false },
                 // Action buttons
-                { targets: -1, title: 'Action',
-                orderable: false },
+                { targets: -1, title: 'Action', orderable: false },
             ],
             order: [
-                [6, 'DESC']
+                [9, 'DESC']
             ],
             lengthMenu: [
                 [10, 20, 50, 100],
@@ -98,3 +109,177 @@
     });
 </script>
 @endpush
+
+<!-- Modal For Update Gender -->
+<div class="modal fade" id="myModal" role="dialog" style="display: none;">
+    <div class="modal-dialog">
+    
+        <!-- Modal content-->
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">Update Gender</h4>
+            </div>
+            <div class="modal-body">
+                <form method="POST" name="frm_gender" id="frm_gender" action="{{ route('admin.users.bulk_gender_update') }}">
+                    <input type="hidden" name="multi_user_id" id="multi_user_id">
+                    <input type="hidden" name="multi_auto_user_id" id="multi_auto_user_id">
+                    <input type="hidden" name="_token" value="{{ csrf_token() }}">
+                    <div class="form-group">
+                        <label for="exampleFormControlSelect2">Gender</label>
+                        <select name="target_gender" class="form-control">
+                            <option value="Male">Male</option>
+                            <option value="Female">Female</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <span class="processing" style="display: none;">Processing...</span>
+                <button type="button" class="btn btn-primary save_frm_gender">Submit</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            </div>
+        </div>      
+    </div>
+</div>
+
+<div id="myimageModal" class="modal">
+
+    <!-- The Close Button -->
+    <span class="close">&times;</span>
+
+    <!-- Modal Content (The Image) -->
+    <div class="row">
+        <div class="col-md-6">
+            <img class="modal-content" id="img01">
+        </div>
+        <div class="col-md-6">
+            <img class="modal-content" id="img02">
+        </div>
+    </div>
+
+    <!-- Modal Caption (Image Text) -->
+    <div id="caption"></div>
+
+</div>
+
+<!-- Modal For Photo Verification -->
+<div class="modal fade" id="myModalPhotoVerification" role="dialog" style="display: none;">
+    <div class="modal-dialog">
+    
+        <!-- Modal content-->
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">Photo Verification</h4>
+            </div>
+            <div class="modal-body">
+                <form method="POST" name="frm_photo_verification" id="frm_photo_verification" action="{{ route('admin.users.bulk_photo_verification') }}">
+                    <input type="hidden" name="multi_user_id" id="multi_user_id">
+                    <input type="hidden" name="_token" value="{{ csrf_token() }}">
+                    <div class="form-group">
+                        <label for="exampleFormControlSelect2">Photo Verification Status</label>
+                        <select name="verify_photo_status" id="verify_photo_status" class="form-control">
+                            <option value="under_review">Under Review</option>
+                            <option value="verified">Verified</option>
+                            <option value="unverified" selected>UnVerified</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <span class="processing" style="display: none;">Processing...</span>
+                <button type="button" class="btn btn-primary save_frm_photo_verification">Submit</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            </div>
+        </div>      
+    </div>
+</div>
+
+<style type="text/css">
+    #myImg {
+  border-radius: 5px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+#myImg:hover {opacity: 0.7;}
+
+/* The Modal (background) */
+#myimageModal {
+  display: none; /* Hidden by default */
+  position: fixed; /* Stay in place */
+  z-index: 99999; /* Sit on top */
+  padding-top: 100px; /* Location of the box */
+  left: 0;
+  top: 0;
+  width: 100%; /* Full width */
+  height: 100%; /* Full height */
+  overflow: auto; /* Enable scroll if needed */
+  background-color: rgb(0,0,0); /* Fallback color */
+  background-color: rgba(0,0,0,0.9); /* Black w/ opacity */
+}
+
+/* Modal Content (image) */
+#myimageModal .modal-content {
+  margin: auto;
+  display: block;
+  width: 80%;
+  max-width: 700px;
+}
+
+/* Caption of Modal Image */
+#myimageModal #caption {
+  margin: auto;
+  display: block;
+  width: 80%;
+  max-width: 700px;
+  text-align: center;
+  color: #ccc;
+  padding: 10px 0;
+  height: 150px;
+}
+
+/* Add Animation */
+#myimageModal .modal-content, #caption {  
+  -webkit-animation-name: zoom;
+  -webkit-animation-duration: 0.6s;
+  animation-name: zoom;
+  animation-duration: 0.6s;
+}
+
+@-webkit-keyframes zoom {
+  from {-webkit-transform:scale(0)} 
+  to {-webkit-transform:scale(1)}
+}
+
+@keyframes zoom {
+  from {transform:scale(0)} 
+  to {transform:scale(1)}
+}
+
+/* The Close Button */
+#myimageModal .close {
+  position: absolute;
+  top: 15px;
+  right: 35px;
+  color: #f1f1f1;
+  font-size: 40px;
+  font-weight: bold;
+  transition: 0.3s;
+}
+
+#myimageModal .close:hover,
+#myimageModal .close:focus {
+  color: #bbb;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+/* 100% Image Width on Smaller Screens */
+@media only screen and (max-width: 700px){
+  #myimageModal .modal-content {
+    width: 100%;
+  }
+
+</style>

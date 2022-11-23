@@ -97,11 +97,11 @@
                 { data: 'checkbox' },
                 { data: 'account_id' },
                 { data: 'full_name' },
+                { data: 'gender' },
                 { data: 'profile_percentage' },
                 { data: 'contact_no' },
-                { data: 'email' },
-                { data: 'gender' },
-                { data: 'city' },
+                { data: 'email' },                
+                { data: 'city' },                
                 { data: 'created_at' },
                 { data: 'active' },
                 { data: 'action'},
@@ -111,10 +111,10 @@
                 { targets: 0, title: "<center><input type='checkbox' class='all_select'></center>", orderable: false },
                 { targets: 1, title: 'Account Id', orderable: true },
                 { targets: 2, title: 'Name', orderable: false },
-                { targets: 3, title: 'Profile Percentage', orderable: true },
-                { targets: 4, title: 'Contact Number', orderable: true },
-                { targets: 5, title: 'E-mail', orderable: true },
-                { targets: 6, title: 'Gender', orderable: true },
+                { targets: 3, title: 'Gender', orderable: true },
+                { targets: 4, title: 'Profile Percentage', orderable: true },
+                { targets: 5, title: 'Contact Number', orderable: true },
+                { targets: 6, title: 'E-mail', orderable: true },                
                 { targets: 7, title: 'City', orderable: false },
                 { targets: 8, title: 'Created At', orderable: true },
                 { targets: 9, title: 'Ban', orderable: false },
@@ -129,7 +129,7 @@
                 [10, 20, 50, 100],
                 [10, 20, 50, 100]
             ],
-            pageLength: 10,
+            pageLength: 10
         });
     });
 
@@ -164,41 +164,8 @@
                 </form>
             </div>
             <div class="modal-footer">
-                <span id="processing" style="display: none;">Processing...</span>
+                <span class="processing" style="display: none;">Processing...</span>
                 <button type="button" class="btn btn-primary save_frm_gender">Submit</button>
-                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-            </div>
-        </div>      
-    </div>
-</div>
-
-<!-- Modal For Photo Verification -->
-<div class="modal fade" id="myModalPhotoVerification" role="dialog" style="display: none;">
-    <div class="modal-dialog">
-    
-        <!-- Modal content-->
-        <div class="modal-content">
-            <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal">&times;</button>
-                <h4 class="modal-title">Photo Verification</h4>
-            </div>
-            <div class="modal-body">
-                <form method="POST" name="frm_photo_verification" id="frm_photo_verification" action="">
-                    <input type="hidden" name="multi_user_id" id="multi_user_id">
-                    <input type="hidden" name="_token" value="{{ csrf_token() }}">
-                    <div class="form-group">
-                        <label for="exampleFormControlSelect2">Photo Verification Status</label>
-                        <select name="verify_photo_status" id="verify_photo_status" class="form-control">
-                            <option value="under_review">Under Review</option>
-                            <option value="verified">Verified</option>
-                            <option value="unverified" selected>UnVerified</option>
-                        </select>
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <span id="processing" style="display: none;">Processing...</span>
-                <button type="button" class="btn btn-primary save_frm_photo_verification">Submit</button>
                 <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
             </div>
         </div>      
