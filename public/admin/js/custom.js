@@ -355,6 +355,35 @@ $(function () {
         });
     });
 });
+
+
+$(document).on("click", ".my_profile_image", function (e) {
+// Get the modal
+
+var user_id = $(this).attr('data-id');
+
+var modal = document.getElementById("myimageModal");
+
+// Get the image and insert it inside the modal - use its "alt" text as a caption
+
+var modalImg1 = document.getElementById("img01");
+var modalImg2 = document.getElementById("img02");
+
+
+modal.style.display = "block";
+modalImg1.src = $('#1photo_'+user_id).attr('src');
+modalImg2.src = $('#2photo_'+user_id).attr('src');
+
+        
+});
+
+
+$(document).on("click", ".close", function (e) {
+    var modal = document.getElementById("myimageModal");
+      modal.style.display = "none";
+});
+
+
 function getStatusText(code) {
     sText = "";
     if (code !== undefined) {

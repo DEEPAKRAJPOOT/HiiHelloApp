@@ -805,21 +805,43 @@ class UsersController extends Controller
                 'na_user' => ($user->gender == '' ? 'selected' : ''),
             ];
 
-            $records['data'][] = [
-                'id' => $user->id,
-                'account_id' => $user->account_id ?? "N/A",
-                'full_name' =>  $user->userTransDefault ? $user->userTransDefault->full_name : "N/A",
-                'profile_percentage' =>  $user->profile_percentage ?? 0,
-                'contact_no' => $user->contact_no ? '<a href="tel:' . $user->country_code . '' . $user->contact_no . '" >' . $user->country_code . '' . $user->contact_no . '</a>' : 'N/A',
-                'email' => $user->email ? '<a href="mailto:' . $user->email . '" >' . $user->email . '</a>' : 'N/A',
-                'gender' => view('admin.layouts.includes.gender', compact('params'))->render(),
-                'profile_photo' => view('admin.layouts.includes.photos_verify')->with('profile_photo', $user->profile_photo  ?? 'N/A')->render(),
-                'city' => $user->location->name ?? 'N/A',                
-                'created_at' => date('Y-m-d H:i:s', strtotime($user->created_at)) ?? 'N/A',
-                'active' => view('admin.layouts.includes.switch', compact('params'))->render(),
-                'action' => view('admin.layouts.includes.actions')->with(['custom_title' => 'User', 'id' => $user->custom_id], $user)->render(),
-                'checkbox' => view('admin.layouts.includes.checkbox', compact('params'))->with('id', $user->custom_id)->render(),
-            ];
+            if($flgPendingProfile > 0) {
+
+                $records['data'][] = [
+                    'id' => $user->id,
+                    'profile_photo' => view('admin.layouts.includes.photos_verify')->with(['user_id' => $user->id,'profile_photo' => $user->profile_photo  ?? 'N/A', 'is_profile_photo' => 1, 'is_verify_photo' => 0])->render(),
+                    'verify_photo' => view('admin.layouts.includes.photos_verify')->with(['user_id' => $user->id,'verify_photo' => $user->verify_photo  ?? 'N/A', 'is_profile_photo' => 0, 'is_verify_photo' => 1])->render(),
+                    'account_id' => $user->account_id ?? "N/A",
+                    'full_name' =>  $user->userTransDefault ? $user->userTransDefault->full_name : "N/A",
+                    'profile_percentage' =>  $user->profile_percentage ?? 0,
+                    'contact_no' => $user->contact_no ? '<a href="tel:' . $user->country_code . '' . $user->contact_no . '" >' . $user->country_code . '' . $user->contact_no . '</a>' : 'N/A',
+                    'email' => $user->email ? '<a href="mailto:' . $user->email . '" >' . $user->email . '</a>' : 'N/A',
+                    'gender' => view('admin.layouts.includes.gender', compact('params'))->render(),
+                    'city' => $user->location->name ?? 'N/A',                
+                    'created_at' => date('Y-m-d H:i:s', strtotime($user->created_at)) ?? 'N/A',
+                    'active' => view('admin.layouts.includes.switch', compact('params'))->render(),
+                    'action' => view('admin.layouts.includes.actions')->with(['custom_title' => 'User', 'id' => $user->custom_id], $user)->render(),
+                    'checkbox' => view('admin.layouts.includes.checkbox', compact('params'))->with('id', $user->custom_id)->render(),
+                ];
+
+            } else {
+
+                $records['data'][] = [
+                    'id' => $user->id,                    
+                    'account_id' => $user->account_id ?? "N/A",
+                    'full_name' =>  $user->userTransDefault ? $user->userTransDefault->full_name : "N/A",
+                    'profile_percentage' =>  $user->profile_percentage ?? 0,
+                    'contact_no' => $user->contact_no ? '<a href="tel:' . $user->country_code . '' . $user->contact_no . '" >' . $user->country_code . '' . $user->contact_no . '</a>' : 'N/A',
+                    'email' => $user->email ? '<a href="mailto:' . $user->email . '" >' . $user->email . '</a>' : 'N/A',
+                    'gender' => view('admin.layouts.includes.gender', compact('params'))->render(),
+                    'city' => $user->location->name ?? 'N/A',                
+                    'created_at' => date('Y-m-d H:i:s', strtotime($user->created_at)) ?? 'N/A',
+                    'active' => view('admin.layouts.includes.switch', compact('params'))->render(),
+                    'action' => view('admin.layouts.includes.actions')->with(['custom_title' => 'User', 'id' => $user->custom_id], $user)->render(),
+                    'checkbox' => view('admin.layouts.includes.checkbox', compact('params'))->with('id', $user->custom_id)->render(),
+                ];
+
+            }
         }
         // dd($records);
         return $records;

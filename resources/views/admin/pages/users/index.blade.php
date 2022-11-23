@@ -25,10 +25,12 @@
                   <input class="form-check-input getpendingprofile"  type="checkbox" role="switch" id="is_profile_under_review" >
                   <label class="form-check-label" for="is_profile_under_review">Profile Under Review&nbsp;&nbsp;</label>
                 </div>
+                {{-- 
                 <a href="javascript:;" id="photo_verification"
                     class="btn btn-sm btn-primary font-weight-bolder text-uppercase mr-2">
                     <i class="fa fa-check"></i> Photo Verification
                 </a>
+                --}}
                 <a href="javascript:;" id="update_gender"
                     class="btn btn-sm btn-primary font-weight-bolder text-uppercase mr-2">
                     <i class="far fa-edit"></i> Update Gender
@@ -98,9 +100,8 @@
                 { data: 'profile_percentage' },
                 { data: 'contact_no' },
                 { data: 'email' },
-                { data: 'gender' },
-                { data: 'profile_photo' },
-                { data: 'city' },
+                { data: 'gender' },                
+                { data: 'city' },                
                 { data: 'created_at' },
                 { data: 'active' },
                 { data: 'action'},
@@ -113,17 +114,16 @@
                 { targets: 3, title: 'Profile Percentage', orderable: true },
                 { targets: 4, title: 'Contact Number', orderable: true },
                 { targets: 5, title: 'E-mail', orderable: true },
-                { targets: 6, title: 'Gender', orderable: true },
-                { targets: 7, title: 'Photo', orderable: false },
-                { targets: 8, title: 'City', orderable: false },                
-                { targets: 9, title: 'Created At', orderable: true },
-                { targets: 10, title: 'Ban', orderable: false },
+                { targets: 6, title: 'Gender', orderable: true },                
+                { targets: 7, title: 'City', orderable: false },
+                { targets: 8, title: 'Created At', orderable: true },
+                { targets: 9, title: 'Ban', orderable: false },
                 // Action buttons
-                { targets: 11, title: 'Action',
+                { targets: 10, title: 'Action',
                 orderable: false },
             ],
             order: [
-                [9, 'DESC']
+                [8, 'DESC']
             ],
             lengthMenu: [
                 [10, 20, 50, 100],
@@ -166,39 +166,6 @@
             <div class="modal-footer">
                 <span class="processing" style="display: none;">Processing...</span>
                 <button type="button" class="btn btn-primary save_frm_gender">Submit</button>
-                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-            </div>
-        </div>      
-    </div>
-</div>
-
-<!-- Modal For Photo Verification -->
-<div class="modal fade" id="myModalPhotoVerification" role="dialog" style="display: none;">
-    <div class="modal-dialog">
-    
-        <!-- Modal content-->
-        <div class="modal-content">
-            <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal">&times;</button>
-                <h4 class="modal-title">Photo Verification</h4>
-            </div>
-            <div class="modal-body">
-                <form method="POST" name="frm_photo_verification" id="frm_photo_verification" action="{{ route('admin.users.bulk_photo_verification') }}">
-                    <input type="hidden" name="multi_user_id" id="multi_user_id">
-                    <input type="hidden" name="_token" value="{{ csrf_token() }}">
-                    <div class="form-group">
-                        <label for="exampleFormControlSelect2">Photo Verification Status</label>
-                        <select name="verify_photo_status" id="verify_photo_status" class="form-control">
-                            <option value="under_review">Under Review</option>
-                            <option value="verified">Verified</option>
-                            <option value="unverified" selected>UnVerified</option>
-                        </select>
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <span class="processing" style="display: none;">Processing...</span>
-                <button type="button" class="btn btn-primary save_frm_photo_verification">Submit</button>
                 <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
             </div>
         </div>      
