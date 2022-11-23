@@ -818,7 +818,7 @@ class UsersController extends Controller
                 'created_at' => date('Y-m-d H:i:s', strtotime($user->created_at)) ?? 'N/A',
                 'active' => view('admin.layouts.includes.switch', compact('params'))->render(),
                 'action' => view('admin.layouts.includes.actions')->with(['custom_title' => 'User', 'id' => $user->custom_id], $user)->render(),
-                'checkbox' => view('admin.layouts.includes.checkbox')->with('id', $user->custom_id)->render(),
+                'checkbox' => view('admin.layouts.includes.checkbox', compact('params'))->with('id', $user->custom_id)->render(),
             ];
         }
         // dd($records);
@@ -1048,8 +1048,8 @@ class UsersController extends Controller
         return redirect(route('admin.users.index'));
     }
 
-    public function gender_update(Request $request)
-    {
+    public function gender_update(Request $request) {
+        
         // echo "<pre>"; print_r($request->all()); die();
 
         if ($request->id != '' && $request->gender != '') {
@@ -1133,6 +1133,119 @@ class UsersController extends Controller
                 $content['message'] = "User not found.";
                 return response()->json($content);
             }
+        }
+        else
+        {
+            $content['status'] = 404;
+            $content['message'] = "Messing required paramater..!";
+            return response()->json($content);
+        }
+        // try {
+        //     $content['status'] = 200;
+        //     $content['message'] = "Status updated successfully.";
+        //     return response()->json($content);
+        // } catch (QueryException $e) {
+        //     DB::rollback();
+        //     return redirect()->back()->flash('error', $e->getMessage());
+        // } catch (Exception $e) {
+        //     return redirect()->back()->with('error', $e->getMessage());
+        // }
+    }
+
+    public function bulk_gender_update(Request $request) {
+            
+
+        $user_id_arr            = explode(",",$request->multi_user_id);
+        
+
+        if (!empty($user_id_arr)) {
+
+            for($i = 0; $i< count($user_id_arr); $i++) {
+
+                    $req_user_id = $user_id_arr[$i];
+                    $req_gender  = $request->target_gender;
+
+                    $users = User::select('id','gender','is_subscribed','subscription_end_date')->where('custom_id',$req_user_id)->first();
+                    if ($users != '') {
+                        if ($req_gender != $users->gender) 
+                        {
+                            if (($users->gender == "Male" && $req_gender == "Female") || ($users->gender == "" && $req_gender == "Female")) {
+
+                                
+                                /*$free_subscription = config('utility.subscription.free_for_girls');
+                                if($free_subscription && $req_gender == 'Female') {
+
+                                    // create modedl object and used this function
+                                    // $users->gender = ;
+                                    // $users = $this->user->buyFreeSubscription();
+                                    // $users->save();
+
+                                    $plan = SubscriptionPlan::where('is_default_for_girl','y')->first();
+                                    if($plan){
+
+                                        $new_subscription_start_date = \Carbon\Carbon::today()->format('Y-m-d');
+                                        if ($users->subscription_end_date >= $new_subscription_start_date) {
+                                            $new_subscription_start_date = $users->subscription_end_date;
+                                        }
+
+                                        // add free subscription
+                                        Subscription::firstOrCreate([
+                                            'user_id'       =>  $users->id ?? NULL,
+                                            'plan_id'       =>  $plan->id ?? NULL,
+                                            'months'        =>  $plan->months,
+                                            'amount'        =>  $plan->amount,
+                                            'start_date'    =>  $new_subscription_start_date,
+                                            'end_date'      =>  NULL,
+                                            'payment_date'  =>  now(),
+                                            'payment_type'  =>  '',
+                                            'status'        =>  'active',
+                                        ], [
+                                            'custom_id'     =>  getUniqueString('subscriptions'),
+                                        ]);
+
+                                        // update user table subscription details
+                                        User::where('custom_id',$req_user_id)->update([ 
+                                            'gender' =>  $req_gender ?? $users->gender,
+                                            'is_subscribed' =>  'y',
+                                        ]);
+                                    }
+                                }*/
+
+                                // update user table gender details
+                                User::where('custom_id',$req_user_id)->update([
+                                    'gender' =>  $req_gender ?? $users->gender
+                                ]);
+                            }
+
+                            if (($users->gender == "Female" && $req_gender == "Male") || ($users->gender == "" && $req_gender == "Male")) {
+
+                                // delete subscription data
+                                Subscription::where('user_id',$users->id)->delete();
+
+                                // update user table subscription details
+                                User::where('custom_id',$req_user_id)->update([ 
+                                    'gender' =>  $req_gender ?? $users->gender,
+                                    'is_subscribed' =>  'n',
+                                    'subscription_end_date' =>  NULL,
+                                ]);
+                                
+                            }
+                            
+                        }
+                        
+                    }
+                    else
+                    {
+                        $content['status'] = 404;
+                        $content['message'] = "User not found.";
+                        return response()->json($content);
+                    }
+            }
+
+            $content['status'] = 200;
+            $content['message'] = "Gender updated successfully1.";
+            return response()->json($content);
+
         }
         else
         {
