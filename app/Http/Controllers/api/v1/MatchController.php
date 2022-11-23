@@ -224,7 +224,7 @@ class MatchController extends Controller
                         'meta'  =>  [
                             'limit'     =>  $request->limit,
                             'offset'    =>  $request->offset,
-                            'total'     =>  $max_limit_apply ? $max_limit : $count,
+                            'total'     =>  $count, //$max_limit_apply ? $max_limit : $count,
                             'url'       =>  url()->current(),
                             'api'       =>  $this->getVersion(),
                             'language'  =>  app()->getLocale(),
