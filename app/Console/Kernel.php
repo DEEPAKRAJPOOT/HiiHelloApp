@@ -71,10 +71,13 @@ class Kernel extends ConsoleKernel
         // ->everyFiveMinutes();
 
         // Auto Verify Profiles Command
+        
+        /*
         $schedule->call(function () {
             $scheculeCommand = new AutoVerifyProfile;
             $scheculeCommand->handle();
         })->everyMinute();
+        */
 
         // Location Translations Command
         $schedule->call(function () {
