@@ -45,14 +45,8 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
-        /*
-
-        // Google Translate Command
-        $schedule->call(function () {
-            $scheculeCommand = new GoogleTranslation;
-            $scheculeCommand->handle();
-        })->everyMinute();
         
+        /*
         // Image Moderation Command
         $schedule->call(function () {
             $scheculeCommand = new ImageModeration;
@@ -74,7 +68,22 @@ class Kernel extends ConsoleKernel
 
         // Auto Verify Profiles Command
         
+
+        // Subscription Expirt Notification At Every Morning 8 AM
+        $schedule->call(function () {
+            $scheculeCommand = new NotifySubScriptionExpire;
+            $scheculeCommand->handle();
+        })->dailyAt('08:00');
         
+        */
+
+        // Google Translate Command
+        $schedule->call(function () {
+            $scheculeCommand = new GoogleTranslation;
+            $scheculeCommand->handle();
+        })->everyMinute();
+
+
         $schedule->call(function () {
             $scheculeCommand = new AutoVerifyProfile;
             $scheculeCommand->handle();
@@ -87,17 +96,13 @@ class Kernel extends ConsoleKernel
             $scheculeCommand->handle();
         })->daily();
 
+    
         // Birthday Wise At Every Night 12 AM
         $schedule->call(function () {
             $scheculeCommand = new BirthDayWish;
             $scheculeCommand->handle();
         })->daily();
 
-        // Subscription Expirt Notification At Every Morning 8 AM
-        $schedule->call(function () {
-            $scheculeCommand = new NotifySubScriptionExpire;
-            $scheculeCommand->handle();
-        })->dailyAt('08:00');
 
         // Users Daily Swipe Limit Renew
         $schedule->call(function () {
@@ -111,7 +116,7 @@ class Kernel extends ConsoleKernel
             $scheculeCommand->handle();
         })->everyFifteenMinutes();
         
-        */
+
     
         // $schedule->command('inspire')->hourly();
     }
