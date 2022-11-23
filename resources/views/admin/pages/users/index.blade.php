@@ -100,7 +100,7 @@
                 { data: 'email' },
                 { data: 'gender' },
                 { data: 'profile_photo' },
-                { data: 'city' },                
+                { data: 'city' },
                 { data: 'created_at' },
                 { data: 'active' },
                 { data: 'action'},

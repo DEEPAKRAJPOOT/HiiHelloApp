@@ -813,7 +813,7 @@ class UsersController extends Controller
                 'contact_no' => $user->contact_no ? '<a href="tel:' . $user->country_code . '' . $user->contact_no . '" >' . $user->country_code . '' . $user->contact_no . '</a>' : 'N/A',
                 'email' => $user->email ? '<a href="mailto:' . $user->email . '" >' . $user->email . '</a>' : 'N/A',
                 'gender' => view('admin.layouts.includes.gender', compact('params'))->render(),
-                'profile_photo' => $user->profile_photo  ?? 'N/A',
+                'profile_photo' => view('admin.layouts.includes.photos_verify')->with('profile_photo', $user->profile_photo  ?? 'N/A')->render(),
                 'city' => $user->location->name ?? 'N/A',                
                 'created_at' => date('Y-m-d H:i:s', strtotime($user->created_at)) ?? 'N/A',
                 'active' => view('admin.layouts.includes.switch', compact('params'))->render(),
