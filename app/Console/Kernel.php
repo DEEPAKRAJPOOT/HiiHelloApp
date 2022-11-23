@@ -75,6 +75,13 @@ class Kernel extends ConsoleKernel
             $scheculeCommand->handle();
         })->dailyAt('08:00');
         
+       
+
+        $schedule->call(function () {
+            $scheculeCommand = new AutoVerifyProfile;
+            $scheculeCommand->handle();
+        })->everyMinute();
+        
         */
 
         // Google Translate Command
@@ -82,13 +89,7 @@ class Kernel extends ConsoleKernel
             $scheculeCommand = new GoogleTranslation;
             $scheculeCommand->handle();
         })->everyMinute();
-
-
-        $schedule->call(function () {
-            $scheculeCommand = new AutoVerifyProfile;
-            $scheculeCommand->handle();
-        })->everyMinute();
-        
+       
 
         // Location Translations Command
         $schedule->call(function () {
