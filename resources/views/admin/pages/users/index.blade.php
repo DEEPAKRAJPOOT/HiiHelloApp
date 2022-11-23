@@ -25,12 +25,10 @@
                   <input class="form-check-input getpendingprofile"  type="checkbox" role="switch" id="is_profile_under_review" >
                   <label class="form-check-label" for="is_profile_under_review">Profile Under Review&nbsp;&nbsp;</label>
                 </div>
-                {{-- 
                 <a href="javascript:;" id="photo_verification"
                     class="btn btn-sm btn-primary font-weight-bolder text-uppercase mr-2">
                     <i class="fa fa-check"></i> Photo Verification
                 </a>
-                --}}
                 <a href="javascript:;" id="update_gender"
                     class="btn btn-sm btn-primary font-weight-bolder text-uppercase mr-2">
                     <i class="far fa-edit"></i> Update Gender
@@ -101,7 +99,8 @@
                 { data: 'contact_no' },
                 { data: 'email' },
                 { data: 'gender' },
-                { data: 'city' },
+                { data: 'profile_photo' },
+                { data: 'city' },                
                 { data: 'created_at' },
                 { data: 'active' },
                 { data: 'action'},
@@ -115,21 +114,22 @@
                 { targets: 4, title: 'Contact Number', orderable: true },
                 { targets: 5, title: 'E-mail', orderable: true },
                 { targets: 6, title: 'Gender', orderable: true },
-                { targets: 7, title: 'City', orderable: false },
-                { targets: 8, title: 'Created At', orderable: true },
-                { targets: 9, title: 'Ban', orderable: false },
+                { targets: 7, title: 'Photo', orderable: false },
+                { targets: 8, title: 'City', orderable: false },                
+                { targets: 9, title: 'Created At', orderable: true },
+                { targets: 10, title: 'Ban', orderable: false },
                 // Action buttons
-                { targets: 10, title: 'Action',
+                { targets: 11, title: 'Action',
                 orderable: false },
             ],
             order: [
-                [8, 'DESC']
+                [9, 'DESC']
             ],
             lengthMenu: [
                 [10, 20, 50, 100],
                 [10, 20, 50, 100]
             ],
-            pageLength: 10,
+            pageLength: 10
         });
     });
 
@@ -164,7 +164,7 @@
                 </form>
             </div>
             <div class="modal-footer">
-                <span id="processing" style="display: none;">Processing...</span>
+                <span class="processing" style="display: none;">Processing...</span>
                 <button type="button" class="btn btn-primary save_frm_gender">Submit</button>
                 <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
             </div>
@@ -183,7 +183,7 @@
                 <h4 class="modal-title">Photo Verification</h4>
             </div>
             <div class="modal-body">
-                <form method="POST" name="frm_photo_verification" id="frm_photo_verification" action="">
+                <form method="POST" name="frm_photo_verification" id="frm_photo_verification" action="{{ route('admin.users.bulk_photo_verification') }}">
                     <input type="hidden" name="multi_user_id" id="multi_user_id">
                     <input type="hidden" name="_token" value="{{ csrf_token() }}">
                     <div class="form-group">
@@ -197,7 +197,7 @@
                 </form>
             </div>
             <div class="modal-footer">
-                <span id="processing" style="display: none;">Processing...</span>
+                <span class="processing" style="display: none;">Processing...</span>
                 <button type="button" class="btn btn-primary save_frm_photo_verification">Submit</button>
                 <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
             </div>

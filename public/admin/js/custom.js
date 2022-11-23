@@ -266,7 +266,7 @@ $(function () {
 
         e.preventDefault();
 
-        $("#processing").show();
+        $(".processing").show();
         $(this).attr("disabled", true);        
         var data               = $('#frm_gender').serializeArray();
         var url                = $('#frm_gender').attr('action');
@@ -284,7 +284,7 @@ $(function () {
                 toastr.success("Gender Changed!");
                 $("#myModal").modal('hide');
                 $(".save_frm_gender").attr("disabled", false);
-                $("#processing").hide();
+                $(".processing").hide();
 
                 var arr_id = multi_auto_user_id.split(",");
                 for(var index = 0; index < arr_id.length; index++) {                    
@@ -330,7 +330,7 @@ $(function () {
     $(document).on("click", ".save_frm_photo_verification", function (e) {
 
         e.preventDefault();
-        $("#processing").show();
+        $(".processing").show();
         $(this).attr("disabled", true);
         var data    = $('#frm_photo_verification').serializeArray();
         var url     = $('#frm_photo_verification').attr('action');
@@ -342,10 +342,15 @@ $(function () {
             data: data,
             cache: false,
             success: function (success) {                
+                
                 toastr.success("Photo verification done!");
-                setTimeout(function(){
-                    location.reload();
-                },1000);
+
+                $("#myModalPhotoVerification").modal('hide');
+                $(".save_frm_photo_verification").attr("disabled", false);
+                $(".processing").hide();
+
+                var table = $('#users_table').DataTable();
+                table.ajax.reload(null, false);
             },
         });
     });

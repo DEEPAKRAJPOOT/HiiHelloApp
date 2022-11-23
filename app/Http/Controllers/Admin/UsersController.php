@@ -789,9 +789,8 @@ class UsersController extends Controller
 
         $users = $users->get();
 
-
-        //dd(DB::getQueryLog());
-        //exit();
+        // dd(DB::getQueryLog());
+        // exit();
 
         foreach ($users as $user) {
 
@@ -814,7 +813,8 @@ class UsersController extends Controller
                 'contact_no' => $user->contact_no ? '<a href="tel:' . $user->country_code . '' . $user->contact_no . '" >' . $user->country_code . '' . $user->contact_no . '</a>' : 'N/A',
                 'email' => $user->email ? '<a href="mailto:' . $user->email . '" >' . $user->email . '</a>' : 'N/A',
                 'gender' => view('admin.layouts.includes.gender', compact('params'))->render(),
-                'city' => $user->location->name ?? 'N/A',
+                'profile_photo' => $user->profile_photo  ?? 'N/A',
+                'city' => $user->location->name ?? 'N/A',                
                 'created_at' => date('Y-m-d H:i:s', strtotime($user->created_at)) ?? 'N/A',
                 'active' => view('admin.layouts.includes.switch', compact('params'))->render(),
                 'action' => view('admin.layouts.includes.actions')->with(['custom_title' => 'User', 'id' => $user->custom_id], $user)->render(),
@@ -1171,7 +1171,8 @@ class UsersController extends Controller
                         {
                             if (($users->gender == "Male" && $req_gender == "Female") || ($users->gender == "" && $req_gender == "Female")) {
 
-                                $free_subscription = config('utility.subscription.free_for_girls');
+                                
+                                /*$free_subscription = config('utility.subscription.free_for_girls');
                                 if($free_subscription && $req_gender == 'Female') {
 
                                     // create modedl object and used this function
@@ -1208,7 +1209,12 @@ class UsersController extends Controller
                                             'is_subscribed' =>  'y',
                                         ]);
                                     }
-                                }                                
+                                }*/
+
+                                // update user table gender details
+                                User::where('custom_id',$req_user_id)->update([
+                                    'gender' =>  $req_gender ?? $users->gender
+                                ]);
                             }
 
                             if (($users->gender == "Female" && $req_gender == "Male") || ($users->gender == "" && $req_gender == "Male")) {
@@ -1258,5 +1264,32 @@ class UsersController extends Controller
         //     return redirect()->back()->with('error', $e->getMessage());
         // }
     }
+
+    // ST - For Bulk Photo Verification
+    public function bulk_photo_verification(Request $request) {
+
+        $user_id_arr = explode(",",$request->multi_user_id);
+        $req_gender  = $request->verify_photo_status;
+
+        if (!empty($user_id_arr)) {
+
+            for($i = 0; $i< count($user_id_arr); $i++) {
+
+                // update user table gender details
+                User::where('custom_id',$user_id_arr[$i])->update([
+                    'verify_photo_status' =>  'verified',
+                    'photo_verified_at'   =>  \Carbon\Carbon::now()
+                ]);
+
+                $user = User::where('custom_id','=',$user_id_arr[$i])->first();
+                $user->calculateProfilePercent();
+            }
+        }
+
+        $content['status'] = 200;
+        $content['message'] = "Photo verification done!";
+        return response()->json($content);
+    }
+    // EN - For Bulk Photo Verification
 
 }
