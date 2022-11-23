@@ -41,8 +41,8 @@ class UserRequest extends FormRequest
             // Sort Profile
             'full_name'                 =>  'required_unless:action,'.$unless.'|min:4|max:100',
             'email'                     =>  'nullable|max:150|unique:users,email,'.$id.',id,deleted_at,NULL',
-            'country_code'              =>  'required_unless:action,'.$unless.'|in:'.implode(',', $phone_codes),
-            'contact_no'                =>  'required_unless:action,'.$unless.'|digits_between:6,16|unique:users,contact_no,'.$id.',id,deleted_at,NULL',
+            /*'country_code'              =>  'required_unless:action,'.$unless.'|in:'.implode(',', $phone_codes),
+            'contact_no'                =>  'required_unless:action,'.$unless.'|digits_between:6,16|unique:users,contact_no,'.$id.',id,deleted_at,NULL',*/
             'birth_date'                =>  'required_unless:action,'.$unless.'|date|before:'.$min_birth_date,
             'gender'                    =>  'required_unless:action,'.$unless.'|in:'.implode(',', ['Male','Female']),
             'interest'                  =>  'required_unless:action,'.$unless.'|in:'.implode(',', ['Male','Female', 'Both']),

@@ -337,7 +337,6 @@ class UsersController extends Controller
      */
     public function update(UserRequest $request, User $user)
     {
-
         try {
             DB::beginTransaction();
             if (!empty($request->action) && $request->action == 'change_status') {
@@ -813,10 +812,10 @@ class UsersController extends Controller
                     'verify_photo' => view('admin.layouts.includes.photos_verify')->with(['user_id' => $user->id,'verify_photo' => $user->verify_photo  ?? 'N/A', 'is_profile_photo' => 0, 'is_verify_photo' => 1])->render(),
                     'account_id' => $user->account_id ?? "N/A",
                     'full_name' =>  $user->userTransDefault ? $user->userTransDefault->full_name : "N/A",
+                    'gender' => view('admin.layouts.includes.gender', compact('params'))->render(),
                     'profile_percentage' =>  $user->profile_percentage ?? 0,
                     'contact_no' => $user->contact_no ? '<a href="tel:' . $user->country_code . '' . $user->contact_no . '" >' . $user->country_code . '' . $user->contact_no . '</a>' : 'N/A',
-                    'email' => $user->email ? '<a href="mailto:' . $user->email . '" >' . $user->email . '</a>' : 'N/A',
-                    'gender' => view('admin.layouts.includes.gender', compact('params'))->render(),
+                    'email' => $user->email ? '<a href="mailto:' . $user->email . '" >' . $user->email . '</a>' : 'N/A',                    
                     'city' => $user->location->name ?? 'N/A',                
                     'created_at' => date('Y-m-d H:i:s', strtotime($user->created_at)) ?? 'N/A',
                     'active' => view('admin.layouts.includes.switch', compact('params'))->render(),
@@ -830,10 +829,10 @@ class UsersController extends Controller
                     'id' => $user->id,                    
                     'account_id' => $user->account_id ?? "N/A",
                     'full_name' =>  $user->userTransDefault ? $user->userTransDefault->full_name : "N/A",
+                    'gender' => view('admin.layouts.includes.gender', compact('params'))->render(),
                     'profile_percentage' =>  $user->profile_percentage ?? 0,
                     'contact_no' => $user->contact_no ? '<a href="tel:' . $user->country_code . '' . $user->contact_no . '" >' . $user->country_code . '' . $user->contact_no . '</a>' : 'N/A',
-                    'email' => $user->email ? '<a href="mailto:' . $user->email . '" >' . $user->email . '</a>' : 'N/A',
-                    'gender' => view('admin.layouts.includes.gender', compact('params'))->render(),
+                    'email' => $user->email ? '<a href="mailto:' . $user->email . '" >' . $user->email . '</a>' : 'N/A',                    
                     'city' => $user->location->name ?? 'N/A',                
                     'created_at' => date('Y-m-d H:i:s', strtotime($user->created_at)) ?? 'N/A',
                     'active' => view('admin.layouts.includes.switch', compact('params'))->render(),
