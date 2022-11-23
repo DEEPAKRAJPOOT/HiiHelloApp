@@ -45,6 +45,8 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
+        /*
+
         // Google Translate Command
         $schedule->call(function () {
             $scheculeCommand = new GoogleTranslation;
@@ -70,14 +72,14 @@ class Kernel extends ConsoleKernel
         })->everyMinute();
         // ->everyFiveMinutes();
 
-        // Auto Verify Profiles Command        
-        /* 23 Nov For Check Notification Query Load
-
+        // Auto Verify Profiles Command
+        
+        
         $schedule->call(function () {
             $scheculeCommand = new AutoVerifyProfile;
             $scheculeCommand->handle();
         })->everyMinute();
-        */
+        
 
         // Location Translations Command
         $schedule->call(function () {
@@ -108,7 +110,9 @@ class Kernel extends ConsoleKernel
             $scheculeCommand = new AdminDashboard;
             $scheculeCommand->handle();
         })->everyFifteenMinutes();
-
+        
+        */
+    
         // $schedule->command('inspire')->hourly();
     }
 
