@@ -1171,7 +1171,8 @@ class UsersController extends Controller
                         {
                             if (($users->gender == "Male" && $req_gender == "Female") || ($users->gender == "" && $req_gender == "Female")) {
 
-                                $free_subscription = config('utility.subscription.free_for_girls');
+                                
+                                /*$free_subscription = config('utility.subscription.free_for_girls');
                                 if($free_subscription && $req_gender == 'Female') {
 
                                     // create modedl object and used this function
@@ -1208,7 +1209,12 @@ class UsersController extends Controller
                                             'is_subscribed' =>  'y',
                                         ]);
                                     }
-                                }                                
+                                }*/
+
+                                // update user table gender details
+                                User::where('custom_id',$req_user_id)->update([
+                                    'gender' =>  $req_gender ?? $users->gender
+                                ]);
                             }
 
                             if (($users->gender == "Female" && $req_gender == "Male") || ($users->gender == "" && $req_gender == "Male")) {
