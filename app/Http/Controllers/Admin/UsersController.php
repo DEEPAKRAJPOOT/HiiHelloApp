@@ -1301,18 +1301,25 @@ class UsersController extends Controller
     // ST - For Bulk Photo Verification
     public function bulk_photo_verification(Request $request) {
 
-        $user_id_arr = explode(",",$request->multi_user_id);
-        $req_gender  = $request->verify_photo_status;
+        $user_id_arr          = explode(",",$request->multi_user_id);
+        $verify_photo_status  = $request->verify_photo_status;
 
         if (!empty($user_id_arr)) {
 
             for($i = 0; $i< count($user_id_arr); $i++) {
 
-                // update user table gender details
+                // update user table verify_photo_status
                 User::where('custom_id',$user_id_arr[$i])->update([
-                    'verify_photo_status' =>  'verified',
+                    'verify_photo_status' =>  $verify_photo_status,
                     'photo_verified_at'   =>  \Carbon\Carbon::now()
                 ]);
+
+                if($verify_photo_status == "verified") {
+
+                    User::where('custom_id',$user_id_arr[$i])->update([
+                        'verify_status' =>  'verified'
+                    ]);
+                }
 
                 $user = User::where('custom_id','=',$user_id_arr[$i])->first();
                 $user->calculateProfilePercent();
