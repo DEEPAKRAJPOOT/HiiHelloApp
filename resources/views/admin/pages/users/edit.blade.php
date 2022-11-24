@@ -986,17 +986,17 @@ $(document).ready(function () {
                 email: true,
                 valid_email: true,
             },
-            /*country_code: {
-                required: true,
+            country_code: {
+                required: false,
                 not_empty: true,
             },
             contact_no: {
-                required: true,
+                required: false,
                 not_empty: true,
                 maxlength: 16,
                 minlength: 6,
                 pattern: /^(\d+)(?: ?\d+)*$/,
-            },*/
+            },
             birth_date: {
                 required: true,
                 not_empty: true,
@@ -1149,7 +1149,7 @@ $(document).ready(function () {
                 valid_email:"@lang('validation.email',['attribute'=>'email address'])",
                 remote:"@lang('validation.unique',['attribute'=>'email address'])",
             },
-            /*country_code: {
+            country_code: {
                 required: "@lang('validation.required',['attribute'=>'country code'])",
                 not_empty: "@lang('validation.not_empty',['attribute'=>'country code'])",
             },
@@ -1160,7 +1160,7 @@ $(document).ready(function () {
                 minlength:"@lang('validation.min.string',['attribute'=>'contact number','min'=>6])",
                 pattern:"@lang('validation.numeric',['attribute'=>'contact number'])",
                 remote:"@lang('validation.unique',['attribute'=>'contact number'])",
-            },*/
+            },
             birth_date: {
                 required:"@lang('validation.required',['attribute'=>'birth date'])",
                 not_empty:"@lang('validation.not_empty',['attribute'=>'birth date'])",

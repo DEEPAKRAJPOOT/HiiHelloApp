@@ -746,12 +746,15 @@ class UsersController extends Controller
     }
 
     public function listing(Request $request)
-    {
+    {        
         extract($this->DTFilters($request->all()));
 
         DB::enableQueryLog();
 
-        $flgPendingProfile = $request->flgPendingProfile;
+        $flgPendingProfile = $request->flgPendingProfile;        
+        $from_date         = ($request->from_date) ? $request->from_date." 00:00:00" : "";
+        $to_date           = ($request->to_date) ? $request->to_date." 23:59:59" : "";
+        $gender_filter     = ($request->gender_filter) ? $request->gender_filter : "";
 
         $records = [];
         $users = User::with('userTransDefault','location')->orderBy($sort_column, $sort_order);
@@ -776,6 +779,15 @@ class UsersController extends Controller
             //verify_photo not null
             $users->where('verify_photo_status', '=' , 'under_review')->where('verify_photo', '!=' , '');
         }
+
+        // ST - Filter
+        if($from_date != "" && $to_date != "") {
+            $users = $users->whereBetween('created_at', [$from_date, $to_date]);
+        }
+        if($gender_filter != "") {
+            $users = $users->where('gender', $gender_filter);
+        }
+        // EN - Filter
 
         $count = $users->count();
 
