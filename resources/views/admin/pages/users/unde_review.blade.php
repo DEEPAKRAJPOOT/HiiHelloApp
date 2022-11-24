@@ -35,6 +35,39 @@
             </div>
         </div>
         <div class="card-body">
+
+            {{-- Filter Start --}}
+            <table class="mb-5" align="center">
+                <tr>
+                    <td>
+                        <span class="card-icon">
+                            <i class="fa fa-filter text-primary"></i>
+                        </span>
+                        <label>Filter:&nbsp;&nbsp;</label>
+                    </td>
+                    <td>                        
+                        <input type='date' id='search_fromdate' class="form-control" placeholder='From date'>
+                    </td>
+                    <td>
+                        <input type='date' id='search_todate' class="form-control" placeholder='To date'>
+                    </td>
+                    <td>
+                        <select name="gender_filter" id="gender_filter" class="form-control">
+                            <option value="">Select Gender</option>
+                            <option value="Male">Male</option>
+                            <option value="Female">Female</option>
+                        </select>
+                    </td>
+                    <td>
+                        <input type='button' class="btn btn-primary mr-1 ml-1" id="btn_search_filter" value="Search">
+                    </td>
+                    <td>
+                        <a href="javascript:;" class="btn btn-warning" id="btn_reset_filter">Reset</a>
+                    </td>
+                </tr>
+            </table>
+            {{-- Filter End --}}
+
             {{-- Datatable Start --}}
             <table class="table table-bordered table-hover table-checkable" id="users_table"
                 style="margin-top: 13px !important"></table>
@@ -60,6 +93,16 @@
                     columnsDef: ['checkbox', 'country_code', 'contact_no', 'gender','Created At', 'active', 'action'],                    
                 },
                 data: function(data) {
+
+                    // ST - Filter Params
+                    var from_date       = $("#search_fromdate").val();
+                    var to_date         = $("#search_todate").val();
+                    var gender_filter   = $("select[name=gender_filter] :selected").val();
+                    // EN - Filter Params
+
+                    data.from_date         = from_date;
+                    data.to_date           = to_date;
+                    data.gender_filter     = gender_filter;
                     data.flgPendingProfile = 1;
                }                
             },
@@ -107,6 +150,16 @@
     $(document).on("click", ".getpendingprofile", function (){
         oTable.draw();
     });
+
+    $(document).on("click", "#btn_search_filter", function () {
+        oTable.draw();
+    });
+
+    $(document).on("click", "#btn_reset_filter", function () {
+        $("#search_fromdate,#search_todate,#gender_filter").val('');
+        oTable.draw();
+    });
+
 </script>
 @endpush
 
