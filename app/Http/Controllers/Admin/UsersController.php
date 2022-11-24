@@ -1075,55 +1075,24 @@ class UsersController extends Controller
 
         if ($request->id != '' && $request->gender != '') {
             $users = User::select('id','gender','is_subscribed','subscription_end_date')->where('id',$request->id)->first();
+
             if ($users != '') {
-                if ($request->gender != $users->gender) 
-                {
-                    if ($users->gender == "Male" && $request->gender == "Female") {
-                        $free_subscription = config('utility.subscription.free_for_girls');
-                        if($free_subscription && $request->gender == 'Female'){
+                
+                if ($request->gender != $users->gender) {
 
-                            // create modedl object and used this function
-                            // $users->gender = ;
-                            // $users = $this->user->buyFreeSubscription();
-                            // $users->save();
+                    if (($users->gender == "Male" && $request->gender == "Female") || ($users->gender == "" && $request->gender == "Female")) {
 
-                            $plan = SubscriptionPlan::where('is_default_for_girl','y')->first();
-                            if($plan){
-
-                                $new_subscription_start_date = \Carbon\Carbon::today()->format('Y-m-d');
-                                if ($users->subscription_end_date >= $new_subscription_start_date) {
-                                    $new_subscription_start_date = $users->subscription_end_date;
-                                }
-
-                                // add free subscription
-                                Subscription::firstOrCreate([
-                                    'user_id'       =>  $users->id ?? NULL,
-                                    'plan_id'       =>  $plan->id ?? NULL,
-                                    'months'        =>  $plan->months,
-                                    'amount'        =>  $plan->amount,
-                                    'start_date'    =>  $new_subscription_start_date,
-                                    'end_date'      =>  NULL,
-                                    'payment_date'  =>  now(),
-                                    'payment_type'  =>  '',
-                                    'status'        =>  'active',
-                                ], [
-                                    'custom_id'     =>  getUniqueString('subscriptions'),
-                                ]);
-
-                                // update user table subscription details
-                                User::where('id',$request->id)->update([ 
-                                    'gender' =>  $request->gender ?? $users->gender,
-                                    'is_subscribed' =>  'y',
-                                ]);
-                            }
-                        }
+                        // update user table subscription details
+                        User::where('id',$request->id)->update([ 
+                            'gender' =>  $request->gender ?? $users->gender                            
+                        ]);
 
                         $content['status'] = 200;
                         $content['message'] = "Gender updated successfully1.";
                         return response()->json($content);
                     }
 
-                    if ($users->gender == "Female" && $request->gender == "Male") {
+                    if (($users->gender == "Female" && $request->gender == "Male") || ($users->gender == "" && $request->gender == "Male")) {
 
                         // delete subscription data
                         Subscription::where('user_id',$users->id)->delete();
