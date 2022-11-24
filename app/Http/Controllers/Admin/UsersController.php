@@ -339,6 +339,8 @@ class UsersController extends Controller
     {
         try {
             DB::beginTransaction();
+
+
             if (!empty($request->action) && $request->action == 'change_status') {
                 $content = ['status' => 204, 'message' => "something went wrong"];
                 if ($user) {
@@ -610,6 +612,12 @@ class UsersController extends Controller
                 {
                     $user->verify_status = "verified";
                 }
+
+
+                if($user->verify_photo_status=="verified")
+                {
+                    $user->verify_status = "verified";
+                }     
 
 
                 if ($user->save()) {
