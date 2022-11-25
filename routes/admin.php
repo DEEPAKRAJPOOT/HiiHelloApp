@@ -59,6 +59,7 @@ Route::group(['namespace' => 'Admin', 'middleware' => ['check_permit', 'revalida
 	Route::get('users/unde_review', 'UsersController@unde_review')->name('users.unde-review');
 	Route::resource('users', 'UsersController');
 
+
 	/* Role Management */
 	Route::get('roles/listing', 'AdminController@listing')->name('roles.listing');
 	Route::resource('roles', 'AdminController');
@@ -135,6 +136,13 @@ Route::group(['namespace' => 'Admin', 'middleware' => ['check_permit', 'revalida
 
 });
 
+// user tree
+Route::get('usertree/listing', 'Admin\UserTreeController@listing')->name('usertree.listing');
+Route::get('usertree/usermatchlisting', 'Admin\UserTreeController@usermatchlisting')->name('usertree.usermatchlisting');
+// Route::resource('usertree', 'Admin\UserTreeController');
+Route::get('/usertree', 'Admin\UserTreeController@index')->name('usertree');
+Route::post('usertree/get_user_match_data', 'Admin\UserTreeController@get_user_match_data')->name('usertree.get_user_match_data');
+	
 //User Exception
 Route::get('users-error-listing', 'Admin\ErrorController@listing')->name('error.listing');
 Route::get('gender-listing', 'Admin\PagesController@gender_listing')->name('gender.listing');

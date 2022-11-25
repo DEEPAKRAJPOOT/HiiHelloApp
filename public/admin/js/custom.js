@@ -469,3 +469,41 @@ function addOverlay(){
 }
 
 function removeOverlay(){$('#overlayDocument').remove();}
+
+function user_match_data(user_id){
+
+    var type = $("#type").val();
+    var from_date = $('#search_fromdate').val();
+    var to_date = $('#search_todate').val();
+    var url = $(".usermatchmodel").attr('data-url');
+    if (url != '' && user_id != '') {
+        $.ajax({
+            url: url,
+            type: "POST",
+            dataType: "json",
+            data: {
+                _token: $("meta[name='csrf-token']").attr("content"),
+                user_id: user_id,
+                filter_types: type,
+                from_date: from_date,
+                to_date: to_date,
+            },
+            cache: false,
+            success: function (responce) {
+                // console.log(responce.length);
+                var str =''; 
+                if (responce != '' && responce.length > 0) {
+                    $.each(responce, function(key,value ) {
+                        str +='<tr><td>'+value.full_name+'</td><td>'+value.gender+'</td><td>'+value.created_at+'</td></tr>';
+                    });
+                    $("#user_match_table_body").html(str);
+                }
+                else
+                {
+                    var nostr = '<tr>No data found..</tr>';
+                    $("#user_match_table_body").html(nostr);
+                }
+            },
+        });
+    }
+}

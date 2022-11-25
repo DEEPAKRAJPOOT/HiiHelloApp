@@ -510,6 +510,16 @@
                         <td>{{ $val['female_age_36_45'] }}</td>
                         <td>{{ $val['female_age_45'] }}</td>
                       </tr>
+                      <tr>
+                        <td>{{ $val['male_age_18_25_pr'] }} %</td>
+                        <td>{{ $val['male_age_26_35_pr'] }} %</td>
+                        <td>{{ $val['male_age_36_45_pr'] }} %</td>
+                        <td>{{ $val['male_age_45_pr'] }} %</td>
+                        <td>{{ $val['female_age_18_25_pr'] }} %</td>
+                        <td>{{ $val['female_age_26_35_pr'] }} %</td>
+                        <td>{{ $val['female_age_36_45_pr'] }} %</td>
+                        <td>{{ $val['female_age_45_pr'] }} %</td>
+                      </tr>
                     @endforeach
                   @endif
                 </tbody>

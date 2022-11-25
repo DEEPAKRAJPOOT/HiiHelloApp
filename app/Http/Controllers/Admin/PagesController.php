@@ -42,21 +42,24 @@ class PagesController extends Controller
         $total_subscribed = $dashboard_data ? $dashboard_data->paid_users : 0;
         $total_unsubscribed = $dashboard_data ? $dashboard_data->non_paid_users : 0;
         $total_male = $dashboard_data ? $dashboard_data->male_users : 0;
+        $total_female = $dashboard_data ? $dashboard_data->female_users : 0;
 
         $user['Count'] = $dashboard_data ? number_format($dashboard_data->total_users) : 0;
-        $user['total_male'] = $total_male;
-        $user['total_female'] = $dashboard_data ? $dashboard_data->female_users : 0;
-        $user['total_na_user'] = $dashboard_data ? $dashboard_data->na_users : 0;
-        $user['total_subscribed'] = $total_subscribed;
-        $user['total_unsubscribed'] = $total_unsubscribed;
+        $user['total_male'] = number_format($total_male);
+        $user['total_female'] = number_format($total_female);
+        $user['total_na_user'] = $dashboard_data ? number_format($dashboard_data->na_users) : 0;
+        $user['total_subscribed'] = number_format($total_subscribed);
+        $user['total_unsubscribed'] = number_format($total_unsubscribed);
         $user['created_at'] = Carbon::parse($dashboard_data->created_at)->format('d-m-Y h:i A');
         
         $subscription_plans = SubscriptionPlanTranslation::select("locale","subscription_plan_id","name")->where(['locale' => 'en'])->get();
         $no_of_sub_buy = 0;
         if (count($subscription_plans) > 0) {
             foreach ($subscription_plans as $key => $val) {
-                $total_users    = Subscription::where("plan_id",$val->subscription_plan_id)
-                                    ->where("status","active")
+                $total_users    = Subscription::join("users","users.id","=","subscriptions.user_id")
+                                    ->where("subscriptions.plan_id",$val->subscription_plan_id)
+                                    ->where("subscriptions.status","active")
+                                    ->where("users.gender","Male")
                                     ->groupBy("user_id")
                                     ->get();
                 $subscription_result[] = [
@@ -67,14 +70,22 @@ class PagesController extends Controller
             }
         }
         $age_result[] = [
-            'male_age_18_25'    => $dashboard_data ? $dashboard_data->male_18_25 : 0,
-            'male_age_26_35'    => $dashboard_data ? $dashboard_data->male_26_35 : 0,
-            'male_age_36_45'    => $dashboard_data ? $dashboard_data->male_36_45 : 0,
-            'male_age_45'       => $dashboard_data ? $dashboard_data->male_45 : 0,
-            'female_age_18_25'  => $dashboard_data ? $dashboard_data->female_18_25 : 0,
-            'female_age_26_35'  => $dashboard_data ? $dashboard_data->female_26_35 : 0,
-            'female_age_36_45'  => $dashboard_data ? $dashboard_data->female_36_45 : 0,
-            'female_age_45'     => $dashboard_data ? $dashboard_data->female_45 : 0,
+            'male_age_18_25'    => $dashboard_data ? number_format($dashboard_data->male_18_25) : 0,
+            'male_age_18_25_pr' => $dashboard_data ? number_format($dashboard_data->male_18_25 * 100 / $total_male,2) : 0,
+            'male_age_26_35'    => $dashboard_data ? number_format($dashboard_data->male_26_35) : 0,
+            'male_age_26_35_pr' => $dashboard_data ? number_format($dashboard_data->male_26_35 * 100 / $total_male,2) : 0,
+            'male_age_36_45'    => $dashboard_data ? number_format($dashboard_data->male_36_45) : 0,
+            'male_age_36_45_pr' => $dashboard_data ? number_format($dashboard_data->male_36_45 * 100 / $total_male,2) : 0,
+            'male_age_45'       => $dashboard_data ? number_format($dashboard_data->male_45) : 0,
+            'male_age_45_pr'    => $dashboard_data ? number_format($dashboard_data->male_45 * 100 / $total_male,2) : 0,
+            'female_age_18_25'  => $dashboard_data ? number_format($dashboard_data->female_18_25) : 0,
+            'female_age_18_25_pr'  => $dashboard_data ? number_format($dashboard_data->female_18_25 * 100 / $total_female,2) : 0,
+            'female_age_26_35'  => $dashboard_data ? number_format($dashboard_data->female_26_35) : 0,
+            'female_age_26_35_pr'  => $dashboard_data ? number_format($dashboard_data->female_26_35 * 100 / $total_female,2) : 0,
+            'female_age_36_45'  => $dashboard_data ? number_format($dashboard_data->female_36_45) : 0,
+            'female_age_36_45_pr'  => $dashboard_data ? number_format($dashboard_data->female_36_45 * 100 / $total_female,2) : 0,
+            'female_age_45'     => $dashboard_data ? number_format($dashboard_data->female_45) : 0,
+            'female_age_45_pr'     => $dashboard_data ? number_format($dashboard_data->female_45 * 100 / $total_female,2) : 0,
         ];
 
         $user['PerDayCount'] = $dashboard_data ? number_format($dashboard_data->per_day_users) : 0;
@@ -86,7 +97,7 @@ class PagesController extends Controller
         $user['age_result'] = $age_result;
         $user['paid_users_pr'] = number_format($total_subscribed / $total_male * 100,2);
         $user['nonpaid_users_pr'] = number_format($total_unsubscribed / $total_male * 100,2);
-        // echo "<pre>"; print_r($user); die();
+        // echo "<pre>"; print_r($subscription_result); die();
         return view('admin.pages.general.dashboard', compact('user'))->with(['custom_title' => __('Dashboard')]);
     }
 
