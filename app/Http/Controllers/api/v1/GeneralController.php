@@ -936,15 +936,10 @@ class GeneralController extends Controller
                             $image_arr_result["is_safe_image"] = false;
                             $image_arr_result["face_detected_message"] = "Image have no face detected";
                         }
-                        else if(count($result_face['FaceDetails'])==1)
+                        else if(count($result_face['FaceDetails']) >= 1)
                         {                                
                             $image_arr_result["face_detected_message"] = "";
-                        }
-                        else if(count($result_face['FaceDetails']) > 1)
-                        {
-                            $image_arr_result["is_safe_image"] = false;
-                            $image_arr_result["face_detected_message"] =  "Image have more than one face detected";
-                        }
+                        }                        
 
 
                         $this->response['data']  = $image_arr_result;
