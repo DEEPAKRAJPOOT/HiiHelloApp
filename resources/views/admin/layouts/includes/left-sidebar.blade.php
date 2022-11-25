@@ -113,6 +113,12 @@
 						</li>
 					@endif
 				@endforeach
+				<li class="menu-item side-item" aria-haspopup="true" data-title="">
+					<a href="{{ route('admin.usertree') }}" class="menu-link">
+						<i class="menu-icon icon-users"></i>
+						<span class="menu-text">User Tree</span>
+					</a>
+				</li>
 
 			</ul>
 			<!--end::Menu Nav-->
