@@ -113,10 +113,10 @@
                 { data: 'account_id' },
                 { data: 'full_name' },
                 { data: 'gender' },
+                { data: 'created_at' },
                 { data: 'profile_percentage' },
                 { data: 'contact_no' },
-                { data: 'email' },                
-                { data: 'created_at' },
+                { data: 'email' },
                 { data: 'active' },
                 { data: 'action'},
             ],
@@ -128,16 +128,16 @@
                 { targets: 3, title: 'Account Id', orderable: true },
                 { targets: 4, title: 'Name', orderable: false },
                 { targets: 5, title: 'Gender', orderable: true },
-                { targets: 6, title: 'Profile Percentage', orderable: true },
-                { targets: 7, title: 'Contact Number', orderable: true },
-                { targets: 8, title: 'E-mail', orderable: true },                
-                { targets: 9, title: 'Created At', orderable: true },
+                { targets: 6, title: 'Created At', orderable: true },
+                { targets: 7, title: 'Profile Percentage', orderable: true },
+                { targets: 8, title: 'Contact Number', orderable: true },
+                { targets: 9, title: 'E-mail', orderable: true },
                 { targets: 10, title: 'Ban', orderable: false },
                 // Action buttons
                 { targets: -1, title: 'Action', orderable: false },
             ],
             order: [
-                [9, 'DESC']
+                [6, 'DESC']
             ],
             lengthMenu: [
                 [10, 20, 50, 100],
