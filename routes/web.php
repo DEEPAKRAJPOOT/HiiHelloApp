@@ -53,6 +53,7 @@ Route::get('transaction/csv-download', 'Admin\TrasactionListController@csvDownlo
 Route::get('profile-report/csv-download', 'Admin\ProfileReportController@csvDownload')->name('admin.profile-report.csv-download');
 Route::get('call-log/csv-download', 'Admin\CallController@csvDownload')->name('admin.call-log.csv-download');
 
+Route::get('location/csv-download', 'Admin\LocationController@csvDownload')->name('admin.location.csv-download');
 /* CMS Pages */
   Route::get('about-us/{device?}', 'FrontendPagesController@about')->name('about.us');
   Route::get('terms-and-conditions/{device?}', 'FrontendPagesController@terms')->name('terms');
