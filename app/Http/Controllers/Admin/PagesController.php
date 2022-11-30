@@ -13,6 +13,7 @@ use App\Models\City;
 use App\Models\Location;
 use App\Models\LocationTranslation;
 use App\Models\State;
+use App\Models\Language;
 use App\Models\Subscription;
 use App\Models\SubscriptionPlan;
 use App\Models\SubscriptionPlanTranslation;
@@ -43,8 +44,9 @@ class PagesController extends Controller
         $total_unsubscribed = $dashboard_data ? $dashboard_data->non_paid_users : 0;
         $total_male = $dashboard_data ? $dashboard_data->male_users : 0;
         $total_female = $dashboard_data ? $dashboard_data->female_users : 0;
+        $total_users = $dashboard_data ? $dashboard_data->total_users : 0;
 
-        $user['Count'] = $dashboard_data ? number_format($dashboard_data->total_users) : 0;
+        $user['Count'] = $dashboard_data ? number_format($total_users) : 0;
         $user['total_male'] = number_format($total_male);
         $user['total_female'] = number_format($total_female);
         $user['total_na_user'] = $dashboard_data ? number_format($dashboard_data->na_users) : 0;
@@ -52,23 +54,16 @@ class PagesController extends Controller
         $user['total_unsubscribed'] = number_format($total_unsubscribed);
         $user['created_at'] = Carbon::parse($dashboard_data->created_at)->format('d-m-Y h:i A');
         
-        $subscription_plans = SubscriptionPlanTranslation::select("locale","subscription_plan_id","name")->where(['locale' => 'en'])->get();
-        $no_of_sub_buy = 0;
-        if (count($subscription_plans) > 0) {
-            foreach ($subscription_plans as $key => $val) {
-                $total_users    = Subscription::join("users","users.id","=","subscriptions.user_id")
-                                    ->where("subscriptions.plan_id",$val->subscription_plan_id)
+        $subscription_plans = SubscriptionPlanTranslation::select("locale","subscription_plan_id","name","subscriptions.plan_id as plan_id","subscriptions.status as status",DB::raw("count(users.id) as total_users"),DB::raw("sum(subscriptions.amount) as total_amount"))
+                                    ->join("subscriptions","subscriptions.plan_id","=","subscription_plan_translations.subscription_plan_id")
+                                    ->join("users","users.id","=","subscriptions.user_id")
                                     ->where("subscriptions.status","active")
+                                    ->whereNull("subscriptions.deleted_at")
                                     ->where("users.gender","Male")
-                                    ->groupBy("user_id")
+                                    ->groupBy("subscription_plan_translations.id")
+                                    ->where(['subscription_plan_translations.locale' => 'en'])
                                     ->get();
-                $subscription_result[] = [
-                    'name' => $val->name,
-                    'total_users' => count($total_users),
-                ];
-                $no_of_sub_buy = 0;
-            }
-        }
+
         $age_result[] = [
             'male_age_18_25'    => $dashboard_data ? number_format($dashboard_data->male_18_25) : 0,
             'male_age_18_25_pr' => $dashboard_data ? number_format($dashboard_data->male_18_25 * 100 / $total_male,2) : 0,
@@ -91,12 +86,46 @@ class PagesController extends Controller
         $user['PerDayCount'] = $dashboard_data ? number_format($dashboard_data->per_day_users) : 0;
         $user['PerWeekCount'] = $dashboard_data ? number_format($dashboard_data->per_week_users) : 0;
         $user['Per30DayCount'] = $dashboard_data ? number_format($dashboard_data->per_30_day_users) : 0;
+       
+        $total_phone_users = $dashboard_data->total_phone_users;
+        $total_google_users = $dashboard_data->total_google_users;
+        $total_facebook_users = $dashboard_data->total_facebook_users;
+        $total_apple_users = $dashboard_data->total_apple_users;
+        $user['total_phone_users'] = $dashboard_data ? number_format($total_phone_users) : 0;
+        $user['total_google_users'] = $dashboard_data ? number_format($total_google_users) : 0;
+        $user['total_facebook_users'] = $dashboard_data ? number_format($total_facebook_users) : 0;
+        $user['total_apple_users'] = $dashboard_data ? number_format($total_apple_users) : 0;
+        $user['pr_phone_users'] = $total_phone_users ? number_format($total_phone_users * 100 / $total_users) : 0;
+        $user['pr_google_users'] = $total_phone_users ? number_format($total_google_users * 100 / $total_users) : 0;
+        $user['pr_facebook_users'] = $total_phone_users ? number_format($total_facebook_users * 100 / $total_users) : 0;
+        $user['pr_apple_users'] = $total_phone_users ? number_format($total_apple_users * 100 / $total_users) : 0;
+        
+        $user['male_phone_verified'] = $dashboard_data ? number_format($dashboard_data->male_phone_verified) : 0;
+        $user['male_phone_unverified'] = $dashboard_data ? number_format($dashboard_data->male_phone_unverified) : 0;
+        $user['male_email_verified'] = $dashboard_data ? number_format($dashboard_data->male_email_verified) : 0;
+        $user['male_email_unverified'] = $dashboard_data ? number_format($dashboard_data->male_email_unverified) : 0;
+        $user['male_photo_verified'] = $dashboard_data ? number_format($dashboard_data->male_photo_verified) : 0;
+        $user['male_photo_unverified'] = $dashboard_data ? number_format($dashboard_data->male_photo_unverified) : 0;
+        $user['male_phone_unverified'] = $dashboard_data ? number_format($dashboard_data->male_phone_unverified) : 0;
+        $user['male_account_verified'] = $dashboard_data ? number_format($dashboard_data->male_account_verified) : 0;
+        $user['male_account_unverified'] = $dashboard_data ? number_format($dashboard_data->male_account_unverified) : 0;
+        $user['female_phone_verified'] = $dashboard_data ? number_format($dashboard_data->female_phone_verified) : 0;
+        $user['female_phone_unverified'] = $dashboard_data ? number_format($dashboard_data->female_phone_unverified) : 0;
+        $user['female_email_verified'] = $dashboard_data ? number_format($dashboard_data->female_email_verified) : 0;
+        $user['female_email_unverified'] = $dashboard_data ? number_format($dashboard_data->female_email_unverified) : 0;
+        $user['female_photo_verified'] = $dashboard_data ? number_format($dashboard_data->female_photo_verified) : 0;
+        $user['female_photo_unverified'] = $dashboard_data ? number_format($dashboard_data->female_photo_unverified) : 0;
+        $user['female_account_verified'] = $dashboard_data ? number_format($dashboard_data->female_account_verified) : 0;
+        $user['female_account_unverified'] = $dashboard_data ? number_format($dashboard_data->female_account_unverified) : 0;
+
         $user['location_result'] = [];
         $user['city_result'] = [];
-        $user['subscription_result'] = $subscription_result;
+        $user['subscription_result'] = $subscription_plans;
         $user['age_result'] = $age_result;
         $user['paid_users_pr'] = number_format($total_subscribed / $total_male * 100,2);
         $user['nonpaid_users_pr'] = number_format($total_unsubscribed / $total_male * 100,2);
+
+
         // echo "<pre>"; print_r($subscription_result); die();
         return view('admin.pages.general.dashboard', compact('user'))->with(['custom_title' => __('Dashboard')]);
     }
@@ -399,91 +428,67 @@ class PagesController extends Controller
         return $records;
     }
 
-    public function user_translations()
+    // language list
+    public function language_listing(Request $request)
     {
-        $apiKey = 'AIzaSyCnTLblh4He46O3-5NoJ0sXOzyelS76jEY';
-        $text = 'दयाकर भंडारी';
-        $source = 'en';
-        $target = 'hi';
+        extract($this->DTFilters($request->all()));
+
+        $language_lists = Language::select("languages.*",DB::raw("count(users.id) as total_users"));
+        $language_lists = $language_lists->join("users","users.language_id","=","languages.id");
+
+        if ($search != '') {
+            $language_lists = $language_lists->Where('languages.language', 'like', "%{$search}%");
+            $language_lists = $language_lists->orWhere('languages.hint', 'like', "%{$search}%");
+        }
+
+        $language_lists = $language_lists->whereNull("users.deleted_at");
+        $language_lists = $language_lists->groupBy("languages.id");
+        $language_lists = $language_lists->orderBy("total_users","DESC");
+        $language_lists = $language_lists->get();
         
+        $records = [];
+        $records['recordsTotal'] = count($language_lists);
+        $records['recordsFiltered'] = count($language_lists);
+        $records['data'] = [];
 
-        $UserTranslation = UserTranslation::where("locale","en")->groupBy('user_id')->paginate(50);
-        // echo "<pre>"; print_r($UserTranslation->toArray()); die();
+        $dashboard_data = DB::table("analytic_dashboard")->orderBy("id","DESC")->first();
+        $all_users = $dashboard_data ? $dashboard_data->total_users : 0;
 
-        $singledata = UserTranslation::where('user_id','211292')->first();
-        echo "<pre>"; print_r($singledata); die();
-
-        if (count($UserTranslation) > 0) {
-            foreach ($UserTranslation as $key => $val) {
-                $singledata = UserTranslation::where("locale","hi")->where('user_id',$val->user_id)->first();
-                $result[] = array(
-                    "id"        => $val->id,
-                    "locale"    => $val->locale,
-                    "user_id"   => $val->user_id,
-                    "full_name" => $val->full_name,
-                    "about_me"  => $val->about_me,
-                    "fav_movie" => $val->fav_movie,
-                    "singledata"=> $singledata
-                );
-             }
+        foreach ($language_lists as $val) {
+                $total_users = $val->total_users;
+                $pr = $total_users/$all_users * 100;
+                $records['data'][] = [
+                    'language' => $val->language,
+                    'hint' => $val->hint,
+                    'total_pr' => number_format($pr,2)."%",
+                    'total_users' => number_format($total_users),
+                ];
         }
-
-        echo "<pre>"; print_r($result); die();
-
-        if ($source == $target) {
-            $url = 'https://translation.googleapis.com/language/translate/v2?key=AIzaSyCnTLblh4He46O3-5NoJ0sXOzyelS76jEY&source=en&target='.$target.'&q='.rawurlencode($text);
-        }
-        else
-        {
-        $url = 'https://translation.googleapis.com/language/translate/v2?key=AIzaSyCnTLblh4He46O3-5NoJ0sXOzyelS76jEY&source='.$source.'&target='.$target.'&q='.rawurlencode($text);
-        }
-
-        //for detect
-        // $url = 'https://translation.googleapis.com/language/translate/v2/detect?key=AIzaSyCnTLblh4He46O3-5NoJ0sXOzyelS76jEY&q=helloworld';
-
-        $handle = curl_init($url);
-        curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
-        $response = curl_exec($handle);
-        $responseDecoded = json_decode($response, true);
-        $responseCode = curl_getinfo($handle, CURLINFO_HTTP_CODE);
-              //Here we fetch the HTTP response code
-        // dd($url);
-        curl_close($handle);
-        
-        if($responseCode != 200) {
-            dump('Fetching translation failed! Server response code:' . $responseCode);
-            dd('Error description: ' . $responseDecoded['error']['errors'][0]['message']);
-        }
-        else {
-            // echo "<br>";
-            // dump('Source: ' . $text);
-            // echo "<br>";
-            echo $responseDecoded['data']['translations'][0]['translatedText'];
-            // dd($responseDecoded);
-            // dd('Translation: ' . $responseDecoded['data']['translations'][0]['translatedText']);
-        }
+        // $keys = array_column($records['data'], 'total_users');
+        // array_multisort($keys, SORT_DESC, $records['data']);
+        return $records;
     }
 
     // delete not used location
-    public function deletelocation()
-    {
-         $locationlist = DB::table('locations')
-            ->select("locations.id")
-            ->leftJoin('users', function($join) {
-                $join->on('locations.id', '=', 'users.location_id');
-            })
-            ->whereNull('users.location_id')
-            ->get();
-            // ->paginate(5);
-        // echo "<pre>"; 
-        // print_r($locationlist);
-        // die();
-        foreach ($locationlist as $key => $val) {
-            Location::where('id',$val->id)->delete();
-            LocationTranslation::where('location_id',$val->id)->delete();
-        }
-        echo "done";
+    // public function deletelocation()
+    // {
+    //      $locationlist = DB::table('locations')
+    //         ->select("locations.id")
+    //         ->leftJoin('users', function($join) {
+    //             $join->on('locations.id', '=', 'users.location_id');
+    //         })
+    //         ->whereNull('users.location_id')
+    //         ->get();
+    //         // ->paginate(5);
+    //     // echo "<pre>"; 
+    //     // print_r($locationlist);
+    //     // die();
+    //     foreach ($locationlist as $key => $val) {
+    //         Location::where('id',$val->id)->delete();
+    //         LocationTranslation::where('location_id',$val->id)->delete();
+    //     }
+    //     echo "done";
 
-        die();
-    }
+    //     die();
+    // }
 }

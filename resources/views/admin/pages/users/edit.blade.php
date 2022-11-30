@@ -831,7 +831,7 @@
                 </div>
 
                 {{-- Video Verification Status --}}
-                <div class="form-group">
+                <!-- <div class="form-group">
                     <label for="verify_video_status">{!!$mend_sign!!} Video Verification Status:</label>
                     <select type="text"class="form-control" 
                     id="verify_video_status" name="verify_video_status" value="@if(old('verify_video_status')){{ old('verify_video_status') }}@else{{ $user->verify_video_status }}@endif"
@@ -858,6 +858,27 @@
                     @if ($errors->has('verify_video_status'))
                         <span class="help-block">
                             <strong class="form-text">{{ $errors->first('verify_video_status') }}</strong>
+                        </span>
+                    @endif
+                </div> -->
+
+                {{-- Email Verification Status --}}
+                <div class="form-group">
+                    <label for="verify_email_send">Email Verification Status:</label>
+                    <select type="text"class="form-control" 
+                    id="verify_email_send" name="verify_email_send" value="@if(old('verify_email_send')){{ old('verify_email_send') }}@else{{ $user->verify_email_send }}@endif"
+                    placeholder="Select Verification Status" spellcheck="false" autocapitalize="sentences" tabindex="0" autofocus />
+                            <option value="y" @if($user->verify_email_send == 'y') selected @endif>Yes</option>
+                            <option value="n" @if($user->verify_email_send == 'n') selected @endif>No</option>
+                    </select>
+                    @if ($errors->has('verify_email_send'))
+                        <span class="help-block">
+                            <strong class="form-text">{{ $errors->first('verify_email_send') }}</strong>
+                        </span>
+                    @endif
+                    @if ($user->verify_email_send == 'y')
+                        <span class="help-block">
+                            <strong class="form-text">Email Verification at : {{ $user->email_verified_at }}</strong>
                         </span>
                     @endif
                 </div>
