@@ -43,11 +43,14 @@ class SubscriptionListController extends Controller
     {
         extract($this->DTFilters($request->all()));
         $records = [];
-        $subscriptions = Subscription::with([
+        $subscriptions = Subscription::select('subscriptions.*','users.gender as gender');
+        $subscriptions = $subscriptions->join("users","users.id","=","subscriptions.user_id");
+        $subscriptions = $subscriptions->with([
             'subscriptionPlan', 'subscriptionPlan.subscriptionPlanTranslation',
             'user', 'user.userTransDefault'
-        ])->orderBy($sort_column, $sort_order);
-
+        ]);
+        $subscriptions = $subscriptions->where("users.gender","Male");
+        $subscriptions = $subscriptions->orderBy($sort_column, $sort_order);
         if ($search != '') {
             $subscriptions->where(function ($query) use ($search) {
                 $query->where('months', 'like', "%{$search}%")
@@ -64,7 +67,6 @@ class SubscriptionListController extends Controller
                     });
             });
         }
-
         $count = $subscriptions->count();
         $records['recordsTotal'] = $count;
         $records['recordsFiltered'] = $count;
@@ -72,7 +74,7 @@ class SubscriptionListController extends Controller
 
         $subscriptions = $subscriptions->offset($offset)->limit($limit)->orderBy($sort_column, $sort_order);
         $subscriptions = $subscriptions->get();
-
+        // echo "<pre>"; print_r($subscriptions->toArray()); die();
         foreach ($subscriptions as $subscription) {
             $records['data'][] = [
                 'id' => $subscription->id,
