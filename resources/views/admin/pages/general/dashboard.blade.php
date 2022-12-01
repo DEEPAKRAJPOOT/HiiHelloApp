@@ -555,6 +555,49 @@
       <div class="card card-custom gutter-b">
         <div class="card-header flex-wrap border-0 py-5">
           <div class="card-title">
+            <h3 class="card-label">Verified/unverified</h3>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-sm-12">
+              <table class="table table-separate table-head-custom table-checkable dataTable no-footer dtr-inline">
+                <thead>
+                  <tr>
+                    <th>User Type</th>
+                    <th>Phone Verified/Unverified</th>
+                    <th>Email Verified/Unverified</th>
+                    <th>Photo Verified/Unverified</th>
+                    <th>Account Verified/Unverified</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>Male</td>
+                    <td>{{ $user['male_phone_verified'] ?? 0 }} / {{ $user['male_phone_unverified'] ?? 0 }}</td>
+                    <td>{{ $user['male_email_verified'] ?? 0 }} / {{ $user['male_email_unverified'] ?? 0 }}</td>
+                    <td>{{ $user['male_photo_verified'] ?? 0 }} / {{ $user['male_photo_unverified'] ?? 0 }}</td>
+                    <td>{{ $user['male_account_verified'] ?? 0 }} / {{ $user['male_account_unverified'] ?? 0 }}</td>
+                  </tr>
+                  <tr>
+                    <td>Female</td>
+                    <td>{{ $user['female_phone_verified'] ?? 0 }} / {{ $user['female_phone_unverified'] ?? 0 }}</td>
+                    <td>{{ $user['female_email_verified'] ?? 0 }} / {{ $user['female_email_unverified'] ?? 0 }}</td>
+                    <td>{{ $user['female_photo_verified'] ?? 0 }} / {{ $user['female_photo_unverified'] ?? 0 }}</td>
+                    <td>{{ $user['female_account_verified'] ?? 0 }} / {{ $user['female_account_unverified'] ?? 0 }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-12">
+      <div class="card card-custom gutter-b">
+        <div class="card-header flex-wrap border-0 py-5">
+          <div class="card-title">
             <h3 class="card-label">Age to male & female</h3>
           </div>
         </div>

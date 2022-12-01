@@ -7,6 +7,7 @@ use App\Http\Requests\Admin\UserRequest;
 use App\Models\User;
 use App\Models\Like;
 use App\Models\DisLike;
+use App\Models\SystemMatch;
 use Exception;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
@@ -52,6 +53,8 @@ class UserTreeController extends Controller
         $count = $users->count();
         $records['recordsTotal'] = $count;
         $records['recordsFiltered'] = $count;
+        $records['total_likes'] = 123;
+        $records['total_dislikes'] = 1234;
         $records['data'] = [];
 
        
@@ -427,5 +430,109 @@ class UserTreeController extends Controller
         }
         
         return $likes;
+    }
+
+    public function filters(Request $request)
+    {
+        $records     = [];
+        $total_likes = 0;
+        $total_dislikes = 0;
+        $total_system_match = 0;
+        $total_org_match = 0;
+        if ($request->filter_type == 1) {
+            $total_likes = Like::where("created_at",Carbon::today())->count();
+            $total_dislikes = DisLike::where("created_at",Carbon::today())->count();
+            $total_system_match = SystemMatch::where("created_at",Carbon::today())->count();
+            $total_org_match = DB::table('likes')
+                            ->join("likes as like", function ($q) {
+                                $q->on("likes.liker_id", "=", "like.user_id");
+                                $q->on("like.liker_id", "=", "likes.user_id");
+                            })
+                            ->join('users', function ($q) {
+                                $q->on('users.id', "=", "likes.user_id");
+                            })
+                            ->where("likes.created_at",Carbon::today())
+                            ->count();
+        }
+        else if ($request->filter_type == 2) {
+            $total_likes = Like::whereBetween('created_at',[Carbon::now()->startOfWeek(), Carbon::now()->endOfWeek()])->count();
+            $total_dislikes = DisLike::whereBetween('created_at',[Carbon::now()->startOfWeek(), Carbon::now()->endOfWeek()])->count();
+            $total_system_match = SystemMatch::whereBetween('created_at',[Carbon::now()->startOfWeek(), Carbon::now()->endOfWeek()])->count();
+            $total_org_match = DB::table('likes')
+                            ->join("likes as like", function ($q) {
+                                $q->on("likes.liker_id", "=", "like.user_id");
+                                $q->on("like.liker_id", "=", "likes.user_id");
+                            })
+                            ->join('users', function ($q) {
+                                $q->on('users.id', "=", "likes.user_id");
+                            })
+                            ->whereBetween('likes.created_at',[Carbon::now()->startOfWeek(), Carbon::now()->endOfWeek()])
+                            ->count();
+        }
+        else if ($request->filter_type == 3) {
+            $total_likes = Like::whereMonth("created_at",Carbon::now()->month)->count();
+            $total_dislikes = DisLike::whereMonth("created_at",Carbon::now()->month)->count();
+            $total_system_match = SystemMatch::whereMonth("created_at",Carbon::now()->month)->count();
+            $total_org_match = DB::table('likes')
+                            ->join("likes as like", function ($q) {
+                                $q->on("likes.liker_id", "=", "like.user_id");
+                                $q->on("like.liker_id", "=", "likes.user_id");
+                            })
+                            ->join('users', function ($q) {
+                                $q->on('users.id', "=", "likes.user_id");
+                            })
+                            ->whereMonth("likes.created_at",Carbon::now()->month)
+                            ->count();
+        }
+        else if ($request->filter_type == 4) {
+            $total_likes = Like::whereYear("created_at",Carbon::now()->year)->count();
+            $total_dislikes = DisLike::whereYear("created_at",Carbon::now()->year)->count();
+            $total_system_match = SystemMatch::whereYear("created_at",Carbon::now()->year)->count();
+            $total_org_match = DB::table('likes')
+                            ->join("likes as like", function ($q) {
+                                $q->on("likes.liker_id", "=", "like.user_id");
+                                $q->on("like.liker_id", "=", "likes.user_id");
+                            })
+                            ->join('users', function ($q) {
+                                $q->on('users.id', "=", "likes.user_id");
+                            })
+                            ->whereYear("likes.created_at",Carbon::now()->year)
+                            ->count();
+        }
+        else if ($request->filter_type == 5) {
+            $total_likes = Like::count();
+            $total_dislikes = DisLike::count();
+            $total_system_match = SystemMatch::count();
+            $total_org_match = DB::table('likes')
+                            ->join("likes as like", function ($q) {
+                                $q->on("likes.liker_id", "=", "like.user_id");
+                                $q->on("like.liker_id", "=", "likes.user_id");
+                            })
+                            ->join('users', function ($q) {
+                                $q->on('users.id', "=", "likes.user_id");
+                            })
+                            ->count();
+        }
+        else
+        {
+            $total_likes = Like::count();
+            $total_dislikes = DisLike::count();
+            $total_system_match = SystemMatch::count();
+            $total_org_match = DB::table('likes')
+                            ->join("likes as like", function ($q) {
+                                $q->on("likes.liker_id", "=", "like.user_id");
+                                $q->on("like.liker_id", "=", "likes.user_id");
+                            })
+                            ->join('users', function ($q) {
+                                $q->on('users.id', "=", "likes.user_id");
+                            })
+                            ->count();
+        }
+
+        $records['total_likes'] = number_format($total_likes);
+        $records['total_dislikes'] = number_format($total_dislikes);
+        $records['total_system_match'] = number_format($total_system_match);
+        $records['total_org_match'] = 912;
+        return $records;
     }
 }

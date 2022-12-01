@@ -44,7 +44,7 @@
                   <input type='button' class="btn btn-primary mr-1 ml-1" id="btn_search" value="Search">
                </td>
                <td>
-                  <a href="{{ route('admin.usertree')}}" class="btn btn-warning">Reset</a>
+                  <a href="javascript:;" class="btn btn-warning" id="btn_reset_filter">Reset</a>
                </td>
              </tr>
            </table>
@@ -156,6 +156,11 @@
         $('#btn_search').click(function(){
             $('#users_table').DataTable().draw();
         });
+
+        $(document).on("click", "#btn_reset_filter", function () {
+            $("#type,#search_fromdate,#search_todate").val('');
+            oTable.draw();
+        });
     });
 
     // $(document).on("click", ".usermatchmodel", function (){
@@ -218,6 +223,51 @@
                 $("#search_fromdate_td").css("display","block");
                 $("#search_todate_td").css("display","block");
             }
+        });
+    });
+</script>
+<script type="text/javascript">
+    $(document).ready(function () {
+        $("#total_like").html(0);
+        $("#total_dislike").html(0);
+        $("#total_system_match").html(0);
+        $("#total_org_match").html(0);
+        $(document).on("change", "#filter_type", function (e) {
+            var filter_type = $("#filter_type").val();
+            var filter_type_url     = $("#filter_type_url").val();
+            if (filter_type != '') {
+                $.ajax({
+                    url: filter_type_url,
+                    type: "POST",
+                    dataType: "json",
+                    data: {
+                        _token: $("meta[name='csrf-token']").attr("content"),
+                        filter_type: filter_type,
+                    },
+                    cache: false,
+                    beforeSend: function(){
+                        $("#total_like").html("Loading..");
+                        $("#total_dislike").html("Loading..");
+                        $("#total_system_match").html("Loading..");
+                        $("#total_org_match").html("Loading..");
+                    },
+                    complete: function(){
+                        $("#total_like").html();
+                        $("#total_dislike").html();
+                        $("#total_system_match").html();
+                        $("#total_org_match").html();
+                    },
+                    success: function (result) {
+                        if (result != '') {
+                            $("#total_like").html(result.total_likes);
+                            $("#total_dislike").html(result.total_dislikes);
+                            $("#total_system_match").html(result.total_system_match);
+                            $("#total_org_match").html(result.total_org_match);
+                        }
+                    },
+                });
+            }
+            
         });
     });
 </script>
