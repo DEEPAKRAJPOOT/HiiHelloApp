@@ -20,7 +20,7 @@
     <div class="col-lg-3"></div>
     <div class="col-lg-3">
       <span style="margin-left: 10px;">last sync : {{ $user['created_at'] }} </span>
-      <a href="{{ route('admin.dashboardupdate') }}" style="float: right;font-size: 18px;">Refresh</a>
+      <!-- <a href="{{ route('admin.dashboardupdate') }}" style="float: right;font-size: 18px;">Refresh</a> -->
     </div>
     <!--beging::first count-->
     <div class="col-lg-3">
@@ -351,7 +351,7 @@
         </div>
       </div>
     </div>
-    <div class="col-lg-12">
+    <!-- <div class="col-lg-12">
       <div class="card card-custom gutter-b">
         <div class="card-header flex-wrap border-0 py-5">
           <div class="card-title">
@@ -401,7 +401,7 @@
           </div>
         </div>
       </div>
-    </div>
+    </div> -->
 
     <div class="col-lg-12">
       <div class="card card-custom gutter-b">
@@ -686,11 +686,11 @@ $(document).ready(function() {
   $("#location_DT_filter").css("display","none");
   $("#location_DT thead").hide();
 
-  $("#gender_DT_length").css("display","none");
-  $("#gender_DT_filter").css("display","none");
-  $("#gender_DT thead").hide();
-  $("#location_DT_processing").css("display","none");
-  $("#gender_DT_processing").css("display","none");
+  // $("#gender_DT_length").css("display","none");
+  // $("#gender_DT_filter").css("display","none");
+  // $("#gender_DT thead").hide();
+  // $("#location_DT_processing").css("display","none");
+  // $("#gender_DT_processing").css("display","none");
 });
 </script>
 <script type="text/javascript">
@@ -771,7 +771,7 @@ $(document).ready(function() {
 </script>
 
 <!-- gender dt -->
-<script type="text/javascript">
+<!-- <script type="text/javascript">
   $(function() {
     var table = $('#gender_DT');
 
@@ -834,7 +834,7 @@ $(document).ready(function() {
 
 
   });
-</script>
+</script> -->
 
 <!-- location dt -->
 <script type="text/javascript">
@@ -844,6 +844,10 @@ $(document).ready(function() {
     oTable = table.dataTable({
       "processing": true,
       "serverSide": true,
+      "paging": false,
+      "ordering": false,
+      "searching": false,
+      "info": false,
       "language": {
         "lengthMenu": "_MENU_ entries",
         "paginate": {
@@ -923,6 +927,7 @@ $(document).ready(function() {
       "paging": false,
       "ordering": false,
       "info": false,
+      "searching": false,
       "language": {
         "lengthMenu": "_MENU_ entries",
         "paginate": {

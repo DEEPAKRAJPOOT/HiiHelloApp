@@ -31,7 +31,6 @@ class PagesController extends Controller
 
     public function dashboard()
     {   
-
         $location_result = array();
         $city_result = array(); 
         $subscription_result = array(); 
@@ -271,81 +270,81 @@ class PagesController extends Controller
         return $diff->format('%y');
     }
 
-    public function gender_listing(Request $request)
-    {
+    // public function gender_listing(Request $request)
+    // {
 
-        $records = [];
-        extract($this->DTFilters($request->all()));
+    //     $records = [];
+    //     extract($this->DTFilters($request->all()));
 
-        // count only no of recoad
-        $city_lists_count = Location::with(['locationTranslation']);
-        $city_lists_count = $city_lists_count->select("users.*","locations.*","users.location_id as location_id","users.id as user_id");
-        $city_lists_count = $city_lists_count->join("users","users.location_id","=","locations.id");
-        $city_lists_count = $city_lists_count->where("users.deleted_at","=",NULL);
-        $city_lists_count = $city_lists_count->where("users.location_id","!=",NULL);
-        $city_lists_count = $city_lists_count->groupBy("users.location_id");
+    //     // count only no of recoad
+    //     $city_lists_count = Location::with(['locationTranslation']);
+    //     $city_lists_count = $city_lists_count->select("users.*","locations.*","users.location_id as location_id","users.id as user_id");
+    //     $city_lists_count = $city_lists_count->join("users","users.location_id","=","locations.id");
+    //     $city_lists_count = $city_lists_count->where("users.deleted_at","=",NULL);
+    //     $city_lists_count = $city_lists_count->where("users.location_id","!=",NULL);
+    //     $city_lists_count = $city_lists_count->groupBy("users.location_id");
 
-        if ($search != '') {
-            $city_lists_count->where(function ($query) use ($search) {
-                $query->orWhereHas('locationTranslation', function ($q) use ($search) {
-                    $q->where('name', 'like', "%{$search}%");
-                });
-            });
-        }
-        $city_lists_count = $city_lists_count->get();
+    //     if ($search != '') {
+    //         $city_lists_count->where(function ($query) use ($search) {
+    //             $query->orWhereHas('locationTranslation', function ($q) use ($search) {
+    //                 $q->where('name', 'like', "%{$search}%");
+    //             });
+    //         });
+    //     }
+    //     $city_lists_count = $city_lists_count->get();
 
 
-        $city_lists = Location::with(['locationTranslation']);
-        $city_lists = $city_lists->select("users.*","locations.*","users.location_id as location_id","users.id as user_id");
-        $city_lists = $city_lists->join("users","users.location_id","=","locations.id");
-        $city_lists = $city_lists->where("users.deleted_at","=",NULL);
-        $city_lists = $city_lists->where("users.location_id","!=",NULL);
-        $city_lists = $city_lists->groupBy("users.location_id");
+    //     $city_lists = Location::with(['locationTranslation']);
+    //     $city_lists = $city_lists->select("users.*","locations.*","users.location_id as location_id","users.id as user_id");
+    //     $city_lists = $city_lists->join("users","users.location_id","=","locations.id");
+    //     $city_lists = $city_lists->where("users.deleted_at","=",NULL);
+    //     $city_lists = $city_lists->where("users.location_id","!=",NULL);
+    //     $city_lists = $city_lists->groupBy("users.location_id");
 
-        if ($search != '') {
-            $city_lists->where(function ($query) use ($search) {
-                $query->orWhereHas('locationTranslation', function ($q) use ($search) {
-                    $q->where('name', 'like', "%{$search}%");
-                });
-            });
-        }
+    //     if ($search != '') {
+    //         $city_lists->where(function ($query) use ($search) {
+    //             $query->orWhereHas('locationTranslation', function ($q) use ($search) {
+    //                 $q->where('name', 'like', "%{$search}%");
+    //             });
+    //         });
+    //     }
 
-        $city_lists = $city_lists->offset($offset)->limit($limit);
-        $city_lists = $city_lists->get();
+    //     $city_lists = $city_lists->offset($offset)->limit($limit);
+    //     $city_lists = $city_lists->get();
 
-        $records['recordsTotal'] = count($city_lists_count);
-        $records['recordsFiltered'] = count($city_lists_count);
-        $records['data'] = [];
+    //     $records['recordsTotal'] = count($city_lists_count);
+    //     $records['recordsFiltered'] = count($city_lists_count);
+    //     $records['data'] = [];
 
-        foreach ($city_lists as $val) {
-            $all_users          = User::where('location_id','=',$val->location_id)->count();
-            $total_male_user    = User::where('location_id','=',$val->location_id)
-                                ->where('gender','=','Male')
-                                ->count();
-            $total_female_user  = User::where('location_id','=',$val->location_id)
-                                ->where('gender','=','Female')
-                                ->count();
-            $total_na_user      = User::where('location_id','=',$val->location_id)
-                                ->whereNull('gender')
-                                    ->count();
+    //     foreach ($city_lists as $val) {
+    //         $all_users          = User::where('location_id','=',$val->location_id)->count();
+    //         $total_male_user    = User::where('location_id','=',$val->location_id)
+    //                             ->where('gender','=','Male')
+    //                             ->count();
+    //         $total_female_user  = User::where('location_id','=',$val->location_id)
+    //                             ->where('gender','=','Female')
+    //                             ->count();
+    //         $total_na_user      = User::where('location_id','=',$val->location_id)
+    //                             ->whereNull('gender')
+    //                                 ->count();
             
 
-            $male_pr = $total_male_user/$all_users * 100;
-            $female_pr = $total_female_user/$all_users * 100;
-            $na_pr = $total_na_user/$all_users * 100;
-            $total_users = $total_male_user + $total_female_user + $total_na_user;
-            $records['data'][] = [
-                'city_name' => $val->name,
-                'total_male_pr' => number_format($male_pr,2)."%",
-                'total_female_pr' => number_format($female_pr,2)."%",
-                'total_na_pr' => number_format($na_pr,2)."%",
-            ];
-        }
-        $keys = array_column($records['data'], 'total_female_pr');
-        array_multisort($keys, SORT_DESC, $records['data']);
-        return $records;
-        return $records;
-    }
+    //         $male_pr = $total_male_user/$all_users * 100;
+    //         $female_pr = $total_female_user/$all_users * 100;
+    //         $na_pr = $total_na_user/$all_users * 100;
+    //         $total_users = $total_male_user + $total_female_user + $total_na_user;
+    //         $records['data'][] = [
+    //             'city_name' => $val->name,
+    //             'total_male_pr' => number_format($male_pr,2)."%",
+    //             'total_female_pr' => number_format($female_pr,2)."%",
+    //             'total_na_pr' => number_format($na_pr,2)."%",
+    //         ];
+    //     }
+    //     $keys = array_column($records['data'], 'total_female_pr');
+    //     array_multisort($keys, SORT_DESC, $records['data']);
+    //     return $records;
+    //     return $records;
+    // }
 
     public function location_listing(Request $request)
     {
@@ -353,12 +352,11 @@ class PagesController extends Controller
 
         //count only no of recoad
         $city_lists_count = Location::with(['locationTranslation']);
-        $city_lists_count = $city_lists_count->select("users.*","locations.*","users.location_id as location_id","users.id as user_id");
+        $city_lists_count = $city_lists_count->select("locations.*","users.location_id as location_id","users.id as user_id",DB::raw("count(users.id) as total_no_of_users"));
         $city_lists_count = $city_lists_count->join("users","users.location_id","=","locations.id");
         $city_lists_count = $city_lists_count->where("users.deleted_at","=",NULL);
         $city_lists_count = $city_lists_count->where("users.location_id","!=",NULL);
         $city_lists_count = $city_lists_count->where("locations.is_active","=",'y');
-        // $city_lists_count = $city_lists_count->orderBy("users.location_id","ASC");
         $city_lists_count = $city_lists_count->groupBy("users.location_id");
 
         if ($search != '') {
@@ -368,17 +366,17 @@ class PagesController extends Controller
                 });
             });
         }
-
+        $city_lists_count = $city_lists_count->orderBy("total_no_of_users","DESC");
+        $city_lists_count = $city_lists_count->limit(10);
         $city_lists_count = $city_lists_count->get();
 
 
         $city_lists = Location::with(['locationTranslation']);
-        $city_lists = $city_lists->select("users.*","locations.*","users.location_id as location_id","users.id as user_id");
+        $city_lists = $city_lists->select("locations.*","users.location_id as location_id","users.id as user_id",DB::raw("count(users.id) as total_no_of_users"));
         $city_lists = $city_lists->join("users","users.location_id","=","locations.id");
         $city_lists = $city_lists->where("users.deleted_at","=",NULL);
         $city_lists = $city_lists->where("users.location_id","!=",NULL);
         $city_lists = $city_lists->where("locations.is_active","=",'y');
-        // $city_lists = $city_lists->orderBy("users.location_id","ASC");
         $city_lists = $city_lists->groupBy("users.location_id");
 
         if ($search != '') {
@@ -393,6 +391,8 @@ class PagesController extends Controller
         $records = [];
 
         $city_lists = $city_lists->offset($offset)->limit($limit);
+        $city_lists = $city_lists->orderBy("total_no_of_users","DESC");
+        $city_lists = $city_lists->limit(10);
         $city_lists = $city_lists->get();
         $records['recordsTotal'] = count($city_lists_count);
         $records['recordsFiltered'] = count($city_lists_count);

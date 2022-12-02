@@ -53,8 +53,6 @@ class UserTreeController extends Controller
         $count = $users->count();
         $records['recordsTotal'] = $count;
         $records['recordsFiltered'] = $count;
-        $records['total_likes'] = 123;
-        $records['total_dislikes'] = 1234;
         $records['data'] = [];
 
        
@@ -112,6 +110,7 @@ class UserTreeController extends Controller
                     ->whereBetween('likes.created_at',[Carbon::now()->startOfWeek(), Carbon::now()->endOfWeek()])
                     ->whereIsActive('y')
                     ->count();
+
                 }
                 if ($request->filter_types == 3) {
                     // $users = $users->whereMonth("created_at",Carbon::now()->month);
@@ -135,6 +134,7 @@ class UserTreeController extends Controller
                     ->whereMonth("likes.created_at",Carbon::now()->month)
                     ->whereIsActive('y')  
                     ->count();
+
                 }
                 if ($request->filter_types == 4) {
                     // $users = $users->whereYear("created_at",Carbon::now()->year);
@@ -160,9 +160,6 @@ class UserTreeController extends Controller
                     ->count();
                 }
                 if ($request->filter_types == 5 && $request->from_date != '' && $request->to_date != '') {
-                    // $users = $users->where("created_at",">=",$request->from_date);
-                    // $users = $users->where("created_at","<=",$request->to_date);
-
                     $total_like_send = Like::where("liker_id",$user->id)->where("created_at",">=",$request->from_date)->where("created_at","<=",$request->to_date)->count();
                     $total_like_received = Like::where("user_id",$user->id)->where("created_at",">=",$request->from_date)->where("created_at","<=",$request->to_date)->count();
                     $total_dislike_send = DisLike::where("dis_liker_id",$user->id)->where("created_at",">=",$request->from_date)->where("created_at","<=",$request->to_date)->count();
@@ -182,6 +179,7 @@ class UserTreeController extends Controller
                     ->where("likes.created_at",">=",$request->from_date)->where("likes.created_at","<=",$request->to_date)
                     ->whereIsActive('y')  
                     ->count();
+
                 }
             }
             else
@@ -203,6 +201,7 @@ class UserTreeController extends Controller
                     ->where("likes.liker_id", '=', $auth_id)                //  To only get users details who likes current user
                     ->where("likes.user_id", '!=', $auth_id)
                     ->count();
+
             }
             $is_signup_mode = "";
             if (!empty($user->facebook_id) && $user->is_social_user == 'y') {
@@ -216,6 +215,8 @@ class UserTreeController extends Controller
             }
 
             $records['data'][] = [
+                'profile_photo' => view('admin.layouts.includes.photos_verify')->with(['user_id' => $user->id,'profile_photo' => $user->profile_photo  ?? 'N/A', 'is_profile_photo' => 1, 'is_verify_photo' => 0])->render(),
+                'verify_photo' => view('admin.layouts.includes.photos_verify')->with(['user_id' => $user->id,'verify_photo' => $user->verify_photo  ?? 'N/A', 'is_profile_photo' => 0, 'is_verify_photo' => 1])->render(),
                 'account_id' => $user->account_id ?? "N/A",
                 'full_name' =>  $user->userTransDefault ? $user->userTransDefault->full_name : "N/A",
                 'mode_of_registration' =>  $is_signup_mode,
@@ -234,8 +235,8 @@ class UserTreeController extends Controller
 
     public function usermatchlisting(Request $request)
     {
-        // $auth_id = $request->user_id;
-        $auth_id = 1493;
+        $auth_id = $request->user_id;
+        // $auth_id = 1493;
         extract($this->DTFilters($request->all()));
 
         DB::enableQueryLog();
@@ -515,9 +516,9 @@ class UserTreeController extends Controller
         }
         else
         {
-            $total_likes = Like::count();
-            $total_dislikes = DisLike::count();
-            $total_system_match = SystemMatch::count();
+            $total_likes = Like::where("created_at",Carbon::today())->count();
+            $total_dislikes = DisLike::where("created_at",Carbon::today())->count();
+            $total_system_match = SystemMatch::where("created_at",Carbon::today())->count();
             $total_org_match = DB::table('likes')
                             ->join("likes as like", function ($q) {
                                 $q->on("likes.liker_id", "=", "like.user_id");
@@ -526,13 +527,14 @@ class UserTreeController extends Controller
                             ->join('users', function ($q) {
                                 $q->on('users.id', "=", "likes.user_id");
                             })
+                            ->where("likes.created_at",Carbon::today())
                             ->count();
         }
 
         $records['total_likes'] = number_format($total_likes);
         $records['total_dislikes'] = number_format($total_dislikes);
         $records['total_system_match'] = number_format($total_system_match);
-        $records['total_org_match'] = 912;
+        $records['total_org_match'] = number_format($total_org_match);;
         return $records;
     }
 }
