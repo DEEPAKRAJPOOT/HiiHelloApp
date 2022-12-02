@@ -139,6 +139,7 @@ Route::group(['namespace' => 'Admin', 'middleware' => ['check_permit', 'revalida
 
 // user tree
 Route::get('usertree/listing', 'Admin\UserTreeController@listing')->name('usertree.listing');
+Route::post('usertree/filters', 'Admin\UserTreeController@filters')->name('usertree.filters');
 Route::get('usertree/usermatchlisting', 'Admin\UserTreeController@usermatchlisting')->name('usertree.usermatchlisting');
 // Route::resource('usertree', 'Admin\UserTreeController');
 Route::get('/usertree', 'Admin\UserTreeController@index')->name('usertree');

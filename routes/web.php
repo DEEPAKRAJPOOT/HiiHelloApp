@@ -28,6 +28,7 @@ Route::get('/cache', function () {
 });
 
 
+
 Auth::routes(['register' => false, 'login' => false]);
 
 // Twilio Voice Response

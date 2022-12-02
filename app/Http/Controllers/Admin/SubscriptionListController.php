@@ -49,6 +49,11 @@ class SubscriptionListController extends Controller
             'subscriptionPlan', 'subscriptionPlan.subscriptionPlanTranslation',
             'user', 'user.userTransDefault'
         ]);
+
+        if ($request->status_filter != '') {
+            $subscriptions = $subscriptions->where("subscriptions.status",$request->status_filter);
+        }
+
         $subscriptions = $subscriptions->where("users.gender","Male");
         $subscriptions = $subscriptions->orderBy($sort_column, $sort_order);
         if ($search != '') {

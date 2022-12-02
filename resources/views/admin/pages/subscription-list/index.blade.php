@@ -42,6 +42,36 @@
             </div>
         </div>
         <div class="card-body">
+            {{-- Filter Start --}}
+            <table class="mb-5" align="center">
+                <tr>
+                    <td>
+                        <span class="card-icon">
+                            <i class="fa fa-filter text-primary"></i>
+                        </span>
+                        <label>Filter:&nbsp;&nbsp;</label>
+                    </td>
+                    <td>
+                        <select name="status_filter" id="status_filter" class="form-control">
+                            <option value="">Select status</option>
+                            <option value="incomplete">Incomplete</option>
+                            <option value="incomplete_expired">Incomplete expired</option>
+                            <option value="trialing">Trialing</option>
+                            <option value="active">Active</option>
+                            <option value="past_due">Past due</option>
+                            <option value="canceled">Canceled</option>
+                            <option value="unpaid">Unpaid</option>
+                        </select>
+                    </td>
+                    <td>
+                        <input type='button' class="btn btn-primary mr-1 ml-1" id="btn_search_filter" value="Search">
+                    </td>
+                    <td>
+                        <a href="javascript:;" class="btn btn-warning" id="btn_reset_filter">Reset</a>
+                    </td>
+                </tr>
+            </table>
+            {{-- Filter End --}}
             {{-- Datatable Start --}}
             <table class="table table-bordered table-hover table-checkable" id="subscription_pan_table"
                 style="margin-top: 13px !important"></table>
@@ -66,6 +96,14 @@
                 data: {
                     columnsDef: ['user_id', 'plan_id', 'account_id','months','amount', 'status','action'],
                 },
+                data: function(data) {
+
+                  // Read values
+                  var status_filter = $('#status_filter').val();
+
+                  // Append to data
+                  data.status_filter = status_filter;
+               }            
             },
             columns: [
                 { data: 'account_id' },
@@ -96,6 +134,16 @@
                 [10, 20, 50, 100]
             ],
             pageLength: 10,
+        });
+
+        // Search button
+        $('#btn_search_filter').click(function(){
+            $('#subscription_pan_table').DataTable().draw();
+        });
+
+        $(document).on("click", "#btn_reset_filter", function () {
+            $("#status_filter").val('');
+            oTable.draw();
         });
     });
 </script>

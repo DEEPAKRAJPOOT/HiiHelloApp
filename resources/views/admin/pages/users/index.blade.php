@@ -56,10 +56,10 @@
                     Download CSV
                 </a>
                 --}}
-                <!-- <a href="{{ route('admin.users.deleted') }}" name="deleted" id="deleted"
-                    class="btn btn-sm btn-light-danger font-weight-bolder text-uppercase ml-2 mr-2 deleted_all_users">
+                <a href="{{ route('admin.users.deleted') }}" name="deleted" id="deleted"
+                    class="btn btn-sm btn-light-danger font-weight-bolder text-uppercase ml-2 mr-1 deleted_all_users">
                     <i class="far fa-trash-alt"></i> Deleted Users
-                </a> -->
+                </a>
                 <a href="{{ route('admin.users.unde-review') }}"
                     class="btn btn-sm btn-warning font-weight-bolder text-uppercase ml-2">
                     <i class="menu-icon icon-users"></i>
