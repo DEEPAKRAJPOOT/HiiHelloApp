@@ -57,7 +57,9 @@ Route::group(['namespace' => 'Admin', 'middleware' => ['check_permit', 'revalida
 	Route::post('users/bulk_photo_verification', 'UsersController@bulk_photo_verification')->name('users.bulk_photo_verification');
 	
 	Route::get('users/unde_review', 'UsersController@unde_review')->name('users.unde-review');
+	Route::get('users/deleted', 'UsersController@deleted')->name('users.deleted');
 	Route::resource('users', 'UsersController');
+
 
 	/* Role Management */
 	Route::get('roles/listing', 'AdminController@listing')->name('roles.listing');
@@ -135,10 +137,20 @@ Route::group(['namespace' => 'Admin', 'middleware' => ['check_permit', 'revalida
 
 });
 
+// user tree
+Route::get('usertree/listing', 'Admin\UserTreeController@listing')->name('usertree.listing');
+Route::post('usertree/filters', 'Admin\UserTreeController@filters')->name('usertree.filters');
+Route::get('usertree/usermatchlisting', 'Admin\UserTreeController@usermatchlisting')->name('usertree.usermatchlisting');
+// Route::resource('usertree', 'Admin\UserTreeController');
+Route::get('/usertree', 'Admin\UserTreeController@index')->name('usertree');
+Route::post('usertree/get_user_match_data', 'Admin\UserTreeController@get_user_match_data')->name('usertree.get_user_match_data');
+	
 //User Exception
 Route::get('users-error-listing', 'Admin\ErrorController@listing')->name('error.listing');
 Route::get('gender-listing', 'Admin\PagesController@gender_listing')->name('gender.listing');
 Route::get('location-listing', 'Admin\PagesController@location_listing')->name('location.listing');
+// language list with no of users
+Route::get('language-listing', 'Admin\PagesController@language_listing')->name('dashboard.languagelisting');
 //Chart routes
 Route::get('register-users-chart', 'Admin\ChartController@getRegisterUser')->name('users.registerchart');
 Route::get('active-deactive-users-chart', 'Admin\ChartController@getActiveDeactiveUser')->name('users.activeDeactiveChart');

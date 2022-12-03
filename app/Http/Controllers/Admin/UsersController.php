@@ -400,9 +400,9 @@ class UsersController extends Controller
                 if ($user->verify_photo_status != 'unverified') {
                     $verify_photo_notify = true;
                 }
-                if ($user->verify_video_status != 'unverified') {
-                    $verify_video_notify = true;
-                }
+                // if ($user->verify_video_status != 'unverified') {
+                //     $verify_video_notify = true;
+                // }
 
                 $path = $user->profile_photo;
                 $not_to_delete_interest = $not_to_delete_personality = array();
@@ -617,6 +617,18 @@ class UsersController extends Controller
                 if($user->verify_photo_status=="verified")
                 {
                     $user->verify_status = "verified";
+                } 
+
+                if($request->verify_email_send != $user->verify_email_send)
+                {
+                    if ($request->verify_email_send == 'y') {
+                        $user->verify_email_send = "y";
+                        $user->email_verified_at = date("Y-m-d H:i:s");
+                    }
+                    else
+                    {
+                        $user->verify_email_send = "n";
+                    }
                 }     
 
 
@@ -754,12 +766,15 @@ class UsersController extends Controller
     }
 
     public function listing(Request $request)
-    {
+    {        
         extract($this->DTFilters($request->all()));
 
         DB::enableQueryLog();
 
-        $flgPendingProfile = $request->flgPendingProfile;
+        $flgPendingProfile = $request->flgPendingProfile;        
+        $from_date         = ($request->from_date) ? $request->from_date." 00:00:00" : "";
+        $to_date           = ($request->to_date) ? $request->to_date." 23:59:59" : "";
+        $gender_filter     = ($request->gender_filter) ? $request->gender_filter : "";
 
         $records = [];
         $users = User::with('userTransDefault','location')->orderBy($sort_column, $sort_order);
@@ -784,6 +799,20 @@ class UsersController extends Controller
             //verify_photo not null
             $users->where('verify_photo_status', '=' , 'under_review')->where('verify_photo', '!=' , '');
         }
+
+        if($request->is_deleted_list == 'yes') {
+            //verify_photo not null
+            $users->onlyTrashed();
+        }
+
+        // ST - Filter
+        if($from_date != "" && $to_date != "") {
+            $users = $users->whereBetween('created_at', [$from_date, $to_date]);
+        }
+        if($gender_filter != "") {
+            $users = $users->where('gender', $gender_filter);
+        }
+        // EN - Filter
 
         $count = $users->count();
 
@@ -834,7 +863,9 @@ class UsersController extends Controller
             } else {
 
                 $records['data'][] = [
-                    'id' => $user->id,                    
+                    'id' => $user->id, 
+                    'profile_photo' => view('admin.layouts.includes.photos_verify')->with(['user_id' => $user->id,'profile_photo' => $user->profile_photo  ?? 'N/A', 'is_profile_photo' => 1, 'is_verify_photo' => 0])->render(),
+                    'verify_photo' => view('admin.layouts.includes.photos_verify')->with(['user_id' => $user->id,'verify_photo' => $user->verify_photo  ?? 'N/A', 'is_profile_photo' => 0, 'is_verify_photo' => 1])->render(),                   
                     'account_id' => $user->account_id ?? "N/A",
                     'full_name' =>  $user->userTransDefault ? $user->userTransDefault->full_name : "N/A",
                     'gender' => view('admin.layouts.includes.gender', compact('params'))->render(),
@@ -992,6 +1023,11 @@ class UsersController extends Controller
     public function unde_review()
     {
         return view('admin.pages.users.unde_review')->with(['custom_title' => 'Profile Under Review']);
+    }
+
+    public function deleted()
+    {
+        return view('admin.pages.users.deleted')->with(['custom_title' => 'Deleted user list']);
     }
 
     public function csvDownloadUndeReview(Request $request)
@@ -1266,18 +1302,25 @@ class UsersController extends Controller
     // ST - For Bulk Photo Verification
     public function bulk_photo_verification(Request $request) {
 
-        $user_id_arr = explode(",",$request->multi_user_id);
-        $req_gender  = $request->verify_photo_status;
+        $user_id_arr          = explode(",",$request->multi_user_id);
+        $verify_photo_status  = $request->verify_photo_status;
 
         if (!empty($user_id_arr)) {
 
             for($i = 0; $i< count($user_id_arr); $i++) {
 
-                // update user table gender details
+                // update user table verify_photo_status
                 User::where('custom_id',$user_id_arr[$i])->update([
-                    'verify_photo_status' =>  'verified',
+                    'verify_photo_status' =>  $verify_photo_status,
                     'photo_verified_at'   =>  \Carbon\Carbon::now()
                 ]);
+
+                if($verify_photo_status == "verified") {
+
+                    User::where('custom_id',$user_id_arr[$i])->update([
+                        'verify_status' =>  'verified'
+                    ]);
+                }
 
                 $user = User::where('custom_id','=',$user_id_arr[$i])->first();
                 $user->calculateProfilePercent();
