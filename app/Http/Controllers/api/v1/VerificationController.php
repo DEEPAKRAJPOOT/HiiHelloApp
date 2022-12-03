@@ -11,6 +11,9 @@ use App\Http\Resources\v1\{VerificationResource};
 use App\Models\{User, Country};
 use App\Jobs\{NotificationJob};
 
+
+use Aws\Rekognition\RekognitionClient;
+
 class VerificationController extends Controller
 {
     private $version = "v.1.0";
@@ -26,14 +29,112 @@ class VerificationController extends Controller
                 $user = $request->user();
 
                 if ($request->type == 'image') {
+
+
                     if (Storage::exists($user->verify_photo)) {
                         Storage::delete($user->verify_photo);
                     }
+                    //CHECK FOR AWS REKOGNIZTION START
 
-                    $path = $request->file('file')->store('users/verify/image');
-                    $user->verify_photo = $path;
-                    $user->verify_photo_status = "under_review";
-                    $user->photo_verified_at = NULL;
+                    $image_arr_result = array();
+                    $api_status_code  = "";    
+
+                    $client = new RekognitionClient([
+                        'region'    => 'ap-south-1',
+                        'version'   => 'latest'
+                    ]);                
+                    
+                    //FILE OBJECT 
+
+                    $image = fopen($request->file('file')->getPathName(), 'r');
+                    $bytes = fread($image, $request->file('file')->getSize());
+
+                
+                    $moderate_image_results = $client->detectModerationLabels([                   
+                        'Image'         => ['Bytes' => $bytes], 
+                        'MinConfidence' => 70
+                    ]);
+
+
+                    if(isset($moderate_image_results["@metadata"]) && $moderate_image_results["@metadata"]['statusCode']==200)
+                    {
+                            //response received then status code 200                            
+                            $api_status_code = "success";
+
+                            // Moderation Label have array element means the image is not safe   
+
+                            if(count($moderate_image_results['ModerationLabels']) > 0)
+                            {
+                                $image_arr_result["is_safe_image"] = false;
+                                $image_arr_result["moderation_labels_data"] = json_encode($moderate_image_results['ModerationLabels']);
+                            }
+                            else
+                            {
+                                $image_arr_result["is_safe_image"] = true;   
+                                $image_arr_result["moderation_labels_data"] = "";
+                            }
+
+
+                            /// CHECK FOR FACE DETECTION : HOW MAN FACE DETECTED.
+                            $result_face = $client->detectFaces([
+                                'Attributes' => ['ALL'], //ALL, DEFAULT
+                                'Image'         => ['Bytes' => $bytes], 
+                            ]);
+
+                            $image_arr_result["total_face_detected"] = count($result_face['FaceDetails']);
+                            $image_arr_result["face_detected_message"] = "";
+
+                            if(count($result_face['FaceDetails'])==0)
+                            {
+                                $image_arr_result["is_safe_image"] = false;
+                                $image_arr_result["face_detected_message"] = "Image have no face detected";
+                            }
+                            else if(count($result_face['FaceDetails']) >= 1)
+                            {                                
+                                $image_arr_result["face_detected_message"] = "";
+                            }                        
+
+
+                            //$this->response['data']  = $image_arr_result;
+                            // IF IMAGE IS SAFE AFTER AWS REKOGNIZATION CHECK
+
+                            if($image_arr_result["is_safe_image"]==true) 
+                            {
+
+                                $path = $request->file('file')->store('users/verify/image');
+                                $user->verify_photo = $path;
+                                $user->verify_photo_status = "under_review";
+                                $user->photo_verified_at = NULL;
+                            }   
+                            else
+                            {
+                                $this->status = Response::HTTP_NOT_FOUND;
+                                return ([
+                                    'data'  =>  NULL,
+                                    'meta' => [
+                                        'url'       =>  url()->current(),
+                                        'api'       =>  $this->getVersion(),
+                                        'language'  =>  app()->getLocale(),
+                                        'is_ban'    =>  false,
+                                        'message'   =>   trans('api.notify_message.image_moderation.message'),
+                                    ]
+                                ]);
+                            }  
+                            
+                    }
+                    else
+                    {
+                        $this->response['meta']['message']  =   trans('api.not_found', ['entity' => __('AWS Image Moderation')]);
+                        $this->status = Response::HTTP_NOT_FOUND;  
+                    }
+
+
+
+
+                    //CHECK FOR AWS REKOGNIZTION END
+
+                   
+
                 } elseif ($request->type == 'video') {
                     if (Storage::exists($user->verify_video)) {
                         Storage::delete($user->verify_video);
@@ -44,6 +145,7 @@ class VerificationController extends Controller
                     $user->verify_video_status = "under_review";
                     $user->video_verified_at = NULL;
                 }
+                
                 $user->verify_status = 'under_review';
                 $user->save();
 

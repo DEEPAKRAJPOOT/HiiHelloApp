@@ -867,6 +867,7 @@ class GeneralController extends Controller
     // Check Image Moderation Things
     public function checkAwsRekognitionImageModeration(Request $request)
     {
+        
         $rules = [
             'image_path'             =>  'nullable|mimes:jpg,jpeg,png',
         ];
