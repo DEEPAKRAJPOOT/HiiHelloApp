@@ -354,42 +354,48 @@ class UtilityController extends Controller
             foreach ($user_list as $key => $val) {
                 $subscription_data = Subscription::where("user_id",$val->id)->where("status","active")->where("plan_id","3")->whereNull("deleted_at")->first();
                 if (empty($subscription_data)) {
-                    echo "User Id :- ".$val->id. "<br>";
+                    if ($request->is_print == 1) {
+                        echo "User Id :- ".$val->id. "<br>";
+                    }
 
-                    $plan = SubscriptionPlan::where('is_default_for_girl','y')->first();
-                    if($plan){
+                    if ($request->is_print == 0) {
+                        $plan = SubscriptionPlan::where('is_default_for_girl','y')->first();
+                        if($plan){
 
-                        $new_subscription_start_date = \Carbon\Carbon::today()->format('Y-m-d');
-                        if ($val->subscription_end_date >= $new_subscription_start_date) {
-                            $new_subscription_start_date = $val->subscription_end_date;
+                            $new_subscription_start_date = \Carbon\Carbon::today()->format('Y-m-d');
+                            if ($val->subscription_end_date >= $new_subscription_start_date) {
+                                $new_subscription_start_date = $val->subscription_end_date;
+                            }
+
+                            // add free subscription
+                            Subscription::firstOrCreate([
+                                'user_id'       =>  $val->id ?? NULL,
+                                'plan_id'       =>  $plan->id ?? NULL,
+                                'months'        =>  $plan->months,
+                                'amount'        =>  $plan->amount,
+                                'start_date'    =>  $new_subscription_start_date,
+                                'end_date'      =>  NULL,
+                                'payment_date'  =>  now(),
+                                'payment_type'  =>  '',
+                                'status'        =>  'active',
+                            ], [
+                                'custom_id'     =>  getUniqueString('subscriptions'),
+                            ]);
+
+                            // update user table subscription details
+                            User::where('id',$val->id)->update([ 
+                                'is_subscribed' =>  'y',
+                            ]);
                         }
-
-                        // add free subscription
-                        Subscription::firstOrCreate([
-                            'user_id'       =>  $val->id ?? NULL,
-                            'plan_id'       =>  $plan->id ?? NULL,
-                            'months'        =>  $plan->months,
-                            'amount'        =>  $plan->amount,
-                            'start_date'    =>  $new_subscription_start_date,
-                            'end_date'      =>  NULL,
-                            'payment_date'  =>  now(),
-                            'payment_type'  =>  '',
-                            'status'        =>  'active',
-                        ], [
-                            'custom_id'     =>  getUniqueString('subscriptions'),
-                        ]);
-
-                        // update user table subscription details
-                        User::where('id',$val->id)->update([ 
-                            'is_subscribed' =>  'y',
-                        ]);
                     }
 
                     $subscription_total ++;
                 }
                 else
-                {
-                    echo "Subscription User Id :- ".$val->id. "<br>";
+                {   
+                    if ($request->is_print == 1) {
+                        echo "Subscription User Id :- ".$val->id. "<br>";
+                    }
                     $un_subscription_total ++;
                 }
             }
