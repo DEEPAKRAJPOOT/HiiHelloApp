@@ -301,7 +301,7 @@
       <div class="card card-custom gutter-b">
         <div class="card-header flex-wrap border-0 py-5">
           <div class="card-title">
-            <h3 class="card-label">Location </h3>
+            <h3 class="card-label">Top Locations </h3>
           </div>
 
         </div>
@@ -407,7 +407,7 @@
       <div class="card card-custom gutter-b">
         <div class="card-header flex-wrap border-0 py-5">
           <div class="card-title">
-            <h3 class="card-label">Language list</h3>
+            <h3 class="card-label">Top Languages</h3>
           </div>
         </div>
         <div class="card-body">

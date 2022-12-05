@@ -436,15 +436,62 @@ class UserTreeController extends Controller
     public function filters(Request $request)
     {
         $records     = [];
-        $total_likes = 0;
-        $total_dislikes = 0;
-        $total_system_match = 0;
-        $total_org_match = 0;
+        $total_like_male = array();
+        $total_female_like = array();
+        $total_male_dislikes = array();
+        $total_female_dislikes = array();
+        $total_male_system_match = array();
+        $total_female_system_match = array();
+        $total_male_org_match = array();
+        $total_female_org_match = array();
+
         if ($request->filter_type == 1) {
-            $total_likes = Like::where("created_at",Carbon::today())->count();
-            $total_dislikes = DisLike::where("created_at",Carbon::today())->count();
-            $total_system_match = SystemMatch::where("created_at",Carbon::today())->count();
-            $total_org_match = DB::table('likes')
+
+            // like
+            $total_like_male = Like::select('likes.id as id','users.gender as gender')
+                    ->join("users","users.id","=","likes.user_id")
+                    ->where("users.gender","Male")
+                    ->where("likes.created_at",Carbon::today())
+                    ->groupBy("likes.user_id")
+                    ->get();
+            $total_female_like = Like::select('likes.id as id','users.gender as gender')
+                    ->join("users","users.id","=","likes.user_id")
+                    ->where("users.gender","Female")
+                    ->where("likes.created_at",Carbon::today())
+                    ->groupBy("likes.user_id")
+                    ->get();
+
+            //dislike
+            $total_male_dislikes = DisLike::select('dis_likes.id as id','users.gender as gender')
+                    ->join("users","users.id","=","dis_likes.user_id")
+                    ->where("users.gender","Male")
+                    ->where("dis_likes.created_at",Carbon::today())
+                    ->groupBy("dis_likes.user_id")
+                    ->get();
+            $total_female_dislikes = DisLike::select('dis_likes.id as id','users.gender as gender')
+                    ->join("users","users.id","=","dis_likes.user_id")
+                    ->where("users.gender","Female")
+                    ->where("dis_likes.created_at",Carbon::today())
+                    ->groupBy("dis_likes.user_id")
+                    ->get();
+
+            // system match
+            $total_male_system_match = SystemMatch::select('system_match.id as id','users.gender as gender')
+                    ->join("users","users.id","=","system_match.user_id")
+                    ->where("users.gender","Male")
+                    ->where("system_match.created_at",Carbon::today())
+                    ->groupBy("system_match.user_id")
+                    ->get();
+            $total_female_system_match = SystemMatch::select('system_match.id as id','users.gender as gender')
+                    ->join("users","users.id","=","system_match.user_id")
+                    ->where("users.gender","Female")
+                    ->where("system_match.created_at",Carbon::today())
+                    ->groupBy("system_match.user_id")
+                    ->get();
+
+            // orgmatch
+            $total_male_org_match = DB::table('likes')
+                            ->select('likes.liker_id as liker_id','likes.user_id as user_id','users.id as id','users.gender as gender')
                             ->join("likes as like", function ($q) {
                                 $q->on("likes.liker_id", "=", "like.user_id");
                                 $q->on("like.liker_id", "=", "likes.user_id");
@@ -452,14 +499,69 @@ class UserTreeController extends Controller
                             ->join('users', function ($q) {
                                 $q->on('users.id', "=", "likes.user_id");
                             })
+                            ->where("users.gender","Male")
                             ->where("likes.created_at",Carbon::today())
-                            ->count();
+                            ->get();
+            $total_female_org_match = DB::table('likes')
+                            ->select('likes.liker_id as liker_id','likes.user_id as user_id','users.id as id','users.gender as gender')
+                            ->join("likes as like", function ($q) {
+                                $q->on("likes.liker_id", "=", "like.user_id");
+                                $q->on("like.liker_id", "=", "likes.user_id");
+                            })
+                            ->join('users', function ($q) {
+                                $q->on('users.id', "=", "likes.user_id");
+                            })
+                            ->where("users.gender","Female")
+                            ->where("likes.created_at",Carbon::today())
+                            ->get();
         }
         else if ($request->filter_type == 2) {
-            $total_likes = Like::whereBetween('created_at',[Carbon::now()->startOfWeek(), Carbon::now()->endOfWeek()])->count();
-            $total_dislikes = DisLike::whereBetween('created_at',[Carbon::now()->startOfWeek(), Carbon::now()->endOfWeek()])->count();
-            $total_system_match = SystemMatch::whereBetween('created_at',[Carbon::now()->startOfWeek(), Carbon::now()->endOfWeek()])->count();
-            $total_org_match = DB::table('likes')
+
+            // like
+            $total_like_male = Like::select('likes.id as id','users.gender as gender')
+                    ->join("users","users.id","=","likes.user_id")
+                    ->where("users.gender","Male")
+                    ->where("likes.created_at",[Carbon::now()->startOfWeek(), Carbon::now()->endOfWeek()])
+                    ->groupBy("likes.user_id")
+                    ->get();
+            $total_female_like = Like::select('likes.id as id','users.gender as gender')
+                    ->join("users","users.id","=","likes.user_id")
+                    ->where("users.gender","Female")
+                    ->where("likes.created_at",[Carbon::now()->startOfWeek(), Carbon::now()->endOfWeek()])
+                    ->groupBy("likes.user_id")
+                    ->get();
+
+            //dislike
+            $total_male_dislikes = DisLike::select('dis_likes.id as id','users.gender as gender')
+                    ->join("users","users.id","=","dis_likes.user_id")
+                    ->where("users.gender","Male")
+                    ->where("dis_likes.created_at",[Carbon::now()->startOfWeek(), Carbon::now()->endOfWeek()])
+                    ->groupBy("dis_likes.user_id")
+                    ->get();
+            $total_female_dislikes = DisLike::select('dis_likes.id as id','users.gender as gender')
+                    ->join("users","users.id","=","dis_likes.user_id")
+                    ->where("users.gender","Female")
+                    ->where("dis_likes.created_at",[Carbon::now()->startOfWeek(), Carbon::now()->endOfWeek()])
+                    ->groupBy("dis_likes.user_id")
+                    ->get();
+
+            // system match
+            $total_male_system_match = SystemMatch::select('system_match.id as id','users.gender as gender')
+                    ->join("users","users.id","=","system_match.user_id")
+                    ->where("users.gender","Male")
+                    ->where("system_match.created_at",[Carbon::now()->startOfWeek(), Carbon::now()->endOfWeek()])
+                    ->groupBy("system_match.user_id")
+                    ->get();
+            $total_female_system_match = SystemMatch::select('system_match.id as id','users.gender as gender')
+                    ->join("users","users.id","=","system_match.user_id")
+                    ->where("users.gender","Female")
+                    ->where("system_match.created_at",[Carbon::now()->startOfWeek(), Carbon::now()->endOfWeek()])
+                    ->groupBy("system_match.user_id")
+                    ->get();
+
+            // orgmatch
+            $total_male_org_match = DB::table('likes')
+                            ->select('likes.liker_id as liker_id','likes.user_id as user_id','users.id as id','users.gender as gender')
                             ->join("likes as like", function ($q) {
                                 $q->on("likes.liker_id", "=", "like.user_id");
                                 $q->on("like.liker_id", "=", "likes.user_id");
@@ -467,14 +569,70 @@ class UserTreeController extends Controller
                             ->join('users', function ($q) {
                                 $q->on('users.id', "=", "likes.user_id");
                             })
-                            ->whereBetween('likes.created_at',[Carbon::now()->startOfWeek(), Carbon::now()->endOfWeek()])
-                            ->count();
+                            ->where("users.gender","Male")
+                            ->where("likes.created_at",[Carbon::now()->startOfWeek(), Carbon::now()->endOfWeek()])
+                            ->get();
+            $total_female_org_match = DB::table('likes')
+                            ->select('likes.liker_id as liker_id','likes.user_id as user_id','users.id as id','users.gender as gender')
+                            ->join("likes as like", function ($q) {
+                                $q->on("likes.liker_id", "=", "like.user_id");
+                                $q->on("like.liker_id", "=", "likes.user_id");
+                            })
+                            ->join('users', function ($q) {
+                                $q->on('users.id', "=", "likes.user_id");
+                            })
+                            ->where("users.gender","Female")
+                            ->where("likes.created_at",[Carbon::now()->startOfWeek(), Carbon::now()->endOfWeek()])
+                            ->get();
+
         }
         else if ($request->filter_type == 3) {
-            $total_likes = Like::whereMonth("created_at",Carbon::now()->month)->count();
-            $total_dislikes = DisLike::whereMonth("created_at",Carbon::now()->month)->count();
-            $total_system_match = SystemMatch::whereMonth("created_at",Carbon::now()->month)->count();
-            $total_org_match = DB::table('likes')
+
+            // like
+            $total_like_male = Like::select('likes.id as id','users.gender as gender')
+                    ->join("users","users.id","=","likes.user_id")
+                    ->where("users.gender","Male")
+                    ->where("likes.created_at",Carbon::now()->month)
+                    ->groupBy("likes.user_id")
+                    ->get();
+            $total_female_like = Like::select('likes.id as id','users.gender as gender')
+                    ->join("users","users.id","=","likes.user_id")
+                    ->where("users.gender","Female")
+                    ->where("likes.created_at",Carbon::now()->month)
+                    ->groupBy("likes.user_id")
+                    ->get();
+
+            //dislike
+            $total_male_dislikes = DisLike::select('dis_likes.id as id','users.gender as gender')
+                    ->join("users","users.id","=","dis_likes.user_id")
+                    ->where("users.gender","Male")
+                    ->where("dis_likes.created_at",Carbon::now()->month)
+                    ->groupBy("dis_likes.user_id")
+                    ->get();
+            $total_female_dislikes = DisLike::select('dis_likes.id as id','users.gender as gender')
+                    ->join("users","users.id","=","dis_likes.user_id")
+                    ->where("users.gender","Female")
+                    ->where("dis_likes.created_at",Carbon::now()->month)
+                    ->groupBy("dis_likes.user_id")
+                    ->get();
+
+            // system match
+            $total_male_system_match = SystemMatch::select('system_match.id as id','users.gender as gender')
+                    ->join("users","users.id","=","system_match.user_id")
+                    ->where("users.gender","Male")
+                    ->where("system_match.created_at",Carbon::now()->month)
+                    ->groupBy("system_match.user_id")
+                    ->get();
+            $total_female_system_match = SystemMatch::select('system_match.id as id','users.gender as gender')
+                    ->join("users","users.id","=","system_match.user_id")
+                    ->where("users.gender","Female")
+                    ->where("system_match.created_at",Carbon::now()->month)
+                    ->groupBy("system_match.user_id")
+                    ->get();
+
+            // orgmatch
+            $total_male_org_match = DB::table('likes')
+                            ->select('likes.liker_id as liker_id','likes.user_id as user_id','users.id as id','users.gender as gender')
                             ->join("likes as like", function ($q) {
                                 $q->on("likes.liker_id", "=", "like.user_id");
                                 $q->on("like.liker_id", "=", "likes.user_id");
@@ -482,14 +640,68 @@ class UserTreeController extends Controller
                             ->join('users', function ($q) {
                                 $q->on('users.id', "=", "likes.user_id");
                             })
-                            ->whereMonth("likes.created_at",Carbon::now()->month)
-                            ->count();
+                            ->where("users.gender","Male")
+                            ->where("likes.created_at",Carbon::now()->month)
+                            ->get();
+            $total_female_org_match = DB::table('likes')
+                            ->select('likes.liker_id as liker_id','likes.user_id as user_id','users.id as id','users.gender as gender')
+                            ->join("likes as like", function ($q) {
+                                $q->on("likes.liker_id", "=", "like.user_id");
+                                $q->on("like.liker_id", "=", "likes.user_id");
+                            })
+                            ->join('users', function ($q) {
+                                $q->on('users.id', "=", "likes.user_id");
+                            })
+                            ->where("users.gender","Female")
+                            ->where("likes.created_at",Carbon::now()->month)
+                            ->get();
         }
         else if ($request->filter_type == 4) {
-            $total_likes = Like::whereYear("created_at",Carbon::now()->year)->count();
-            $total_dislikes = DisLike::whereYear("created_at",Carbon::now()->year)->count();
-            $total_system_match = SystemMatch::whereYear("created_at",Carbon::now()->year)->count();
-            $total_org_match = DB::table('likes')
+            // like
+            $total_like_male = Like::select('likes.id as id','users.gender as gender')
+                    ->join("users","users.id","=","likes.user_id")
+                    ->where("users.gender","Male")
+                    ->where("likes.created_at",Carbon::now()->year)
+                    ->groupBy("likes.user_id")
+                    ->get();
+            $total_female_like = Like::select('likes.id as id','users.gender as gender')
+                    ->join("users","users.id","=","likes.user_id")
+                    ->where("users.gender","Female")
+                    ->where("likes.created_at",Carbon::now()->year)
+                    ->groupBy("likes.user_id")
+                    ->get();
+
+            //dislike
+            $total_male_dislikes = DisLike::select('dis_likes.id as id','users.gender as gender')
+                    ->join("users","users.id","=","dis_likes.user_id")
+                    ->where("users.gender","Male")
+                    ->where("dis_likes.created_at",Carbon::now()->year)
+                    ->groupBy("dis_likes.user_id")
+                    ->get();
+            $total_female_dislikes = DisLike::select('dis_likes.id as id','users.gender as gender')
+                    ->join("users","users.id","=","dis_likes.user_id")
+                    ->where("users.gender","Female")
+                    ->where("dis_likes.created_at",Carbon::now()->year)
+                    ->groupBy("dis_likes.user_id")
+                    ->get();
+
+            // system match
+            $total_male_system_match = SystemMatch::select('system_match.id as id','users.gender as gender')
+                    ->join("users","users.id","=","system_match.user_id")
+                    ->where("users.gender","Male")
+                    ->where("system_match.created_at",Carbon::now()->year)
+                    ->groupBy("system_match.user_id")
+                    ->get();
+            $total_female_system_match = SystemMatch::select('system_match.id as id','users.gender as gender')
+                    ->join("users","users.id","=","system_match.user_id")
+                    ->where("users.gender","Female")
+                    ->where("system_match.created_at",Carbon::now()->year)
+                    ->groupBy("system_match.user_id")
+                    ->get();
+
+            // orgmatch
+            $total_male_org_match = DB::table('likes')
+                            ->select('likes.liker_id as liker_id','likes.user_id as user_id','users.id as id','users.gender as gender')
                             ->join("likes as like", function ($q) {
                                 $q->on("likes.liker_id", "=", "like.user_id");
                                 $q->on("like.liker_id", "=", "likes.user_id");
@@ -497,14 +709,69 @@ class UserTreeController extends Controller
                             ->join('users', function ($q) {
                                 $q->on('users.id', "=", "likes.user_id");
                             })
-                            ->whereYear("likes.created_at",Carbon::now()->year)
-                            ->count();
+                            ->where("users.gender","Male")
+                            ->where("likes.created_at",Carbon::now()->year)
+                            ->get();
+            $total_female_org_match = DB::table('likes')
+                            ->select('likes.liker_id as liker_id','likes.user_id as user_id','users.id as id','users.gender as gender')
+                            ->join("likes as like", function ($q) {
+                                $q->on("likes.liker_id", "=", "like.user_id");
+                                $q->on("like.liker_id", "=", "likes.user_id");
+                            })
+                            ->join('users', function ($q) {
+                                $q->on('users.id', "=", "likes.user_id");
+                            })
+                            ->where("users.gender","Female")
+                            ->where("likes.created_at",Carbon::now()->year)
+                            ->get();
         }
         else if ($request->filter_type == 5) {
-            $total_likes = Like::count();
-            $total_dislikes = DisLike::count();
-            $total_system_match = SystemMatch::count();
-            $total_org_match = DB::table('likes')
+
+            // like
+            $total_like_male = Like::select('likes.id as id','users.gender as gender')
+                    ->join("users","users.id","=","likes.user_id")
+                    ->where("users.gender","Male")
+                    ->where("likes.created_at",">=",$request->fromdate_search)->where("likes.created_at","<=",$request->todate_search)
+                    ->groupBy("likes.user_id")
+                    ->get();
+            $total_female_like = Like::select('likes.id as id','users.gender as gender')
+                    ->join("users","users.id","=","likes.user_id")
+                    ->where("users.gender","Female")
+                    ->where("likes.created_at",">=",$request->fromdate_search)->where("likes.created_at","<=",$request->todate_search)
+                    ->groupBy("likes.user_id")
+                    ->get();
+
+            //dislike
+            $total_male_dislikes = DisLike::select('dis_likes.id as id','users.gender as gender')
+                    ->join("users","users.id","=","dis_likes.user_id")
+                    ->where("users.gender","Male")
+                    ->where("dis_likes.created_at",">=",$request->fromdate_search)->where("dis_likes.created_at","<=",$request->todate_search)
+                    ->groupBy("dis_likes.user_id")
+                    ->get();
+            $total_female_dislikes = DisLike::select('dis_likes.id as id','users.gender as gender')
+                    ->join("users","users.id","=","dis_likes.user_id")
+                    ->where("users.gender","Female")
+                    ->where("dis_likes.created_at",">=",$request->fromdate_search)->where("dis_likes.created_at","<=",$request->todate_search)
+                    ->groupBy("dis_likes.user_id")
+                    ->get();
+
+            // system match
+            $total_male_system_match = SystemMatch::select('system_match.id as id','users.gender as gender')
+                    ->join("users","users.id","=","system_match.user_id")
+                    ->where("users.gender","Male")
+                    ->where("system_match.created_at",">=",$request->fromdate_search)->where("system_match.created_at","<=",$request->todate_search)
+                    ->groupBy("system_match.user_id")
+                    ->get();
+            $total_female_system_match = SystemMatch::select('system_match.id as id','users.gender as gender')
+                    ->join("users","users.id","=","system_match.user_id")
+                    ->where("users.gender","Female")
+                    ->where("system_match.created_at",">=",$request->fromdate_search)->where("system_match.created_at","<=",$request->todate_search)
+                    ->groupBy("system_match.user_id")
+                    ->get();
+
+            // orgmatch
+            $total_male_org_match = DB::table('likes')
+                            ->select('likes.liker_id as liker_id','likes.user_id as user_id','users.id as id','users.gender as gender')
                             ->join("likes as like", function ($q) {
                                 $q->on("likes.liker_id", "=", "like.user_id");
                                 $q->on("like.liker_id", "=", "likes.user_id");
@@ -512,14 +779,63 @@ class UserTreeController extends Controller
                             ->join('users', function ($q) {
                                 $q->on('users.id', "=", "likes.user_id");
                             })
-                            ->count();
+                            ->where("users.gender","Male")
+                            ->where("likes.created_at",">=",$request->fromdate_search)->where("likes.created_at","<=",$request->todate_search)
+                            ->get();
+            $total_female_org_match = DB::table('likes')
+                            ->select('likes.liker_id as liker_id','likes.user_id as user_id','users.id as id','users.gender as gender')
+                            ->join("likes as like", function ($q) {
+                                $q->on("likes.liker_id", "=", "like.user_id");
+                                $q->on("like.liker_id", "=", "likes.user_id");
+                            })
+                            ->join('users', function ($q) {
+                                $q->on('users.id', "=", "likes.user_id");
+                            })
+                            ->where("users.gender","Female")
+                            ->where("likes.created_at",">=",$request->fromdate_search)->where("likes.created_at","<=",$request->todate_search)
+                            ->get();
         }
         else
-        {
-            $total_likes = Like::where("created_at",Carbon::today())->count();
-            $total_dislikes = DisLike::where("created_at",Carbon::today())->count();
-            $total_system_match = SystemMatch::where("created_at",Carbon::today())->count();
-            $total_org_match = DB::table('likes')
+        {   
+            // like
+            $total_like_male = Like::select('likes.id as id','users.gender as gender')
+                    ->join("users","users.id","=","likes.user_id")
+                    ->where("users.gender","Male")
+                    ->groupBy("likes.user_id")
+                    ->get();
+            $total_female_like = Like::select('likes.id as id','users.gender as gender')
+                    ->join("users","users.id","=","likes.user_id")
+                    ->where("users.gender","Female")
+                    ->groupBy("likes.user_id")
+                    ->get();
+
+
+            //dislike
+            $total_male_dislikes = DisLike::select('dis_likes.id as id','users.gender as gender')
+                    ->join("users","users.id","=","dis_likes.user_id")
+                    ->where("users.gender","Male")
+                    ->groupBy("dis_likes.user_id")
+                    ->get();
+            $total_female_dislikes = DisLike::select('dis_likes.id as id','users.gender as gender')
+                    ->join("users","users.id","=","dis_likes.user_id")
+                    ->where("users.gender","Female")
+                    ->groupBy("dis_likes.user_id")
+                    ->get();
+
+            // system match
+            $total_male_system_match = SystemMatch::select('system_match.id as id','users.gender as gender')
+                    ->join("users","users.id","=","system_match.user_id")
+                    ->where("users.gender","Male")
+                    ->groupBy("system_match.user_id")
+                    ->get();
+            $total_female_system_match = SystemMatch::select('system_match.id as id','users.gender as gender')
+                    ->join("users","users.id","=","system_match.user_id")
+                    ->where("users.gender","Female")
+                    ->groupBy("system_match.user_id")
+                    ->get();
+
+            $total_male_org_match = DB::table('likes')
+                            ->select('likes.liker_id as liker_id','likes.user_id as user_id','users.id as id','users.gender as gender')
                             ->join("likes as like", function ($q) {
                                 $q->on("likes.liker_id", "=", "like.user_id");
                                 $q->on("like.liker_id", "=", "likes.user_id");
@@ -527,14 +843,45 @@ class UserTreeController extends Controller
                             ->join('users', function ($q) {
                                 $q->on('users.id', "=", "likes.user_id");
                             })
-                            ->where("likes.created_at",Carbon::today())
-                            ->count();
+                            ->where("users.gender","Male")
+                            ->get();
+            
+            $total_female_org_match = DB::table('likes')
+                            ->select('likes.liker_id as liker_id','likes.user_id as user_id','users.id as id','users.gender as gender')
+                            ->join("likes as like", function ($q) {
+                                $q->on("likes.liker_id", "=", "like.user_id");
+                                $q->on("like.liker_id", "=", "likes.user_id");
+                            })
+                            ->join('users', function ($q) {
+                                $q->on('users.id', "=", "likes.user_id");
+                            })
+                            ->where("users.gender","Female")
+                            ->get();
+
+            //old data
+            // $total_likes = Like::count();
+            // $total_dislikes = DisLike::count();
+            // $total_system_match = SystemMatch::count();
+            // $total_org_match = DB::table('likes')
+            //                 ->join("likes as like", function ($q) {
+            //                     $q->on("likes.liker_id", "=", "like.user_id");
+            //                     $q->on("like.liker_id", "=", "likes.user_id");
+            //                 })
+            //                 ->join('users', function ($q) {
+            //                     $q->on('users.id', "=", "likes.user_id");
+            //                 })
+            //                 ->count();
         }
 
-        $records['total_likes'] = number_format($total_likes);
-        $records['total_dislikes'] = number_format($total_dislikes);
-        $records['total_system_match'] = number_format($total_system_match);
-        $records['total_org_match'] = number_format($total_org_match);;
+        $records['total_like_male'] = number_format(count($total_like_male));
+        $records['total_female_like'] = number_format(count($total_female_like));
+        $records['total_male_dislikes'] = number_format(count($total_male_dislikes));
+        $records['total_female_dislikes'] = number_format(count($total_female_dislikes));
+        $records['total_male_system_match'] = number_format(count($total_male_system_match));
+        $records['total_female_system_match'] = number_format(count($total_female_system_match));
+        $records['total_male_org_match'] = number_format(count($total_male_org_match));
+        $records['total_female_org_match'] = number_format(count($total_female_org_match));
+
         return $records;
     }
 }
