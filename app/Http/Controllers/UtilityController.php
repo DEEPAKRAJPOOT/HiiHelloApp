@@ -5,6 +5,8 @@ use App\Admin;
 use App\Models\CmsPage;
 use App\Models\User;
 use App\Models\UserTranslation;
+use App\Models\Subscription;
+use App\Models\SubscriptionPlan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -338,5 +340,67 @@ class UtilityController extends Controller
             return false;
         }
 
+    }
+
+    function chk_female_subscriptions(Request $request)
+    {
+         $user_list = User::select('users.id as id','users.gender as gender','users.subscription_end_date as subscription_end_date')
+                    ->where('users.gender','Female')
+                    ->get();
+        // echo "<pre>"; print_r($user_list->toArray()); die();
+        $subscription_total = 0;
+        $un_subscription_total = 0;
+        if (count($user_list) > 0) {
+            foreach ($user_list as $key => $val) {
+                $subscription_data = Subscription::where("user_id",$val->id)->where("status","active")->where("plan_id","3")->whereNull("deleted_at")->first();
+                if (empty($subscription_data)) {
+                    if ($request->is_print == 1) {
+                        echo "User Id :- ".$val->id. "<br>";
+                    }
+
+                    if ($request->is_print == 0) {
+                        $plan = SubscriptionPlan::where('is_default_for_girl','y')->first();
+                        if($plan){
+
+                            $new_subscription_start_date = \Carbon\Carbon::today()->format('Y-m-d');
+                            if ($val->subscription_end_date >= $new_subscription_start_date) {
+                                $new_subscription_start_date = $val->subscription_end_date;
+                            }
+
+                            // add free subscription
+                            Subscription::firstOrCreate([
+                                'user_id'       =>  $val->id ?? NULL,
+                                'plan_id'       =>  $plan->id ?? NULL,
+                                'months'        =>  $plan->months,
+                                'amount'        =>  $plan->amount,
+                                'start_date'    =>  $new_subscription_start_date,
+                                'end_date'      =>  NULL,
+                                'payment_date'  =>  now(),
+                                'payment_type'  =>  '',
+                                'status'        =>  'active',
+                            ], [
+                                'custom_id'     =>  getUniqueString('subscriptions'),
+                            ]);
+
+                            // update user table subscription details
+                            User::where('id',$val->id)->update([ 
+                                'is_subscribed' =>  'y',
+                            ]);
+                        }
+                    }
+
+                    $subscription_total ++;
+                }
+                else
+                {   
+                    if ($request->is_print == 1) {
+                        echo "Subscription User Id :- ".$val->id. "<br>";
+                    }
+                    $un_subscription_total ++;
+                }
+            }
+        }
+        echo "subscription total :- ".$subscription_total. "<br>";
+        echo "uN subscription total :- ".$un_subscription_total. "<br>";
     }
 }

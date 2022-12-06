@@ -14,19 +14,22 @@
         <div class="col-lg-3">
             <h3 class="card-label">Filter</h3>
         </div>
-        <div class="col-lg-3"></div>
-        <div class="col-lg-3"></div>
-        <div class="col-lg-3">
-            <select class="form-control" name="filter_type" id="filter_type" style="margin-bottom: 10px;">
-              <option value="">-- select filter type --</option>
-              <option value="1">Today</option>
-              <option value="2">This week</option>
-              <option value="3">This month</option>
-              <option value="4">This year</option>
-              <option value="5">Custom date range</option>
-          </select>
+        <div class="col-lg-9" style="display: inline-flex; float: right;justify-content:end;">
+                <select class="form-control" name="filter_type" id="filter_type" style="margin-bottom: 10px;width: 20%;">
+                  <option value="">-- select filter type --</option>
+                  <option value="1">Today</option>
+                  <option value="2">This week</option>
+                  <option value="3">This month</option>
+                  <option value="4">This year</option>
+                  <option value="5">Custom date range</option>
+              </select>
+              <input type='date' id='fromdate_search' class="form-control ml-2" placeholder='From date' style="width: 20%;">
+              <input type='date' id='todate_search' class="form-control ml-2" placeholder='To date' style="width: 20%;">
+              <input type='button' class="btn btn-primary mr-2 ml-2" id="filter_type_btn_search" value="Search" style="height: 38px !important;">
         </div>
         <input type="hidden" name="filter_type_url" id="filter_type_url" value="{{ route('admin.usertree.filters') }}">
+    </div>
+    <div class="row">
         <div class="col-lg-3">
            <div class="card card-custom rounded-xl gutter-b bg-dark card-stretch">
               <div class="d-flex align-items-center mr-2">
@@ -42,10 +45,10 @@
                        </svg>
                        <!--end::Svg Icon-->
                     </span>
-                    <span class="font-size-h6 text-muted font-weight-bold">Total Likes</span>
+                    <span class="font-size-h6 text-muted font-weight-bold">Male Likes</span>
                  </div>
                  <div>
-                    <div class="font-size-h1 text-white font-weight-bolder" id="total_like"></div>
+                    <div class="font-size-h1 text-white font-weight-bolder" id="total_like_male"></div>
                  </div>
               </div>
            </div>
@@ -66,10 +69,10 @@
                        </svg>
                        <!--end::Svg Icon-->
                     </span>
-                    <span class="font-size-h6 text-muted font-weight-bold">Total Dislik</span>
+                    <span class="font-size-h6 text-muted font-weight-bold">Male Dislik</span>
                  </div>
                  <div>
-                    <div class="font-size-h1 text-white font-weight-bolder"id="total_dislike"></div>
+                    <div class="font-size-h1 text-white font-weight-bolder"id="total_male_dislikes"></div>
                  </div>
               </div>
            </div>
@@ -90,10 +93,10 @@
                        </svg>
                        <!--end::Svg Icon-->
                     </span>
-                    <span class="font-size-h6 text-muted font-weight-bold">Total System Match</span>
+                    <span class="font-size-h6 text-muted font-weight-bold">Male System Match</span>
                  </div>
                  <div>
-                    <div class="font-size-h1 text-white font-weight-bolder" id="total_system_match"></div>
+                    <div class="font-size-h1 text-white font-weight-bolder" id="total_male_system_match"></div>
                  </div>
               </div>
            </div>
@@ -114,15 +117,111 @@
                        </svg>
                        <!--end::Svg Icon-->
                     </span>
-                    <span class="font-size-h6 text-muted font-weight-bold">Total Org. Match</span>
+                    <span class="font-size-h6 text-muted font-weight-bold">Male Org. Match</span>
                  </div>
                  <div>
-                    <div class="font-size-h1 text-white font-weight-bolder" id="total_org_match"></div>
+                    <div class="font-size-h1 text-white font-weight-bolder" id="total_male_org_match"></div>
+                 </div>
+              </div>
+           </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-lg-3">
+           <div class="card card-custom rounded-xl gutter-b bg-dark card-stretch">
+              <div class="d-flex align-items-center mr-2">
+                 <div class="symbol-label px-6 py-8 rounded-xl mr-7">
+                    <span class="svg-icon svg-icon-4x svg-icon-white d-block my-2">
+                       <!--begin::Svg Icon | path:/metronic/theme/html/demo1/dist/assets/media/svg/icons/Communication/Group.svg-->
+                       <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="24px" height="24px" viewBox="0 0 24 24" version="1.1">
+                          <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+                             <polygon points="0 0 24 0 24 24 0 24"></polygon>
+                             <path d="M18,14 C16.3431458,14 15,12.6568542 15,11 C15,9.34314575 16.3431458,8 18,8 C19.6568542,8 21,9.34314575 21,11 C21,12.6568542 19.6568542,14 18,14 Z M9,11 C6.790861,11 5,9.209139 5,7 C5,4.790861 6.790861,3 9,3 C11.209139,3 13,4.790861 13,7 C13,9.209139 11.209139,11 9,11 Z" fill="#000000" fill-rule="nonzero" opacity="0.3"></path>
+                             <path d="M17.6011961,15.0006174 C21.0077043,15.0378534 23.7891749,16.7601418 23.9984937,20.4 C24.0069246,20.5466056 23.9984937,21 23.4559499,21 L19.6,21 C19.6,18.7490654 18.8562935,16.6718327 17.6011961,15.0006174 Z M0.00065168429,20.1992055 C0.388258525,15.4265159 4.26191235,13 8.98334134,13 C13.7712164,13 17.7048837,15.2931929 17.9979143,20.2 C18.0095879,20.3954741 17.9979143,21 17.2466999,21 C13.541124,21 8.03472472,21 0.727502227,21 C0.476712155,21 -0.0204617505,20.45918 0.00065168429,20.1992055 Z" fill="#000000" fill-rule="nonzero"></path>
+                          </g>
+                       </svg>
+                       <!--end::Svg Icon-->
+                    </span>
+                    <span class="font-size-h6 text-muted font-weight-bold">Female Likes</span>
+                 </div>
+                 <div>
+                    <div class="font-size-h1 text-white font-weight-bolder" id="total_female_like"></div>
                  </div>
               </div>
            </div>
         </div>
 
+         <div class="col-lg-3">
+           <div class="card card-custom rounded-xl gutter-b bg-dark card-stretch">
+              <div class="d-flex align-items-center mr-2">
+                 <div class="symbol-label px-6 py-8 rounded-xl mr-7">
+                    <span class="svg-icon svg-icon-4x svg-icon-white d-block my-2">
+                       <!--begin::Svg Icon | path:/metronic/theme/html/demo1/dist/assets/media/svg/icons/Communication/Group.svg-->
+                       <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="24px" height="24px" viewBox="0 0 24 24" version="1.1">
+                          <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+                             <polygon points="0 0 24 0 24 24 0 24"></polygon>
+                             <path d="M18,14 C16.3431458,14 15,12.6568542 15,11 C15,9.34314575 16.3431458,8 18,8 C19.6568542,8 21,9.34314575 21,11 C21,12.6568542 19.6568542,14 18,14 Z M9,11 C6.790861,11 5,9.209139 5,7 C5,4.790861 6.790861,3 9,3 C11.209139,3 13,4.790861 13,7 C13,9.209139 11.209139,11 9,11 Z" fill="#000000" fill-rule="nonzero" opacity="0.3"></path>
+                             <path d="M17.6011961,15.0006174 C21.0077043,15.0378534 23.7891749,16.7601418 23.9984937,20.4 C24.0069246,20.5466056 23.9984937,21 23.4559499,21 L19.6,21 C19.6,18.7490654 18.8562935,16.6718327 17.6011961,15.0006174 Z M0.00065168429,20.1992055 C0.388258525,15.4265159 4.26191235,13 8.98334134,13 C13.7712164,13 17.7048837,15.2931929 17.9979143,20.2 C18.0095879,20.3954741 17.9979143,21 17.2466999,21 C13.541124,21 8.03472472,21 0.727502227,21 C0.476712155,21 -0.0204617505,20.45918 0.00065168429,20.1992055 Z" fill="#000000" fill-rule="nonzero"></path>
+                          </g>
+                       </svg>
+                       <!--end::Svg Icon-->
+                    </span>
+                    <span class="font-size-h6 text-muted font-weight-bold">Female Dislik</span>
+                 </div>
+                 <div>
+                    <div class="font-size-h1 text-white font-weight-bolder"id="total_female_dislikes"></div>
+                 </div>
+              </div>
+           </div>
+        </div>
+
+         <div class="col-lg-3">
+           <div class="card card-custom rounded-xl gutter-b bg-dark card-stretch">
+              <div class="d-flex align-items-center mr-2">
+                 <div class="symbol-label px-6 py-8 rounded-xl mr-7">
+                    <span class="svg-icon svg-icon-4x svg-icon-white d-block my-2">
+                       <!--begin::Svg Icon | path:/metronic/theme/html/demo1/dist/assets/media/svg/icons/Communication/Group.svg-->
+                       <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="24px" height="24px" viewBox="0 0 24 24" version="1.1">
+                          <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+                             <polygon points="0 0 24 0 24 24 0 24"></polygon>
+                             <path d="M18,14 C16.3431458,14 15,12.6568542 15,11 C15,9.34314575 16.3431458,8 18,8 C19.6568542,8 21,9.34314575 21,11 C21,12.6568542 19.6568542,14 18,14 Z M9,11 C6.790861,11 5,9.209139 5,7 C5,4.790861 6.790861,3 9,3 C11.209139,3 13,4.790861 13,7 C13,9.209139 11.209139,11 9,11 Z" fill="#000000" fill-rule="nonzero" opacity="0.3"></path>
+                             <path d="M17.6011961,15.0006174 C21.0077043,15.0378534 23.7891749,16.7601418 23.9984937,20.4 C24.0069246,20.5466056 23.9984937,21 23.4559499,21 L19.6,21 C19.6,18.7490654 18.8562935,16.6718327 17.6011961,15.0006174 Z M0.00065168429,20.1992055 C0.388258525,15.4265159 4.26191235,13 8.98334134,13 C13.7712164,13 17.7048837,15.2931929 17.9979143,20.2 C18.0095879,20.3954741 17.9979143,21 17.2466999,21 C13.541124,21 8.03472472,21 0.727502227,21 C0.476712155,21 -0.0204617505,20.45918 0.00065168429,20.1992055 Z" fill="#000000" fill-rule="nonzero"></path>
+                          </g>
+                       </svg>
+                       <!--end::Svg Icon-->
+                    </span>
+                    <span class="font-size-h6 text-muted font-weight-bold">Female System Match</span>
+                 </div>
+                 <div>
+                    <div class="font-size-h1 text-white font-weight-bolder" id="total_female_system_match"></div>
+                 </div>
+              </div>
+           </div>
+        </div>
+
+         <div class="col-lg-3">
+           <div class="card card-custom rounded-xl gutter-b bg-dark card-stretch">
+              <div class="d-flex align-items-center mr-2">
+                 <div class="symbol-label px-6 py-8 rounded-xl mr-7">
+                    <span class="svg-icon svg-icon-4x svg-icon-white d-block my-2">
+                       <!--begin::Svg Icon | path:/metronic/theme/html/demo1/dist/assets/media/svg/icons/Communication/Group.svg-->
+                       <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="24px" height="24px" viewBox="0 0 24 24" version="1.1">
+                          <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+                             <polygon points="0 0 24 0 24 24 0 24"></polygon>
+                             <path d="M18,14 C16.3431458,14 15,12.6568542 15,11 C15,9.34314575 16.3431458,8 18,8 C19.6568542,8 21,9.34314575 21,11 C21,12.6568542 19.6568542,14 18,14 Z M9,11 C6.790861,11 5,9.209139 5,7 C5,4.790861 6.790861,3 9,3 C11.209139,3 13,4.790861 13,7 C13,9.209139 11.209139,11 9,11 Z" fill="#000000" fill-rule="nonzero" opacity="0.3"></path>
+                             <path d="M17.6011961,15.0006174 C21.0077043,15.0378534 23.7891749,16.7601418 23.9984937,20.4 C24.0069246,20.5466056 23.9984937,21 23.4559499,21 L19.6,21 C19.6,18.7490654 18.8562935,16.6718327 17.6011961,15.0006174 Z M0.00065168429,20.1992055 C0.388258525,15.4265159 4.26191235,13 8.98334134,13 C13.7712164,13 17.7048837,15.2931929 17.9979143,20.2 C18.0095879,20.3954741 17.9979143,21 17.2466999,21 C13.541124,21 8.03472472,21 0.727502227,21 C0.476712155,21 -0.0204617505,20.45918 0.00065168429,20.1992055 Z" fill="#000000" fill-rule="nonzero"></path>
+                          </g>
+                       </svg>
+                       <!--end::Svg Icon-->
+                    </span>
+                    <span class="font-size-h6 text-muted font-weight-bold">Female Org. Match</span>
+                 </div>
+                 <div>
+                    <div class="font-size-h1 text-white font-weight-bolder" id="total_female_org_match"></div>
+                 </div>
+              </div>
+           </div>
+        </div>
     </div>
     <div class="card card-custom">
         <div class="card-header">
@@ -238,8 +337,6 @@
                 },
                 data: function(data) {
 
-                    // console.log(data);
-                    // console.log(data.total_likesotal);
                   // Read values
                   var filter_types = $('#type').val();
                   var from_date = $('#search_fromdate').val();
@@ -272,7 +369,7 @@
                 { targets: 1, title: 'Photo 2', orderable: false },
                 { targets: 2, title: 'Account Id', orderable: true },
                 { targets: 3, title: 'Name', orderable: true },
-                { targets: 4, title: 'Mode of Registration', orderable: true },
+                { targets: 4, title: 'Mode of Registration', orderable: false },
                 { targets: 5, title: 'Registration Date', orderable: true },
                 { targets: 6, title: 'Total like sent', orderable: false },
                 { targets: 7, title: 'Total like received', orderable: false },
@@ -296,66 +393,11 @@
         $('#btn_search').click(function(){
             $('#users_table').DataTable().draw();
         });
-        // $("#total_like").html("Loading..");
-        // $("#total_dislike").html("Loading..");
-        // $("#total_system_match").html("Loading..");
-        // $("#total_org_match").html("Loading..");
-        // $('#users_table').on('xhr.dt', function ( e, settings, json, xhr ) {
-        //     if (json != '') {
-        //         $("#total_like").html(json.total_likes);
-        //         $("#total_dislike").html(json.total_dislikes);
-        //         $("#total_system_match").html(json.total_system_match);
-        //         $("#total_org_match").html(json.total_org_match);
-        //     }
-        //     // console.log(xhr);
-        // } );
         $(document).on("click", "#btn_reset_filter", function () {
             $("#type,#search_fromdate,#search_todate").val('');
             oTable.draw();
         });
     });
-
-    // $(document).on("click", ".usermatchmodel", function (){
-    //     // datatable
-    //     oTable = $('#user_match_table').DataTable({
-    //         responsive: true,
-    //         searchDelay: 500,
-    //         processing: true,
-    //         serverSide: true,
-    //         ajax: {
-    //             url: "{{ route('admin.usertree.usermatchlisting') }}",
-    //             data: {
-    //                 columnsDef: ['checkbox', 'country_code', 'contact_no', 'gender','Created At', 'active', 'action'],                    
-    //             },
-    //             data: function(data) {
-    //                 var user_id = $('.usermatchmodel').attr('data-id');
-    //                 data.user_id = user_id;
-    //                 data.flgPendingProfile = $(".getpendingprofile").is(':checked') ? 1 : 0;
-    //            }                
-    //         },
-    //         columns: [
-    //             { data: 'full_name' },
-    //             { data: 'gender' },
-    //             { data: 'created_at' },
-    //         ],
-    //         columnDefs: [
-    //             // Specify columns titles here...
-    //             { targets: 0, title: 'User name', orderable: true },
-    //             { targets: 1, title: 'Gender', orderable: true },
-    //             { targets: 2, title: 'Match date', orderable: true },
-    //         ],
-    //         order: [
-    //             [2, 'DESC']
-    //         ],
-    //         lengthMenu: [
-    //             [10, 20, 50, 100],
-    //             [10, 20, 50, 100]
-    //         ],
-    //         pageLength: 10,
-    //     });
-
-    // });
-
     $(document).on("click", ".kt_search", function (){
         oTable.draw();
     });
@@ -364,6 +406,10 @@
         $("#search_fromdate_td").css("display","none");
         $("#search_todate_td").css("display","none");
         $("#btn_search").hide();
+
+        $("#filter_type_btn_search").hide();
+        $("#fromdate_search").css("display","none");
+        $("#todate_search").css("display","none");
         $(document).on("change", "#type", function (e) {
             $("#btn_search").show();
             var type = $("#type").val();
@@ -376,55 +422,76 @@
                 $("#search_todate_td").css("display","block");
             }
         });
+
+        $(document).on("change", "#filter_type", function (e) {
+            $("#filter_type_btn_search").show();
+            var filter_type = $("#filter_type").val();
+            if (filter_type == 1 || filter_type == 2 || filter_type == 3 || filter_type == 4) {
+                $("#fromdate_search").css("display","none");
+                $("#todate_search").css("display","none");
+            }
+            if (filter_type == 5) {
+                $("#fromdate_search").css("display","block");
+                $("#todate_search").css("display","block");
+            }
+        });
     });
 </script>
 <script type="text/javascript">
-
-    // $('#btn_search').click(function(){
-    //     var filter_type = $("#type").val();
-    //     var filter_type_url     = $("#filter_type_url").val();
-    //     if (filter_type != '' && filter_type_url != '') {
-    //         $.ajax({
-    //             url: filter_type_url,
-    //             type: "POST",
-    //             dataType: "json",
-    //             data: {
-    //                 _token: $("meta[name='csrf-token']").attr("content"),
-    //                 filter_type: filter_type,
-    //             },
-    //             cache: false,
-    //             beforeSend: function(){
-    //                 $("#total_like").html("<h6>processing..</h6>");
-    //                 $("#total_dislike").html("<h6>processing..</h6>");
-    //                 $("#total_system_match").html("<h6>processing..</h6>");
-    //                 $("#total_org_match").html("<h6>processing..</h6>");
-    //             },
-    //             complete: function(){
-    //                 $("#total_like").html();
-    //                 $("#total_dislike").html();
-    //                 $("#total_system_match").html();
-    //                 $("#total_org_match").html();
-    //             },
-    //             success: function (result) {
-    //                 if (result != '') {
-    //                     $("#total_like").html(result.total_likes);
-    //                     $("#total_dislike").html(result.total_dislikes);
-    //                     $("#total_system_match").html(result.total_system_match);
-    //                     $("#total_org_match").html(result.total_org_match);
-    //                 }
-    //             },
-    //         });
-    //     }
-    // });
-
     $(document).ready(function () {
-        $("#total_like").html(0);
-        $("#total_dislike").html(0);
-        $("#total_system_match").html(0);
-        $("#total_org_match").html(0);
-        $(document).on("change", "#filter_type", function (e) {
-            var filter_type = $("#filter_type").val();
             var filter_type_url     = $("#filter_type_url").val();
+            if (filter_type_url != '') {
+                $.ajax({
+                    url: filter_type_url,
+                    type: "POST",
+                    dataType: "json",
+                    data: {
+                        _token: $("meta[name='csrf-token']").attr("content"),
+                        filter_type: 6,
+                    },
+                    cache: false,
+                    beforeSend: function(){
+                        $("#total_like_male").html("<p style='font-size: 18px;'>processing..</p>");
+                        $("#total_female_like").html("<p style='font-size: 18px;'>processing..</p>");
+                        $("#total_male_dislikes").html("<p style='font-size: 18px;'>processing..</p>");
+                        $("#total_female_dislikes").html("<p style='font-size: 18px;'>processing..</p>");
+                        $("#total_male_system_match").html("<p style='font-size: 18px;'>processing..</p>");
+                        $("#total_female_system_match").html("<p style='font-size: 18px;'>processing..</p>");
+                        $("#total_male_org_match").html("<p style='font-size: 18px;'>processing..</p>");
+                        $("#total_female_org_match").html("<p style='font-size: 18px;'>processing..</p>");
+                    },
+                    complete: function(){
+                        $("#total_like_male").html();
+                        $("#total_female_like").html();
+                        $("#total_male_dislikes").html();
+                        $("#total_female_dislikes").html();
+                        $("#total_male_system_match").html();
+                        $("#total_female_system_match").html();
+                        $("#total_male_org_match").html();
+                        $("#total_female_org_match").html();
+                    },
+                    success: function (result) {
+                        if (result != '') {
+                            $("#total_like_male").html(result.total_like_male);
+                            $("#total_female_like").html(result.total_female_like);
+                            $("#total_male_dislikes").html(result.total_male_dislikes);
+                            $("#total_female_dislikes").html(result.total_female_dislikes);
+                            $("#total_male_system_match").html(result.total_male_system_match);
+                            $("#total_female_system_match").html(result.total_female_system_match);
+                            $("#total_male_org_match").html(result.total_male_org_match);
+                            $("#total_female_org_match").html(result.total_female_org_match);
+                        }
+                    },
+                });
+            }
+
+
+        $(document).on("click", "#filter_type_btn_search", function (e) {
+            var filter_type         = $("#filter_type").val();
+            var filter_type_url     = $("#filter_type_url").val();
+            var fromdate_search     = $("#fromdate_search").val();
+            var todate_search       = $("#todate_search").val();
+
             if (filter_type != '' && filter_type_url != '') {
                 $.ajax({
                     url: filter_type_url,
@@ -433,26 +500,40 @@
                     data: {
                         _token: $("meta[name='csrf-token']").attr("content"),
                         filter_type: filter_type,
+                        fromdate_search: fromdate_search,
+                        todate_search: todate_search,
                     },
                     cache: false,
                     beforeSend: function(){
-                        $("#total_like").html("<p style='font-size: 20px;'>processing..</p>");
-                        $("#total_dislike").html("<p style='font-size: 20px;'>processing..</p>");
-                        $("#total_system_match").html("<p style='font-size: 20px;'>processing..</p>");
-                        $("#total_org_match").html("<p style='font-size: 20px;'>processing..</p>");
+                        $("#total_like_male").html("<p style='font-size: 18px;'>processing..</p>");
+                        $("#total_female_like").html("<p style='font-size: 18px;'>processing..</p>");
+                        $("#total_male_dislikes").html("<p style='font-size: 18px;'>processing..</p>");
+                        $("#total_female_dislikes").html("<p style='font-size: 18px;'>processing..</p>");
+                        $("#total_male_system_match").html("<p style='font-size: 18px;'>processing..</p>");
+                        $("#total_female_system_match").html("<p style='font-size: 18px;'>processing..</p>");
+                        $("#total_male_org_match").html("<p style='font-size: 18px;'>processing..</p>");
+                        $("#total_female_org_match").html("<p style='font-size: 18px;'>processing..</p>");
                     },
                     complete: function(){
-                        $("#total_like").html();
-                        $("#total_dislike").html();
-                        $("#total_system_match").html();
-                        $("#total_org_match").html();
+                        $("#total_like_male").html();
+                        $("#total_female_like").html();
+                        $("#total_male_dislikes").html();
+                        $("#total_female_dislikes").html();
+                        $("#total_male_system_match").html();
+                        $("#total_female_system_match").html();
+                        $("#total_male_org_match").html();
+                        $("#total_female_org_match").html();
                     },
                     success: function (result) {
                         if (result != '') {
-                            $("#total_like").html(result.total_likes);
-                            $("#total_dislike").html(result.total_dislikes);
-                            $("#total_system_match").html(result.total_system_match);
-                            $("#total_org_match").html(result.total_org_match);
+                            $("#total_like_male").html(result.total_like_male);
+                            $("#total_female_like").html(result.total_female_like);
+                            $("#total_male_dislikes").html(result.total_male_dislikes);
+                            $("#total_female_dislikes").html(result.total_female_dislikes);
+                            $("#total_male_system_match").html(result.total_male_system_match);
+                            $("#total_female_system_match").html(result.total_female_system_match);
+                            $("#total_male_org_match").html(result.total_male_org_match);
+                            $("#total_female_org_match").html(result.total_female_org_match);
                         }
                     },
                 });
