@@ -83,7 +83,7 @@ class UserRequest extends FormRequest
             'video_suggestion'          =>  'nullable|min:3|max:150',
             'verify_photo_status'       =>  'nullable|in:under_review,verified,unverified',
             'verify_video_status'       =>  'nullable|in:under_review,verified,unverified',
-            'verify_status'             =>  'nullable|in:under_review,verified,unverified',
+            'verify_status'             =>  'nullable|in:under_review,verified,unverified,pending',
         ];
     }
 }
