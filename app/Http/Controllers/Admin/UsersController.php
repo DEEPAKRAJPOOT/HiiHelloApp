@@ -1126,11 +1126,45 @@ class UsersController extends Controller
 
                     if (($users->gender == "Male" && $request->gender == "Female") || ($users->gender == "" && $request->gender == "Female")) {
 
-                        // update user table subscription details
-                        User::where('id',$request->id)->update([ 
-                            'gender' =>  $request->gender ?? $users->gender                            
-                        ]);
+                        $free_subscription = config('utility.subscription.free_for_girls');
+                        if($free_subscription && $request->gender == 'Female') {
 
+                            // create modedl object and used this function
+                            // $users->gender = ;
+                            // $users = $this->user->buyFreeSubscription();
+                            // $users->save();
+
+                            $plan = SubscriptionPlan::where('is_default_for_girl','y')->first();
+                            if($plan){
+
+                                $new_subscription_start_date = \Carbon\Carbon::today()->format('Y-m-d');
+                                if ($users->subscription_end_date >= $new_subscription_start_date) {
+                                    $new_subscription_start_date = $users->subscription_end_date;
+                                }
+
+                                // add free subscription
+                                Subscription::firstOrCreate([
+                                    'user_id'       =>  $users->id ?? NULL,
+                                    'plan_id'       =>  $plan->id ?? NULL,
+                                    'months'        =>  $plan->months,
+                                    'amount'        =>  $plan->amount,
+                                    'start_date'    =>  $new_subscription_start_date,
+                                    'end_date'      =>  NULL,
+                                    'payment_date'  =>  now(),
+                                    'payment_type'  =>  '',
+                                    'status'        =>  'active',
+                                ], [
+                                    'custom_id'     =>  getUniqueString('subscriptions'),
+                                ]);
+
+                                // update user table subscription details
+                                User::where('id',$request->id)->update([ 
+                                    'gender' =>  $request->gender ?? $users->gender,
+                                    'is_subscribed' =>  'y',
+                                ]);
+                            }
+                        }
+                                
                         $content['status'] = 200;
                         $content['message'] = "Gender updated successfully1.";
                         return response()->json($content);
@@ -1139,7 +1173,7 @@ class UsersController extends Controller
                     if (($users->gender == "Female" && $request->gender == "Male") || ($users->gender == "" && $request->gender == "Male")) {
 
                         // delete subscription data
-                        Subscription::where('user_id',$users->id)->delete();
+                        Subscription::where('user_id',$request->id)->delete();
 
                         // update user table subscription details
                         User::where('id',$request->id)->update([ 
@@ -1174,16 +1208,6 @@ class UsersController extends Controller
             $content['message'] = "Messing required paramater..!";
             return response()->json($content);
         }
-        // try {
-        //     $content['status'] = 200;
-        //     $content['message'] = "Status updated successfully.";
-        //     return response()->json($content);
-        // } catch (QueryException $e) {
-        //     DB::rollback();
-        //     return redirect()->back()->flash('error', $e->getMessage());
-        // } catch (Exception $e) {
-        //     return redirect()->back()->with('error', $e->getMessage());
-        // }
     }
 
     public function bulk_gender_update(Request $request) {
@@ -1206,7 +1230,7 @@ class UsersController extends Controller
                             if (($users->gender == "Male" && $req_gender == "Female") || ($users->gender == "" && $req_gender == "Female")) {
 
                                 
-                                /*$free_subscription = config('utility.subscription.free_for_girls');
+                                $free_subscription = config('utility.subscription.free_for_girls');
                                 if($free_subscription && $req_gender == 'Female') {
 
                                     // create modedl object and used this function
@@ -1243,12 +1267,7 @@ class UsersController extends Controller
                                             'is_subscribed' =>  'y',
                                         ]);
                                     }
-                                }*/
-
-                                // update user table gender details
-                                User::where('custom_id',$req_user_id)->update([
-                                    'gender' =>  $req_gender ?? $users->gender
-                                ]);
+                                }
                             }
 
                             if (($users->gender == "Female" && $req_gender == "Male") || ($users->gender == "" && $req_gender == "Male")) {
