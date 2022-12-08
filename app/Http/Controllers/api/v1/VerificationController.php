@@ -27,6 +27,7 @@ class VerificationController extends Controller
             try {
                 $path = NULL;
                 $user = $request->user();
+                $safe_image = "true";
 
                 if ($request->type == 'image') {
 
@@ -36,6 +37,7 @@ class VerificationController extends Controller
                     }
                     //CHECK FOR AWS REKOGNIZTION START
 
+                    ///CHECK FOR AWS REKOGNIZTION START
                     $awsImgResultArr = checkAwsImageModeration($request,"file");
 
                     if(count($awsImgResultArr) > 0)
@@ -49,35 +51,12 @@ class VerificationController extends Controller
                         }   
                         else
                         {
-                            $this->status = Response::HTTP_NOT_FOUND;
-                            return ([
-                                'data'  =>  NULL,
-                                'meta' => [
-                                    'url'       =>  url()->current(),
-                                    'api'       =>  $this->getVersion(),
-                                    'language'  =>  app()->getLocale(),
-                                    'is_ban'    =>  false,
-                                    'message'   =>   trans('api.notify_message.image_moderation.message'),
-                                ]
-                            ]);
+                            $user->verify_photo = NULL;
+                            $user->verify_photo_status = "unverified";
+                            $user->photo_verified_at = NULL;
+                            $safe_image = "false";                            
                         }  
-                    }
-                    else
-                    {
-
-                         $this->status = Response::HTTP_NOT_FOUND;
-                            return ([
-                                'data'  =>  NULL,
-                                'meta' => [
-                                    'url'       =>  url()->current(),
-                                    'api'       =>  $this->getVersion(),
-                                    'language'  =>  app()->getLocale(),
-                                    'is_ban'    =>  false,
-                                    'message'   =>  trans('api.not_found', ['entity' => __('AWS Image Moderation')]),
-                                ]
-                            ]);
-
-                    }    
+                    }                      
                     //CHECK FOR AWS REKOGNIZTION END
 
                 } elseif ($request->type == 'video') {
@@ -103,6 +82,7 @@ class VerificationController extends Controller
                             'api'       =>  $this->getVersion(),
                             'language'  =>  app()->getLocale(),
                             'is_ban'    =>  false,
+                            'safe_image'    =>  $safe_image,     
                             'message'   =>  trans('api.verification_upload.success'),
                         ]
                     ]);

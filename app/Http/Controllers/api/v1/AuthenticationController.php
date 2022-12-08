@@ -137,8 +137,10 @@ class AuthenticationController extends Controller
                     $user->sendWelcomeSms(); // Send Welcome SMS
                 }
 
-                if (!empty($request->profile_photo)) {
+                $safe_image = "true";
 
+                if (!empty($request->profile_photo)) {
+                    
                     if (!empty($user->profile_photo)) {
                         if (Storage::exists($user->profile_photo)) {
                             Storage::delete($user->profile_photo);
@@ -157,43 +159,13 @@ class AuthenticationController extends Controller
                         }   
                         else
                         {
-                            $user->profile_photo = '';
+                            $user->profile_photo = NULL;
                             $user->is_media_checked = 'n';
-                            $user->save();
-
-                            $this->status = Response::HTTP_NOT_FOUND;
-                            return ([
-                                'data'  =>  NULL,
-                                'meta' => [
-                                    'url'       =>  url()->current(),
-                                    'api'       =>  $this->getVersion(),
-                                    'language'  =>  app()->getLocale(),
-                                    'is_ban'    =>  false,
-                                    'message'   =>   trans('api.notify_message.image_moderation.message'),
-                                    'auth_token'    =>  $user->createToken(config('utility.token'))->plainTextToken,
-                                ]
-                            ]);
+                            $invalid_image_uploaded = true;
+                            $safe_image = "false";                            
                         }  
-                    }
-                    else
-                    {
-
-                         $this->status = Response::HTTP_NOT_FOUND;
-                            return ([
-                                'data'  =>  NULL,
-                                'meta' => [
-                                    'url'       =>  url()->current(),
-                                    'api'       =>  $this->getVersion(),
-                                    'language'  =>  app()->getLocale(),
-                                    'is_ban'    =>  false,
-                                    'message'   =>  trans('api.not_found', ['entity' => __('AWS Image Moderation')]),
-                                    'auth_token'    =>  $user->createToken(config('utility.token'))->plainTextToken,
-                                ]
-                            ]);
-
-                    }    
+                    }                    
                     //CHECK FOR AWS REKOGNIZTION END
-
                 }
 
                 $user->latitude = $request->latitude;
@@ -213,6 +185,7 @@ class AuthenticationController extends Controller
                             'meta' => [
                                 'message'       =>  trans('api.profile_setuped'),
                                 'auth_token'    =>  $user->createToken(config('utility.token'))->plainTextToken,
+                                'safe_image'    =>  $safe_image,                                
                             ]
                         ]);
                 } else {

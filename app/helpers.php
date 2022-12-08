@@ -162,7 +162,7 @@ function get_guard()
     }
 }
 
-function checkAwsImageModeration($request,$image_param_name)
+function checkAwsImageModeration($request,$image_param_name,$check_type = 'file')
 {
    
     $image_arr_result = array();
@@ -176,10 +176,20 @@ function checkAwsImageModeration($request,$image_param_name)
         'version'   => 'latest'
     ]);                
     
-    //FILE OBJECT 
 
-    $image = fopen($request->file($image_param_name)->getPathName(), 'r');
-    $bytes = fread($image, $request->file($image_param_name)->getSize());
+
+    if($check_type=='file')
+    {
+        //FILE OBJECT 
+        $image = fopen($request->file($image_param_name)->getPathName(), 'r');
+        $bytes = fread($image, $request->file($image_param_name)->getSize());
+    }
+    else
+    {
+        //image_param_name = S3 image url will be here as parameter if check type is url
+        $image_path =   $image_param_name;
+        $bytes = file_get_contents($image_path);
+    }    
 
 
     $moderate_image_results = $client->detectModerationLabels([                   
