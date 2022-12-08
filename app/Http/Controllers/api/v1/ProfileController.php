@@ -273,10 +273,13 @@ class ProfileController extends Controller
      */
     public function setMedia(Request $request)
     {
+        $safe_image = "true";
         $setMediaRequest = new SetMediaRequest();
         if ($this->apiValidator($request->all(), $setMediaRequest->rules())) {
             try {
                 $user = $request->user();
+
+
 
                 // Delete Voice
                 if (!empty($request->remove_voice) && $request->remove_voice == 'y') {
@@ -326,13 +329,23 @@ class ProfileController extends Controller
 
                 // Store New Images
                 if (!empty($request->image_path)) {
+                   
 
-                    $safe_image = "true";
+                    $s3_file_url = generateURL($request->image_path); 
 
-                    $s3_file_url = generateURL($request->image_path);                    
 
-                    ///CHECK FOR AWS REKOGNIZTION START
-                    $awsImgResultArr = checkAwsImageModeration($request,$s3_file_url,"url");                   
+                    $awsImgResultArr = array();
+
+                    if($s3_file_url!="")                   
+                    {
+                        ///CHECK FOR AWS REKOGNIZTION START
+                        $awsImgResultArr = checkAwsImageModeration($request,$s3_file_url,"url");                   
+                    }    
+                    else
+                    {
+                        $safe_image = "false";
+                    }
+
                     if(count($awsImgResultArr) > 0)
                     {
                         if($awsImgResultArr["is_safe_image"]==true) 
