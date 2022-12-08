@@ -189,7 +189,8 @@ class AuthenticationController extends Controller
                             ]
                         ]);
                 } else {
-                    $this->response['meta']['message']  = trans('api.profile_setuped_fail');
+                    $this->response['meta']['message']   = trans('api.profile_setuped_fail');
+                    $this->response['meta']['safe_image']= $safe_image;                  
                 }
             } catch (ModelNotFoundException $exception) {
                 switch ($exception->getModel()) {
