@@ -89,6 +89,7 @@ class VerificationController extends Controller
                 } else {
                     $this->response['meta']['message']  =   trans('api.verification_upload.fail');
                     $this->response['meta']['is_ban'] = false;
+                    $this->response['meta']['safe_image'] = $safe_image;                    
                     $this->status = Response::HTTP_NOT_FOUND;
                 }
             } catch (ModelNotFoundException $exception) {
