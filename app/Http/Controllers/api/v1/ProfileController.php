@@ -376,6 +376,11 @@ class ProfileController extends Controller
                         }  
                         else
                         {
+                           if (Storage::exists($request->image_path)) 
+                           {                             
+                             Storage::delete($request->image_path);
+                           } 
+
                            $safe_image = "false";  
                         }                         
                     }                    
