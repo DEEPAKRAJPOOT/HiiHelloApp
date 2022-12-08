@@ -64,6 +64,9 @@ Route::group(['namespace' => 'v1', 'prefix' => 'v1'], function () {
     
     // Send Chat Notification
     Route::post('chat/send-push/{chatmessage}/{message?}', [ChatController::class,'sendChatPush'])->name('chat.send-push');
+
+    // Third Party
+    Route::post('image/aws_rekognition_check', [GeneralController::class,'checkAwsRekognitionImageModeration'])->name('api.image.aws-moderation');
 });
 
 Route::group(['namespace' => 'v1', 'prefix' => 'v1', 'middleware' => ['auth:sanctum','checkapiuser']], function () {

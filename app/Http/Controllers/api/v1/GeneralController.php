@@ -14,6 +14,8 @@ use Illuminate\Support\Facades\Redis;
 use App\Http\Traits\RedisTrait;
 use DB;
 
+use Aws\Rekognition\RekognitionClient;
+
 class GeneralController extends Controller
 {
     use RedisTrait;
@@ -858,6 +860,104 @@ class GeneralController extends Controller
 
         }
             
+        return $this->returnResponse();
+    }
+
+
+    // Check Image Moderation Things
+    public function checkAwsRekognitionImageModeration(Request $request)
+    {
+        $rules = [
+            'image_path'             =>  'nullable|mimes:jpg,jpeg,png',
+        ];
+        if ($this->apiValidator($request->all(), $rules)) {
+            try {
+
+
+                $image_arr_result = array();
+                $api_status_code  = "";    
+
+                $client = new RekognitionClient([
+                    'region'    => 'ap-south-1',
+                    'version'   => 'latest'
+                ]);
+
+
+                /*
+                //FOR IMAGE URL
+                $image_path =   $request->image_path;
+                $bytes = file_get_contents($image_path);
+                */
+               
+
+                //FILE OBJECT 
+
+                $image = fopen($request->file('image_path')->getPathName(), 'r');
+                $bytes = fread($image, $request->file('image_path')->getSize());
+
+                
+                $moderate_image_results = $client->detectModerationLabels([                   
+                    'Image'         => ['Bytes' => $bytes], 
+                    'MinConfidence' => 60
+                ]);
+
+
+
+                if(isset($moderate_image_results["@metadata"]) && $moderate_image_results["@metadata"]['statusCode']==200)
+                {
+                        //response received then status code 200                            
+                        $api_status_code = "success";
+
+                        // Moderation Label have array element means the image is not safe   
+
+                        if(count($moderate_image_results['ModerationLabels']) > 0)
+                        {
+                            $image_arr_result["is_safe_image"] = false;
+                            $image_arr_result["moderation_labels_data"] = json_encode($moderate_image_results['ModerationLabels']);
+                        }
+                        else
+                        {
+                            $image_arr_result["is_safe_image"] = true;   
+                            $image_arr_result["moderation_labels_data"] = "";
+                        }
+
+
+                        /// CHECK FOR FACE DETECTION : HOW MAN FACE DETECTED.
+                        $result_face = $client->detectFaces([
+                            'Attributes' => ['ALL'], //ALL, DEFAULT
+                            'Image'         => ['Bytes' => $bytes], 
+                        ]);
+
+                        $image_arr_result["total_face_detected"] = count($result_face['FaceDetails']);
+                        $image_arr_result["face_detected_message"] = "";
+
+                        if(count($result_face['FaceDetails'])==0)
+                        {
+                            $image_arr_result["is_safe_image"] = false;
+                            $image_arr_result["face_detected_message"] = "Image have no face detected";
+                        }
+                        else if(count($result_face['FaceDetails']) >= 1)
+                        {                                
+                            $image_arr_result["face_detected_message"] = "";
+                        }                        
+
+
+                        $this->response['data']  = $image_arr_result;
+                        
+                }
+                else
+                {
+                    $this->response['meta']['message']  =   trans('api.not_found', ['entity' => __('AWS Image Moderation')]);
+                    $this->status = Response::HTTP_NOT_FOUND;  
+                }
+
+
+            } catch (\Exception $e) {
+                $this->response['meta']['message'] = trans('api.went_wrong');
+                $this->status = Response::HTTP_NOT_FOUND;
+                $this->storeErrorLog($e, 'image_moderation');
+            }
+        }
         return $this->returnResponse();
     }
 

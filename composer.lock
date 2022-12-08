@@ -185,6 +185,7 @@
         },
         {
             "name": "aws/aws-sdk-php",
+
             "version": "3.252.4",
             "source": {
                 "type": "git",
@@ -195,6 +196,7 @@
                 "type": "zip",
                 "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/ce0b006b73c6ea78eb570aa3fcd838d0df34ec1b",
                 "reference": "ce0b006b73c6ea78eb570aa3fcd838d0df34ec1b",
+
                 "shasum": ""
             },
             "require": {
@@ -273,9 +275,11 @@
             "support": {
                 "forum": "https://forums.aws.amazon.com/forum.jspa?forumID=80",
                 "issues": "https://github.com/aws/aws-sdk-php/issues",
+
                 "source": "https://github.com/aws/aws-sdk-php/tree/3.252.4"
             },
             "time": "2022-12-07T19:47:20+00:00"
+
         },
         {
             "name": "barryvdh/laravel-debugbar",

@@ -273,10 +273,13 @@ class ProfileController extends Controller
      */
     public function setMedia(Request $request)
     {
+        $safe_image = "true";
         $setMediaRequest = new SetMediaRequest();
         if ($this->apiValidator($request->all(), $setMediaRequest->rules())) {
             try {
                 $user = $request->user();
+
+
 
                 // Delete Voice
                 if (!empty($request->remove_voice) && $request->remove_voice == 'y') {
@@ -326,27 +329,62 @@ class ProfileController extends Controller
 
                 // Store New Images
                 if (!empty($request->image_path)) {
-                    if (empty($user->profile_photo)) {
-                        $user->profile_photo = $request->image_path;
-                        $user->is_media_checked = 'n';
-                        $user->save();
-                    } else {
-                        $count_images = $user->userDetails->whereNotNull('image')->count();
-                        $new_sequence = $count_images + 1;
+                   
 
-                        $new_image = UserDetail::updateOrCreate([
-                            'user_id'   =>  $user->id,
-                            'image'     =>  $request->image_path,
-                        ], [
-                            'custom_id' =>  getUniqueString('user_details'),
-                        ]);
+                    $s3_file_url = generateURL($request->image_path); 
 
-                        if ($new_image->wasRecentlyCreated) {
-                            $new_image->sequence = $new_sequence;
-                            $new_image->is_verified = 'n';
-                            $new_image->save();
-                        }
+
+                    $awsImgResultArr = array();
+
+                    if($s3_file_url!="")                   
+                    {
+                        ///CHECK FOR AWS REKOGNIZTION START
+                        $awsImgResultArr = checkAwsImageModeration($request,$s3_file_url,"url");                   
+                    }    
+                    else
+                    {
+                        $safe_image = "false";
                     }
+
+                    if(count($awsImgResultArr) > 0)
+                    {
+                        if($awsImgResultArr["is_safe_image"]==true) 
+                        {
+                           
+                           if (empty($user->profile_photo)) {
+                                $user->profile_photo = $request->image_path;
+                                $user->is_media_checked = 'n';
+                                $user->save();
+                            } else {
+                                $count_images = $user->userDetails->whereNotNull('image')->count();
+                                $new_sequence = $count_images + 1;
+
+                                $new_image = UserDetail::updateOrCreate([
+                                    'user_id'   =>  $user->id,
+                                    'image'     =>  $request->image_path,
+                                ], [
+                                    'custom_id' =>  getUniqueString('user_details'),
+                                ]);
+
+                                if ($new_image->wasRecentlyCreated) {
+                                    $new_image->sequence = $new_sequence;
+                                    $new_image->is_verified = 'n';
+                                    $new_image->save();
+                                }
+                            }
+
+                        }  
+                        else
+                        {
+                           if (Storage::exists($request->image_path)) 
+                           {                             
+                             Storage::delete($request->image_path);
+                           } 
+
+                           $safe_image = "false";  
+                        }                         
+                    }                    
+                    //CHECK FOR AWS REKOGNIZTION END
                 }
 
                 // Delete Image
@@ -409,6 +447,7 @@ class ProfileController extends Controller
                 return (new MediaResource($user))
                     ->additional(['meta'  => [
                         'message'       =>  trans('api.profile_setuped'),
+                        'safe_image'    =>  $safe_image,       
                         'is_ban'        =>  false,
                     ]]);
             } catch (ModelNotFoundException $exception) {

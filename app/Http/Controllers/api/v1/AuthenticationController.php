@@ -65,6 +65,7 @@ class AuthenticationController extends Controller
         if ($this->apiValidator($request->all(), $registerRequest->rules())) {
             try {
                 $user = $this->getAuthUser();
+
                 $country_id = $location_id = $language_id = NULL;
                 $full_name = $request->first_name . ' ' . $request->last_name;
                 if ($request->language == 'en') {
@@ -136,15 +137,35 @@ class AuthenticationController extends Controller
                     $user->sendWelcomeSms(); // Send Welcome SMS
                 }
 
+                $safe_image = "true";
+
                 if (!empty($request->profile_photo)) {
+                    
                     if (!empty($user->profile_photo)) {
                         if (Storage::exists($user->profile_photo)) {
                             Storage::delete($user->profile_photo);
                         }
                     }
-                    $path = $request->file('profile_photo')->store('users/profile_photo');
-                    $user->profile_photo = $path;
-                    $user->is_media_checked = 'n';
+                    ///CHECK FOR AWS REKOGNIZTION START
+                    $awsImgResultArr = checkAwsImageModeration($request,"profile_photo");
+
+                    if(count($awsImgResultArr) > 0)
+                    {
+                        if($awsImgResultArr["is_safe_image"]==true) 
+                        {
+                            $path = $request->file('profile_photo')->store('users/profile_photo');
+                            $user->profile_photo = $path;
+                            $user->is_media_checked = 'n';
+                        }   
+                        else
+                        {
+                            $user->profile_photo = NULL;
+                            $user->is_media_checked = 'n';
+                            $invalid_image_uploaded = true;
+                            $safe_image = "false";                            
+                        }  
+                    }                    
+                    //CHECK FOR AWS REKOGNIZTION END
                 }
 
                 $user->latitude = $request->latitude;
@@ -164,6 +185,7 @@ class AuthenticationController extends Controller
                             'meta' => [
                                 'message'       =>  trans('api.profile_setuped'),
                                 'auth_token'    =>  $user->createToken(config('utility.token'))->plainTextToken,
+                                'safe_image'    =>  $safe_image,                                
                             ]
                         ]);
                 } else {
