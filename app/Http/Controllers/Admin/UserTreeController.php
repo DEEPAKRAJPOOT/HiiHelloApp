@@ -451,13 +451,13 @@ class UserTreeController extends Controller
             $total_like_male = Like::select('likes.id as id','users.gender as gender')
                     ->join("users","users.id","=","likes.user_id")
                     ->where("users.gender","Male")
-                    ->where("likes.created_at",Carbon::today())
+                    ->where("likes.created_at","LIKE",'%'.Carbon::now()->format('Y-m-d').'%')
                     ->groupBy("likes.user_id")
                     ->get();
             $total_female_like = Like::select('likes.id as id','users.gender as gender')
                     ->join("users","users.id","=","likes.user_id")
                     ->where("users.gender","Female")
-                    ->where("likes.created_at",Carbon::today())
+                    ->where("likes.created_at","LIKE",'%'.Carbon::now()->format('Y-m-d').'%')
                     ->groupBy("likes.user_id")
                     ->get();
 
@@ -465,13 +465,13 @@ class UserTreeController extends Controller
             $total_male_dislikes = DisLike::select('dis_likes.id as id','users.gender as gender')
                     ->join("users","users.id","=","dis_likes.user_id")
                     ->where("users.gender","Male")
-                    ->where("dis_likes.created_at",Carbon::today())
+                    ->where("dis_likes.created_at","LIKE",'%'.Carbon::now()->format('Y-m-d').'%')
                     ->groupBy("dis_likes.user_id")
                     ->get();
             $total_female_dislikes = DisLike::select('dis_likes.id as id','users.gender as gender')
                     ->join("users","users.id","=","dis_likes.user_id")
                     ->where("users.gender","Female")
-                    ->where("dis_likes.created_at",Carbon::today())
+                    ->where("dis_likes.created_at","LIKE",'%'.Carbon::now()->format('Y-m-d').'%')
                     ->groupBy("dis_likes.user_id")
                     ->get();
 
@@ -479,13 +479,13 @@ class UserTreeController extends Controller
             $total_male_system_match = SystemMatch::select('system_match.id as id','users.gender as gender')
                     ->join("users","users.id","=","system_match.user_id")
                     ->where("users.gender","Male")
-                    ->where("system_match.created_at",Carbon::today())
+                    ->where("system_match.created_at","LIKE",'%'.Carbon::now()->format('Y-m-d').'%')
                     ->groupBy("system_match.user_id")
                     ->get();
             $total_female_system_match = SystemMatch::select('system_match.id as id','users.gender as gender')
                     ->join("users","users.id","=","system_match.user_id")
                     ->where("users.gender","Female")
-                    ->where("system_match.created_at",Carbon::today())
+                    ->where("system_match.created_at","LIKE",'%'.Carbon::now()->format('Y-m-d').'%')
                     ->groupBy("system_match.user_id")
                     ->get();
 
@@ -500,7 +500,7 @@ class UserTreeController extends Controller
                                 $q->on('users.id', "=", "likes.user_id");
                             })
                             ->where("users.gender","Male")
-                            ->where("likes.created_at",Carbon::today())
+                            ->where("likes.created_at","LIKE",'%'.Carbon::now()->format('Y-m-d').'%')
                             ->get();
             $total_female_org_match = DB::table('likes')
                             ->select('likes.liker_id as liker_id','likes.user_id as user_id','users.id as id','users.gender as gender')
@@ -512,7 +512,7 @@ class UserTreeController extends Controller
                                 $q->on('users.id', "=", "likes.user_id");
                             })
                             ->where("users.gender","Female")
-                            ->where("likes.created_at",Carbon::today())
+                            ->where("likes.created_at","LIKE",'%'.Carbon::now()->format('Y-m-d').'%')
                             ->get();
         }
         else if ($request->filter_type == 2) {
@@ -521,13 +521,13 @@ class UserTreeController extends Controller
             $total_like_male = Like::select('likes.id as id','users.gender as gender')
                     ->join("users","users.id","=","likes.user_id")
                     ->where("users.gender","Male")
-                    ->where("likes.created_at",[Carbon::now()->startOfWeek(), Carbon::now()->endOfWeek()])
+                    ->whereBetween("likes.created_at",[Carbon::now()->startOfWeek()->format('Y-m-d'), Carbon::now()->endOfWeek()->format('Y-m-d')])
                     ->groupBy("likes.user_id")
                     ->get();
             $total_female_like = Like::select('likes.id as id','users.gender as gender')
                     ->join("users","users.id","=","likes.user_id")
                     ->where("users.gender","Female")
-                    ->where("likes.created_at",[Carbon::now()->startOfWeek(), Carbon::now()->endOfWeek()])
+                    ->whereBetween("likes.created_at",[Carbon::now()->startOfWeek()->format('Y-m-d'), Carbon::now()->endOfWeek()->format('Y-m-d')])
                     ->groupBy("likes.user_id")
                     ->get();
 
@@ -535,13 +535,13 @@ class UserTreeController extends Controller
             $total_male_dislikes = DisLike::select('dis_likes.id as id','users.gender as gender')
                     ->join("users","users.id","=","dis_likes.user_id")
                     ->where("users.gender","Male")
-                    ->where("dis_likes.created_at",[Carbon::now()->startOfWeek(), Carbon::now()->endOfWeek()])
+                    ->whereBetween("dis_likes.created_at",[Carbon::now()->startOfWeek()->format('Y-m-d'), Carbon::now()->endOfWeek()->format('Y-m-d')])
                     ->groupBy("dis_likes.user_id")
                     ->get();
             $total_female_dislikes = DisLike::select('dis_likes.id as id','users.gender as gender')
                     ->join("users","users.id","=","dis_likes.user_id")
                     ->where("users.gender","Female")
-                    ->where("dis_likes.created_at",[Carbon::now()->startOfWeek(), Carbon::now()->endOfWeek()])
+                    ->whereBetween("dis_likes.created_at",[Carbon::now()->startOfWeek()->format('Y-m-d'), Carbon::now()->endOfWeek()->format('Y-m-d')])
                     ->groupBy("dis_likes.user_id")
                     ->get();
 
@@ -549,13 +549,13 @@ class UserTreeController extends Controller
             $total_male_system_match = SystemMatch::select('system_match.id as id','users.gender as gender')
                     ->join("users","users.id","=","system_match.user_id")
                     ->where("users.gender","Male")
-                    ->where("system_match.created_at",[Carbon::now()->startOfWeek(), Carbon::now()->endOfWeek()])
+                    ->whereBetween("system_match.created_at",[Carbon::now()->startOfWeek()->format('Y-m-d'), Carbon::now()->endOfWeek()->format('Y-m-d')])
                     ->groupBy("system_match.user_id")
                     ->get();
             $total_female_system_match = SystemMatch::select('system_match.id as id','users.gender as gender')
                     ->join("users","users.id","=","system_match.user_id")
                     ->where("users.gender","Female")
-                    ->where("system_match.created_at",[Carbon::now()->startOfWeek(), Carbon::now()->endOfWeek()])
+                    ->whereBetween("system_match.created_at",[Carbon::now()->startOfWeek()->format('Y-m-d'), Carbon::now()->endOfWeek()->format('Y-m-d')])
                     ->groupBy("system_match.user_id")
                     ->get();
 
@@ -570,7 +570,7 @@ class UserTreeController extends Controller
                                 $q->on('users.id', "=", "likes.user_id");
                             })
                             ->where("users.gender","Male")
-                            ->where("likes.created_at",[Carbon::now()->startOfWeek(), Carbon::now()->endOfWeek()])
+                            ->whereBetween("likes.created_at",[Carbon::now()->startOfWeek()->format('Y-m-d'), Carbon::now()->endOfWeek()->format('Y-m-d')])
                             ->get();
             $total_female_org_match = DB::table('likes')
                             ->select('likes.liker_id as liker_id','likes.user_id as user_id','users.id as id','users.gender as gender')
@@ -582,7 +582,7 @@ class UserTreeController extends Controller
                                 $q->on('users.id', "=", "likes.user_id");
                             })
                             ->where("users.gender","Female")
-                            ->where("likes.created_at",[Carbon::now()->startOfWeek(), Carbon::now()->endOfWeek()])
+                            ->whereBetween("likes.created_at",[Carbon::now()->startOfWeek()->format('Y-m-d'), Carbon::now()->endOfWeek()->format('Y-m-d')])
                             ->get();
 
         }
@@ -592,13 +592,13 @@ class UserTreeController extends Controller
             $total_like_male = Like::select('likes.id as id','users.gender as gender')
                     ->join("users","users.id","=","likes.user_id")
                     ->where("users.gender","Male")
-                    ->where("likes.created_at",Carbon::now()->month)
+                    ->where("likes.created_at","LIKE",'%'.Carbon::now()->format('m').'%')
                     ->groupBy("likes.user_id")
                     ->get();
             $total_female_like = Like::select('likes.id as id','users.gender as gender')
                     ->join("users","users.id","=","likes.user_id")
                     ->where("users.gender","Female")
-                    ->where("likes.created_at",Carbon::now()->month)
+                    ->where("likes.created_at","LIKE",'%'.Carbon::now()->format('m').'%')
                     ->groupBy("likes.user_id")
                     ->get();
 
@@ -606,13 +606,13 @@ class UserTreeController extends Controller
             $total_male_dislikes = DisLike::select('dis_likes.id as id','users.gender as gender')
                     ->join("users","users.id","=","dis_likes.user_id")
                     ->where("users.gender","Male")
-                    ->where("dis_likes.created_at",Carbon::now()->month)
+                    ->where("dis_likes.created_at","LIKE",'%'.Carbon::now()->format('m').'%')
                     ->groupBy("dis_likes.user_id")
                     ->get();
             $total_female_dislikes = DisLike::select('dis_likes.id as id','users.gender as gender')
                     ->join("users","users.id","=","dis_likes.user_id")
                     ->where("users.gender","Female")
-                    ->where("dis_likes.created_at",Carbon::now()->month)
+                    ->where("dis_likes.created_at","LIKE",'%'.Carbon::now()->format('m').'%')
                     ->groupBy("dis_likes.user_id")
                     ->get();
 
@@ -620,13 +620,13 @@ class UserTreeController extends Controller
             $total_male_system_match = SystemMatch::select('system_match.id as id','users.gender as gender')
                     ->join("users","users.id","=","system_match.user_id")
                     ->where("users.gender","Male")
-                    ->where("system_match.created_at",Carbon::now()->month)
+                    ->where("system_match.created_at","LIKE",'%'.Carbon::now()->format('m').'%')
                     ->groupBy("system_match.user_id")
                     ->get();
             $total_female_system_match = SystemMatch::select('system_match.id as id','users.gender as gender')
                     ->join("users","users.id","=","system_match.user_id")
                     ->where("users.gender","Female")
-                    ->where("system_match.created_at",Carbon::now()->month)
+                    ->where("system_match.created_at","LIKE",'%'.Carbon::now()->format('m').'%')
                     ->groupBy("system_match.user_id")
                     ->get();
 
@@ -641,7 +641,7 @@ class UserTreeController extends Controller
                                 $q->on('users.id', "=", "likes.user_id");
                             })
                             ->where("users.gender","Male")
-                            ->where("likes.created_at",Carbon::now()->month)
+                            ->where("likes.created_at","LIKE",'%'.Carbon::now()->format('m').'%')
                             ->get();
             $total_female_org_match = DB::table('likes')
                             ->select('likes.liker_id as liker_id','likes.user_id as user_id','users.id as id','users.gender as gender')
@@ -653,7 +653,7 @@ class UserTreeController extends Controller
                                 $q->on('users.id', "=", "likes.user_id");
                             })
                             ->where("users.gender","Female")
-                            ->where("likes.created_at",Carbon::now()->month)
+                            ->where("likes.created_at","LIKE",'%'.Carbon::now()->format('m').'%')
                             ->get();
         }
         else if ($request->filter_type == 4) {
@@ -661,13 +661,13 @@ class UserTreeController extends Controller
             $total_like_male = Like::select('likes.id as id','users.gender as gender')
                     ->join("users","users.id","=","likes.user_id")
                     ->where("users.gender","Male")
-                    ->where("likes.created_at",Carbon::now()->year)
+                    ->where("likes.created_at","LIKE",'%'.Carbon::now()->format('Y').'%')
                     ->groupBy("likes.user_id")
                     ->get();
             $total_female_like = Like::select('likes.id as id','users.gender as gender')
                     ->join("users","users.id","=","likes.user_id")
                     ->where("users.gender","Female")
-                    ->where("likes.created_at",Carbon::now()->year)
+                    ->where("likes.created_at","LIKE",'%'.Carbon::now()->format('Y').'%')
                     ->groupBy("likes.user_id")
                     ->get();
 
@@ -675,13 +675,13 @@ class UserTreeController extends Controller
             $total_male_dislikes = DisLike::select('dis_likes.id as id','users.gender as gender')
                     ->join("users","users.id","=","dis_likes.user_id")
                     ->where("users.gender","Male")
-                    ->where("dis_likes.created_at",Carbon::now()->year)
+                    ->where("dis_likes.created_at","LIKE",'%'.Carbon::now()->format('Y').'%')
                     ->groupBy("dis_likes.user_id")
                     ->get();
             $total_female_dislikes = DisLike::select('dis_likes.id as id','users.gender as gender')
                     ->join("users","users.id","=","dis_likes.user_id")
                     ->where("users.gender","Female")
-                    ->where("dis_likes.created_at",Carbon::now()->year)
+                    ->where("dis_likes.created_at","LIKE",'%'.Carbon::now()->format('Y').'%')
                     ->groupBy("dis_likes.user_id")
                     ->get();
 
@@ -689,13 +689,13 @@ class UserTreeController extends Controller
             $total_male_system_match = SystemMatch::select('system_match.id as id','users.gender as gender')
                     ->join("users","users.id","=","system_match.user_id")
                     ->where("users.gender","Male")
-                    ->where("system_match.created_at",Carbon::now()->year)
+                    ->where("system_match.created_at","LIKE",'%'.Carbon::now()->format('Y').'%')
                     ->groupBy("system_match.user_id")
                     ->get();
             $total_female_system_match = SystemMatch::select('system_match.id as id','users.gender as gender')
                     ->join("users","users.id","=","system_match.user_id")
                     ->where("users.gender","Female")
-                    ->where("system_match.created_at",Carbon::now()->year)
+                    ->where("system_match.created_at","LIKE",'%'.Carbon::now()->format('Y').'%')
                     ->groupBy("system_match.user_id")
                     ->get();
 
@@ -710,7 +710,7 @@ class UserTreeController extends Controller
                                 $q->on('users.id', "=", "likes.user_id");
                             })
                             ->where("users.gender","Male")
-                            ->where("likes.created_at",Carbon::now()->year)
+                            ->where("likes.created_at","LIKE",'%'.Carbon::now()->format('Y').'%')
                             ->get();
             $total_female_org_match = DB::table('likes')
                             ->select('likes.liker_id as liker_id','likes.user_id as user_id','users.id as id','users.gender as gender')
@@ -722,7 +722,7 @@ class UserTreeController extends Controller
                                 $q->on('users.id', "=", "likes.user_id");
                             })
                             ->where("users.gender","Female")
-                            ->where("likes.created_at",Carbon::now()->year)
+                            ->where("likes.created_at","LIKE",'%'.Carbon::now()->format('Y').'%')
                             ->get();
         }
         else if ($request->filter_type == 5) {
