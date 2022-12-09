@@ -40,16 +40,13 @@ class UserAccountIdUpdate extends Command
     public function handle()
     {
         $message            =   "No any user account id N/A records found.";
-        // $all_users = User::with(['userTranslation', 'userTransEn'])->get();
         $all_users = User::with('userTranslation:id,locale,user_id,full_name')->whereNull('account_id')->limit(1000)->get();
-        // echo "<pre>"; print_r($all_users->toArray()); die();
         if(count($all_users) > 0){
             foreach ($all_users as $key => $user) {
-                echo $user->id.' - '.$user->full_name."\n";
-                // if (!empty($user->full_name)) {
-                //     $user->account_id = Str::slug(substr($user->full_name, 0, 4), "_").'_'.time();
-                //     $user->save();
-                // }
+                if (!empty($user->full_name)) {
+                    $user->account_id = Str::slug(substr($user->full_name, 0, 4), "_").'_'.time();
+                    $user->save();
+                }
 
             }
             $message            = "User account id update successfully.";
