@@ -884,4 +884,58 @@ class UserTreeController extends Controller
 
         return $records;
     }
+
+    public function top_usertree()
+    {
+
+        $male_users_records     = [];
+        $female_users_records     = [];
+        $male_users = User::select('users.id as id','users.account_id as account_id','users.contact_no as contact_no','users.gender as gender',DB::raw("count(likes.user_id) as total_likes"));
+        $male_users = $male_users->join("likes","likes.user_id","=","users.id");
+        $male_users = $male_users->where("users.gender","Male");
+        $male_users = $male_users->with('userTransDefault');
+        $male_users = $male_users->groupBy('users.id');
+        $male_users = $male_users->orderby('total_likes','DESC');
+        $male_users = $male_users->limit(5);
+        $male_users = $male_users->get();
+        // echo "<pre>"; print_r($male_users->toArray()); die();
+        if (count($male_users) > 0) {
+            foreach ($male_users as $key => $user) {
+                $chk = Like::where("liker_id",$user->id)->count();
+                $male_users_records[] = [
+                    'account_id' => $user->account_id ?? "N/A",
+                    'contact_no' => $user->contact_no ?? "N/A",
+                    'full_name'  => $user->full_name ?? "N/A",
+                    'total_likes'=> $user->total_likes ?? "N/A",
+                    'total_match'=> $chk ?? 0,
+                ];
+            }
+        }
+
+        $female_users = User::select('users.id as id','users.account_id as account_id','users.contact_no as contact_no','users.gender as gender',DB::raw("count(likes.user_id) as total_likes"));
+        $female_users = $female_users->join("likes","likes.user_id","=","users.id");
+        $female_users = $female_users->where("users.gender","Female");
+        $female_users = $female_users->with('userTransDefault');
+        $female_users = $female_users->groupBy('users.id');
+        $female_users = $female_users->orderby('total_likes','DESC');
+        $female_users = $female_users->limit(5);
+        $female_users = $female_users->get();
+        // echo "<pre>"; print_r($female_users->toArray()); die();
+        if (count($female_users) > 0) {
+            foreach ($female_users as $key => $user) {
+                $chk = Like::where("liker_id",$user->id)->count();
+                $female_users_records[] = [
+                    'account_id' => $user->account_id ?? "N/A",
+                    'contact_no' => $user->contact_no ?? "N/A",
+                    'full_name'  => $user->full_name ?? "N/A",
+                    'total_likes'=> $user->total_likes ?? "N/A",
+                    'total_match'=> $chk ?? 0,
+                ];
+            }
+        }
+
+        // echo "<pre>"; print_r($male_users_records); die();
+        return view('admin.pages.tree.toplist', compact('male_users_records','female_users_records'))->with(['custom_title' => __('Top 5 User Tree')]);
+
+    }
 }
