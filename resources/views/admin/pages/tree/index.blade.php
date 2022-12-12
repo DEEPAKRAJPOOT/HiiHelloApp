@@ -231,6 +231,13 @@
                 </span>
                 <h3 class="card-label">{{ $custom_title }}</h3>
             </div>
+            <div class="card-toolbar">
+               <a href="{{ route('admin.usertree.top_usertree') }}"
+                    class="btn btn-sm btn-warning font-weight-bolder text-uppercase ml-2">
+                    <i class="menu-icon icon-users"></i>
+                    Top users
+               </a>
+            </div>
         </div>
         <div class="card-body">
             <!-- Date Filter -->

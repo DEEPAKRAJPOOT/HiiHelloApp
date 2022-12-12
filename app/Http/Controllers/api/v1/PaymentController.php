@@ -448,72 +448,87 @@ class PaymentController extends Controller
         if ($this->apiValidator($request->all(), $rules)) {
             try {
                 $user = $request->user();
+                $today_date = date('Y-m-d');
                 // echo "<pre>"; print_r($user->toArray()); die();
-                $plan = SubscriptionPlan::whereCustomId($request->plan_id)->whereIsActive('y')->firstOrFail();
-                // echo "<pre>"; print_r($plan->toArray()); die();
-                // DB::beginTransaction();
-                if ($plan) {
-
-                    $new_sub_start_date = \Carbon\Carbon::now()->format('Y-m-d');
-                    if ($user->subscription_end_date >= $new_sub_start_date) {
-                        $new_sub_start_date = $user->subscription_end_date;
-                    }
-                    $new_sub_end_date = !empty($user->subscription_end_date)
-                        ? \Carbon\Carbon::parse($new_sub_end_date)->addMonth($plan->months)->format('Y-m-d')
-                    : \Carbon\Carbon::now()->addMonth($plan->months)->format('Y-m-d');
-
-
-                    $new_subscription_start_date = \Carbon\Carbon::now()->format('Y-m-d H:i:s');
-                    if ($user->subscription_end_date >= $new_subscription_start_date) {
-                        $new_subscription_start_date = $user->subscription_end_date;
-                    }
-
-                    $subscription_end_date = !empty($user->subscription_end_date)
-                        ? \Carbon\Carbon::parse($new_subscription_start_date)->addMonth($plan->months)->format('Y-m-d H:i:s')
-                    : \Carbon\Carbon::now()->addMonth($plan->months)->format('Y-m-d H:i:s');
-
-                    $subscription =  Subscription::firstOrCreate([
-                        'user_id'       =>  $user->id ?? NULL,
-                        'custom_id'     =>  $user->custom_id ?? NULL,
-                        'plan_id'       =>  $plan->id ?? NULL,
-                        'months'        =>  $plan->months,
-                        'amount'        =>  $plan->amount,
-                        'start_date'    =>  $new_sub_start_date,
-                        'end_date'      =>  $new_sub_end_date,
-                        'payment_date'  =>  NULL,
-                        'payment_type'  =>  'android',
-                        'status'        =>  'active',
-                    ]);
-
-                    $transaction =  Transaction::firstOrCreate([
-                        'custom_id'             =>  $user->custom_id,
-                        'user_id'               =>  $user->id ?? NULL,
-                        'plan_id'               =>  $plan->id ?? NULL,
-                        'subscription_id'       =>  $subscription->id,
-                        'payment_type'          =>  'android',
-                        'razorpay_order_id'     =>  $request->order_id,
-                        'razorpay_signature'    =>  $request->razorpay_signature,
-                        'amount'                =>  $plan->amount,
-                        'purchase_date'         =>  $new_subscription_start_date,
-                        'original_purchase_date'=>  $new_subscription_start_date,
-                        'subscription_end_date' =>  $subscription_end_date,
-                        'in_app_ownership_type' =>  'PURCHASED',
-                        'status'                =>  'success',
-                    ]);
-                    $user->is_subscribed = 'y';
-                    $user->subscription_end_date = $subscription_end_date;
+                if ($user->is_subscribed == 'y' && !empty($user->subscription_end_date) && $today_date < $user->subscription_end_date) {
+                    $this->status = Response::HTTP_NOT_FOUND;
+                    $this->response['meta']['message']  =   "The subscription is still valid till ".$user->subscription_end_date;
+                    $this->response['meta']['is_ban'] = false;
+                    return $this->returnResponse();
+                }
+                else
+                {
+                    $user->is_subscribed = 'n';
+                    $user->subscription_end_date = NULL;
                     $user->save();
 
-                    $this->status = Response::HTTP_OK;
-                    $this->response['data']['status'] = 'active';
-                    $this->response['meta']['message'] = trans('api.razorpay.verify_signature.success');
-                    $this->response['meta']['is_ban'] = false;
-                    return $this->returnResponse();
-                } else {
-                    $this->status = Response::HTTP_NOT_FOUND;
-                    $this->response['meta']['message']  =   trans('api.not_found', ['entity' => __('Subscription plan')]);
-                    $this->response['meta']['is_ban'] = false;
-                    return $this->returnResponse();
+                    $plan = SubscriptionPlan::whereCustomId($request->plan_id)->whereIsActive('y')->firstOrFail();
+                    // echo "<pre>"; print_r($plan->toArray()); die();
+                    // DB::beginTransaction();
+                    if ($plan) {
+
+                        $new_sub_start_date = \Carbon\Carbon::now()->format('Y-m-d');
+                        // if ($user->subscription_end_date >= $new_sub_start_date) {
+                        //     $new_sub_start_date = $user->subscription_end_date;
+                        // }
+                        $new_sub_end_date = !empty($user->subscription_end_date)
+                            ? \Carbon\Carbon::parse($new_sub_end_date)->addDays($plan->day)->format('Y-m-d')
+                        : \Carbon\Carbon::now()->addDays($plan->day)->format('Y-m-d');
+
+
+                        $new_subscription_start_date = \Carbon\Carbon::now()->format('Y-m-d H:i:s');
+                        if ($user->subscription_end_date >= $new_subscription_start_date) {
+                            $new_subscription_start_date = $user->subscription_end_date;
+                        }
+
+                        $subscription_end_date = !empty($user->subscription_end_date)
+                            ? \Carbon\Carbon::parse($new_subscription_start_date)->addDays($plan->day)->format('Y-m-d H:i:s')
+                        : \Carbon\Carbon::now()->addDays($plan->day)->format('Y-m-d H:i:s');
+
+                        $subscription =  Subscription::firstOrCreate([
+                            'user_id'       =>  $user->id ?? NULL,
+                            'custom_id'     =>  $user->custom_id ?? NULL,
+                            'plan_id'       =>  $plan->id ?? NULL,
+                            'months'        =>  $plan->months,
+                            'day'           =>  $plan->day,
+                            'amount'        =>  $plan->amount,
+                            'start_date'    =>  $new_sub_start_date,
+                            'end_date'      =>  $new_sub_end_date,
+                            'payment_date'  =>  NULL,
+                            'payment_type'  =>  'android',
+                            'status'        =>  'active',
+                        ]);
+
+                        $transaction =  Transaction::firstOrCreate([
+                            'custom_id'             =>  $user->custom_id,
+                            'user_id'               =>  $user->id ?? NULL,
+                            'plan_id'               =>  $plan->id ?? NULL,
+                            'subscription_id'       =>  $subscription->id,
+                            'payment_type'          =>  'android',
+                            'razorpay_order_id'     =>  $request->order_id,
+                            'razorpay_signature'    =>  $request->razorpay_signature,
+                            'amount'                =>  $plan->amount,
+                            'purchase_date'         =>  $new_subscription_start_date,
+                            'original_purchase_date'=>  $new_subscription_start_date,
+                            'subscription_end_date' =>  $subscription_end_date,
+                            'in_app_ownership_type' =>  'PURCHASED',
+                            'status'                =>  'success',
+                        ]);
+                        $user->is_subscribed = 'y';
+                        $user->subscription_end_date = $subscription_end_date;
+                        $user->save();
+
+                        $this->status = Response::HTTP_OK;
+                        $this->response['data']['status'] = 'active';
+                        $this->response['meta']['message'] = trans('api.razorpay.verify_signature.success');
+                        $this->response['meta']['is_ban'] = false;
+                        return $this->returnResponse();
+                    } else {
+                        $this->status = Response::HTTP_NOT_FOUND;
+                        $this->response['meta']['message']  =   trans('api.not_found', ['entity' => __('Subscription plan')]);
+                        $this->response['meta']['is_ban'] = false;
+                        return $this->returnResponse();
+                    }
                 }
 
             } catch (ModelNotFoundException $exception) {

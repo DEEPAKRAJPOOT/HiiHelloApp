@@ -5,8 +5,11 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\ProfileReport;
+use App\Models\User;
+use App\Models\BlockUser;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Response;
+use Illuminate\Support\Facades\DB;
 
 class ProfileReportController extends Controller
 {
@@ -84,65 +87,72 @@ class ProfileReportController extends Controller
     public function listing(Request $request)
     {
         extract($this->DTFilters($request->all()));
+
+        DB::enableQueryLog();
+
         $records = [];
-        $profile_reports = ProfileReport::with('user.userTransDefault','reportedUser.userTransDefault')->orderBy($sort_column, $sort_order);
+        $users = User::select("users.id as id","users.account_id as account_id","users.profile_photo as profile_photo","users.gender as gender","users.country_code as country_code","users.contact_no as contact_no",DB::raw("(select count(block_users.id) from block_users where block_users.blocked_to = users.id) as total_block "), DB::raw("(select count(profile_reports.reported_user_id) as total_reports from profile_reports where profile_reports.reported_user_id = users.id) as total_reports"));
+        $users = $users->with('userTransDefault');
 
         if ($search != '') {
-            $profile_reports->where(function ($query) use ($search) {
-                $query->where('custom_id', 'like', "%{$search}%")
-                    ->orWhere('message', 'like', "%{$search}%")
-                    ->orWhere('status', 'like', "%{$search}%")
-                    ->orWhereHas('user.userTranslations', function ($query) use ($search) {
-                        $query->where('full_name', 'like', "%{$search}%");
-                    })
-                    ->orWhereHas('reportedUser.userTranslations', function ($query) use ($search) {
-                        $query->where('full_name', 'like', "%{$search}%");
+            $users->where(function ($query) use ($search) {
+                $query->Where('account_id', 'like', "%{$search}%")
+                    ->orWhere('contact_no', 'like', "%{$search}%")
+                    ->orWhere('gender', 'like', "%{$search}%")
+                    ->orWhereHas('userTransDefault', function ($q) use ($search) {
+                        $q->where('full_name', 'like', "%{$search}%");
                     });
             });
         }
 
-        $count = $profile_reports->count();
+        // EN - Filter
+        $count = $users->count();
+        $users = $users->groupBy('users.id');
+
         $records['recordsTotal'] = $count;
         $records['recordsFiltered'] = $count;
         $records['data'] = [];
 
-        $profile_reports = $profile_reports->offset($offset)->limit($limit)->orderBy($sort_column, $sort_order);
-        $profile_reports = $profile_reports->get();
+       
+        $users = $users->offset($offset)->limit($limit)->orderBy($sort_column, $sort_order);
 
-        foreach ($profile_reports as $profile_report) {
-            $params = [
-                'checked'       =>  ($profile_report->is_active == 'y' ? 'checked' : ''),
-                'getaction'     =>  $profile_report->is_active,
-                'class'         =>  '',
-                'id'            =>  $profile_report->custom_id,
-            ];
+        $users = $users->get();
 
+        // dd(DB::getQueryLog());
+        // exit();
+
+        foreach ($users as $user) {
             $records['data'][] = [
-                'id'                =>  $profile_report->id,
-                'user_id'           =>  $profile_report->user ? $profile_report->user->userTransDefault ? $profile_report->user->userTransDefault->full_name : "" : "",
-                'reported_user_id'  =>  $profile_report->reportedUser ? $profile_report->reportedUser->userTransDefault ? $profile_report->reportedUser->userTransDefault->full_name : "" : "",
-                'message'       =>  $profile_report->message,
-                'status'        =>  $profile_report->status,
-                'created_at'    =>  $profile_report->created_at,
-                'action'        =>  view('admin.layouts.includes.actions')->with(['custom_title' => 'Profile Report', 'id' => $profile_report->custom_id], $profile_report)->render(),
-                'checkbox'      =>  view('admin.layouts.includes.checkbox')->with('id', $profile_report->custom_id)->render(),
+                'id' => $user->id, 
+                'profile_photo' => view('admin.layouts.includes.photos_verify')->with(['user_id' => $user->id,'profile_photo' => $user->profile_photo  ?? 'N/A', 'is_profile_photo' => 1, 'is_verify_photo' => 0])->render(),
+                'account_id' => $user->account_id ?? "N/A",
+                'full_name' =>  $user->userTransDefault ? $user->userTransDefault->full_name : "N/A",
+                'gender' => $user->gender ?? "N/A",
+                'contact_no' => $user->contact_no ? '<a href="tel:' . $user->country_code . '' . $user->contact_no . '" >' . $user->country_code . '' . $user->contact_no . '</a>' : 'N/A',
+                'total_block' => $user->total_block ? $user->total_block : 0,
+                'total_reports' => $user->total_reports ? $user->total_reports : 0,
             ];
+
         }
         return $records;
     }
     public function csvDownload(Request $request)
     {
         $down_file_name = 'Profile Report';
-        $profile_reports = ProfileReport::with('user.userTransDefault','reportedUser.userTransDefault')->get();
+        $profile_reports = User::select("users.id as id","users.account_id as account_id","users.profile_photo as profile_photo","users.gender as gender","users.country_code as country_code","users.contact_no as contact_no",DB::raw("(select count(block_users.id) from block_users where block_users.blocked_to = users.id) as total_block "), DB::raw("(select count(profile_reports.reported_user_id) as total_reports from profile_reports where profile_reports.reported_user_id = users.id) as total_reports"));
+        $profile_reports = $profile_reports->with('userTransDefault');
+        $profile_reports = $profile_reports->groupBy('users.id');
+        $profile_reports = $profile_reports->orderBy("total_block","DESC");
+        $profile_reports = $profile_reports->get();
         if (!$profile_reports->isEmpty()) {
             foreach ($profile_reports as $profile_report) {
                 $data[] = [
-                    'Id'                =>  $profile_report->id,
-                    'User name'           =>  $profile_report->user ? $profile_report->user->userTransDefault ? $profile_report->user->userTransDefault->full_name : "" : "",
-                    'Reported User name'  =>  $profile_report->reportedUser ? $profile_report->reportedUser->userTransDefault ? $profile_report->reportedUser->userTransDefault->full_name : "" : "",
-                    'Message'       =>  $profile_report->message,
-                    'Status'        =>  $profile_report->status,
-                    'Reported At'    =>  $profile_report->created_at,
+                    'account_id'        =>  $profile_report->account_id,
+                    'full_name'         =>  $profile_report->userTransDefault ? $profile_report->userTransDefault->full_name : "N/A",
+                    'gender'            =>  $profile_report->gender ?? "N/A",
+                    'contact_no'        =>  $profile_report->contact_no ? $profile_report->contact_no : "N/A",
+                    'total_block'       =>  $profile_report->total_block,
+                    'total_reports'     =>  $profile_report->total_reports,
                     ];
             }
 
@@ -153,11 +163,11 @@ class ProfileReportController extends Controller
             $filename = public_path('files/' . $down_file_name . ".csv");
             $handle   = fopen($filename, 'w+');
             fputcsv($handle, array(
-                'User name', 'Reported User name', 'Message', 'Status','Reported At'  
+                'Account Id', 'User name', 'Gender', 'Contact No','Total Block Users','Total Reports'  
             ));
             foreach ($data as $row) {
                 fputcsv($handle, array(
-                    $row['User name'], $row['Reported User name'], $row['Message'], $row['Status'], $row['Reported At']
+                    $row['account_id'], $row['full_name'], $row['gender'], $row['contact_no'], $row['total_block'], $row['total_reports']
                 ));
             }
             fclose($handle);
