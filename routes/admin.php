@@ -144,6 +144,7 @@ Route::get('usertree/usermatchlisting', 'Admin\UserTreeController@usermatchlisti
 // Route::resource('usertree', 'Admin\UserTreeController');
 Route::get('/usertree', 'Admin\UserTreeController@index')->name('usertree');
 Route::post('usertree/get_user_match_data', 'Admin\UserTreeController@get_user_match_data')->name('usertree.get_user_match_data');
+Route::get('usertree/top_usertree', 'Admin\UserTreeController@top_usertree')->name('usertree.top_usertree');
 	
 //User Exception
 Route::get('users-error-listing', 'Admin\ErrorController@listing')->name('error.listing');
