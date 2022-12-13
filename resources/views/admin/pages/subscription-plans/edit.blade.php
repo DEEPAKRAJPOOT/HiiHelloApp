@@ -84,7 +84,7 @@
                 {{-- Day --}}
                 <div class="form-group">
                     <label for="day">Day{!!$mend_sign!!}</label>
-                    <input type="text" class="form-control @error('day') is-invalid @enderror" id="day" name="day" value="{{ old('day') != null ? old('day') : $subscriptionPlan->day }}" placeholder="Enter day" autocomplete="day" spellcheck="false" autocapitalize="sentences" tabindex="0" autofocus />
+                    <input type="text" class="form-control @error('day') is-invalid @enderror" id="day" name="day" value="{{ old('day') != null ? old('day') : $subscriptionPlan->day }}" placeholder="Enter day" autocomplete="day" spellcheck="false" autocapitalize="sentences" tabindex="0" autofocus required/>
                     @if ($errors->has('day'))
                         <span class="help-block">
                             <strong class="form-text">{{ $errors->first('day') }}</strong>
