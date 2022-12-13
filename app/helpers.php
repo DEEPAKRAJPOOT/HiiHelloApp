@@ -197,6 +197,9 @@ function checkAwsImageModeration($request,$image_param_name,$check_type = 'file'
         'MinConfidence' => $min_confidence
     ]);
 
+
+    $cat_filter = config('utility.aws_image_moderation.category_filter', array());    
+
     if(isset($moderate_image_results["@metadata"]) && $moderate_image_results["@metadata"]['statusCode']==200)
     {
             //response received then status code 200                            
@@ -204,8 +207,34 @@ function checkAwsImageModeration($request,$image_param_name,$check_type = 'file'
 
             if(count($moderate_image_results['ModerationLabels']) > 0)
             {
-                $image_arr_result["is_safe_image"] = false;
-                $image_arr_result["moderation_labels_data"] = json_encode($moderate_image_results['ModerationLabels']);
+
+               $is_safe_image_category_filter = true; 
+
+               $filter_detail_message = "";
+
+               foreach ($moderate_image_results['ModerationLabels'] as $cat_key => $res_data) {
+                        // code...
+                     //echo "<br> Category ".$res_data['Name'];
+                     //echo "<br> Parent Category ".$res_data['ParentName'];
+                     //echo "<br> Confidence ".$res_data['Confidence'];
+
+                     if (array_key_exists($res_data['Name'],$cat_filter))
+                     {
+                           // echo "<Br> in----".$cat_filter[$res_data['Name']];
+                           // if($res_data['Confidence'] >)
+                            if($res_data['Confidence'] >= $cat_filter[$res_data['Name']])
+                            {
+                                    //dd($cat_filter[$res_data['Name']]);
+                                    $is_safe_image_category_filter = false;
+                                    $filter_detail_message = $res_data['Name'] ." value in setting (".$cat_filter[$res_data['Name']]."). In response confidence value (".$res_data['Confidence'].")";
+                                    break;
+
+                            }
+                     }
+
+               }     
+               $image_arr_result["is_safe_image"] = $is_safe_image_category_filter;
+               $image_arr_result["moderation_labels_data"] = $filter_detail_message;
             }
             else
             {

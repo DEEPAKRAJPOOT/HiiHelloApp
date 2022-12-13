@@ -35,10 +35,15 @@ class VerificationController extends Controller
                     if (Storage::exists($user->verify_photo)) {
                         Storage::delete($user->verify_photo);
                     }
-                    //CHECK FOR AWS REKOGNIZTION START
+                    
+                    
+                    $path = $request->file('file')->store('users/verify/image');
+                    $user->verify_photo = $path;
+                    $user->verify_photo_status = "under_review";
+                    $user->photo_verified_at = NULL;
 
                     ///CHECK FOR AWS REKOGNIZTION START
-                    $awsImgResultArr = checkAwsImageModeration($request,"file");
+                    /*$awsImgResultArr = checkAwsImageModeration($request,"file");
 
                     if(count($awsImgResultArr) > 0)
                     {
@@ -56,7 +61,8 @@ class VerificationController extends Controller
                             $user->photo_verified_at = NULL;
                             $safe_image = "false";                            
                         }  
-                    }                      
+                    }   
+                    */                   
                     //CHECK FOR AWS REKOGNIZTION END
 
                 } elseif ($request->type == 'video') {
