@@ -507,3 +507,35 @@ function user_match_data(user_id){
         });
     }
 }
+
+function user_report_data(user_id){
+
+    var url = $(".userreportmodel").attr('data-url');
+    if (url != '' && user_id != '') {
+        $.ajax({
+            url: url,
+            type: "POST",
+            dataType: "json",
+            data: {
+                _token: $("meta[name='csrf-token']").attr("content"),
+                user_id: user_id,
+            },
+            cache: false,
+            success: function (responce) {
+                // console.log(responce.length);
+                var str =''; 
+                if (responce != '' && responce.length > 0) {
+                    $.each(responce, function(key,value ) {
+                        str +='<tr><td>'+value.full_name+'</td><td>'+value.gender+'</td><td>'+value.message+'</td><td>'+value.created_at+'</td></tr>';
+                    });
+                    $("#user_profile_report_table_body").html(str);
+                }
+                else
+                {
+                    var nostr = '<tr>No data found..</tr>';
+                    $("#user_profile_report_table_body").html(nostr);
+                }
+            },
+        });
+    }
+}

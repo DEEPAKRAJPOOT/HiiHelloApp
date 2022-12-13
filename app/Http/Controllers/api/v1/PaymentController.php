@@ -241,6 +241,7 @@ class PaymentController extends Controller
 
                 $count = $subscription_plans->count();
                 $subscription_plans = $subscription_plans->limit($request->limit ?? config('utility.pagination.limit'))
+                    ->orderBy("amount","ASC")
                     ->offset($request->offset ?? config('utility.pagination.offset'))
                     ->get();
 

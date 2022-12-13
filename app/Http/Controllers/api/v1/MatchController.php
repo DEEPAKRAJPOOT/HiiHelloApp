@@ -101,9 +101,9 @@ class MatchController extends Controller
                 if ($auth_interest != 'Both') {
                     $matches = $matches->where('gender', $auth_interest);   // Interested in Gender
                 }                                           
-                // if (count($restricted_ids) > 0) {
-                //     $matches = $matches->whereNotIn('id', $restricted_ids);
-                // }
+                if (count($restricted_ids) > 0) {
+                    $matches = $matches->whereNotIn('id', $restricted_ids);
+                }
                 
 
 

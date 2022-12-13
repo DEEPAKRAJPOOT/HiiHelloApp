@@ -10,7 +10,7 @@ use App\Models\BlockUser;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\DB;
-
+use Illuminate\Support\Carbon;
 class ProfileReportController extends Controller
 {
     /**
@@ -52,34 +52,43 @@ class ProfileReportController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, ProfileReport $profile_report)
+    public function update(Request $request, User $user)
     {
+        // echo "<pre>"; print_r($request->all()); die();
         if(!empty($request->action) && $request->action == 'change_status') {
             $content = ['status'=>204, 'message'=>"something went wrong"];
-            if($profile_report) {
-                $profile_report->is_active = $request->value;
-                if($profile_report->save()) {
-                    $content['status']=200;
-                    $content['message'] = "Status updated successfully.";
-                }
+            // if($profile_report) {
+            //     $profile_report->is_active = $request->value;
+            //     if($profile_report->save()) {
+            //         $content['status']=200;
+            //         $content['message'] = "Status updated successfully.";
+            //     }
+            // }
+            if(!empty($request->id) && !empty($request->value)) {
+                User::where('custom_id',$request->id)->update([ 
+                    'is_active' =>  $request->value,
+                ]);
+                $content['status']=200;
+                $content['message'] = "Status updated successfully.";
             }
             return response()->json($content);
         } else {
-            $is_user_active = 'y';
-            $profile_report->update($request->all());
-            if($profile_report->status == 'Accepted'){
-                $is_user_active = 'n';
-            }
-            if($profile_report->reportedUser){
-                $profile_report->reportedUser->is_active = $is_user_active;
-                $profile_report->reportedUser->save();
-            }
+            // $is_user_active = 'y';
+            // $profile_report->update($request->all());
+            // if($profile_report->status == 'Accepted'){
+            //     $is_user_active = 'n';
+            // }
+            // if($profile_report->reportedUser){
+            //     $profile_report->reportedUser->is_active = $is_user_active;
+            //     $profile_report->reportedUser->save();
+            // }
 
-            if( $profile_report->save() ) {
-                flash('Profile Report details updated successfully!')->success();
-            } else {
-                flash('Unable to profile report. Try again later')->error();
-            }
+            // if( $profile_report->save() ) {
+            //     flash('Profile Report details updated successfully!')->success();
+            // } else {
+            //     flash('Unable to profile report. Try again later')->error();
+            // }
+            flash('Unable to profile report. Try again later')->error();
             return redirect(route('admin.profile-reports.index'));
         }
     }
@@ -91,7 +100,8 @@ class ProfileReportController extends Controller
         DB::enableQueryLog();
 
         $records = [];
-        $users = User::select("users.id as id","users.account_id as account_id","users.profile_photo as profile_photo","users.gender as gender","users.country_code as country_code","users.contact_no as contact_no",DB::raw("(select count(block_users.id) from block_users where block_users.blocked_to = users.id) as total_block "), DB::raw("(select count(profile_reports.reported_user_id) as total_reports from profile_reports where profile_reports.reported_user_id = users.id) as total_reports"));
+        $users = User::select("users.id as id","users.custom_id as custom_id","users.account_id as account_id","users.profile_photo as profile_photo","users.gender as gender","users.country_code as country_code","users.contact_no as contact_no","users.is_active as is_active");
+        // $users = $users->leftJoin("block_users","block_users.blocked_to","=","users.id");
         $users = $users->with('userTransDefault');
 
         if ($search != '') {
@@ -107,7 +117,7 @@ class ProfileReportController extends Controller
 
         // EN - Filter
         $count = $users->count();
-        $users = $users->groupBy('users.id');
+        // $users = $users->groupBy('users.id');
 
         $records['recordsTotal'] = $count;
         $records['recordsFiltered'] = $count;
@@ -122,6 +132,41 @@ class ProfileReportController extends Controller
         // exit();
 
         foreach ($users as $user) {
+            //search filter
+            if ($request->filter_types == 1) {
+                $total_block = BlockUser::where("blocked_to",$user->id)->where("created_at","LIKE",'%'.Carbon::now()->format('Y-m-d').'%')->count();
+                $total_reports = ProfileReport::where("reported_user_id",$user->id)->where("created_at","LIKE",'%'.Carbon::now()->format('Y-m-d').'%')->count();
+            }
+            else if ($request->filter_types == 2) {
+                $total_block = BlockUser::where("blocked_to",$user->id)->whereBetween("created_at",[Carbon::now()->startOfWeek()->format('Y-m-d'), Carbon::now()->endOfWeek()->format('Y-m-d')])->count();
+                $total_reports = ProfileReport::where("reported_user_id",$user->id)->whereBetween("created_at",[Carbon::now()->startOfWeek()->format('Y-m-d'), Carbon::now()->endOfWeek()->format('Y-m-d')])->count();
+            }
+            else if ($request->filter_types == 3) {
+                $total_block = BlockUser::where("blocked_to",$user->id)->where("created_at","LIKE",'%'.Carbon::now()->format('m').'%')->count();
+                $total_reports = ProfileReport::where("reported_user_id",$user->id)->where("created_at","LIKE",'%'.Carbon::now()->format('m').'%')->count();
+            }
+            else if ($request->filter_types == 4) {
+                $total_block = BlockUser::where("blocked_to",$user->id)->where("created_at","LIKE",'%'.Carbon::now()->format('Y').'%')->count();
+                $total_reports = ProfileReport::where("reported_user_id",$user->id)->where("created_at","LIKE",'%'.Carbon::now()->format('Y').'%')->count();
+            }
+            else if ($request->filter_types == 5 && !empty($request->from_date) && !empty($request->to_date)) {
+                $total_block = BlockUser::where("blocked_to",$user->id)->where("created_at",">=",$request->from_date)->where("created_at","<=",$request->to_date)->count();
+                $total_reports = ProfileReport::where("reported_user_id",$user->id)->where("created_at",">=",$request->from_date)->where("created_at","<=",$request->to_date)->count();
+            }
+            else
+            {
+                $total_block = BlockUser::where("blocked_to",$user->id)->count();
+                $total_reports = ProfileReport::where("reported_user_id",$user->id)->count();
+            }
+
+            $params = [
+                'checked' => ($user->is_active == 'y' ? 'checked' : ''),
+                'getaction' => $user->is_active,
+                'class' => '',
+                'id' => $user->custom_id,
+                'user_id' => $user->id,
+            ];
+
             $records['data'][] = [
                 'id' => $user->id, 
                 'profile_photo' => view('admin.layouts.includes.photos_verify')->with(['user_id' => $user->id,'profile_photo' => $user->profile_photo  ?? 'N/A', 'is_profile_photo' => 1, 'is_verify_photo' => 0])->render(),
@@ -129,8 +174,10 @@ class ProfileReportController extends Controller
                 'full_name' =>  $user->userTransDefault ? $user->userTransDefault->full_name : "N/A",
                 'gender' => $user->gender ?? "N/A",
                 'contact_no' => $user->contact_no ? '<a href="tel:' . $user->country_code . '' . $user->contact_no . '" >' . $user->country_code . '' . $user->contact_no . '</a>' : 'N/A',
-                'total_block' => $user->total_block ? $user->total_block : 0,
-                'total_reports' => $user->total_reports ? $user->total_reports : 0,
+                'active'            =>  view('admin.pages.profile-reports.switch', compact('params'))->render(),
+                'total_block' => $total_block,
+                'total_reports' => $total_reports,
+                'action' => view('admin.layouts.includes.user_report')->with(['custom_title' => 'User Report Data', 'id' => $user->id], $user)->render(),
             ];
 
         }
@@ -146,6 +193,7 @@ class ProfileReportController extends Controller
         $profile_reports = $profile_reports->get();
         if (!$profile_reports->isEmpty()) {
             foreach ($profile_reports as $profile_report) {
+
                 $data[] = [
                     'account_id'        =>  $profile_report->account_id,
                     'full_name'         =>  $profile_report->userTransDefault ? $profile_report->userTransDefault->full_name : "N/A",
@@ -181,5 +229,57 @@ class ProfileReportController extends Controller
             flash('Unable to generate transaction csv file. Try again later')->error();
         }
         return redirect(route('admin.subscription-lists.index'));
+    }
+
+    public function filters(Request $request)
+    {
+        $total_block_user = 0;
+        $total_report_users = 0;
+
+        if ($request->filter_type == 1) {
+            $total_block_user = BlockUser::where("created_at","LIKE",'%'.Carbon::now()->format('Y-m-d').'%')->count();
+            $total_report_users = ProfileReport::where("created_at","LIKE",'%'.Carbon::now()->format('Y-m-d').'%')->count();
+        }
+        else if ($request->filter_type == 2) {
+            $total_block_user = BlockUser::whereBetween("created_at",[Carbon::now()->startOfWeek()->format('Y-m-d'), Carbon::now()->endOfWeek()->format('Y-m-d')])->count();
+            $total_report_users = ProfileReport::whereBetween("created_at",[Carbon::now()->startOfWeek()->format('Y-m-d'), Carbon::now()->endOfWeek()->format('Y-m-d')])->count();
+        }
+        else if ($request->filter_type == 3) {
+            $total_block_user = BlockUser::where("created_at","LIKE",'%'.Carbon::now()->format('m').'%')->count();
+            $total_report_users = ProfileReport::where("created_at","LIKE",'%'.Carbon::now()->format('m').'%')->count();
+        }
+        else if ($request->filter_type == 4) {
+            $total_block_user = BlockUser::where("created_at","LIKE",'%'.Carbon::now()->format('Y').'%')->count();
+            $total_report_users = ProfileReport::where("created_at","LIKE",'%'.Carbon::now()->format('Y').'%')->count();
+        }
+        else if ($request->filter_type == 5) {
+            $total_block_user = BlockUser::where("created_at",">=",$request->fromdate_search)->where("created_at","<=",$request->todate_search)->count();
+            $total_report_users = ProfileReport::where("created_at",">=",$request->fromdate_search)->where("created_at","<=",$request->todate_search)->count();
+        }
+        else {
+            $total_block_user = BlockUser::count();
+            $total_report_users = ProfileReport::count();
+        }
+
+        $records['total_block_user'] = number_format($total_block_user);
+        $records['total_report_users'] = number_format($total_report_users);
+
+        return $records;
+    }
+
+    public function get_user_report_data(Request $request)
+    {
+        $auth_id = $request->user_id;
+        $profile_reports = array();
+        if (!empty($auth_id)) {
+            $profile_reports = ProfileReport::select("users.id as id","users.gender as gender","user_translations.full_name as full_name","profile_reports.message as message",DB::raw("DATE_FORMAT(profile_reports.created_at, '%d-%m-%Y %h:%i:%s') as created_at"))
+                    ->leftJoin("users","users.id","=","profile_reports.user_id")
+                    ->leftJoin("user_translations","user_translations.user_id","=","users.id")
+                    ->where("user_translations.locale","en")
+                    ->where("profile_reports.reported_user_id",$auth_id)
+                    ->groupBy('profile_reports.id')
+                    ->get();
+        }
+        return $profile_reports;
     }
 }
