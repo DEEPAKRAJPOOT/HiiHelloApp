@@ -15,7 +15,7 @@ class SubscriptionPlan extends Model implements TranslatableContract
     public function getRouteKeyName(){ return 'custom_id'; }
     
     protected $fillable = [
-        'custom_id', 'months', 'amount', 'android_product', 'ios_product', 'is_default_for_girl', 'is_popular',
+        'custom_id', 'months', 'day', 'amount', 'android_product', 'ios_product', 'is_default_for_girl', 'is_popular',
     ]; 
 
     protected $translatedAttributes = ['name', 'description', 'note'];

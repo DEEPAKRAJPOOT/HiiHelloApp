@@ -20,6 +20,7 @@ class SubscriptionPlanResource extends JsonResource
             'description'       =>  $this->subscriptionPlanTranslation ? $this->subscriptionPlanTranslation->description: "",
             'note'              =>  $this->subscriptionPlanTranslation ? $this->subscriptionPlanTranslation->note: "",
             'months'            =>  $this->months,
+            'day'               =>  $this->day ? $this->day : "",
             'amount'            =>  $this->amount,
             'android_product'   =>  $this->android_product,
             'ios_product'       =>  $this->ios_product,
