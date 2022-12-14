@@ -496,7 +496,7 @@ class PaymentController extends Controller
                             'start_date'    =>  $new_sub_start_date,
                             'end_date'      =>  $new_sub_end_date,
                             'payment_date'  =>  NULL,
-                            'payment_type'  =>  'android',
+                            'payment_type'  =>  isset($request->payment_type) ? $request->payment_type : 'android',
                             'status'        =>  'active',
                         ]);
 
@@ -505,7 +505,7 @@ class PaymentController extends Controller
                             'user_id'               =>  $user->id ?? NULL,
                             'plan_id'               =>  $plan->id ?? NULL,
                             'subscription_id'       =>  $subscription->id,
-                            'payment_type'          =>  'android',
+                            'payment_type'          =>  isset($request->payment_type) ? $request->payment_type : 'android',
                             'razorpay_order_id'     =>  $request->order_id,
                             'razorpay_signature'    =>  $request->razorpay_signature,
                             'amount'                =>  $plan->amount,
