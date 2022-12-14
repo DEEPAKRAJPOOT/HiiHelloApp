@@ -310,6 +310,7 @@ class UsersController extends Controller
         $subscription_plans = SubscriptionPlanTranslation::where(['locale' => 'en'])->get();
         //is_subscribed
         //subscription_end_date
+        // echo "<pre>"; print_r($subscription_plans->toArray()); die();
         //dd($user->subscription->plan_id);
         //echo "<br> User Is Subscribe :".$user->is_subscribed;
         //echo "<br> User Is Subscribe End Date:".$user->subscription_end_date;
@@ -318,7 +319,7 @@ class UsersController extends Controller
         if($user->is_subscribed=='y')
         {   
             $user_active_plan_id = isset($user->subscription->plan_id) ?  $user->subscription->plan_id : 0;
-            $plan_paid_from = $user->subscription->payment_type;
+            $plan_paid_from = $user->subscription->payment_type ? $user->subscription->payment_type : '';
         }
         //CHNAGE USER SUBCRIPTION PLAN 14:SEP END    
 
@@ -339,7 +340,6 @@ class UsersController extends Controller
     {
         try {
             DB::beginTransaction();
-
 
             if (!empty($request->action) && $request->action == 'change_status') {
                 $content = ['status' => 204, 'message' => "something went wrong"];
@@ -369,7 +369,7 @@ class UsersController extends Controller
                             $plan = SubscriptionPlan::whereId($request->subcription_plan)->whereIsActive('y')->firstOrFail();                   
 
                             $new_subscription_start_date = \Carbon\Carbon::today()->format('Y-m-d');
-                            $subscription_end_date = strtotime("+".$plan->months." months", strtotime($new_subscription_start_date)); // returns timestamp
+                            $subscription_end_date = strtotime("+".$plan->day." days", strtotime($new_subscription_start_date)); // returns timestamp
                             $subscription_end_date = date('Y-m-d',$subscription_end_date); // formatted version
                             
                             $subscription =  Subscription::create([
@@ -378,6 +378,7 @@ class UsersController extends Controller
                                 'plan_id'                   =>  $plan->id ?? NULL,
                                 'email'                     =>  $user->email,
                                 'months'                    =>  $plan->months,
+                                'day'                       =>  $plan->day,
                                 'amount'                    =>  0,
                                 'start_date'                =>  $new_subscription_start_date,
                                 'end_date'                  =>  $subscription_end_date,

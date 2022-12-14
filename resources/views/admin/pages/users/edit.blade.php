@@ -943,7 +943,7 @@
                                 <option value="-1" selected>No Plan</option>          
                         @endif                                    
                         @foreach($subscription_plans as $plan)
-                        <option  <?php if($user_active_plan_id==$plan->id){ echo " selected=selected"; }  ?> value="{{ $plan->id }}">{{ $plan->name }}</option>
+                        <option  <?php if($user_active_plan_id==$plan->subscription_plan_id){ echo " selected=selected"; }  ?> value="{{ $plan->subscription_plan_id  }}">{{ $plan->name }}</option>
                         @endforeach                       
                           
                     </select>                    
