@@ -160,6 +160,7 @@ Route::post('check-email', 'UtilityController@checkEmail')->name('check.email');
 Route::post('check-contact', 'UtilityController@checkContact')->name('check.contact');
 Route::get('api-translate', 'UtilityController@translate');
 Route::get('chk_female_subscriptions', 'UtilityController@chk_female_subscriptions');
+Route::get('assign_user_city_lat_long', 'UtilityController@assign_user_city_lat_long');
 
 Route::post('summernote-image-upload', 'Admin\SummernoteController@imageUpload')->name('summernote.imageUpload');
 Route::post('summernote-media-image', 'Admin\SummernoteController@mediaDelete')->name('summernote.mediaDelete');

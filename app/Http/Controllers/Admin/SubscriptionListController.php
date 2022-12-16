@@ -87,7 +87,11 @@ class SubscriptionListController extends Controller
                 'user_id' => $subscription->user ? ($subscription->user->userTransDefault ? $subscription->user->userTransDefault->full_name : "N/A") : "",
                 'plan_id' => $subscription->subscriptionPlan ? ($subscription->subscriptionPlan->subscriptionPlanTranslation ? $subscription->subscriptionPlan->subscriptionPlanTranslation->name : "N/A") : "",
                 'months' => $subscription->months,
+                'day' => $subscription->day,
                 'amount' => $subscription->amount,
+                'start_date' => $subscription->start_date,
+                'end_date' => $subscription->end_date ? $subscription->end_date : '',
+                'payment_type' => $subscription->payment_type,
                 'status' => $subscription->status,
                 'action' => view('admin.layouts.includes.actions')->with(['custom_title' => 'Subscriptions', 'id' => $subscription->custom_id], $subscription)->render(),
 
@@ -107,6 +111,7 @@ class SubscriptionListController extends Controller
                     'Email'                     =>  $subscription->email ?? "",
                     'Subscription Plan Name'    =>  $subscription->subscriptionPlan ? ($subscription->subscriptionPlan->subscriptionPlanTransEn ? $subscription->subscriptionPlan->subscriptionPlanTransEn->name ?? "" : "") : "",
                     'Months'                    =>  $subscription->months ?? "",
+                    'day'                       =>  $subscription->day,
                     'Amount'                    =>  $subscription->amount ?? "",
                     'Start date'                =>  $subscription->start_date ?? "",
                     'End date'                  =>  $subscription->end_date ?? "",
@@ -126,12 +131,12 @@ class SubscriptionListController extends Controller
             $filename = public_path('files/' . $down_file_name . ".csv");
             $handle   = fopen($filename, 'w+');
             fputcsv($handle, array(
-                'Account Id', 'Name', 'Email', 'Subscription Plan Name', 'Months', 'Amount', 'Start date', 'End date', 'Payment Type', 'Payment Date', 'Receipt Data', 'Original Transaction Id', 'Status', 'Created at'
+                'Account Id', 'Name', 'Email', 'Subscription Plan Name', 'Months', 'Day', 'Amount', 'Start date', 'End date', 'Payment Type', 'Payment Date', 'Receipt Data', 'Original Transaction Id', 'Status', 'Created at'
             ));
 
             foreach ($data as $row) {
                 fputcsv($handle, array(
-                    $row['Account Id'], $row['Name'], $row['Email'], $row['Subscription Plan Name'], $row['Months'], $row['Amount'], $row['Start date'], $row['End date'], $row['Payment Type'], $row['Payment Date'], $row['Receipt Data'], $row['Original Transaction Id'], $row['Status'], $row['Created at'],
+                    $row['Account Id'], $row['Name'], $row['Email'], $row['Subscription Plan Name'], $row['Months'], $row['day'], $row['Amount'], $row['Start date'], $row['End date'], $row['Payment Type'], $row['Payment Date'], $row['Receipt Data'], $row['Original Transaction Id'], $row['Status'], $row['Created at'],
                 ));
             }
             fclose($handle);
