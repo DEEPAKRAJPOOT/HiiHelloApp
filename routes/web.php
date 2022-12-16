@@ -55,6 +55,7 @@ Route::get('profile-report/csv-download', 'Admin\ProfileReportController@csvDown
 Route::get('call-log/csv-download', 'Admin\CallController@csvDownload')->name('admin.call-log.csv-download');
 
 Route::get('location/csv-download', 'Admin\LocationController@csvDownload')->name('admin.location.csv-download');
+// user data with location data sheet downlode
 Route::get('location/user-location-csv-download', 'Admin\LocationController@userlocationcsvDownload')->name('admin.location.user-location-csv-download');
 /* CMS Pages */
   Route::get('about-us/{device?}', 'FrontendPagesController@about')->name('about.us');
