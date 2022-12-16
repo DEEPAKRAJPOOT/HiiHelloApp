@@ -7,6 +7,8 @@ use App\Models\User;
 use App\Models\UserTranslation;
 use App\Models\Subscription;
 use App\Models\SubscriptionPlan;
+use App\Models\Location;
+use App\Models\LocationTranslation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -402,5 +404,93 @@ class UtilityController extends Controller
         }
         echo "subscription total :- ".$subscription_total. "<br>";
         echo "uN subscription total :- ".$un_subscription_total. "<br>";
+    }
+
+    function assign_user_city_lat_long(Request $request)
+    {
+        $limit = isset($request->limit) ? $request->limit : 10;
+        $user_list = User::select('users.id as id','users.latitude as latitude','users.longitude as longitude','users.location_id as location_id','users.new_location_id as new_location_id')
+                    ->whereNotNull("latitude")
+                    ->whereNotNull("longitude")
+                    ->where("new_location_id","n");
+                    if (!empty($request->id)) {
+                        $user_list = $user_list->where('id',$request->id);
+                    }
+         $user_list = $user_list->limit($limit)
+                    ->get();
+        if ($request->is_print == 1) {
+            echo "<pre>"; print_r($user_list->toArray()); die();
+        }
+        if (count($user_list) > 0) {
+            foreach ($user_list as $key => $val) {
+                // again check for latitude & longitude not empty
+                if (!empty($val->latitude) && !empty($val->longitude)) {
+                    // call google gecode api and get city and state name
+                    $res = $this->get_city_name($val->latitude,$val->longitude);
+
+                    // check city and state not empty
+                    if (!empty($res) && !empty($res['city']) && !empty($res['city'])) {
+                        // if already exist city and state then get id and update user location id
+                        $locationTranslation = LocationTranslation::where('name',$res['city'])->where('state',$res['state'])->where('locale','en')->first();
+                        if (!empty($locationTranslation)) {
+                            $location_id = $locationTranslation->location_id;
+                            
+                            // update location table for city is used some one users
+                            Location::where('id',$location_id)->update([ 
+                                'is_used' =>  'y',
+                            ]);
+                        }
+                        else
+                        {
+                            // if city and state not exits then create new
+                            $location = new Location();        
+                            $location->custom_id = getUniqueString('locations');  
+                            $location->is_used   = 'y';  
+                            $location->save();
+
+                            $location_id = $location->id;
+
+                            $LocationTranslation = new LocationTranslation();
+                            $LocationTranslation->locale = 'en';  
+                            $LocationTranslation->location_id = $location_id;  
+                            $LocationTranslation->name = $res['city'];  
+                            $LocationTranslation->state = $res['state'];  
+                            $LocationTranslation->save();
+                        }
+
+                        // update user table location id
+                        User::where('id',$val->id)->update([ 
+                            'location_id' =>  $location_id,
+                            'new_location_id' =>  'y',
+                        ]);
+                    }
+                }
+            }
+        }
+    }
+
+    function get_city_name($lat,$long){
+        $apiKey = 'AIzaSyDInVSLHXa1FXO3p7kgA7B_TK9L71tZbW8';
+        $latlng = $lat.','.$long;
+        $result = [];
+
+        $url = "https://maps.googleapis.com/maps/api/geocode/json?latlng=".$latlng."&sensor=true&key=".$apiKey;
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);    
+        $responseJson = curl_exec($ch);
+        curl_close($ch);
+        $response = json_decode($responseJson);
+        if (!empty($response) && !empty($response->results[0]->address_components)) {
+            foreach ($response->results[0]->address_components as $key => $value) {
+                if ($value->types[0] == "administrative_area_level_3") {
+                    $result['city'] = $value->long_name;
+                }
+                if ($value->types[0] == "administrative_area_level_1") {
+                    $result['state'] = $value->long_name;
+                }
+            }
+            return $result;
+        }
     }
 }
