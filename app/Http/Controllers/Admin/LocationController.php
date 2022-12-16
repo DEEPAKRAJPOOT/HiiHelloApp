@@ -251,6 +251,7 @@ class LocationController extends Controller
                             ->get();
 
         $data = [];
+        
         // echo "<pre>"; print_r($location_reports->toArray()); die();
         if (!$location_reports->isEmpty()) {
             foreach ($location_reports as $val) {
