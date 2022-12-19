@@ -79,7 +79,6 @@ class AuthenticationController extends Controller
                 }
                 if (!empty($request->latitude) && !empty($request->longitude)) {
                     $location_id = $this->get_user_location($request->latitude,$request->longitude);
-                    echo $location_id; die();
                 }
                 if (!empty($request->language)) {
                     $language = Language::whereLangCode($request->language)->whereIsActive('y')->firstOrFail();
