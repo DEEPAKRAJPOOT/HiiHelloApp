@@ -409,10 +409,11 @@ class UtilityController extends Controller
     function assign_user_city_lat_long(Request $request)
     {
         $limit = isset($request->limit) ? $request->limit : 10;
+        $new_location_id = isset($request->new_location_id) ? $request->new_location_id : 'n';
         $user_list = User::select('users.id as id','users.latitude as latitude','users.longitude as longitude','users.location_id as location_id','users.new_location_id as new_location_id')
                     ->whereNotNull("latitude")
                     ->whereNotNull("longitude")
-                    ->where("new_location_id","n");
+                    ->where("new_location_id",$new_location_id);
                     if (!empty($request->id)) {
                         $user_list = $user_list->where('id',$request->id);
                     }
