@@ -412,7 +412,7 @@ class UtilityController extends Controller
         $user_list = User::select('users.id as id','users.latitude as latitude','users.longitude as longitude','users.location_id as location_id','users.new_location_id as new_location_id')
                     ->whereNotNull("latitude")
                     ->whereNotNull("longitude")
-                    ->where("new_location_id","n");
+                    ->where("new_location_id","y");
                     if (!empty($request->id)) {
                         $user_list = $user_list->where('id',$request->id);
                     }
