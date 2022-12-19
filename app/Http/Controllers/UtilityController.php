@@ -409,16 +409,30 @@ class UtilityController extends Controller
     function assign_user_city_lat_long(Request $request)
     {
         $limit = isset($request->limit) ? $request->limit : 10;
+        $get_count = isset($request->get_count) ? $request->get_count : 1;
+        $month = isset($request->month) ? $request->month : date('m');
+        $new_location_id = isset($request->new_location_id) ? $request->new_location_id : 'n';
         $user_list = User::select('users.id as id','users.latitude as latitude','users.longitude as longitude','users.location_id as location_id','users.new_location_id as new_location_id')
                     ->whereNotNull("latitude")
                     ->whereNotNull("longitude")
-                    ->where("new_location_id","n");
+                    ->whereMonth('created_at',$month)
+                    ->where("new_location_id",$new_location_id);
                     if (!empty($request->id)) {
                         $user_list = $user_list->where('id',$request->id);
                     }
-         $user_list = $user_list->limit($limit)
-                    ->get();
-        if ($request->is_print == 1) {
+        $user_list = $user_list->limit($limit);
+        if ($get_count == 1) {
+            $user_list = $user_list->count();
+        }
+        else
+        {
+            $user_list = $user_list->get();
+        }
+
+        if ($get_count == 1) {
+            echo "<pre>"; print_r($user_list); die();
+        }
+        else if ($request->is_print == 1) {
             echo "<pre>"; print_r($user_list->toArray()); die();
         }
         if (count($user_list) > 0) {
@@ -438,6 +452,12 @@ class UtilityController extends Controller
                             // update location table for city is used some one users
                             Location::where('id',$location_id)->update([ 
                                 'is_used' =>  'y',
+                            ]);
+
+                            // update loction translate table location name and state update
+                            LocationTranslation::where('location_id',$val->location_id)->where('locale','en')->update([ 
+                                'name' =>  $res['city'],
+                                'state' =>  $res['state'],
                             ]);
                         }
                         else
