@@ -242,17 +242,23 @@ class LocationController extends Controller
 
     public function userlocationcsvDownload(Request $request)
     {
+        $page = $request->page ? $request->page : 10;
+        $skip = $request->skip ? $request->skip : 0;
         $down_file_name = 'User Location Report';
         $location_reports = User::select("users.id as id","users.account_id as account_id","users.location_id as location_id","location_translations.name as city_name","location_translations.state as state_name")
                             ->leftJoin("location_translations","location_translations.location_id","=","users.location_id")
                             ->where("location_translations.locale","=",'en')
                             ->groupBy('users.id')
-                            // ->limit(10)
+                            ->limit($page)
+                            // ->paginate($page);
+                            ->skip($skip)
+                            // ->offset(20)
                             ->get();
 
         $data = [];
-        
-        // echo "<pre>"; print_r($location_reports->toArray()); die();
+        if ($request->is_print == 1) {
+            echo "<pre>"; print_r($location_reports->toArray()); die();
+        }
         if (!$location_reports->isEmpty()) {
             foreach ($location_reports as $val) {
                 $data[] = [
