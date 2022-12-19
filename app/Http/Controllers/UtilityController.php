@@ -412,7 +412,7 @@ class UtilityController extends Controller
         $user_list = User::select('users.id as id','users.latitude as latitude','users.longitude as longitude','users.location_id as location_id','users.new_location_id as new_location_id')
                     ->whereNotNull("latitude")
                     ->whereNotNull("longitude")
-                    ->where("new_location_id","y");
+                    ->where("new_location_id","n");
                     if (!empty($request->id)) {
                         $user_list = $user_list->where('id',$request->id);
                     }
@@ -438,6 +438,12 @@ class UtilityController extends Controller
                             // update location table for city is used some one users
                             Location::where('id',$location_id)->update([ 
                                 'is_used' =>  'y',
+                            ]);
+
+                            // update loction translate table location name and state update
+                            LocationTranslation::where('location_id',$val->location_id)->where('locale','en')->update([ 
+                                'name' =>  $res['city'],
+                                'state' =>  $res['state'],
                             ]);
                         }
                         else
