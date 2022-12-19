@@ -33,7 +33,7 @@ class RegisterRequest extends FormRequest
             'birth_date'        =>  'required|date|before:'.$min_birth_date,
             'gender'            =>  'required|in:Male,Female',
             'interest'          =>  'required|in:Male,Female,Both',
-            'location'          =>  'required|max:100',
+            // 'location'          =>  'required|max:100',
             'language'          =>  'required|max:100',
             'profile_photo'     =>  'required|mimes:jpg,jpeg,png',
             'country_code'      =>  'nullable|max:100',
