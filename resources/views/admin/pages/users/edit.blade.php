@@ -831,7 +831,7 @@
                 </div>
 
                 {{-- Video Verification Status --}}
-                <div class="form-group">
+                <!-- <div class="form-group">
                     <label for="verify_video_status">{!!$mend_sign!!} Video Verification Status:</label>
                     <select type="text"class="form-control" 
                     id="verify_video_status" name="verify_video_status" value="@if(old('verify_video_status')){{ old('verify_video_status') }}@else{{ $user->verify_video_status }}@endif"
@@ -858,6 +858,27 @@
                     @if ($errors->has('verify_video_status'))
                         <span class="help-block">
                             <strong class="form-text">{{ $errors->first('verify_video_status') }}</strong>
+                        </span>
+                    @endif
+                </div> -->
+
+                {{-- Email Verification Status --}}
+                <div class="form-group">
+                    <label for="verify_email_send">Email Verification Status:</label>
+                    <select type="text"class="form-control" 
+                    id="verify_email_send" name="verify_email_send" value="@if(old('verify_email_send')){{ old('verify_email_send') }}@else{{ $user->verify_email_send }}@endif"
+                    placeholder="Select Verification Status" spellcheck="false" autocapitalize="sentences" tabindex="0" autofocus />
+                            <option value="y" @if($user->verify_email_send == 'y') selected @endif>Yes</option>
+                            <option value="n" @if($user->verify_email_send == 'n') selected @endif>No</option>
+                    </select>
+                    @if ($errors->has('verify_email_send'))
+                        <span class="help-block">
+                            <strong class="form-text">{{ $errors->first('verify_email_send') }}</strong>
+                        </span>
+                    @endif
+                    @if ($user->verify_email_send == 'y')
+                        <span class="help-block">
+                            <strong class="form-text">Email Verification at : {{ $user->email_verified_at }}</strong>
                         </span>
                     @endif
                 </div>
@@ -922,7 +943,7 @@
                                 <option value="-1" selected>No Plan</option>          
                         @endif                                    
                         @foreach($subscription_plans as $plan)
-                        <option  <?php if($user_active_plan_id==$plan->id){ echo " selected=selected"; }  ?> value="{{ $plan->id }}">{{ $plan->name }}</option>
+                        <option  <?php if($user_active_plan_id==$plan->subscription_plan_id){ echo " selected=selected"; }  ?> value="{{ $plan->subscription_plan_id  }}">{{ $plan->name }}</option>
                         @endforeach                       
                           
                     </select>                    
@@ -986,17 +1007,17 @@ $(document).ready(function () {
                 email: true,
                 valid_email: true,
             },
-            /*country_code: {
-                required: true,
+            country_code: {
+                required: false,
                 not_empty: true,
             },
             contact_no: {
-                required: true,
+                required: false,
                 not_empty: true,
                 maxlength: 16,
                 minlength: 6,
                 pattern: /^(\d+)(?: ?\d+)*$/,
-            },*/
+            },
             birth_date: {
                 required: true,
                 not_empty: true,
@@ -1149,7 +1170,7 @@ $(document).ready(function () {
                 valid_email:"@lang('validation.email',['attribute'=>'email address'])",
                 remote:"@lang('validation.unique',['attribute'=>'email address'])",
             },
-            /*country_code: {
+            country_code: {
                 required: "@lang('validation.required',['attribute'=>'country code'])",
                 not_empty: "@lang('validation.not_empty',['attribute'=>'country code'])",
             },
@@ -1160,7 +1181,7 @@ $(document).ready(function () {
                 minlength:"@lang('validation.min.string',['attribute'=>'contact number','min'=>6])",
                 pattern:"@lang('validation.numeric',['attribute'=>'contact number'])",
                 remote:"@lang('validation.unique',['attribute'=>'contact number'])",
-            },*/
+            },
             birth_date: {
                 required:"@lang('validation.required',['attribute'=>'birth date'])",
                 not_empty:"@lang('validation.not_empty',['attribute'=>'birth date'])",

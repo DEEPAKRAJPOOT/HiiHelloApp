@@ -11,6 +11,9 @@ use App\Http\Resources\v1\{VerificationResource};
 use App\Models\{User, Country};
 use App\Jobs\{NotificationJob};
 
+
+use Aws\Rekognition\RekognitionClient;
+
 class VerificationController extends Controller
 {
     private $version = "v.1.0";
@@ -24,16 +27,44 @@ class VerificationController extends Controller
             try {
                 $path = NULL;
                 $user = $request->user();
+                $safe_image = "true";
 
                 if ($request->type == 'image') {
+
+
                     if (Storage::exists($user->verify_photo)) {
                         Storage::delete($user->verify_photo);
                     }
-
+                    
+                    
                     $path = $request->file('file')->store('users/verify/image');
                     $user->verify_photo = $path;
                     $user->verify_photo_status = "under_review";
                     $user->photo_verified_at = NULL;
+
+                    ///CHECK FOR AWS REKOGNIZTION START
+                    /*$awsImgResultArr = checkAwsImageModeration($request,"file");
+
+                    if(count($awsImgResultArr) > 0)
+                    {
+                        if($awsImgResultArr["is_safe_image"]==true) 
+                        {
+                            $path = $request->file('file')->store('users/verify/image');
+                            $user->verify_photo = $path;
+                            $user->verify_photo_status = "under_review";
+                            $user->photo_verified_at = NULL;
+                        }   
+                        else
+                        {
+                            $user->verify_photo = NULL;
+                            $user->verify_photo_status = "unverified";
+                            $user->photo_verified_at = NULL;
+                            $safe_image = "false";                            
+                        }  
+                    }   
+                    */                   
+                    //CHECK FOR AWS REKOGNIZTION END
+
                 } elseif ($request->type == 'video') {
                     if (Storage::exists($user->verify_video)) {
                         Storage::delete($user->verify_video);
@@ -44,6 +75,7 @@ class VerificationController extends Controller
                     $user->verify_video_status = "under_review";
                     $user->video_verified_at = NULL;
                 }
+                
                 $user->verify_status = 'under_review';
                 $user->save();
 
@@ -56,12 +88,14 @@ class VerificationController extends Controller
                             'api'       =>  $this->getVersion(),
                             'language'  =>  app()->getLocale(),
                             'is_ban'    =>  false,
+                            'safe_image'    =>  $safe_image,     
                             'message'   =>  trans('api.verification_upload.success'),
                         ]
                     ]);
                 } else {
                     $this->response['meta']['message']  =   trans('api.verification_upload.fail');
                     $this->response['meta']['is_ban'] = false;
+                    $this->response['meta']['safe_image'] = $safe_image;                    
                     $this->status = Response::HTTP_NOT_FOUND;
                 }
             } catch (ModelNotFoundException $exception) {

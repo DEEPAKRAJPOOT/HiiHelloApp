@@ -6,7 +6,11 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Language;
 use App\Models\Location;
+use App\Models\User;
 use App\Http\Requests\Admin\LocationRequest;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Response;
+use DB;
 
 class LocationController extends Controller
 {
@@ -179,5 +183,119 @@ class LocationController extends Controller
             ];
         }
         return $records;
+    }
+
+    public function csvDownload(Request $request)
+    {
+        $down_file_name = 'Location Report';
+        $location_reports = Location::select("locations.id as id","location_translations.name as name",DB::raw("count(users.id) as total_users"))
+                            ->join("users","users.location_id","=","locations.id")
+                            ->join("location_translations","locations.id","=","location_translations.location_id")
+                            ->where("locations.is_active","=",'y')
+                            ->where("location_translations.locale","=",'en')
+                            ->groupBy('location_translations.name')
+                            ->orderBy('total_users','desc')
+                            ->get();
+
+        $all_users          = User::count();
+        $data = [];
+        // echo "<pre>"; print_r($location_reports->toArray()); die();
+        if (!$location_reports->isEmpty()) {
+            foreach ($location_reports as $val) {
+                $total_users = $val->total_users;
+                $pr = $total_users/$all_users * 100;
+                $data[] = [
+                    'City Id'             =>  $val->id ? $val->id : "",
+                    'City name'           =>  $val->name ? $val->name : "",
+                    'Total Users'         =>  $total_users,
+                    'Percentage'          =>  number_format($pr,2),
+                ];
+            }
+
+            // echo "<pre>"; print_r($data); die();
+            if (!File::exists(public_path() . "/files")) {
+                File::makeDirectory(public_path() . "/files");
+            }
+
+            $filename = public_path('files/' . $down_file_name . ".csv");
+            $handle   = fopen($filename, 'w+');
+            fputcsv($handle, array(
+                'City Id','City name', 'Total Users', 'Percentage'  
+            ));
+            foreach ($data as $row) {
+                fputcsv($handle, array(
+                    $row['City Id'], $row['City name'], $row['Total Users'], $row['Percentage']
+                ));
+            }
+            fclose($handle);
+
+            $headers = array(
+                'Content-Type' => 'text/csv',
+            );
+
+            return Response::download($filename, $down_file_name . ".csv", $headers);
+        } else {
+            flash('Unable to generate transaction csv file. Try again later')->error();
+        }
+        return redirect(route('admin.locations.index'));
+    }
+
+    public function userlocationcsvDownload(Request $request)
+    {
+        $page = $request->page ? $request->page : 10;
+        $skip = $request->skip ? $request->skip : 0;
+        $down_file_name = 'User Location Report';
+        $location_reports = User::select("users.id as id","users.account_id as account_id","users.location_id as location_id","location_translations.name as city_name","location_translations.state as state_name")
+                            ->leftJoin("location_translations","location_translations.location_id","=","users.location_id")
+                            ->where("location_translations.locale","=",'en')
+                            ->groupBy('users.id')
+                            ->limit($page)
+                            // ->paginate($page);
+                            ->skip($skip)
+                            // ->offset(20)
+                            ->get();
+
+        $data = [];
+        if ($request->is_print == 1) {
+            echo "<pre>"; print_r($location_reports->toArray()); die();
+        }
+        if (!$location_reports->isEmpty()) {
+            foreach ($location_reports as $val) {
+                $data[] = [
+                    'User Id'             =>  $val->id ? $val->id : "",
+                    'Account Id'          =>  $val->account_id ? $val->account_id : "",
+                    'User name'           =>  $val->full_name ? $val->full_name : "",
+                    'Location Id'         =>  $val->location_id ? $val->location_id : "",
+                    'City name'           =>  $val->city_name ? $val->city_name : "",
+                    'State name'          =>  $val->state_name ? $val->state_name : "",
+                ];
+            }
+
+            // echo "<pre>"; print_r($data); die();
+            if (!File::exists(public_path() . "/files")) {
+                File::makeDirectory(public_path() . "/files");
+            }
+
+            $filename = public_path('files/' . $down_file_name . ".csv");
+            $handle   = fopen($filename, 'w+');
+            fputcsv($handle, array(
+                'User Id', 'Account Id', 'User name', 'Location Id', 'City name', 'State name'  
+            ));
+            foreach ($data as $row) {
+                fputcsv($handle, array(
+                    $row['User Id'], $row['Account Id'], $row['User name'], $row['Location Id'], $row['City name'], $row['State name']
+                ));
+            }
+            fclose($handle);
+
+            $headers = array(
+                'Content-Type' => 'text/csv',
+            );
+
+            return Response::download($filename, $down_file_name . ".csv", $headers);
+        } else {
+            flash('Unable to generate transaction csv file. Try again later')->error();
+        }
+        return redirect(route('admin.locations.index'));
     }
 }

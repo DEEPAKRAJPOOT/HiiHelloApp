@@ -43,6 +43,7 @@ class SubscriptionPlanController extends Controller
         $data = $this->getLangStoreData($request);
         $data['custom_id'] = getUniqueString('subscription_plans');
         $data['months'] = $request->months;
+        $data['day']    = $request->day;
         $data['amount'] = $request->amount;
         $data['android_product'] = $request->android_product;
         $data['ios_product'] = $request->ios_product;
@@ -104,6 +105,7 @@ class SubscriptionPlanController extends Controller
         } else {
             $data = $this->getLangStoreData($request);
             $data['months'] = $request->months;
+            $data['day']    = $request->day;
             $data['amount'] = $request->amount;
             $data['android_product'] = $request->android_product;
             $data['ios_product'] = $request->ios_product;

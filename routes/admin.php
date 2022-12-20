@@ -57,7 +57,9 @@ Route::group(['namespace' => 'Admin', 'middleware' => ['check_permit', 'revalida
 	Route::post('users/bulk_photo_verification', 'UsersController@bulk_photo_verification')->name('users.bulk_photo_verification');
 	
 	Route::get('users/unde_review', 'UsersController@unde_review')->name('users.unde-review');
+	Route::get('users/deleted', 'UsersController@deleted')->name('users.deleted');
 	Route::resource('users', 'UsersController');
+
 
 	/* Role Management */
 	Route::get('roles/listing', 'AdminController@listing')->name('roles.listing');
@@ -135,10 +137,21 @@ Route::group(['namespace' => 'Admin', 'middleware' => ['check_permit', 'revalida
 
 });
 
+// user tree
+Route::get('usertree/listing', 'Admin\UserTreeController@listing')->name('usertree.listing');
+Route::post('usertree/filters', 'Admin\UserTreeController@filters')->name('usertree.filters');
+Route::get('usertree/usermatchlisting', 'Admin\UserTreeController@usermatchlisting')->name('usertree.usermatchlisting');
+// Route::resource('usertree', 'Admin\UserTreeController');
+Route::get('/usertree', 'Admin\UserTreeController@index')->name('usertree');
+Route::post('usertree/get_user_match_data', 'Admin\UserTreeController@get_user_match_data')->name('usertree.get_user_match_data');
+Route::get('usertree/top_usertree', 'Admin\UserTreeController@top_usertree')->name('usertree.top_usertree');
+	
 //User Exception
 Route::get('users-error-listing', 'Admin\ErrorController@listing')->name('error.listing');
 Route::get('gender-listing', 'Admin\PagesController@gender_listing')->name('gender.listing');
 Route::get('location-listing', 'Admin\PagesController@location_listing')->name('location.listing');
+// language list with no of users
+Route::get('language-listing', 'Admin\PagesController@language_listing')->name('dashboard.languagelisting');
 //Chart routes
 Route::get('register-users-chart', 'Admin\ChartController@getRegisterUser')->name('users.registerchart');
 Route::get('active-deactive-users-chart', 'Admin\ChartController@getActiveDeactiveUser')->name('users.activeDeactiveChart');
@@ -146,13 +159,16 @@ Route::get('active-deactive-users-chart', 'Admin\ChartController@getActiveDeacti
 Route::post('check-email', 'UtilityController@checkEmail')->name('check.email');
 Route::post('check-contact', 'UtilityController@checkContact')->name('check.contact');
 Route::get('api-translate', 'UtilityController@translate');
+Route::get('chk_female_subscriptions', 'UtilityController@chk_female_subscriptions');
+Route::get('assign_user_city_lat_long', 'UtilityController@assign_user_city_lat_long');
 
 Route::post('summernote-image-upload', 'Admin\SummernoteController@imageUpload')->name('summernote.imageUpload');
 Route::post('summernote-media-image', 'Admin\SummernoteController@mediaDelete')->name('summernote.mediaDelete');
 
 Route::post('check-title', 'UtilityController@checkTitle')->name('check.title');
 Route::post('profile/check-password', 'UtilityController@profilecheckpassword')->name('profile.check-password');
-
+Route::post('profile-reports/filters', 'Admin\ProfileReportController@filters')->name('profile-reports.filters');
+Route::post('profilereports/get_user_report_data', 'Admin\ProfileReportController@get_user_report_data')->name('profilereports.get_user_report_data');
 // user translations table hindi language translate manualy
 Route::get('user-translations', 'Admin\PagesController@user_translations')->name('user.translations');
 // delete all location if user is not used 

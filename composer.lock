@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "54a3c55c0ceaa77c6e1fefa261edaf33",
+    "content-hash": "68c2066954dfb6178a7811f8c6b436e0",
     "packages": [
         {
             "name": "asm89/stack-cors",
@@ -185,16 +185,18 @@
         },
         {
             "name": "aws/aws-sdk-php",
-            "version": "3.237.0",
+
+            "version": "3.252.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aws/aws-sdk-php.git",
-                "reference": "9ecb0aac2c8ad78585689d1c3e71817310aa69f1"
+                "reference": "ce0b006b73c6ea78eb570aa3fcd838d0df34ec1b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/9ecb0aac2c8ad78585689d1c3e71817310aa69f1",
-                "reference": "9ecb0aac2c8ad78585689d1c3e71817310aa69f1",
+                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/ce0b006b73c6ea78eb570aa3fcd838d0df34ec1b",
+                "reference": "ce0b006b73c6ea78eb570aa3fcd838d0df34ec1b",
+
                 "shasum": ""
             },
             "require": {
@@ -270,7 +272,14 @@
                 "s3",
                 "sdk"
             ],
-            "time": "2022-09-29T18:16:17+00:00"
+            "support": {
+                "forum": "https://forums.aws.amazon.com/forum.jspa?forumID=80",
+                "issues": "https://github.com/aws/aws-sdk-php/issues",
+
+                "source": "https://github.com/aws/aws-sdk-php/tree/3.252.4"
+            },
+            "time": "2022-12-07T19:47:20+00:00"
+
         },
         {
             "name": "barryvdh/laravel-debugbar",
@@ -9086,5 +9095,5 @@
         "php": "^7.3|^8.0"
     },
     "platform-dev": [],
-    "plugin-api-version": "1.1.0"
+    "plugin-api-version": "2.2.0"
 }

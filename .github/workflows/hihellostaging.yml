@@ -1,10 +1,10 @@
-name: Backend HI-Hello to dev
+name: Backend HI-Hello to stagingserver-new
 
 on:
   push:
-    branches: [ "dev-branch" ]
+    branches: [ "staginghihello" ]
   pull_request:
-    branches: [ "dev-branch" ]
+    branches: [ "staginghihello" ]
     
 jobs:
   laravel-tests:
@@ -33,48 +33,25 @@ jobs:
         #DB_CONNECTION: sqlite
        # DB_DATABASE: database/database.sqlite
       #run: vendor/bin/phpunit
-  deploy-to-cronserver:
+  deploy-to-staging:
      runs-on: self-hosted
      needs: [ laravel-tests]
      steps:
            - name: connect to aws cli
              uses: appleboy/ssh-action@master
              with:
-                  host: 65.1.31.65
+                  host: 3.6.191.147
                   username: ubuntu
-                  key: ${{ secrets.CRON_SERVER_ACCESS }}
+                  key: ${{ secrets.STAGING_SERVER }}
                   port: 22
                   script: |
                       cd  /var/www/hihelloapp.com 
                       git reset --hard HEAD 
-                      git pull origin dev-branch  && git checkout  dev-branch
-                      sudo php artisan optimize:clear
+                      git pull origin staginghihello  && git checkout  staginghihello
                       php artisan config:clear
                       php artisan route:clear
                       php artisan view:clear
                       php artisan event:clear
                       sudo php artisan cache:clear
-                      
-                      
-  deploy-to-backendserver:
-     runs-on: self-hosted
-     needs: [ laravel-tests]
-     steps:
-           - name: connect to aws cli
-             uses: appleboy/ssh-action@master
-             with:
-                  host: 3.6.165.41
-                  username: ubuntu
-                  key: ${{ secrets.BACKEND_SERVER_LARAVEL }}
-                  port: 22
-                  script: |
-                      cd  /var/www/hihelloapp.com 
-                      git reset --hard HEAD 
-                      git pull origin dev-branch  && git checkout  dev-branch
-                      sudo php artisan optimize:clear
-                      php artisan config:clear
-                      php artisan route:clear 
-                      php artisan view:clear
-                      php artisan event:clear
-                      sudo php artisan cache:clear 
-                      
+                      php artisan optimize:clear
+ 

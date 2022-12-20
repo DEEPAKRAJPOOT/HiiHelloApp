@@ -32,6 +32,17 @@
                         Add {{ $custom_title }}
                     </a>
                 @endif
+                <a href="{{ route('admin.location.csv-download') }}"
+                class="btn btn-sm btn-primary font-weight-bolder text-uppercase ml-2">
+                    <i class="fas fa-arrow-down"></i>
+                    Download CSV
+                </a>
+
+                <a href="{{ route('admin.location.user-location-csv-download') }}"
+                class="btn btn-sm btn-primary font-weight-bolder text-uppercase ml-2">
+                    <i class="fas fa-arrow-down"></i>
+                    Download User location CSV
+                </a>
             </div>
         </div>
         <div class="card-body">
