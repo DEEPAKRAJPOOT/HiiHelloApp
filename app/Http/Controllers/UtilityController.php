@@ -443,7 +443,7 @@ class UtilityController extends Controller
                     $res = $this->get_city_name($val->latitude,$val->longitude);
 
                     // check city and state not empty
-                    if (!empty($res) && !empty($res['city']) && !empty($res['city'])) {
+                    if (!empty($res) && !empty($res['city']) && !empty($res['state'])) {
                         // if already exist city and state then get id and update user location id
                         $locationTranslation = LocationTranslation::where('name',$res['city'])->where('state',$res['state'])->where('locale','en')->first();
                         if (!empty($locationTranslation)) {
