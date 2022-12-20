@@ -21,13 +21,7 @@ class ImageModerationController extends Controller
      *
      * @param  int  $id
      * @return \Illuminate\Http\Response
-     */
-    public function show($custom_id)
-    {
-        $call = CallLog::with(['room.creator.userTransDefault', 'room.participator.userTransDefault',])
-                    ->whereCustomId($custom_id)->firstOrFail();
-        return view('admin.pages.call-logs.view', compact('call'))->with(['custom_title' => 'Call Logs']);
-    }
+     */    
 
     public function listing(Request $request)
     {
@@ -42,7 +36,7 @@ class ImageModerationController extends Controller
 
         if ($search != '') {
             $call_logs->where(function ($query) use ($search, $call_logs) {
-                $query->where('created_at', 'like', "%{$search}%")
+                $query->where('created_at', 'like', "%{$search}%")->orwhere('endpoint_url', 'like', "%{$search}%")->orwhere('message', 'like', "%{$search}%")
                     ->orWhereHas('userDetails.userTranslations', function ($query1) use ($search) {
                         $query1->where('full_name', 'like', "%{$search}%");
                     });
@@ -129,6 +123,6 @@ class ImageModerationController extends Controller
         } else {
             flash('Unable to generate Call logs csv file. Try again later')->error();
         }
-        return redirect(route('admin.call-logs.index'));
+        return redirect(route('admin.image-logs.index'));
     }
 }
