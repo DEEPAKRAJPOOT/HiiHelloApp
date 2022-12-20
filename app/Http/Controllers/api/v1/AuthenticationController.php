@@ -8,7 +8,7 @@ use App\Http\Resources\v1\{UserProfile, LoginResource, SignUpResource};
 use Illuminate\Database\Eloquent\{ModelNotFoundException};
 use Illuminate\Support\Facades\{Storage, Auth, Hash};
 use App\Http\Requests\Api\Authentication\{LoginRequest, RegisterRequest, SocialLoginRequest};
-use App\Models\{User, Country, UserDetail, Location, Interest, UserInterest, Language, ProfileDetail, DeviceToken, Subscription, SubscriptionPlan};
+use App\Models\{User, Country, UserDetail, Location, Interest, UserInterest, Language, ProfileDetail, DeviceToken, Subscription, SubscriptionPlan,ImageModerationLog};
 use Illuminate\Support\Str;
 
 class AuthenticationController extends Controller
@@ -65,6 +65,7 @@ class AuthenticationController extends Controller
         if ($this->apiValidator($request->all(), $registerRequest->rules())) {
             try {
                 $user = $this->getAuthUser();
+
                 $country_id = $location_id = $language_id = NULL;
                 $full_name = $request->first_name . ' ' . $request->last_name;
                 if ($request->language == 'en') {
@@ -136,15 +137,61 @@ class AuthenticationController extends Controller
                     $user->sendWelcomeSms(); // Send Welcome SMS
                 }
 
+                $safe_image = "true";
+
                 if (!empty($request->profile_photo)) {
+                    
                     if (!empty($user->profile_photo)) {
                         if (Storage::exists($user->profile_photo)) {
                             Storage::delete($user->profile_photo);
                         }
                     }
-                    $path = $request->file('profile_photo')->store('users/profile_photo');
-                    $user->profile_photo = $path;
-                    $user->is_media_checked = 'n';
+                    ///CHECK FOR AWS REKOGNIZTION START
+                    $awsImgResultArr = checkAwsImageModeration($request,"profile_photo");
+
+                    if(count($awsImgResultArr) > 0)
+                    {
+                        if($awsImgResultArr["is_safe_image"]==true) 
+                        {
+                            $path = $request->file('profile_photo')->store('users/profile_photo');
+                            $user->profile_photo = $path;
+                            $user->is_media_checked = 'n';
+                        }   
+                        else
+                        {
+                            $user->profile_photo = NULL;
+                            $user->is_media_checked = 'n';
+                            $invalid_image_uploaded = true;
+                            $safe_image = "false";                            
+                        }  
+
+                        //INSERT IN TO IMAGE MODERATIO LOG START
+                        if($awsImgResultArr["is_safe_image"]==true) 
+                            $is_approved = 1;
+                        else
+                            $is_approved = 0;
+
+                        $image_type = "profile_photo";  
+                        $message = $awsImgResultArr["log_message"];                        
+                        $total_face_detected = $awsImgResultArr["total_face_detected"];                        
+                        
+                        $response_data = $awsImgResultArr["image_moderation_response"];
+                        $request_data = $awsImgResultArr["image_moderation_request"];
+
+                        ImageModerationLog::Create([
+                            'user_id'             => $user->id,
+                            'is_approved'         => $is_approved,
+                            'request'             => $request_data,
+                            'response'            => $response_data,
+                            'total_face_detected' => $total_face_detected,
+                            'message'             => $message,
+                            'image_type'          => $image_type,
+                        ]);    
+
+                        //INSERT IN TO IMAGE MODERATIO LOG END
+
+                    }                    
+                    //CHECK FOR AWS REKOGNIZTION END
                 }
 
                 $user->latitude = $request->latitude;
@@ -164,10 +211,12 @@ class AuthenticationController extends Controller
                             'meta' => [
                                 'message'       =>  trans('api.profile_setuped'),
                                 'auth_token'    =>  $user->createToken(config('utility.token'))->plainTextToken,
+                                'safe_image'    =>  $safe_image,                                
                             ]
                         ]);
                 } else {
-                    $this->response['meta']['message']  = trans('api.profile_setuped_fail');
+                    $this->response['meta']['message']   = trans('api.profile_setuped_fail');
+                    $this->response['meta']['safe_image']= $safe_image;                  
                 }
             } catch (ModelNotFoundException $exception) {
                 switch ($exception->getModel()) {
