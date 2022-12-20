@@ -1,7 +1,7 @@
 @extends('admin.layouts.app')
 
 @push('breadcrumb')
-{!! Breadcrumbs::render('call_log_list') !!}
+{!! Breadcrumbs::render('image_log_list') !!}
 @endpush
 
 @push('extra-css-styles')
