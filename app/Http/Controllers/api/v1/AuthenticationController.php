@@ -178,6 +178,10 @@ class AuthenticationController extends Controller
                         $response_data = $awsImgResultArr["image_moderation_response"];
                         $request_data = $awsImgResultArr["image_moderation_request"];
 
+                        
+                        $endpoint_url = url()->current();
+
+
                         ImageModerationLog::Create([
                             'user_id'             => $user->id,
                             'is_approved'         => $is_approved,
@@ -186,6 +190,7 @@ class AuthenticationController extends Controller
                             'total_face_detected' => $total_face_detected,
                             'message'             => $message,
                             'image_type'          => $image_type,
+                            'endpoint_url'        => $endpoint_url,
                         ]);    
 
                         //INSERT IN TO IMAGE MODERATIO LOG END
