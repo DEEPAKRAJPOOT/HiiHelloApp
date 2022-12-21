@@ -8,8 +8,11 @@ use App\Http\Resources\v1\{UserProfile, LoginResource, SignUpResource};
 use Illuminate\Database\Eloquent\{ModelNotFoundException};
 use Illuminate\Support\Facades\{Storage, Auth, Hash};
 use App\Http\Requests\Api\Authentication\{LoginRequest, RegisterRequest, SocialLoginRequest};
-use App\Models\{User, Country, UserDetail, Location, Interest, UserInterest, Language, ProfileDetail, DeviceToken, Subscription, SubscriptionPlan,LocationTranslation};
+
+use App\Models\{User, Country, UserDetail, Location, Interest, UserInterest, Language, ProfileDetail, DeviceToken, Subscription, SubscriptionPlan,LocationTranslation,ApiLogs};
+
 use Illuminate\Support\Str;
+use DB;
 
 class AuthenticationController extends Controller
 {
@@ -178,6 +181,7 @@ class AuthenticationController extends Controller
 
                 $user->latitude = $request->latitude;
                 $user->longitude = $request->longitude;
+                $user->setprofile_api_run = 'y';
 
                 // Set Default Discover
                 $user->discover_distance    =   config('utility.profile.detail.discover_distance');
@@ -188,6 +192,15 @@ class AuthenticationController extends Controller
                     $user = User::with(['userTranslation', 'interests', 'userDetails', 'location.locationTranslation', 'language'])
                         ->whereId($user->id)->firstOrFail();
                     Auth::login($user);
+
+                    // store api request and responce
+                    $apilogs = new ApiLogs();
+                    $apilogs->user_id = $user->id;
+                    $apilogs->url = url()->current();
+                    $apilogs->request = json_encode($request->all());
+                    $apilogs->response = json_encode(new SignUpResource($user));
+                    $apilogs->save();
+
                     return (new SignUpResource($user))
                         ->additional([
                             'meta' => [
@@ -389,7 +402,9 @@ class AuthenticationController extends Controller
                 if($user->wasRecentlyCreated){ $user->buyFreeSubscription(); } // Buy Subscription For Girls
 
                 $user->profile_photo = $path;
+                $user->setprofile_api_run = 'n';
                 $user->save();
+
                 return (new UserProfile($user))
                     ->additional([
                         'meta' => [
