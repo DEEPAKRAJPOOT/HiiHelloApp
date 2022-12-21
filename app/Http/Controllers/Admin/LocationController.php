@@ -297,5 +297,73 @@ class LocationController extends Controller
             flash('Unable to generate transaction csv file. Try again later')->error();
         }
         return redirect(route('admin.locations.index'));
+    } 
+
+    public function usernotlocationcsvDownload(Request $request)
+    {
+        $new_location_id = $request->new_location_id ? $request->new_location_id : 'n';
+        $limit = $request->limit ? $request->limit : 100;
+        $skip = $request->skip ? $request->skip : 0;
+        $from = $request->from;
+        $to = $request->to;
+        $down_file_name = 'User Not Location Translate Report';
+        $location_reports = User::select('users.id as id','users.account_id as account_id','users.latitude as latitude','users.longitude as longitude','users.location_id as location_id','users.new_location_id as new_location_id','users.created_at as created_at','location_translations.name as city_name','location_translations.state as state_name')
+                    ->leftJoin("location_translations","location_translations.location_id","=","users.location_id")
+                    ->where("location_translations.locale","=",'en')
+                    ->where("users.new_location_id",$new_location_id)
+                    ->whereNotNull("users.latitude")
+                    ->whereNotNull("users.longitude");
+                    if (!empty($from) && !empty($to)) {
+                        $location_reports = $location_reports->where('users.created_at','>=',$from);
+                        $location_reports = $location_reports->where("users.created_at",'<=',$to);
+                    }
+                    $location_reports = $location_reports->groupBy('users.id');
+                    $location_reports = $location_reports->limit($limit);
+                    $location_reports = $location_reports->skip($skip);
+                    $location_reports = $location_reports->get();
+
+        $data = [];
+        if ($request->is_print == 1) {
+            echo "<pre>"; print_r($location_reports->toArray()); die();
+        }
+        if (!$location_reports->isEmpty()) {
+            foreach ($location_reports as $val) {
+                $data[] = [
+                    'User Id'             =>  $val->id ? $val->id : "",
+                    'Account Id'          =>  $val->account_id ? $val->account_id : "",
+                    'User name'           =>  $val->full_name ? $val->full_name : "",
+                    'Location Id'         =>  $val->location_id ? $val->location_id : "",
+                    'City name'           =>  $val->city_name ? $val->city_name : "",
+                    'State name'          =>  $val->state_name ? $val->state_name : "",
+                    'created_at'          =>  $val->created_at ? date('Y-m-d',strtotime($val->created_at)) : "",
+                ];
+            }
+
+            // echo "<pre>"; print_r($data); die();
+            if (!File::exists(public_path() . "/files")) {
+                File::makeDirectory(public_path() . "/files");
+            }
+
+            $filename = public_path('files/' . $down_file_name . ".csv");
+            $handle   = fopen($filename, 'w+');
+            fputcsv($handle, array(
+                'User Id', 'Account Id', 'User name', 'Location Id', 'City name', 'State name'  
+            ));
+            foreach ($data as $row) {
+                fputcsv($handle, array(
+                    $row['User Id'], $row['Account Id'], $row['User name'], $row['Location Id'], $row['City name'], $row['State name']
+                ));
+            }
+            fclose($handle);
+
+            $headers = array(
+                'Content-Type' => 'text/csv',
+            );
+
+            return Response::download($filename, $down_file_name . ".csv", $headers);
+        } else {
+            flash('Unable to generate transaction csv file. Try again later')->error();
+        }
+        return redirect(route('admin.locations.index'));
     }
 }
