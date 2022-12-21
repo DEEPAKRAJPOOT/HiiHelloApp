@@ -8,7 +8,9 @@ use App\Http\Resources\v1\{UserProfile, LoginResource, SignUpResource};
 use Illuminate\Database\Eloquent\{ModelNotFoundException};
 use Illuminate\Support\Facades\{Storage, Auth, Hash};
 use App\Http\Requests\Api\Authentication\{LoginRequest, RegisterRequest, SocialLoginRequest};
-use App\Models\{User, Country, UserDetail, Location, Interest, UserInterest, Language, ProfileDetail, DeviceToken, Subscription, SubscriptionPlan,ApiLogs};
+
+use App\Models\{User, Country, UserDetail, Location, Interest, UserInterest, Language, ProfileDetail, DeviceToken, Subscription, SubscriptionPlan,LocationTranslation,ApiLogs};
+
 use Illuminate\Support\Str;
 use DB;
 
@@ -67,7 +69,7 @@ class AuthenticationController extends Controller
             try {
                 $user = $this->getAuthUser();
 
-                $country_id = $location_id = $language_id = NULL;
+                $country_id = $location_id = $language_id = $device_type = $device_app_version = NULL;
                 $full_name = $request->first_name . ' ' . $request->last_name;
                 if ($request->language == 'en') {
                     $full_name = Str::title($full_name);
@@ -78,13 +80,18 @@ class AuthenticationController extends Controller
                     $country = Country::wherePhonecode($request->country_code)->whereIsActive('y')->firstOrFail();
                     $country_id = $country->id;
                 }
-                if (!empty($request->location)) {
-                    $location = Location::whereCustomId($request->location)->whereIsActive('y')->firstOrFail();
-                    $location_id = $location->id;
+                if (!empty($request->latitude) && !empty($request->longitude)) {
+                    $location_id = $this->get_user_location($request->latitude,$request->longitude);
                 }
                 if (!empty($request->language)) {
                     $language = Language::whereLangCode($request->language)->whereIsActive('y')->firstOrFail();
                     $language_id = $language->id;
+                }
+                if (!empty($request->device_type)) {
+                    $device_type = $request->device_type;
+                }
+                if (!empty($request->device_app_version)) {
+                    $device_app_version = $request->device_app_version;
                 }
                 if (empty($user) && !empty($request->email)) {
                     $user = User::whereEmail($request->email)->first();
@@ -93,8 +100,8 @@ class AuthenticationController extends Controller
                 if (!empty($user)) {
                     $user->fill($request->all());
                     $user->country_id = $country_id;
-                    $user->location_id = $location_id;
-                    $user->discover_location_id = $location_id;
+                    $user->location_id = isset($location_id) ? $location_id : null;
+                    $user->discover_location_id = isset($location_id) ? $location_id : null;
                     $user->language_id = $language_id;
                 } else {
                     $user = User::updateOrCreate([
@@ -108,7 +115,10 @@ class AuthenticationController extends Controller
                         'country_id'            =>  $country_id ?? NULL,
                         'location_id'           =>  $location_id ?? NULL,
                         'discover_location_id'  =>  $location_id ?? NULL,
+                        'new_location_id'       =>  'y',
                         'language_id'           =>  $language_id ?? NULL,
+                        'device_type'           =>  $device_type ?? NULL,
+                        'device_app_version'    =>  $device_app_version ?? NULL,
                         'star_sign_id'          =>  $request->star_sign_id ?? NULL,
                         'password'              =>  Hash::make(config('utility.default_password')),
                     ]);
@@ -444,5 +454,64 @@ class AuthenticationController extends Controller
             $this->storeErrorLog($e, 'logout');
         }
         return $this->returnResponse();
+    }
+
+    // User get location id using lat and logn
+    public function get_user_location($lat,$long)
+    {
+        $apiKey = 'AIzaSyDInVSLHXa1FXO3p7kgA7B_TK9L71tZbW8';
+        $latlng = $lat.','.$long;
+        $result = [];
+        $location_id = '';
+
+        $url = "https://maps.googleapis.com/maps/api/geocode/json?latlng=".$latlng."&sensor=true&key=".$apiKey;
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);    
+        $responseJson = curl_exec($ch);
+        curl_close($ch);
+        $response = json_decode($responseJson);
+        if (!empty($response) && !empty($response->results[0]->address_components)) {
+            foreach ($response->results[0]->address_components as $key => $value) {
+                if ($value->types[0] == "administrative_area_level_3") {
+                    $result['city'] = $value->long_name;
+                }
+                if ($value->types[0] == "administrative_area_level_1") {
+                    $result['state'] = $value->long_name;
+                }
+
+                // check city and state not empty
+                if (!empty($result) && !empty($result['city']) && !empty($result['state'])) {
+                    // if already exist city and state then get id and update user location id
+                    $locationTranslation = LocationTranslation::where('name',$result['city'])->where('state',$result['state'])->where('locale','en')->first();
+                    if (!empty($locationTranslation)) {
+                        $location_id = $locationTranslation->location_id;
+
+                        // update location table for city is used some one users
+                        Location::where('id',$location_id)->update([ 
+                            'is_used' =>  'y',
+                        ]);
+                    }
+                    else
+                    {
+                        // if city and state not exits then create new
+                        $location = new Location();        
+                        $location->custom_id = getUniqueString('locations');  
+                        $location->is_used   = 'y';  
+                        $location->save();
+
+                        $location_id = $location->id;
+
+                        $LocationTranslation = new LocationTranslation();
+                        $LocationTranslation->locale = 'en';  
+                        $LocationTranslation->location_id = $location_id;  
+                        $LocationTranslation->name = $result['city'];  
+                        $LocationTranslation->state = $result['state'];  
+                        $LocationTranslation->save();
+                    }
+                }
+            }
+            return $location_id;
+        }
     }
 }
