@@ -43,6 +43,11 @@
                     <i class="fas fa-arrow-down"></i>
                     Download User location CSV
                 </a>
+                <a href="{{ route('admin.location.user-not-location-csv-download') }}"
+                class="btn btn-sm btn-primary font-weight-bolder text-uppercase ml-2">
+                    <i class="fas fa-arrow-down"></i>
+                    Download Not location Id Assign
+                </a>
             </div>
         </div>
         <div class="card-body">
