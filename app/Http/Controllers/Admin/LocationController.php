@@ -188,13 +188,13 @@ class LocationController extends Controller
     public function csvDownload(Request $request)
     {
         $down_file_name = 'Location Report';
-        $location_reports = Location::select("locations.id as id","location_translations.name as name",DB::raw("count(users.id) as total_users"))
+        $location_reports = Location::select("locations.id as id","location_translations.name as name","location_translations.state as state",DB::raw("count(users.id) as total_users"))
                             ->join("users","users.location_id","=","locations.id")
                             ->join("location_translations","locations.id","=","location_translations.location_id")
                             ->where("locations.is_active","=",'y')
                             ->where("location_translations.locale","=",'en')
-                            ->groupBy('location_translations.name')
-                            ->orderBy('total_users','desc')
+                            ->groupBy('location_translations.location_id')
+                            ->orderBy('name','ASC')
                             ->get();
 
         $all_users          = User::count();
@@ -207,6 +207,7 @@ class LocationController extends Controller
                 $data[] = [
                     'City Id'             =>  $val->id ? $val->id : "",
                     'City name'           =>  $val->name ? $val->name : "",
+                    'State name'          =>  $val->state ? $val->state : "",
                     'Total Users'         =>  $total_users,
                     'Percentage'          =>  number_format($pr,2),
                 ];
@@ -220,11 +221,11 @@ class LocationController extends Controller
             $filename = public_path('files/' . $down_file_name . ".csv");
             $handle   = fopen($filename, 'w+');
             fputcsv($handle, array(
-                'City Id','City name', 'Total Users', 'Percentage'  
+                'City Id','City name','State name', 'Total Users', 'Percentage'  
             ));
             foreach ($data as $row) {
                 fputcsv($handle, array(
-                    $row['City Id'], $row['City name'], $row['Total Users'], $row['Percentage']
+                    $row['City Id'], $row['City name'],$row['State name'], $row['Total Users'], $row['Percentage']
                 ));
             }
             fclose($handle);
