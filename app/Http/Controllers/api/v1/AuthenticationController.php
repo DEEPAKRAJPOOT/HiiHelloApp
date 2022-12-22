@@ -108,6 +108,10 @@ class AuthenticationController extends Controller
                         'location_id'           =>  $location_id ?? NULL,
                         'discover_location_id'  =>  $location_id ?? NULL,
                         'language_id'           =>  $language_id ?? NULL,
+                        'is_social_user'        =>  isset($request->is_social_user) ? $request->is_social_user : 'n',
+                        'google_id'             =>  isset($request->google_id) ? $request->google_id : NULL,
+                        'apple_id'              =>  isset($request->apple_id) ? $request->apple_id : NULL,
+                        'facebook_id'           =>  isset($request->facebook_id) ? $request->facebook_id : NULL,
                         'star_sign_id'          =>  $request->star_sign_id ?? NULL,
                         'password'              =>  Hash::make(config('utility.default_password')),
                     ]);
