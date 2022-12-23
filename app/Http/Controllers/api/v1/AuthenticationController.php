@@ -88,7 +88,14 @@ class AuthenticationController extends Controller
                 if (empty($user) && !empty($request->email)) {
                     $user = User::whereEmail($request->email)->first();
                 }
-
+                if (!empty($request->email)) {
+                    $is_social_user = 'y';
+                }
+                else
+                {
+                    $is_social_user = 'n';
+                }
+                // echo "<pre>"; print_r($user->toArray()); die();
                 if (!empty($user)) {
                     $user->fill($request->all());
                     $user->country_id = $country_id;
@@ -108,7 +115,7 @@ class AuthenticationController extends Controller
                         'location_id'           =>  $location_id ?? NULL,
                         'discover_location_id'  =>  $location_id ?? NULL,
                         'language_id'           =>  $language_id ?? NULL,
-                        'is_social_user'        =>  isset($request->is_social_user) ? $request->is_social_user : 'n',
+                        'is_social_user'        =>  isset($request->is_social_user) ? $request->is_social_user : $is_social_user,
                         'google_id'             =>  isset($request->google_id) ? $request->google_id : NULL,
                         'apple_id'              =>  isset($request->apple_id) ? $request->apple_id : NULL,
                         'facebook_id'           =>  isset($request->facebook_id) ? $request->facebook_id : NULL,
