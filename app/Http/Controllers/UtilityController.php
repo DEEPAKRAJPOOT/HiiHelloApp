@@ -403,22 +403,39 @@ class UtilityController extends Controller
             }
         }
         echo "subscription total :- ".$subscription_total. "<br>";
-        echo "uN subscription total :- ".$un_subscription_total. "<br>";
+        echo "UN subscription total :- ".$un_subscription_total. "<br>";
     }
 
     function assign_user_city_lat_long(Request $request)
     {
         $limit = isset($request->limit) ? $request->limit : 10;
-        $user_list = User::select('users.id as id','users.latitude as latitude','users.longitude as longitude','users.location_id as location_id','users.new_location_id as new_location_id')
+        $get_count = isset($request->get_count) ? $request->get_count : 1;
+        $from = isset($request->from) ? $request->from : date('Y-m-d');
+        $to = isset($request->to) ? $request->to : date('Y-m-d');
+        // $month = isset($request->month) ? $request->month : date('m');
+        $new_location_id = isset($request->new_location_id) ? $request->new_location_id : 'n';
+        $user_list = User::select('users.id as id','users.latitude as latitude','users.longitude as longitude','users.location_id as location_id','users.new_location_id as new_location_id','users.created_at as created_at')
+                    ->where("new_location_id",$new_location_id)
                     ->whereNotNull("latitude")
                     ->whereNotNull("longitude")
-                    ->where("new_location_id","n");
+                    ->where('created_at','>=',$from)
+                    ->where("created_at",'<=',$to);
                     if (!empty($request->id)) {
                         $user_list = $user_list->where('id',$request->id);
                     }
-         $user_list = $user_list->limit($limit)
-                    ->get();
-        if ($request->is_print == 1) {
+        $user_list = $user_list->limit($limit);
+        if ($get_count == 1) {
+            $user_list = $user_list->count();
+        }
+        else
+        {
+            $user_list = $user_list->get();
+        }
+
+        if ($get_count == 1) {
+            echo "<pre>"; print_r($user_list); die();
+        }
+        else if ($request->is_print == 1) {
             echo "<pre>"; print_r($user_list->toArray()); die();
         }
         if (count($user_list) > 0) {
@@ -429,7 +446,7 @@ class UtilityController extends Controller
                     $res = $this->get_city_name($val->latitude,$val->longitude);
 
                     // check city and state not empty
-                    if (!empty($res) && !empty($res['city']) && !empty($res['city'])) {
+                    if (!empty($res) && !empty($res['city']) && !empty($res['state'])) {
                         // if already exist city and state then get id and update user location id
                         $locationTranslation = LocationTranslation::where('name',$res['city'])->where('state',$res['state'])->where('locale','en')->first();
                         if (!empty($locationTranslation)) {
@@ -438,6 +455,12 @@ class UtilityController extends Controller
                             // update location table for city is used some one users
                             Location::where('id',$location_id)->update([ 
                                 'is_used' =>  'y',
+                            ]);
+
+                            // update loction translate table location name and state update
+                            LocationTranslation::where('location_id',$val->location_id)->where('locale','en')->update([ 
+                                'name' =>  $res['city'],
+                                'state' =>  $res['state'],
                             ]);
                         }
                         else
@@ -462,6 +485,13 @@ class UtilityController extends Controller
                         User::where('id',$val->id)->update([ 
                             'location_id' =>  $location_id,
                             'new_location_id' =>  'y',
+                        ]);
+                    }
+                    else
+                    {
+                        // update user table location id
+                        User::where('id',$val->id)->update([ 
+                            'new_location_id' =>  'T',
                         ]);
                     }
                 }
