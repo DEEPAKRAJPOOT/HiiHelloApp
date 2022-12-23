@@ -103,7 +103,7 @@ class AuthenticationController extends Controller
                 {
                     $is_social_user = 'n';
                 }
-                // echo "<pre>"; print_r($user->toArray()); die();
+                // echo "<pre>"; print_r($request->all()); die();
                 if (!empty($user)) {
                     $user->fill($request->all());
                     $user->country_id = $country_id;
@@ -111,15 +111,16 @@ class AuthenticationController extends Controller
                     $user->discover_location_id = isset($location_id) ? $location_id : null;
                     $user->language_id = $language_id;
                 } else {
-                    $user = User::updateOrCreate([
-                        'country_code'          =>  $request->country_code ?? NULL,
-                        'contact_no'            =>  $request->contact_no ?? NULL,
-                    ], [
+                    $user = User::create([
                         'custom_id'             =>  getUniqueString('users'),
+                        'account_id'            =>  Str::slug(substr($full_name, 0, 4), "_") . '_' . time(),
                         'birth_date'            =>  $request->birth_date ?? NULL,
                         'gender'                =>  $request->gender ?? NULL,
                         'interest'              =>  $request->interest ?? NULL,
                         'country_id'            =>  $country_id ?? NULL,
+                        'country_code'          =>  $request->country_code ?? NULL,
+                        'contact_no'            =>  $request->contact_no ?? NULL,
+                        'email'                 =>  isset($request->email) ? $request->email : NULL,
                         'location_id'           =>  $location_id ?? NULL,
                         'discover_location_id'  =>  $location_id ?? NULL,
                         'new_location_id'       =>  'y',
@@ -134,6 +135,7 @@ class AuthenticationController extends Controller
                         'password'              =>  Hash::make(config('utility.default_password')),
                     ]);
                 }
+                // echo "<pre>"; print_r($user); die();
 
                 if (!empty($full_name)) {
                     $language_codes = Language::pluck('lang_code')->toArray();
@@ -143,9 +145,9 @@ class AuthenticationController extends Controller
                     $user->update($traslate_data);
 
                     // Store Account Id
-                    if (!empty($request->language) && $request->language == 'en') {
-                        $user->account_id = Str::slug(substr($full_name, 0, 4), "_") . '_' . time();
-                    }
+                    // if (!empty($request->language) && $request->language == 'en') {
+                    //     $user->account_id = Str::slug(substr($full_name, 0, 4), "_") . '_' . time();
+                    // }
                     $user->is_trans_full_name = 'n';
                 }
 
