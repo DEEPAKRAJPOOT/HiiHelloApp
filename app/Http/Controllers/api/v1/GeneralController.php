@@ -184,6 +184,7 @@ class GeneralController extends Controller
                     'location_translations.name as location_name'
                 )
                     ->join('location_translations', 'locations.id', '=', 'location_translations.location_id')
+                    ->where('locations.is_active', 'y')
                     ->where('location_translations.locale', $lang)
                     ->where('location_translations.name', 'like', "{$search}%")
                     ->orderBy('location_translations.name');
