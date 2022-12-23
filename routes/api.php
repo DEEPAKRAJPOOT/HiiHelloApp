@@ -173,5 +173,5 @@ Route::group(['namespace' => 'v1', 'prefix' => 'v1', 'middleware' => ['auth:sanc
 // // v2 apis
 Route::group(['namespace' => 'v2', 'prefix' => 'v2'], function () {
     // Authentication
-    Route::post('social_login', [Authenticationv2Controller::class,'social_login'])->name('api.social_login');
+    Route::post('social/login', [Authenticationv2Controller::class,'social_login'])->name('api.social_login');
 });
