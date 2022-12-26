@@ -206,12 +206,14 @@ class AuthenticationController extends Controller
                         ->whereId($user->id)->firstOrFail();
                     Auth::login($user);
 
+                    // dd($request->statusCode);
                     // store api request and responce
                     $apilogs = new ApiLogs();
                     $apilogs->user_id = $user->id;
                     $apilogs->url = url()->current();
                     $apilogs->request = json_encode($request->all());
                     $apilogs->response = json_encode(new SignUpResource($user));
+                    // $apilogs->api_status = $this->response->status(); ;
                     $apilogs->save();
 
                     return (new SignUpResource($user))

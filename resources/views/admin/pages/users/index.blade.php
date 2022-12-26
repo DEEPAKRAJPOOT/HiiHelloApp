@@ -93,6 +93,9 @@
                         </select>
                     </td>
                     <td>
+                        <input type='text' id='profile_percentage' class="form-control" placeholder='profile percentage'>
+                    </td>
+                    <td>
                         <input type='button' class="btn btn-primary mr-1 ml-1" id="btn_search_filter" value="Search">
                     </td>
                     <td>
@@ -132,11 +135,13 @@
                     var from_date       = $("#search_fromdate").val();
                     var to_date         = $("#search_todate").val();
                     var gender_filter   = $("select[name=gender_filter] :selected").val();
+                    var profile_percentage = $("#profile_percentage").val();
                     // EN - Filter Params
 
                     data.from_date         = from_date;
                     data.to_date           = to_date;
                     data.gender_filter     = gender_filter;
+                    data.profile_percentage= profile_percentage;
                     data.flgPendingProfile = $(".getpendingprofile").is(':checked') ? 1 : 0;
                }                
             },
