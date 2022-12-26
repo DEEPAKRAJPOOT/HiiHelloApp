@@ -63,7 +63,7 @@ class ImageModerationController extends Controller
         $records['recordsFiltered'] = $count;
         $records['data'] = [];
 
-        // $call_logs = $call_logs->offset($offset)->limit($limit)->orderBy($sort_column, $sort_order);
+        $image_logs = $image_logs->offset($offset)->limit($limit)->orderBy($sort_column, $sort_order);
         $image_logs = $image_logs->get();
  
 
