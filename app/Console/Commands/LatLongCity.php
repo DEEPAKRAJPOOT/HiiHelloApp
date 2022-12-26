@@ -45,7 +45,7 @@ class LatLongCity extends Command
                     ->where("new_location_id","n")
                     ->whereNotNull("latitude")
                     ->whereNotNull("longitude")
-                    ->where('created_at','>=','2022-12-15')
+                    // ->where('created_at','>=','2022-12-15')
                     ->limit(100)
                     ->get();
         // echo "<pre>"; print_r($user_list->toArray()); die();
@@ -125,10 +125,10 @@ class LatLongCity extends Command
         if (!empty($response) && !empty($response->results[0]->address_components)) {
             foreach ($response->results[0]->address_components as $key => $value) {
                 if ($value->types[0] == "administrative_area_level_3") {
-                    $result['city'] = $value->long_name;
+                    $result['city'] = trim($value->long_name);
                 }
                 if ($value->types[0] == "administrative_area_level_1") {
-                    $result['state'] = $value->long_name;
+                    $result['state'] = trim($value->long_name);
                 }
             }
             return $result;
