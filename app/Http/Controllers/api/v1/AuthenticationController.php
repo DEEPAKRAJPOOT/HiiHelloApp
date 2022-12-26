@@ -8,9 +8,7 @@ use App\Http\Resources\v1\{UserProfile, LoginResource, SignUpResource};
 use Illuminate\Database\Eloquent\{ModelNotFoundException};
 use Illuminate\Support\Facades\{Storage, Auth, Hash};
 use App\Http\Requests\Api\Authentication\{LoginRequest, RegisterRequest, SocialLoginRequest};
-
-use App\Models\{User, Country, UserDetail, Location, Interest, UserInterest, Language, ProfileDetail, DeviceToken, Subscription, SubscriptionPlan,LocationTranslation,ApiLogs};
-
+use App\Models\{User, Country, UserDetail, Location, Interest, UserInterest, Language, ProfileDetail, DeviceToken, Subscription, SubscriptionPlan,LocationTranslation,ApiLogs,ImageModerationLog};
 use Illuminate\Support\Str;
 use DB;
 
@@ -188,6 +186,37 @@ class AuthenticationController extends Controller
                             $invalid_image_uploaded = true;
                             $safe_image = "false";                            
                         }  
+
+                        //INSERT IN TO IMAGE MODERATIO LOG START
+                        if($awsImgResultArr["is_safe_image"]==true) 
+                            $is_approved = 1;
+                        else
+                            $is_approved = 0;
+
+                        $image_type = "profile_photo";  
+                        $message = $awsImgResultArr["log_message"];                        
+                        $total_face_detected = $awsImgResultArr["total_face_detected"];                        
+                        
+                        $response_data = $awsImgResultArr["image_moderation_response"];
+                        $request_data = $awsImgResultArr["image_moderation_request"];
+
+                        
+                        $endpoint_url = url()->current();
+
+
+                        ImageModerationLog::Create([
+                            'user_id'             => $user->id,
+                            'is_approved'         => $is_approved,
+                            'request'             => $request_data,
+                            'response'            => $response_data,
+                            'total_face_detected' => $total_face_detected,
+                            'message'             => $message,
+                            'image_type'          => $image_type,
+                            'endpoint_url'        => $endpoint_url,
+                        ]);    
+
+                        //INSERT IN TO IMAGE MODERATIO LOG END
+
                     }                    
                     //CHECK FOR AWS REKOGNIZTION END
                 }
