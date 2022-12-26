@@ -80,6 +80,11 @@ class AuthenticationController extends Controller
                 }
                 if (!empty($request->latitude) && !empty($request->longitude)) {
                     $location_id = $this->get_user_location($request->latitude,$request->longitude);
+                    $new_location_id = 'y';
+                }
+                else
+                {
+                    $new_location_id = 'n';
                 }
                 if (!empty($request->language)) {
                     $language = Language::whereLangCode($request->language)->whereIsActive('y')->firstOrFail();
@@ -121,7 +126,7 @@ class AuthenticationController extends Controller
                         'email'                 =>  isset($request->email) ? $request->email : NULL,
                         'location_id'           =>  $location_id ?? NULL,
                         'discover_location_id'  =>  $location_id ?? NULL,
-                        'new_location_id'       =>  'y',
+                        'new_location_id'       =>  $new_location_id,
                         'language_id'           =>  $language_id ?? NULL,
                         'is_social_user'        =>  isset($request->is_social_user) ? $request->is_social_user : $is_social_user,
                         'google_id'             =>  isset($request->google_id) ? $request->google_id : NULL,
@@ -516,10 +521,10 @@ class AuthenticationController extends Controller
         if (!empty($response) && !empty($response->results[0]->address_components)) {
             foreach ($response->results[0]->address_components as $key => $value) {
                 if ($value->types[0] == "administrative_area_level_3") {
-                    $result['city'] = $value->long_name;
+                    $result['city'] = trim($value->long_name);
                 }
                 if ($value->types[0] == "administrative_area_level_1") {
-                    $result['state'] = $value->long_name;
+                    $result['state'] = trim($value->long_name);
                 }
 
                 // check city and state not empty
