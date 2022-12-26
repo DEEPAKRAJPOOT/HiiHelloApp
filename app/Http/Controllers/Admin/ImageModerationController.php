@@ -70,8 +70,8 @@ class ImageModerationController extends Controller
         foreach ($image_logs as $image_log) {
             
                 $records['data'][] = [
-                'account_id'            => $image_log->userDetails->account_id,
-                'full_name'             => $image_log->userDetails->full_name,
+                'account_id'            => $image_log->userDetails->account_id ?? "N/A",
+                'full_name'             => $image_log->userDetails->full_name ?? "N/A",
                 'message'               => $image_log->message,
                 'created_at'            => date('Y-m-d H:i:s',strtotime($image_log->created_at)),
                 'is_approved'           => $image_log->approve_staus,
