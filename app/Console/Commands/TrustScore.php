@@ -112,14 +112,26 @@ class TrustScore extends Command
                                 {
                                     $Trusted_Score_Total = $Trusted_Score_Total + 1;
                                 }
-                                // Total Chat Initiate Calculation End    7
+                                // Total Chat Initiate Calculation End    
 
                                 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++//
                                 //============= POINT DEDUCTION CALCULATION START================// 
                                 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++//
 
-
-
+                                // Total Profile Reported Calculation Start    
+                                $Total_Profile_Reported_Count = $this->total_profile_reported_point($user->id,$pre_month_start_date,$pre_month_end_date);
+                                if($Total_Profile_Reported_Count > 0)
+                                {
+                                    $Trusted_Score_Total = $Trusted_Score_Total - $Total_Profile_Reported_Count;
+                                }
+                                
+                                // Total Block User Calculation Start  
+                                $Total_Block_Count = $this->total_block_point($user->id,$pre_month_start_date,$pre_month_end_date);
+                                if($Total_Block_Count > 5)
+                                {
+                                    $Trusted_Score_Total = $Trusted_Score_Total - 3;
+                                }
+                                // Total Block User Calculation End  
 
                                 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++//
                                 //============= UPDATE USER SCROTE TO USER TABLE=================// 
@@ -133,11 +145,12 @@ class TrustScore extends Command
                                 echo "\n\rUser Id ".$user->id;
                                 echo "\n\rVerification Point ".$Total_Verification_Point;
                                 echo "\n\rProfile Complete Point ".$Total_Profile_Point;
-                                echo "\n\rLike Point ".$Total_Like_Point;
-                                echo "\n\rOrganic Match Point ".$Total_Organic_Match_Count;
-                                echo "\n\rChat Initiat Point ".$Total_Chat_Initiate_Count;
-                                
-                                
+                                echo "\n\rLike Point Count (10 > Then 1) ".$Total_Like_Point;
+                                echo "\n\rOrganic Match Point Count (5 > Then 2) ".$Total_Organic_Match_Count;
+                                echo "\n\rChat Initiat Point Count (10 > Then 1) ".$Total_Chat_Initiate_Count;
+                                echo "\n\r-----------------------------";
+                                echo "\n\rProfile Reported Point ".$Total_Profile_Reported_Count;
+                                echo "\n\rBlock Report Point  (5 > Then 3) ".$Total_Block_Count;
                                 echo "\n\r-----------------------------";
                                 echo "\n\rTrusted Score Point ".$Trusted_Score_Total;
                                 
@@ -150,6 +163,33 @@ class TrustScore extends Command
                 });
         
         return $message;
+    }
+
+    public function total_block_point($userid,$pre_month_start_date,$pre_month_end_date)
+    {        
+        $from_date         = $pre_month_start_date." 00:00:00";
+        $to_date           = $pre_month_end_date." 23:59:59";
+
+        $block_count = DB::table('block_users')                    
+                    ->where("blocked_to", '=', $userid)                //  To only get users details who likes current user
+                    ->whereBetween('created_at', [$from_date, $to_date])->count();
+                    
+
+        return $block_count;            
+    }
+
+
+    public function total_profile_reported_point($userid,$pre_month_start_date,$pre_month_end_date)
+    {        
+        $from_date         = $pre_month_start_date." 00:00:00";
+        $to_date           = $pre_month_end_date." 23:59:59";
+
+        $profile_reported_count = DB::table('profile_reports')                    
+                    ->where("reported_user_id", '=', $userid)                //  To only get users details who likes current user
+                    ->whereBetween('created_at', [$from_date, $to_date])->count();
+                    
+
+        return $profile_reported_count;            
     }
 
     public function total_chat_initiate_point($userid,$pre_month_start_date,$pre_month_end_date)
