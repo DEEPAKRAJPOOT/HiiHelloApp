@@ -813,6 +813,7 @@ class UsersController extends Controller
         $from_date         = ($request->from_date) ? $request->from_date." 00:00:00" : "";
         $to_date           = ($request->to_date) ? $request->to_date." 23:59:59" : "";
         $gender_filter     = ($request->gender_filter) ? $request->gender_filter : "";
+        $profile_percentage     = ($request->profile_percentage) ? $request->profile_percentage : "";
 
         $records = [];
         $users = User::with('userTransDefault','location')->orderBy($sort_column, $sort_order);
@@ -849,6 +850,9 @@ class UsersController extends Controller
         }
         if($gender_filter != "") {
             $users = $users->where('gender', $gender_filter);
+        }
+        if($profile_percentage != "") {
+            $users = $users->where('profile_percentage', $profile_percentage);
         }
         // EN - Filter
 

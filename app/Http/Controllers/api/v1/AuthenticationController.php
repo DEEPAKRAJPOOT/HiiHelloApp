@@ -246,6 +246,7 @@ class AuthenticationController extends Controller
                     $apilogs->url = url()->current();
                     $apilogs->request = json_encode($request->all());
                     $apilogs->response = json_encode(new SignUpResource($user));
+                    // $apilogs->api_status = $this->response();
                     $apilogs->save();
 
                     return (new SignUpResource($user))
@@ -256,6 +257,8 @@ class AuthenticationController extends Controller
                                 'safe_image'    =>  $safe_image,                                
                             ]
                         ]);
+
+
                 } else {
                     $this->response['meta']['message']   = trans('api.profile_setuped_fail');
                     $this->response['meta']['safe_image']= $safe_image;                  

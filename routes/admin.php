@@ -148,7 +148,12 @@ Route::get('usertree/usermatchlisting', 'Admin\UserTreeController@usermatchlisti
 Route::get('/usertree', 'Admin\UserTreeController@index')->name('usertree');
 Route::post('usertree/get_user_match_data', 'Admin\UserTreeController@get_user_match_data')->name('usertree.get_user_match_data');
 Route::get('usertree/top_usertree', 'Admin\UserTreeController@top_usertree')->name('usertree.top_usertree');
-	
+
+// user apilog
+Route::get('apilog/listing', 'Admin\ApiLogController@listing')->name('apilog.listing');
+Route::get('/apilog', 'Admin\ApiLogController@index')->name('apilog');
+Route::post('/apilog/get_single_apilog_data', 'Admin\ApiLogController@get_single_apilog_data')->name('apilog.get_single_apilog_data');
+
 //User Exception
 Route::get('users-error-listing', 'Admin\ErrorController@listing')->name('error.listing');
 Route::get('gender-listing', 'Admin\PagesController@gender_listing')->name('gender.listing');
