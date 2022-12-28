@@ -149,6 +149,7 @@ Route::get('usertree/top_usertree', 'Admin\UserTreeController@top_usertree')->na
 // user apilog
 Route::get('apilog/listing', 'Admin\ApiLogController@listing')->name('apilog.listing');
 Route::get('/apilog', 'Admin\ApiLogController@index')->name('apilog');
+Route::post('/apilog/get_single_apilog_data', 'Admin\ApiLogController@get_single_apilog_data')->name('apilog.get_single_apilog_data');
 
 //User Exception
 Route::get('users-error-listing', 'Admin\ErrorController@listing')->name('error.listing');
