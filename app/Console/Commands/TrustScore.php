@@ -44,11 +44,10 @@ class TrustScore extends Command
     {
         $message = 'Trusted Score Updated Successfully !!!';
 
+        //->where('id',14591)
 
-        User::select('id','custom_id','email','birth_date','verify_photo_status','verify_email_send','email_verified_at','contact_verified_at')
-                ->with(['userTransEn:id,user_id,full_name'])
-                ->where('id',14591)
-                ->chunk(100, function($users) {
+        User::select('id','custom_id','email','verify_photo_status','verify_email_send','email_verified_at','contact_verified_at')                
+                ->chunk(10000, function($users) {
                         if($users->isNotEmpty())
                         {
 
@@ -147,6 +146,8 @@ class TrustScore extends Command
                                 $user->trusted_score_at = \Carbon\Carbon::now()->format('Y-m-d H:i:s');
                                 $user->save();
 
+                                // For Debug 
+                                /*
                                 echo "\n\rUser Id ".$user->id;
                                 echo "\n\rVerification Point ".$Total_Verification_Point;
                                 echo "\n\rProfile Complete Point ".$Total_Profile_Point;
@@ -158,10 +159,9 @@ class TrustScore extends Command
                                 echo "\n\rBlock Report Point  (5 > Then 3) ".$Total_Block_Count;
                                 echo "\n\rPhoto Rejection Point ".($Total_Photo_Rejection_Count * 2);
                                 echo "\n\r-----------------------------";
-                                echo "\n\rTrusted Score Point ".$Trusted_Score_Total;
-
-                                // Email                                
+                                echo "\n\rTrusted Score Point ".$Trusted_Score_Total;                                
                                 exit;
+                                */
                             }
                         }
                 });

@@ -51,7 +51,8 @@ class HomeController extends Controller
                             'verify_photo_status', 
                             'verify_email_send',
                             'email_verified_at',
-                            'contact_verified_at',                           
+                            'contact_verified_at',  
+                            'trusted_score',                         
                             'is_active',
                             DB::raw("3959 * 1.609344 * acos(cos(radians(" . $latitude . ")) 
                             * cos(radians(users.latitude)) 
@@ -74,7 +75,8 @@ class HomeController extends Controller
                             'verify_photo_status', 
                             'verify_email_send',
                             'email_verified_at',
-                            'contact_verified_at',     
+                            'contact_verified_at',  
+                            'trusted_score',                            
                             'interest',
                             'location_id',
                             'language_id',

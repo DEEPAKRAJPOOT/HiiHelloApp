@@ -118,6 +118,11 @@ class Kernel extends ConsoleKernel
         })->everyFifteenMinutes();
         
 
+        // Calculate Trust Scroe on the first day of every month at 2:00
+        $schedule->call(function () {
+            $scheculeCommand = new TrustScore;
+            $scheculeCommand->handle();
+        })->monthlyOn(1, '2:00');        
     
         // $schedule->command('inspire')->hourly();
     }
