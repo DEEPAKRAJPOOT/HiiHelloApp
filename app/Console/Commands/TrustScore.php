@@ -45,10 +45,6 @@ class TrustScore extends Command
         $message = 'Trusted Score Updated Successfully !!!';
 
 
-
-        
-
-
         User::select('id','custom_id','email','birth_date','verify_photo_status','verify_email_send','email_verified_at','contact_verified_at')
                 ->with(['userTransEn:id,user_id,full_name'])
                 ->where('id',14591)
@@ -133,6 +129,15 @@ class TrustScore extends Command
                                 }
                                 // Total Block User Calculation End  
 
+
+                                 // Total Block User Calculation Start  
+                                $Total_Photo_Rejection_Count = $this->photo_rejection_point($user->id,$pre_month_start_date,$pre_month_end_date);
+                                if($Total_Photo_Rejection_Count > 0)
+                                {
+                                    $Trusted_Score_Total = $Trusted_Score_Total - ($Total_Photo_Rejection_Count * 2);
+                                }
+                                // Total Block User Calculation End  
+
                                 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++//
                                 //============= UPDATE USER SCROTE TO USER TABLE=================// 
                                 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++//                                
@@ -151,10 +156,9 @@ class TrustScore extends Command
                                 echo "\n\r-----------------------------";
                                 echo "\n\rProfile Reported Point ".$Total_Profile_Reported_Count;
                                 echo "\n\rBlock Report Point  (5 > Then 3) ".$Total_Block_Count;
+                                echo "\n\rPhoto Rejection Point ".($Total_Photo_Rejection_Count * 2);
                                 echo "\n\r-----------------------------";
                                 echo "\n\rTrusted Score Point ".$Trusted_Score_Total;
-                                
-
 
                                 // Email                                
                                 exit;
@@ -164,6 +168,21 @@ class TrustScore extends Command
         
         return $message;
     }
+
+    public function photo_rejection_point($userid,$pre_month_start_date,$pre_month_end_date)
+    {        
+        $from_date         = $pre_month_start_date." 00:00:00";
+        $to_date           = $pre_month_end_date." 23:59:59";
+
+        $photo_reject_count = DB::table('image_moderation_log')                    
+                    ->where("user_id", '=', $userid)                //  To only get users details who likes current user
+                    ->where("is_approved", '=', 0)
+                    ->whereBetween('created_at', [$from_date, $to_date])->count();
+                    
+
+        return $photo_reject_count;            
+    }
+
 
     public function total_block_point($userid,$pre_month_start_date,$pre_month_end_date)
     {        
