@@ -48,6 +48,9 @@ class AdminDashboard extends Command
         $na_users = User::whereNull('gender')->whereNull('deleted_at')->count();
         $total_subscribed = User::where('gender','=','Male')->where('is_subscribed','=','y')->whereNull('deleted_at')->count();
         $total_unsubscribed = User::where('gender','=','Male')->where('is_subscribed','!=','y')->whereNull('deleted_at')->count();
+        $per_day_users = User::whereNull('deleted_at')->whereDate("created_at",Carbon::today())->count();
+        $per_week_users = User::whereNull('deleted_at')->whereBetween('created_at',[Carbon::now()->startOfWeek(), Carbon::now()->endOfWeek()])->count();
+        $per_30_day_users = User::whereNull('deleted_at')->whereMonth("created_at",Carbon::now()->month)->count();
 
         $all_users = User::select('birth_date','gender','facebook_id','google_id','apple_id','is_social_user')->whereNull('deleted_at')->whereNotNull('birth_date')->whereNotNull('gender')->get();
         // echo "<pre>"; print_r($all_users->toArray()); die();
@@ -201,18 +204,6 @@ class AdminDashboard extends Command
         $old_date = cache()->rememberForever('oldest-record', function () {
             return User::selectRaw('created_at')->orderBy('created_at', 'asc')->first();
         });
-
-        if (isset($old_date->created_at)) {
-            $startDate = Carbon::parse($old_date->created_at)->startOfDay();
-            $endDate = Carbon::now()->endOfDay();
-            $diffInDays = $startDate->diffInDays($endDate);
-
-            //diffInDays same date return 0 day and if date 4 and 5 diffInDays return 1 day
-            $diffInDays = $diffInDays + 1;
-            $per_day_users = $diffInDays >= 1 ? floor(($total_users / $diffInDays)) : 0; //Per Day Register User
-            $per_week_users = $diffInDays >= 7 ? floor(($total_users / ($diffInDays / 7))) : 0; //Per Week Register User
-            $per_30_day_users = $diffInDays >= 30 ? floor(($total_users / ($diffInDays / 30))) : 0; //Per 30 Day Register User
-        }
 
         $insert_data = array(
             'total_users'=>$total_users,
