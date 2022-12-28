@@ -191,6 +191,7 @@ class LocationController extends Controller
         $location_reports = Location::select("locations.id as id","location_translations.name as name","location_translations.state as state",DB::raw("count(users.id) as total_users"))
                             ->join("users","users.location_id","=","locations.id")
                             ->join("location_translations","locations.id","=","location_translations.location_id")
+                            ->where("users.new_location_id","=",'y')
                             ->where("locations.is_active","=",'y')
                             ->where("location_translations.locale","=",'en')
                             ->groupBy('location_translations.location_id')
