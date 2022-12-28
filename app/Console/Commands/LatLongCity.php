@@ -46,7 +46,7 @@ class LatLongCity extends Command
                     ->whereNotNull("latitude")
                     ->whereNotNull("longitude")
                     // ->where('created_at','>=','2022-12-15')
-                    ->limit(100)
+                    ->limit(1000)
                     ->get();
         // echo "<pre>"; print_r($user_list->toArray()); die();
         if (count($user_list) > 0) {
