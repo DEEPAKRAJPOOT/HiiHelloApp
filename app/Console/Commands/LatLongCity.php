@@ -67,19 +67,14 @@ class LatLongCity extends Command
                             Location::where('id',$location_id)->update([ 
                                 'is_used' =>  'y',
                             ]);
-
-                            // update loction translate table location name and state update
-                            LocationTranslation::where('location_id',$val->location_id)->where('locale','en')->update([ 
-                                'name' =>  $res['city'],
-                                'state' =>  $res['state'],
-                            ]);
                         }
                         else
                         {
                             // if city and state not exits then create new
                             $location = new Location();        
                             $location->custom_id = getUniqueString('locations');  
-                            $location->is_used   = 'y';  
+                            $location->is_used   = 'y'; 
+                            $location->is_new    = 'y';  
                             $location->save();
 
                             $location_id = $location->id;
