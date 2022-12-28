@@ -338,3 +338,10 @@ Breadcrumbs::register('dashboard', function ($breadcrumbs) {
 		$breadcrumbs->parent('dashboard');
 		$breadcrumbs->push('User Tree', route('admin.usertree'));
 	});
+
+	// Image Logs ------------------------------------------------------------------
+	Breadcrumbs::register('image_log_list', function($breadcrumbs)
+	{
+		$breadcrumbs->parent('dashboard');
+		$breadcrumbs->push('Image Moderation Logs', route('admin.image-logs.listing'));
+	});

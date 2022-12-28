@@ -16,6 +16,7 @@ use App\Models\Country;
 use App\Models\SubscriptionPlanTranslation;
 use App\Models\SubscriptionPlan;
 use App\Models\Subscription;
+use App\Models\LocationTranslation;
 use Exception;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
@@ -80,11 +81,31 @@ class UsersController extends Controller
                 $country = Country::wherePhonecode($request->country_code)->whereIsActive('y')->firstOrFail();
                 $user->country_id = $country->id;
             }
-            if (!empty($request->location)) {
-                $location = Location::whereId($request->location)->whereIsActive('y')->firstOrFail();
-                $user->location_id = $location->id;
-                $user->discover_location_id = $location->id;
+            // if (!empty($request->location)) {
+            //     $location = Location::whereId($request->location)->whereIsActive('y')->firstOrFail();
+            //     $user->location_id = $location->id;
+            //     $user->discover_location_id = $location->id;
+            // }
+
+            if (!empty($request->latitude) && !empty($request->longitude)) {
+                $location_id        = $this->get_user_location($request->latitude,$request->longitude);
+                if (!empty($location_id)) {
+                    $user->location_id  = $location_id;
+                    $user->discover_location_id = $location_id;
+                    $user->latitude     = $language->latitude;
+                    $user->longitude    = $language->longitude;
+                    $user->new_location_id    = 'y';
+                }
             }
+            else
+            {
+                if (!empty($request->location)) {
+                    $location = Location::whereId($request->location)->whereIsActive('y')->firstOrFail();
+                    $user->location_id = $location->id;
+                    $user->discover_location_id = $location->id;
+                }
+            }
+
             if (!empty($request->language)) {
                 $language = Language::whereLangCode($request->language)->whereIsActive('y')->firstOrFail();
                 $user->language_id = $language->id;
@@ -326,6 +347,7 @@ class UsersController extends Controller
         //user interest
         $user_interest = UserInterest::where('user_id', $user->id)->pluck('interest_id')->toArray();
         $user_personality = UserPersonality::where('user_id', $user->id)->pluck('personality_id')->toArray();
+
         return view('admin.pages.users.edit', compact('user', 'user_personality', 'personalities', 'user_interest', 'interests', 'attributes', 'countries', 'locations', 'languages','subscription_plans','user_active_plan_id','plan_paid_from'))->with(['custom_title' => 'Users']);
     }
 
@@ -338,6 +360,7 @@ class UsersController extends Controller
      */
     public function update(UserRequest $request, User $user)
     {
+
         try {
             DB::beginTransaction();
 
@@ -435,9 +458,23 @@ class UsersController extends Controller
                     $user->location_id = $location->id;
                     $user->discover_location_id = $location->id;
                 }
-                if (!empty($request->language)) {
-                    $language = Language::whereLangCode($request->language)->whereIsActive('y')->firstOrFail();
-                    $user->language_id = $language->id;
+
+
+                if (!empty($request->latitude) && !empty($request->longitude) && $user->latitude != $request->latitude && $user->longitude != $request->longitude) {
+                    $location_id        = $this->get_user_location($request->latitude,$request->longitude);
+                    if (!empty($location_id)) {
+                        $user->location_id  = $location_id;
+                        $user->discover_location_id = $location_id;
+                        $user->latitude     = $language->latitude;
+                        $user->longitude    = $language->longitude;
+                        $user->new_location_id    = 'y';
+                    }
+                }
+                else
+                {
+                    $user->latitude     = $user->latitude;
+                    $user->longitude    = $user->longitude;
+                    $user->new_location_id    = $user->new_location_id;
                 }
 
                 // Store Account Id
@@ -848,6 +885,18 @@ class UsersController extends Controller
 
             if($flgPendingProfile > 0) {
 
+                if (!empty($user->device_type)) {
+                    $device_type = $user->device_type;
+                }
+                else{
+                    $device_type = "-";
+                }
+                if (!empty($user->device_app_version)) {
+                    $device_app_version = $user->device_app_version;
+                }
+                else{
+                    $device_app_version = "-";
+                }
                 $records['data'][] = [
                     'id' => $user->id,
                     'profile_photo' => view('admin.layouts.includes.photos_verify')->with(['user_id' => $user->id,'profile_photo' => $user->profile_photo  ?? 'N/A', 'is_profile_photo' => 1, 'is_verify_photo' => 0])->render(),
@@ -859,6 +908,7 @@ class UsersController extends Controller
                     'contact_no' => $user->contact_no ? '<a href="tel:' . $user->country_code . '' . $user->contact_no . '" >' . $user->country_code . '' . $user->contact_no . '</a>' : 'N/A',
                     'email' => $user->email ? '<a href="mailto:' . $user->email . '" >' . $user->email . '</a>' : 'N/A',                    
                     'city' => $user->location->name ?? 'N/A',                
+                    'device_app_version' => $device_type.'/'.$device_app_version,                
                     'created_at' => date('Y-m-d H:i:s', strtotime($user->created_at)) ?? 'N/A',
                     'active' => view('admin.layouts.includes.switch', compact('params'))->render(),
                     'action' => view('admin.layouts.includes.actions')->with(['custom_title' => 'User', 'id' => $user->custom_id], $user)->render(),
@@ -866,6 +916,19 @@ class UsersController extends Controller
                 ];
 
             } else {
+
+                if (!empty($user->device_type)) {
+                    $device_type = $user->device_type;
+                }
+                else{
+                    $device_type = "-";
+                }
+                if (!empty($user->device_app_version)) {
+                    $device_app_version = $user->device_app_version;
+                }
+                else{
+                    $device_app_version = "-";
+                }
 
                 $records['data'][] = [
                     'id' => $user->id, 
@@ -877,7 +940,8 @@ class UsersController extends Controller
                     'profile_percentage' =>  $user->profile_percentage ?? 0,
                     'contact_no' => $user->contact_no ? '<a href="tel:' . $user->country_code . '' . $user->contact_no . '" >' . $user->country_code . '' . $user->contact_no . '</a>' : 'N/A',
                     'email' => $user->email ? '<a href="mailto:' . $user->email . '" >' . $user->email . '</a>' : 'N/A',                    
-                    'city' => $user->location->name ?? 'N/A',                
+                    'city' => $user->location->name ?? 'N/A',      
+                    'device_app_version' => $device_type.'/'.$device_app_version,                
                     'created_at' => date('Y-m-d H:i:s', strtotime($user->created_at)) ?? 'N/A',
                     'active' => view('admin.layouts.includes.switch', compact('params'))->render(),
                     'action' => view('admin.layouts.includes.actions')->with(['custom_title' => 'User', 'id' => $user->custom_id], $user)->render(),
@@ -1463,4 +1527,63 @@ class UsersController extends Controller
     }
     // EN - For Bulk Photo Verification
 
+
+    // User get location id using lat and logn
+    public function get_user_location($lat,$long)
+    {
+        $apiKey = 'AIzaSyDInVSLHXa1FXO3p7kgA7B_TK9L71tZbW8';
+        $latlng = $lat.','.$long;
+        $result = [];
+        $location_id = '';
+
+        $url = "https://maps.googleapis.com/maps/api/geocode/json?latlng=".$latlng."&sensor=true&key=".$apiKey;
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);    
+        $responseJson = curl_exec($ch);
+        curl_close($ch);
+        $response = json_decode($responseJson);
+        if (!empty($response) && !empty($response->results[0]->address_components)) {
+            foreach ($response->results[0]->address_components as $key => $value) {
+                if ($value->types[0] == "administrative_area_level_3") {
+                    $result['city'] = trim($value->long_name);
+                }
+                if ($value->types[0] == "administrative_area_level_1") {
+                    $result['state'] = trim($value->long_name);
+                }
+
+                // check city and state not empty
+                if (!empty($result) && !empty($result['city']) && !empty($result['state'])) {
+                    // if already exist city and state then get id and update user location id
+                    $locationTranslation = LocationTranslation::where('name',$result['city'])->where('state',$result['state'])->where('locale','en')->first();
+                    if (!empty($locationTranslation)) {
+                        $location_id = $locationTranslation->location_id;
+
+                        // update location table for city is used some one users
+                        Location::where('id',$location_id)->update([ 
+                            'is_used' =>  'y',
+                        ]);
+                    }
+                    else
+                    {
+                        // if city and state not exits then create new
+                        $location = new Location();        
+                        $location->custom_id = getUniqueString('locations');  
+                        $location->is_used   = 'y';  
+                        $location->save();
+
+                        $location_id = $location->id;
+
+                        $LocationTranslation = new LocationTranslation();
+                        $LocationTranslation->locale = 'en';  
+                        $LocationTranslation->location_id = $location_id;  
+                        $LocationTranslation->name = $result['city'];  
+                        $LocationTranslation->state = $result['state'];  
+                        $LocationTranslation->save();
+                    }
+                }
+            }
+            return $location_id;
+        }
+    }
 }

@@ -157,6 +157,7 @@
                 { data: 'contact_no' },
                 { data: 'email' },                
                 { data: 'city' },
+                { data: 'device_app_version' },
                 { data: 'active' },
                 { data: 'action'},
             ],
@@ -173,9 +174,10 @@
                 { targets: 8, title: 'Contact Number', orderable: true },
                 { targets: 9, title: 'E-mail', orderable: true },                
                 { targets: 10, title: 'City', orderable: false },                
-                { targets: 11, title: 'Ban', orderable: false },
+                { targets: 11, title: 'Device/version', orderable: true },                
+                { targets: 12, title: 'Ban', orderable: false },
                 // Action buttons
-                { targets: 12, title: 'Action',orderable: false },
+                { targets: 13, title: 'Action',orderable: false },
             ],
             order: [
                 [6, 'DESC']

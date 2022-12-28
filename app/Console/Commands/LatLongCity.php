@@ -45,8 +45,8 @@ class LatLongCity extends Command
                     ->where("new_location_id","n")
                     ->whereNotNull("latitude")
                     ->whereNotNull("longitude")
-                    ->where('created_at','>=','2022-12-15')
-                    ->limit(100)
+                    // ->where('created_at','>=','2022-12-15')
+                    ->limit(10000)
                     ->get();
         // echo "<pre>"; print_r($user_list->toArray()); die();
         if (count($user_list) > 0) {
@@ -67,19 +67,14 @@ class LatLongCity extends Command
                             Location::where('id',$location_id)->update([ 
                                 'is_used' =>  'y',
                             ]);
-
-                            // update loction translate table location name and state update
-                            LocationTranslation::where('location_id',$val->location_id)->where('locale','en')->update([ 
-                                'name' =>  $res['city'],
-                                'state' =>  $res['state'],
-                            ]);
                         }
                         else
                         {
                             // if city and state not exits then create new
                             $location = new Location();        
                             $location->custom_id = getUniqueString('locations');  
-                            $location->is_used   = 'y';  
+                            $location->is_used   = 'y'; 
+                            $location->is_new    = 'y';  
                             $location->save();
 
                             $location_id = $location->id;
@@ -125,10 +120,10 @@ class LatLongCity extends Command
         if (!empty($response) && !empty($response->results[0]->address_components)) {
             foreach ($response->results[0]->address_components as $key => $value) {
                 if ($value->types[0] == "administrative_area_level_3") {
-                    $result['city'] = $value->long_name;
+                    $result['city'] = trim($value->long_name);
                 }
                 if ($value->types[0] == "administrative_area_level_1") {
-                    $result['state'] = $value->long_name;
+                    $result['state'] = trim($value->long_name);
                 }
             }
             return $result;

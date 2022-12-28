@@ -8,9 +8,7 @@ use App\Http\Resources\v1\{UserProfile, LoginResource, SignUpResource};
 use Illuminate\Database\Eloquent\{ModelNotFoundException};
 use Illuminate\Support\Facades\{Storage, Auth, Hash};
 use App\Http\Requests\Api\Authentication\{LoginRequest, RegisterRequest, SocialLoginRequest};
-
-use App\Models\{User, Country, UserDetail, Location, Interest, UserInterest, Language, ProfileDetail, DeviceToken, Subscription, SubscriptionPlan,LocationTranslation,ApiLogs};
-
+use App\Models\{User, Country, UserDetail, Location, Interest, UserInterest, Language, ProfileDetail, DeviceToken, Subscription, SubscriptionPlan,LocationTranslation,ApiLogs,ImageModerationLog};
 use Illuminate\Support\Str;
 use DB;
 
@@ -82,6 +80,11 @@ class AuthenticationController extends Controller
                 }
                 if (!empty($request->latitude) && !empty($request->longitude)) {
                     $location_id = $this->get_user_location($request->latitude,$request->longitude);
+                    $new_location_id = 'y';
+                }
+                else
+                {
+                    $new_location_id = 'n';
                 }
                 if (!empty($request->language)) {
                     $language = Language::whereLangCode($request->language)->whereIsActive('y')->firstOrFail();
@@ -123,7 +126,7 @@ class AuthenticationController extends Controller
                         'email'                 =>  isset($request->email) ? $request->email : NULL,
                         'location_id'           =>  $location_id ?? NULL,
                         'discover_location_id'  =>  $location_id ?? NULL,
-                        'new_location_id'       =>  'y',
+                        'new_location_id'       =>  $new_location_id,
                         'language_id'           =>  $language_id ?? NULL,
                         'is_social_user'        =>  isset($request->is_social_user) ? $request->is_social_user : $is_social_user,
                         'google_id'             =>  isset($request->google_id) ? $request->google_id : NULL,
@@ -188,6 +191,37 @@ class AuthenticationController extends Controller
                             $invalid_image_uploaded = true;
                             $safe_image = "false";                            
                         }  
+
+                        //INSERT IN TO IMAGE MODERATIO LOG START
+                        if($awsImgResultArr["is_safe_image"]==true) 
+                            $is_approved = 1;
+                        else
+                            $is_approved = 0;
+
+                        $image_type = "profile_photo";  
+                        $message = $awsImgResultArr["log_message"];                        
+                        $total_face_detected = $awsImgResultArr["total_face_detected"];                        
+                        
+                        $response_data = $awsImgResultArr["image_moderation_response"];
+                        $request_data = $awsImgResultArr["image_moderation_request"];
+
+                        
+                        $endpoint_url = url()->current();
+
+
+                        ImageModerationLog::Create([
+                            'user_id'             => $user->id,
+                            'is_approved'         => $is_approved,
+                            'request'             => $request_data,
+                            'response'            => $response_data,
+                            'total_face_detected' => $total_face_detected,
+                            'message'             => $message,
+                            'image_type'          => $image_type,
+                            'endpoint_url'        => $endpoint_url,
+                        ]);    
+
+                        //INSERT IN TO IMAGE MODERATIO LOG END
+
                     }                    
                     //CHECK FOR AWS REKOGNIZTION END
                 }
@@ -490,10 +524,10 @@ class AuthenticationController extends Controller
         if (!empty($response) && !empty($response->results[0]->address_components)) {
             foreach ($response->results[0]->address_components as $key => $value) {
                 if ($value->types[0] == "administrative_area_level_3") {
-                    $result['city'] = $value->long_name;
+                    $result['city'] = trim($value->long_name);
                 }
                 if ($value->types[0] == "administrative_area_level_1") {
-                    $result['state'] = $value->long_name;
+                    $result['state'] = trim($value->long_name);
                 }
 
                 // check city and state not empty

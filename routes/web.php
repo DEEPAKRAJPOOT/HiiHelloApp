@@ -54,8 +54,11 @@ Route::get('transaction/csv-download', 'Admin\TrasactionListController@csvDownlo
 Route::get('profile-report/csv-download', 'Admin\ProfileReportController@csvDownload')->name('admin.profile-report.csv-download');
 Route::get('call-log/csv-download', 'Admin\CallController@csvDownload')->name('admin.call-log.csv-download');
 
-// api log downlode
+
 Route::get('apilog/csv-download', 'Admin\ApiLogController@csvDownload')->name('admin.apilog.csv-download');
+
+Route::get('image-log/csv-download', 'Admin\ImageModerationController@csvDownload')->name('admin.image-log.csv-download');
+
 
 Route::get('location/csv-download', 'Admin\LocationController@csvDownload')->name('admin.location.csv-download');
 // user data with location data csv downlode
