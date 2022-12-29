@@ -854,6 +854,9 @@ class UsersController extends Controller
         if($profile_percentage != "") {
             $users = $users->where('profile_percentage', $profile_percentage);
         }
+         if($profile_percentage == 0) {
+            $users = $users->where('profile_percentage',0);
+        }
         // EN - Filter
 
         $count = $users->count();
@@ -904,7 +907,7 @@ class UsersController extends Controller
                     'account_id' => $user->account_id ?? "N/A",
                     'full_name' =>  $user->userTransDefault ? $user->userTransDefault->full_name : "N/A",
                     'gender' => view('admin.layouts.includes.gender', compact('params'))->render(),
-                    'profile_percentage' =>  $user->profile_percentage ?? 0,
+                    'profile_percentage' =>  $user->profile_percentage,
                     'contact_no' => $user->contact_no ? '<a href="tel:' . $user->country_code . '' . $user->contact_no . '" >' . $user->country_code . '' . $user->contact_no . '</a>' : 'N/A',
                     'email' => $user->email ? '<a href="mailto:' . $user->email . '" >' . $user->email . '</a>' : 'N/A',                    
                     'city' => $user->location->name ?? 'N/A',                
@@ -937,7 +940,7 @@ class UsersController extends Controller
                     'account_id' => $user->account_id ?? "N/A",
                     'full_name' =>  $user->userTransDefault ? $user->userTransDefault->full_name : "N/A",
                     'gender' => view('admin.layouts.includes.gender', compact('params'))->render(),
-                    'profile_percentage' =>  $user->profile_percentage ?? 0,
+                    'profile_percentage' =>  $user->profile_percentage,
                     'contact_no' => $user->contact_no ? '<a href="tel:' . $user->country_code . '' . $user->contact_no . '" >' . $user->country_code . '' . $user->contact_no . '</a>' : 'N/A',
                     'email' => $user->email ? '<a href="mailto:' . $user->email . '" >' . $user->email . '</a>' : 'N/A',                    
                     'city' => $user->location->name ?? 'N/A',      
