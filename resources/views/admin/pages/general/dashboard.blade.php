@@ -312,6 +312,7 @@
                 <thead>
                   <tr>
                     <th>City</th>
+                    <th>State</th>
                     <th>Male</th>
                     <th>Female</th>
                     <th>N/A</th>
@@ -858,6 +859,11 @@ $(document).ready(function() {
       "columns": [{
           "title": "City",
           "data": "city_name",
+          orderable: false
+        },
+        {
+          "title": "State",
+          "data": "state_name",
           orderable: false
         },
         {
