@@ -152,12 +152,14 @@ class LocationController extends Controller
         if ($search != '') {
             $locations->where(function ($query) use ($search) {
                 $query->where('custom_id', 'like', "%{$search}%")
-                    ->orWhereHas('locationTranslations', function ($query) use ($search) {
-                        $query->where('name', 'like', "%{$search}%");
+                    ->orWhereHas('locationTranslations', function ($query2) use ($search) {
+                        $query2->where('name', 'like', "%{$search}%");
+                        $query2->where('state', 'like', "%{$search}%");
                     });
             });
         }
 
+        $count = $locations->where('is_active','y');
         $count = $locations->count();
         $records['recordsTotal'] = $count;
         $records['recordsFiltered'] = $count;
@@ -177,6 +179,7 @@ class LocationController extends Controller
             $records['data'][] = [
                 'id'            =>  $location->id,
                 'name'          =>  $location->locationTransDefault ? $location->locationTransDefault->name : "",
+                'state'         =>  $location->locationTransDefault ? $location->locationTransDefault->state : "",
                 'active'        =>  view('admin.layouts.includes.switch', compact('params'))->render(),
                 'action'        =>  view('admin.layouts.includes.actions')->with(['custom_title' => 'Location', 'id' => $location->custom_id], $location)->render(),
                 'checkbox'      =>  view('admin.layouts.includes.checkbox')->with('id', $location->custom_id)->render(),

@@ -79,6 +79,7 @@
                 { data: 'checkbox' },
                 { data: 'id' },
                 { data: 'name' },
+                { data: 'state' },
                 { data: 'active' },
                 { data: 'action', responsivePriority: -1 },
             ],
@@ -87,7 +88,8 @@
                 { targets: 0, title: "<center><input type='checkbox' class='all_select'></center>", orderable: false },
                 { targets: 1, title: 'Id', orderable: true },
                 { targets: 2, title: 'Name', orderable: false },
-                { targets: 3, title: 'Active', orderable: false },
+                { targets: 3, title: 'State Name', orderable: false },
+                { targets: 4, title: 'Active', orderable: false },
                 // Action buttons
                 { targets: -1, title: 'Action',
                 orderable: false },
