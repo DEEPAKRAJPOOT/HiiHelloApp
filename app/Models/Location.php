@@ -15,7 +15,7 @@ class Location extends Model implements TranslatableContract
 
     protected $fillable = ['id','custom_id', 'is_trans_name','is_trans_locality','is_trans_state','is_new','is_used','is_active'];
 
-    protected $translatedAttributes = ['name'];
+    protected $translatedAttributes = ['name','state'];
 
     public function locationTranslations(){ return $this->hasMany('App\Models\LocationTranslation'); }
     public function locationTranslation(){ 
