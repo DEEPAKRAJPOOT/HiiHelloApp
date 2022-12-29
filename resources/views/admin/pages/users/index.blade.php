@@ -199,7 +199,7 @@
     });
 
     $(document).on("click", "#btn_reset_filter", function () {
-        $("#search_fromdate,#search_todate,#gender_filter").val('');
+        $("#search_fromdate,#search_todate,#gender_filter,#profile_percentage").val('');
         oTable.draw();
     });
 
