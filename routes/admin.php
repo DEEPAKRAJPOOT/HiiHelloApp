@@ -137,6 +137,9 @@ Route::group(['namespace' => 'Admin', 'middleware' => ['check_permit', 'revalida
 
 });
 
+Route::get('image-logs', 'Admin\ImageModerationController@index')->name('image-logs');
+Route::get('image-logs/listing', 'Admin\ImageModerationController@listing')->name('image-logs.listing');
+
 // user tree
 Route::get('usertree/listing', 'Admin\UserTreeController@listing')->name('usertree.listing');
 Route::post('usertree/filters', 'Admin\UserTreeController@filters')->name('usertree.filters');

@@ -205,12 +205,16 @@ function checkAwsImageModeration($request,$image_param_name,$check_type = 'file'
             //response received then status code 200                            
             $api_status_code = "success";
 
+            $log_message = "";
+
+
             if(count($moderate_image_results['ModerationLabels']) > 0)
             {
 
                $is_safe_image_category_filter = true; 
 
                $filter_detail_message = "";
+               
 
                foreach ($moderate_image_results['ModerationLabels'] as $cat_key => $res_data) {
                         // code...
@@ -227,6 +231,8 @@ function checkAwsImageModeration($request,$image_param_name,$check_type = 'file'
                                     //dd($cat_filter[$res_data['Name']]);
                                     $is_safe_image_category_filter = false;
                                     $filter_detail_message = $res_data['Name'] ." value in setting (".$cat_filter[$res_data['Name']]."). In response confidence value (".$res_data['Confidence'].")";
+
+                                    $log_message = "Image Contain ".$res_data['Name']. " With Confidence value ".$res_data['Confidence'];
                                     break;
 
                             }
@@ -235,13 +241,18 @@ function checkAwsImageModeration($request,$image_param_name,$check_type = 'file'
                }     
                $image_arr_result["is_safe_image"] = $is_safe_image_category_filter;
                $image_arr_result["moderation_labels_data"] = $filter_detail_message;
+               $image_arr_result["log_message"] = $log_message;
+               
             }
             else
             {
                 $image_arr_result["is_safe_image"] = true;   
                 $image_arr_result["moderation_labels_data"] = "";
+                $image_arr_result["log_message"] = $log_message;
             }
 
+            $image_arr_result["image_moderation_request"] = json_encode($moderate_image_results["@metadata"]);    
+            $image_arr_result["image_moderation_response"] = json_encode($moderate_image_results["ModerationLabels"]);    
 
             /// CHECK FOR FACE DETECTION : HOW MAN FACE DETECTED.
             $result_face = $client->detectFaces([
@@ -249,18 +260,22 @@ function checkAwsImageModeration($request,$image_param_name,$check_type = 'file'
                 'Image'         => ['Bytes' => $bytes], 
             ]);
 
+
             $image_arr_result["total_face_detected"] = count($result_face['FaceDetails']);
-            $image_arr_result["face_detected_message"] = "";
 
             if(count($result_face['FaceDetails'])==0)
             {
                 $image_arr_result["is_safe_image"] = false;
                 $image_arr_result["face_detected_message"] = "Image have no face detected";
+                $image_arr_result["log_message"] = "Image have no face detected";
+                
+                
             }
             else if(count($result_face['FaceDetails']) >= 1)
             {                                
-                $image_arr_result["face_detected_message"] = "";
-            }                        
+                $image_arr_result["face_detected_message"] = "";                                
+                
+            }   
 
             return $image_arr_result;
             
