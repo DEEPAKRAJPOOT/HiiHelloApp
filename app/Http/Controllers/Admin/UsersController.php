@@ -854,7 +854,7 @@ class UsersController extends Controller
         if($profile_percentage != "") {
             $users = $users->where('profile_percentage', $profile_percentage);
         }
-         if($profile_percentage == 0) {
+        if($request->profile_percentage != '' && $request->profile_percentage == 0 || $request->profile_percentage == '0') {
             $users = $users->where('profile_percentage',0);
         }
         // EN - Filter
