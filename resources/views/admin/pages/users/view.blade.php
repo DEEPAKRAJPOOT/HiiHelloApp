@@ -37,7 +37,7 @@
                             <label class="control-label"><span class="mendatory" style="font-size: 20px;"></span>Account Id : <b>@if($user->account_id) {{ $user->account_id }} @else - @endif </b></label>
                         </div>
                         <div class="mb-2">
-                            <label class="control-label"><span class="mendatory" style="font-size: 20px;"></span>Profile Percentage : <b>{{ $user->calculateProfilePercent() }} %</b></label>
+                            <label class="control-label"><span class="mendatory" style="font-size: 20px;"></span>Profile Percentage : <b>{{ $user->profile_percentage }} %</b></label>
                         </div>
                         <div class="mb-2">
                             <label class="control-label"><span class="mendatory" style="font-size: 20px;"></span>Full Name : <b>@if($user->userTransDefault) {{ $user->userTransDefault->full_name }} @else - @endif </b></label>
