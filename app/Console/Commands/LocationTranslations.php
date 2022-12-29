@@ -53,7 +53,7 @@ class LocationTranslations extends Command
                 // ->whereNotNull('state')
                 // ->where('id','258')
                 ->with('locationTranslations')
-                // ->limit(25)
+                ->limit(1)
                 ->get();
             // echo "<pre>"; print_r($locations->toArray()); die();
                 // ->chunk(100, function($locations) use ($default_lang_code, $language_alloweds, $apiKey, $message) {
@@ -123,8 +123,8 @@ class LocationTranslations extends Command
                 $translatedText = explode(",",$responseDecoded['data']['translations'][0]['translatedText']);
                 $transaction_data = [
                     $language_allowed    =>  [
-                        $column1 =>  $translatedText[0],
-                        $column2 =>  isset($translatedText[1]) ? $translatedText[1] : NULL,
+                        $column1 =>  trim($translatedText[0]),
+                        $column2 =>  isset($translatedText[1]) ? trim($translatedText[1]) : NULL,
                     ],
                 ];
                 $module->update($transaction_data);

@@ -134,7 +134,7 @@ class GoogleTranslation extends Command
 
                 $transaction_data = [
                     $language_allowed    =>  [
-                        $column =>  $translatedText,
+                        $column =>  trim($translatedText),
                     ],
                 ];
                 $user->update($transaction_data);
