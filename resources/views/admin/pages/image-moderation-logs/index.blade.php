@@ -136,10 +136,10 @@
                         <label>Filter:&nbsp;&nbsp;</label>
                     </td>
                     <td>                        
-                        <input type='date' id='search_fromdate' class="form-control" placeholder='From date' value="{{ date('Y-m-d') }}">
+                        <input type='date' id='search_fromdate' class="form-control" placeholder='From date' value="">
                     </td>
                     <td>
-                        <input type='date' id='search_todate' class="form-control" placeholder='To date' value="{{ date('Y-m-d') }}">
+                        <input type='date' id='search_todate' class="form-control" placeholder='To date' value="">
                     </td>
                     
                     <td>
