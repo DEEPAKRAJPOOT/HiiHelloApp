@@ -147,25 +147,20 @@ class LocationController extends Controller
     {
         extract($this->DTFilters($request->all()));
         $records = [];
-        $locations = Location::with('locationTransDefault')->orderBy($sort_column, $sort_order);
 
+        $locations = Location::select("locations.id as id","locations.custom_id as custom_id","locations.is_active as is_active","location_translations.location_id as location_id","location_translations.name as name","location_translations.state as state");
+        $locations = $locations->join("location_translations","location_translations.location_id","=","locations.id");
+        $locations = $locations->where('locations.is_active','y');
         if ($search != '') {
-            $locations->where(function ($query) use ($search) {
-                $query->where('custom_id', 'like', "%{$search}%")
-                    ->orWhereHas('locationTranslations', function ($query2) use ($search) {
-                        $query2->where('name', 'like', "%{$search}%");
-                        $query2->where('state', 'like', "%{$search}%");
-                    });
-            });
+            $locations->where("location_translations.name","like",'%'.$search.'%');
+            $locations->orWhere("location_translations.state","like",'%'.$search.'%');
         }
-
-        $count = $locations->where('is_active','y');
         $count = $locations->count();
         $records['recordsTotal'] = $count;
         $records['recordsFiltered'] = $count;
         $records['data'] = [];
 
-        $locations = $locations->offset($offset)->limit($limit)->orderBy($sort_column, $sort_order);
+        $locations = $locations->offset($offset)->limit($limit)->orderBy("location_translations.name", "asc");
         $locations = $locations->get();
 
         foreach ($locations as $location) {
@@ -178,8 +173,8 @@ class LocationController extends Controller
 
             $records['data'][] = [
                 'id'            =>  $location->id,
-                'name'          =>  $location->locationTransDefault ? $location->locationTransDefault->name : "",
-                'state'         =>  $location->locationTransDefault ? $location->locationTransDefault->state : "",
+                'name'          =>  $location->name ?? "",
+                'state'         =>  $location->state ?? "",
                 'active'        =>  view('admin.layouts.includes.switch', compact('params'))->render(),
                 'action'        =>  view('admin.layouts.includes.actions')->with(['custom_title' => 'Location', 'id' => $location->custom_id], $location)->render(),
                 'checkbox'      =>  view('admin.layouts.includes.checkbox')->with('id', $location->custom_id)->render(),
