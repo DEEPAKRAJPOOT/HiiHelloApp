@@ -886,20 +886,36 @@ class UsersController extends Controller
                 'na_user' => ($user->gender == '' ? 'selected' : ''),
             ];
 
+            if (!empty($user->latitude)) {
+                $latitude = $user->latitude;
+            }
+            else{
+                $latitude = "-";
+            }
+
+            if (!empty($user->longitude)) {
+                $longitude = $user->longitude;
+            }
+            else{
+                $longitude = "-";
+            }
+
+            if (!empty($user->device_type)) {
+                $device_type = $user->device_type;
+            }
+            else{
+                $device_type = "-";
+            }
+
+            if (!empty($user->device_app_version)) {
+                $device_app_version = $user->device_app_version;
+            }
+            else{
+                $device_app_version = "-";
+            }
+
             if($flgPendingProfile > 0) {
 
-                if (!empty($user->device_type)) {
-                    $device_type = $user->device_type;
-                }
-                else{
-                    $device_type = "-";
-                }
-                if (!empty($user->device_app_version)) {
-                    $device_app_version = $user->device_app_version;
-                }
-                else{
-                    $device_app_version = "-";
-                }
                 $records['data'][] = [
                     'id' => $user->id,
                     'profile_photo' => view('admin.layouts.includes.photos_verify')->with(['user_id' => $user->id,'profile_photo' => $user->profile_photo  ?? 'N/A', 'is_profile_photo' => 1, 'is_verify_photo' => 0])->render(),
@@ -912,6 +928,7 @@ class UsersController extends Controller
                     'email' => $user->email ? '<a href="mailto:' . $user->email . '" >' . $user->email . '</a>' : 'N/A',                    
                     'city' => $user->location->name ?? 'N/A',                
                     'device_app_version' => $device_type.'/'.$device_app_version,                
+                    'lat_long' => $latitude.','.$longitude,                
                     'created_at' => date('Y-m-d H:i:s', strtotime($user->created_at)) ?? 'N/A',
                     'active' => view('admin.layouts.includes.switch', compact('params'))->render(),
                     'action' => view('admin.layouts.includes.actions')->with(['custom_title' => 'User', 'id' => $user->custom_id], $user)->render(),
@@ -919,19 +936,6 @@ class UsersController extends Controller
                 ];
 
             } else {
-
-                if (!empty($user->device_type)) {
-                    $device_type = $user->device_type;
-                }
-                else{
-                    $device_type = "-";
-                }
-                if (!empty($user->device_app_version)) {
-                    $device_app_version = $user->device_app_version;
-                }
-                else{
-                    $device_app_version = "-";
-                }
 
                 $records['data'][] = [
                     'id' => $user->id, 
@@ -945,6 +949,7 @@ class UsersController extends Controller
                     'email' => $user->email ? '<a href="mailto:' . $user->email . '" >' . $user->email . '</a>' : 'N/A',                    
                     'city' => $user->location->name ?? 'N/A',      
                     'device_app_version' => $device_type.'/'.$device_app_version,                
+                    'lat_long' => $latitude.','.$longitude,                
                     'created_at' => date('Y-m-d H:i:s', strtotime($user->created_at)) ?? 'N/A',
                     'active' => view('admin.layouts.includes.switch', compact('params'))->render(),
                     'action' => view('admin.layouts.includes.actions')->with(['custom_title' => 'User', 'id' => $user->custom_id], $user)->render(),
