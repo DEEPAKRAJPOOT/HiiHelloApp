@@ -30,6 +30,7 @@ class ImageModerationController extends Controller
 
         $from_date         = ($request->from_date) ? $request->from_date." 00:00:00" : "";
         $to_date           = ($request->to_date) ? $request->to_date." 23:59:59" : "";
+        $search_status     = ($request->search_status) ? $request->search_status : "";
 
 
         $records = [];
@@ -45,7 +46,15 @@ class ImageModerationController extends Controller
 
         // ST - Filter
         if($from_date != "" && $to_date != "") {
-            $image_logs = $image_logs->whereBetween('created_at', [$from_date, $to_date]);
+            $image_logs = $image_logs->whereBetween('image_moderation_log.created_at', [$from_date, $to_date]);
+        }
+
+        if($request->search_status != '' && $search_status == 1 || $search_status == '1') {
+            $image_logs = $image_logs->where('image_moderation_log.is_approved',1);
+        }
+
+        if($request->search_status != '' && $search_status == 0 || $search_status == '0') {
+            $image_logs = $image_logs->where('image_moderation_log.is_approved',0);
         }
 
         

@@ -141,6 +141,14 @@
                     <td>
                         <input type='date' id='search_todate' class="form-control" placeholder='To date' value="">
                     </td>
+
+                    <td>
+                       <select class="form-control" name="search_status" id="search_status">
+                           <option value="">-- Select status --</option>
+                           <option value="0">Decline</option>
+                           <option value="1">Approve</option>
+                       </select>
+                    </td>
                     
                     <td>
                         <input type='button' class="btn btn-primary mr-1 ml-1" id="btn_search_filter" value="Search">
@@ -184,11 +192,13 @@
                     // ST - Filter Params
                     var from_date       = $("#search_fromdate").val();
                     var to_date         = $("#search_todate").val();  
+                    var search_status   = $("#search_status").val();  
                         
                     // EN - Filter Params
 
                     data.from_date         = from_date;
                     data.to_date           = to_date;                    
+                    data.search_status     = search_status;                    
                     //data.flgPendingProfile = $(".getpendingprofile").is(':checked') ? 1 : 0;
                },               
                complete: function(response) {
@@ -250,7 +260,7 @@
     });
 
     $(document).on("click", "#btn_reset_filter", function () {
-        $("#search_fromdate,#search_todate,#gender_filter").val('');
+        $("#search_fromdate,#search_todate,#gender_filter,#search_status").val('');
         oTable.draw();
     });
 
