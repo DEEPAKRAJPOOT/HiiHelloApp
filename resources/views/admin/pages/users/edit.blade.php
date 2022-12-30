@@ -142,9 +142,9 @@
 
                 <div class="row">
                     {{-- Location --}}
-                    <div class="form-group col-md-4">
+                   <div class="form-group col-md-4">
                         <label for="location">{!!$mend_sign!!}Location</label>
-                        <select type="text" class="form-control @error('location') is-invalid @enderror" id="location" name="location" spellcheck="false" tabindex="0" />
+                        <select type="text" class="form-control @error('location') is-invalid @enderror" id="location" name="location" spellcheck="false" tabindex="0" disabled/>
                             <option value="">Select Location</option>
                             @foreach($locations as $location)
                                 @if($location->locationTransDefault)

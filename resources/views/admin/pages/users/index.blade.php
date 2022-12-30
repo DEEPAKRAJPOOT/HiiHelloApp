@@ -158,6 +158,7 @@
                 { data: 'email' },                
                 { data: 'city' },
                 { data: 'device_app_version' },
+                { data: 'lat_long' },
                 { data: 'active' },
                 { data: 'action'},
             ],
@@ -170,14 +171,15 @@
                 { targets: 4, title: 'Name', orderable: false },
                 { targets: 5, title: 'Gender', orderable: true },
                 { targets: 6, title: 'Created At', orderable: true },
-                { targets: 7, title: 'Profile Percentage', orderable: true },
-                { targets: 8, title: 'Contact Number', orderable: true },
+                { targets: 7, title: 'Percentage', orderable: true },
+                { targets: 8, title: 'Number', orderable: true },
                 { targets: 9, title: 'E-mail', orderable: true },                
                 { targets: 10, title: 'City', orderable: false },                
                 { targets: 11, title: 'Device/version', orderable: true },                
-                { targets: 12, title: 'Ban', orderable: false },
+                { targets: 12, title: 'Lat/Long', orderable: false },
+                { targets: 13, title: 'Ban', orderable: false },
                 // Action buttons
-                { targets: 13, title: 'Action',orderable: false },
+                { targets: 14, title: 'Action',orderable: false },
             ],
             order: [
                 [6, 'DESC']
