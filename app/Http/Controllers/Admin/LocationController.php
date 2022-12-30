@@ -117,30 +117,32 @@ class LocationController extends Controller
      */
     public function destroy(Request $request, $custom_id)
     {
-        if(!empty($request->action) && $request->action == 'delete_all'){
-            $content = ['status'=>204, 'message'=>"something went wrong"];
-            $locations = Location::select('id')->whereIn('custom_id',explode(',',$request->ids))->get();
-            foreach($locations as $location){
-                $location->locationTranslations()->delete();
-                $location->delete();
-            }
-            // Location::whereIn('custom_id',explode(',',$request->ids))->delete();
-            $content['status']=200;
-            $content['message'] = "Location deleted successfully.";
-            $content['count'] = Location::all()->count();
-            return response()->json($content);
-        }else{
-            $location = Location::where('custom_id', $custom_id)->firstOrFail();
-            $location->locationTranslations()->delete();
-            $location->delete();
-            if(request()->ajax()){
-                $content = array('status'=>200, 'message'=>"Location deleted successfully.", 'count' => Location::all()->count());
-                return response()->json($content);
-            }else{
-                flash('Location deleted successfully.')->success();
-                return redirect()->route('admin.locations.index');
-            }
-        }
+        // if(!empty($request->action) && $request->action == 'delete_all'){
+        //     $content = ['status'=>204, 'message'=>"something went wrong"];
+        //     $locations = Location::select('id')->whereIn('custom_id',explode(',',$request->ids))->get();
+        //     foreach($locations as $location){
+        //         $location->locationTranslations()->delete();
+        //         $location->delete();
+        //     }
+        //     // Location::whereIn('custom_id',explode(',',$request->ids))->delete();
+        //     $content['status']=200;
+        //     $content['message'] = "Location deleted successfully.";
+        //     $content['count'] = Location::all()->count();
+        //     return response()->json($content);
+        // }else{
+        //     $location = Location::where('custom_id', $custom_id)->firstOrFail();
+        //     $location->locationTranslations()->delete();
+        //     $location->delete();
+        //     if(request()->ajax()){
+        //         $content = array('status'=>200, 'message'=>"Location deleted successfully.", 'count' => Location::all()->count());
+        //         return response()->json($content);
+        //     }else{
+        //         flash('Location deleted successfully.')->success();
+        //         return redirect()->route('admin.locations.index');
+        //     }
+        // }
+
+        return redirect()->route('admin.locations.index');
     }
 
     public function listing(Request $request)
