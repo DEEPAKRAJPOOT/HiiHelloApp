@@ -97,14 +97,6 @@ class UsersController extends Controller
                     $user->new_location_id    = 'y';
                 }
             }
-            else
-            {
-                if (!empty($request->location)) {
-                    $location = Location::whereId($request->location)->whereIsActive('y')->firstOrFail();
-                    $user->location_id = $location->id;
-                    $user->discover_location_id = $location->id;
-                }
-            }
 
             if (!empty($request->language)) {
                 $language = Language::whereLangCode($request->language)->whereIsActive('y')->firstOrFail();
@@ -453,11 +445,11 @@ class UsersController extends Controller
                     $country = Country::wherePhonecode($request->country_code)->whereIsActive('y')->firstOrFail();
                     $user->country_id = $country->id;
                 }
-                if (!empty($request->location)) {
-                    $location = Location::whereId($request->location)->whereIsActive('y')->firstOrFail();
-                    $user->location_id = $location->id;
-                    $user->discover_location_id = $location->id;
-                }
+                // if (!empty($request->location)) {
+                //     $location = Location::whereId($request->location)->whereIsActive('y')->firstOrFail();
+                //     $user->location_id = $location->id;
+                //     $user->discover_location_id = $location->id;
+                // }
 
 
                 if (!empty($request->latitude) && !empty($request->longitude) && $user->latitude != $request->latitude && $user->longitude != $request->longitude) {
@@ -469,12 +461,6 @@ class UsersController extends Controller
                         $user->longitude    = $language->longitude;
                         $user->new_location_id    = 'y';
                     }
-                }
-                else
-                {
-                    $user->latitude     = $user->latitude;
-                    $user->longitude    = $user->longitude;
-                    $user->new_location_id    = $user->new_location_id;
                 }
 
                 // Store Account Id
@@ -914,6 +900,17 @@ class UsersController extends Controller
                 $device_app_version = "-";
             }
 
+            if (!empty($user->app_delete)) {
+                if ($user->app_delete == 'y') {
+                    $app_delete = "App";
+                }else{
+                    $app_delete = "Web";
+                }
+            }
+            else{
+                $app_delete = "-";
+            }
+
             if($flgPendingProfile > 0) {
 
                 $records['data'][] = [
@@ -929,6 +926,7 @@ class UsersController extends Controller
                     'city' => $user->location->name ?? 'N/A',                
                     'device_app_version' => $device_type.'/'.$device_app_version,                
                     'lat_long' => $latitude.','.$longitude,                
+                    'app_delete' => $app_delete,                
                     'created_at' => date('Y-m-d H:i:s', strtotime($user->created_at)) ?? 'N/A',
                     'active' => view('admin.layouts.includes.switch', compact('params'))->render(),
                     'action' => view('admin.layouts.includes.actions')->with(['custom_title' => 'User', 'id' => $user->custom_id], $user)->render(),
@@ -949,7 +947,8 @@ class UsersController extends Controller
                     'email' => $user->email ? '<a href="mailto:' . $user->email . '" >' . $user->email . '</a>' : 'N/A',                    
                     'city' => $user->location->name ?? 'N/A',      
                     'device_app_version' => $device_type.'/'.$device_app_version,                
-                    'lat_long' => $latitude.','.$longitude,                
+                    'lat_long' => $latitude.','.$longitude, 
+                    'app_delete' => $app_delete,               
                     'created_at' => date('Y-m-d H:i:s', strtotime($user->created_at)) ?? 'N/A',
                     'active' => view('admin.layouts.includes.switch', compact('params'))->render(),
                     'action' => view('admin.layouts.includes.actions')->with(['custom_title' => 'User', 'id' => $user->custom_id], $user)->render(),

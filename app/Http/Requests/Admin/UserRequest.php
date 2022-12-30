@@ -47,6 +47,7 @@ class UserRequest extends FormRequest
             'gender'                    =>  'required_unless:action,'.$unless.'|in:'.implode(',', ['Male','Female']),
             'interest'                  =>  'required_unless:action,'.$unless.'|in:'.implode(',', ['Male','Female', 'Both']),
             // 'location'                  =>  'required_unless:action,'.$unless.'|in:'.implode(',', $location_ids),
+            'location'                  =>  'nullable',
             'language'                  =>  'required_unless:action,'.$unless.'|in:'.implode(',', $language_ids),
             'profile_photo'             =>  'nullable|mimes:jpg,jpeg,png',
 

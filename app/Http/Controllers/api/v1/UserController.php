@@ -221,6 +221,7 @@ class UserController extends Controller
             try{
                 $user = $request->user();
                 $user->reason_of_delete = $request->reason;
+                $user->app_delete = 'y';
                 $user->save(); 
                 $user->delete();
                 return ([
