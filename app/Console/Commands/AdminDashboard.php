@@ -42,6 +42,8 @@ class AdminDashboard extends Command
     public function handle()
     {      
         $message            =   "No Analytic dashboard records found.";
+        $past_30_day_date   =    Carbon::today()->subDays(30);
+        
         $total_users = User::whereNull('deleted_at')->count();
         $male_users = User::where('gender','=','Male')->whereNull('deleted_at')->count();
         $female_users = User::where('gender','=','Female')->whereNull('deleted_at')->count();
@@ -50,7 +52,7 @@ class AdminDashboard extends Command
         $total_unsubscribed = User::where('gender','=','Male')->where('is_subscribed','!=','y')->whereNull('deleted_at')->count();
         $per_day_users = User::whereNull('deleted_at')->whereDate("created_at",Carbon::today())->count();
         $per_week_users = User::whereNull('deleted_at')->whereBetween('created_at',[Carbon::now()->startOfWeek(), Carbon::now()->endOfWeek()])->count();
-        $per_30_day_users = User::whereNull('deleted_at')->whereMonth("created_at",Carbon::now()->month)->count();
+        $per_30_day_users = User::whereNull('deleted_at')->where("created_at",">=",$past_30_day_date)->count();
 
         $all_users = User::select('birth_date','gender','facebook_id','google_id','apple_id','is_social_user')->whereNull('deleted_at')->whereNotNull('birth_date')->whereNotNull('gender')->get();
         // echo "<pre>"; print_r($all_users->toArray()); die();
