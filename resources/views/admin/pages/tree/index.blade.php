@@ -237,11 +237,16 @@
                     <i class="menu-icon icon-users"></i>
                     Top users
                </a>
+               <a href="{{ route('admin.user-tree.csv-download') }}"
+                    class="btn btn-sm btn-primary font-weight-bolder text-uppercase ml-2">
+                    <i class="fas fa-arrow-down"></i>
+                    CSV Downlode
+               </a>
             </div>
         </div>
         <div class="card-body">
             <!-- Date Filter -->
-            <table class="mb-5">
+            <table class="mb-5" align="center">
             <tr style="display: inline-flex;">
                 <td>
                   <select class="form-control" name="type" id="type">
