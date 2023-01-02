@@ -59,6 +59,8 @@ Route::get('apilog/csv-download', 'Admin\ApiLogController@csvDownload')->name('a
 
 Route::get('image-log/csv-download', 'Admin\ImageModerationController@csvDownload')->name('admin.image-log.csv-download');
 
+Route::get('user-tree/csv-download', 'Admin\UserTreeController@csvDownload')->name('admin.user-tree.csv-download');
+
 
 Route::get('location/csv-download', 'Admin\LocationController@csvDownload')->name('admin.location.csv-download');
 // user data with location data csv downlode
