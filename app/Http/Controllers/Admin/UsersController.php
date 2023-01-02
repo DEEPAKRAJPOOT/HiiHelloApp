@@ -64,6 +64,7 @@ class UsersController extends Controller
      */
     public function store(UserRequest $request)
     {
+
         try {
             DB::beginTransaction();
             $path = NULL;
@@ -86,18 +87,6 @@ class UsersController extends Controller
             //     $user->location_id = $location->id;
             //     $user->discover_location_id = $location->id;
             // }
-
-            if (!empty($request->latitude) && !empty($request->longitude)) {
-                $location_id        = $this->get_user_location($request->latitude,$request->longitude);
-                if (!empty($location_id)) {
-                    $user->location_id  = $location_id;
-                    $user->discover_location_id = $location_id;
-                    $user->latitude     = $language->latitude;
-                    $user->longitude    = $language->longitude;
-                    $user->new_location_id    = 'y';
-                }
-            }
-
             if (!empty($request->language)) {
                 $language = Language::whereLangCode($request->language)->whereIsActive('y')->firstOrFail();
                 $user->language_id = $language->id;
@@ -263,6 +252,23 @@ class UsersController extends Controller
             }
 
             if ($user->save()) {
+
+                $user_id = $user->id;
+
+                //lat and long to assign location id 
+                if (!empty($request->latitude) && !empty($request->longitude)) {
+                    $location_id        = $this->get_user_location($request->latitude,$request->longitude);
+                    if (!empty($location_id)) {
+                        User::where('id',$user_id)->update([
+                            "location_id" => $location_id,
+                            "discover_location_id" => $location_id,
+                            "latitude" => $request->latitude,
+                            "longitude" => $request->longitude,
+                            "new_location_id" => 'y',
+                        ]);
+                    }
+                }
+
                 DB::commit();
                 flash('User account created successfully!')->success();
             } else {
@@ -451,18 +457,6 @@ class UsersController extends Controller
                 //     $user->discover_location_id = $location->id;
                 // }
 
-
-                if (!empty($request->latitude) && !empty($request->longitude) && $user->latitude != $request->latitude && $user->longitude != $request->longitude) {
-                    $location_id        = $this->get_user_location($request->latitude,$request->longitude);
-                    if (!empty($location_id)) {
-                        $user->location_id  = $location_id;
-                        $user->discover_location_id = $location_id;
-                        $user->latitude     = $language->latitude;
-                        $user->longitude    = $language->longitude;
-                        $user->new_location_id    = 'y';
-                    }
-                }
-
                 // Store Account Id
                 if (!empty($request->language) && $request->language == 'en') {
                     $user->account_id = Str::slug(substr($request->full_name, 0, 4), "_") . '_' . time();
@@ -509,6 +503,21 @@ class UsersController extends Controller
                 } elseif ($video_verified_at == NULL) {
                     $user->video_verified_at = NULL;
                 }
+
+                //lat and long new then assign new location id 
+                if (!empty($request->latitude) && !empty($request->longitude) && $user->latitude != $request->latitude && $user->longitude != $request->longitude) {
+                    $location_id        = $this->get_user_location($request->latitude,$request->longitude);
+                    if (!empty($location_id)) {
+                        User::where('id',$user->id)->update([
+                            "location_id" => $location_id,
+                            "discover_location_id" => $location_id,
+                            "latitude" => $request->latitude,
+                            "longitude" => $request->longitude,
+                            "new_location_id" => 'y',
+                        ]);
+                    }
+                }
+                
 
                 /* User Personality */
                 if (!empty($request->personalities)) {
@@ -655,8 +664,8 @@ class UsersController extends Controller
                     }
                 }     
 
-
                 if ($user->save()) {
+
                     // Notify Profile Verification
                     if ($verify_notify && $user->verify_status != 'under_review') {
                         if ($user->verify_status == 'verified') {
