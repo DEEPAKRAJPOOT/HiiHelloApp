@@ -382,7 +382,10 @@ class UsersController extends Controller
                     if(intval($request->subcription_plan)==0)
                     {                                 
                             $user->is_subscribed='n';
-                            $user->subscription_end_date= NULL;                             
+                            $user->subscription_end_date= NULL;
+
+                            //delete default girls plan
+                            Subscription::where('user_id',$user->id)->whereNull('end_date')->delete();                            
                     }
                     else
                     {
@@ -414,6 +417,142 @@ class UsersController extends Controller
                      }       
                 }
                 //UPDATE SUBSCRIPTION FOR USER END
+
+                //new logic for update gender to assign new plan
+                //male to female change then
+
+                $user_sub = Subscription::select('id','user_id','plan_id','end_date')->where('user_id',$user->id)->where('plan_id','!=',3)->whereNull('deleted_at')->count();
+                if (($user->gender == "Male" && $request->gender == "Female") || ($user->gender == "" && $request->gender == "Female")) {
+
+                    if ($user_sub > 0) {
+
+                        $free_subscription = config('utility.subscription.free_for_girls');
+                        if($free_subscription && $request->gender == 'Female') {
+
+                            $plan = SubscriptionPlan::where('is_default_for_girl','y')->first();
+                            if($plan){
+
+                                $new_subscription_start_date = \Carbon\Carbon::today()->format('Y-m-d');
+                                if ($user->subscription_end_date >= $new_subscription_start_date) {
+                                    $new_subscription_start_date = $user->subscription_end_date;
+                                }
+
+                                // add free subscription
+                                Subscription::firstOrCreate([
+                                    'user_id'       =>  $user->id ?? NULL,
+                                    'plan_id'       =>  $plan->id ?? NULL,
+                                    'months'        =>  $plan->months,
+                                    'amount'        =>  $plan->amount,
+                                    'start_date'    =>  $new_subscription_start_date,
+                                    'end_date'      =>  NULL,
+                                    'payment_date'  =>  now(),
+                                    'payment_type'  =>  'admin',
+                                    'status'        =>  'active',
+                                ], [
+                                    'custom_id'     =>  getUniqueString('subscriptions'),
+                                ]);
+
+                                // update user table subscription details
+                                User::where('id',$user->id)->update([ 
+                                    'gender' =>  $request->gender ?? $user->gender,
+                                    'is_subscribed' =>  'y',
+                                    'subscription_end_date' =>  NULL,
+                                ]);
+                            }
+                        }
+
+                    }
+                    else
+                    {
+                        $user_sub2 = Subscription::select('id','user_id','plan_id','end_date')->where('user_id',$user->id)->where('plan_id','==',3)->whereNull('deleted_at')->count();
+                        if ($user_sub2 > 0) {
+                            // update user table subscription details
+                            User::where('id',$user->id)->update([ 
+                                'gender' =>  $request->gender ?? $user->gender,
+                                'is_subscribed' =>  'y',
+                                'subscription_end_date' =>  NULL,
+                            ]);
+
+                        }
+                        else
+                        {
+                            $free_subscription = config('utility.subscription.free_for_girls');
+                            if($free_subscription && $request->gender == 'Female') {
+
+                                $plan = SubscriptionPlan::where('is_default_for_girl','y')->first();
+                                if($plan){
+
+                                    $new_subscription_start_date = \Carbon\Carbon::today()->format('Y-m-d');
+                                    if ($user->subscription_end_date >= $new_subscription_start_date) {
+                                        $new_subscription_start_date = $user->subscription_end_date;
+                                    }
+
+                                    // add free subscription
+                                    Subscription::firstOrCreate([
+                                        'user_id'       =>  $user->id ?? NULL,
+                                        'plan_id'       =>  $plan->id ?? NULL,
+                                        'months'        =>  $plan->months,
+                                        'amount'        =>  $plan->amount,
+                                        'start_date'    =>  $new_subscription_start_date,
+                                        'end_date'      =>  NULL,
+                                        'payment_date'  =>  now(),
+                                        'payment_type'  =>  'admin',
+                                        'status'        =>  'active',
+                                    ], [
+                                        'custom_id'     =>  getUniqueString('subscriptions'),
+                                    ]);
+
+                                    // update user table subscription details
+                                    User::where('id',$user->id)->update([ 
+                                        'gender' =>  $request->gender ?? $user->gender,
+                                        'is_subscribed' =>  'y',
+                                        'subscription_end_date' =>  NULL,
+                                    ]);
+                                }
+                            }
+                        }
+                    }
+                }
+                //female to male change then
+                if (($user->gender == "Female" && $request->gender == "Male") || ($user->gender == "" && $request->gender == "Male")) {
+
+                    if ($user_sub > 0) {
+
+                        Subscription::where('user_id',$user->id)->whereNull('end_date')->delete();
+
+                        $user_sub2 = Subscription::select('id','user_id','plan_id','end_date')->where('user_id',$user->id)->where('plan_id','!=',3)->whereNull('deleted_at')->first();
+                        if (!empty($user_sub2)) {
+                            // update user table subscription details
+                            User::where('id',$user->id)->update([ 
+                                'gender' =>  $request->gender ?? $user->gender,
+                                'is_subscribed' =>  'y',
+                                'subscription_end_date' =>  isset($user_sub2->end_date) ? $user_sub2->end_date : NULL,
+                            ]);
+
+                        }
+                        else
+                        {
+                            // update user table subscription details
+                            User::where('id',$user->id)->update([ 
+                                'gender' =>  $request->gender ?? $user->gender,
+                                'is_subscribed' =>  'n',
+                                'subscription_end_date' =>  NULL,
+                            ]);
+                        }
+                    }
+                    else
+                    {
+                        // delete subscription data
+                        Subscription::where('user_id',$user->id)->whereNull('end_date')->delete();
+
+                        // update user table subscription details
+                        User::where('id',$user->id)->update([ 
+                            'gender' =>  $request->gender ?? $user->gender,
+                            'is_subscribed' =>  'n',
+                            'subscription_end_date' =>  NULL,
+                        ]);
+                    }
+                }
 
                 $verify_notify = $verify_photo_notify = $verify_video_notify = false;
                 if ($user->verify_status == 'under_review') {
@@ -1204,7 +1343,8 @@ class UsersController extends Controller
 
         if ($request->id != '' && $request->gender != '') {
             $users = User::select('id','gender','is_subscribed','subscription_end_date')->where('id',$request->id)->first();
-            $user_sub = Subscription::select('id','user_id','plan_id','end_date')->where('user_id',$request->id)->whereNull('deleted_at')->count();
+            $user_sub = Subscription::select('id','user_id','plan_id','end_date')->where('user_id',$request->id)->where('plan_id','!=',3)->whereNull('deleted_at')->count();
+            // echo $user_sub; die();
             $today_date = date("Y-m-d");
 
             $subscription_end_date = "";
@@ -1218,27 +1358,7 @@ class UsersController extends Controller
                     if (($users->gender == "Male" && $request->gender == "Female") || ($users->gender == "" && $request->gender == "Female")) {
 
                         if ($user_sub > 0) {
-                            $user_sub2 = Subscription::select('id','user_id','plan_id','end_date')->where('user_id',$request->id)->whereNull('deleted_at')->count();
-                            if ($user_sub2 > 0) {
-                                // update user table subscription details
-                                User::where('id',$request->id)->update([ 
-                                    'gender' =>  $request->gender ?? $users->gender,
-                                    'is_subscribed' =>  'y',
-                                ]);
 
-                            }
-                            else
-                            {
-                                // update user table subscription details
-                                User::where('id',$request->id)->update([ 
-                                    'gender' =>  $request->gender ?? $users->gender,
-                                    'is_subscribed' =>  'n',
-                                    'subscription_end_date' =>  NULL,
-                                ]);
-                            }
-                        }
-                        else
-                        {
                             $free_subscription = config('utility.subscription.free_for_girls');
                             if($free_subscription && $request->gender == 'Female') {
 
@@ -1259,7 +1379,7 @@ class UsersController extends Controller
                                         'start_date'    =>  $new_subscription_start_date,
                                         'end_date'      =>  NULL,
                                         'payment_date'  =>  now(),
-                                        'payment_type'  =>  '',
+                                        'payment_type'  =>  'admin',
                                         'status'        =>  'active',
                                     ], [
                                         'custom_id'     =>  getUniqueString('subscriptions'),
@@ -1271,6 +1391,57 @@ class UsersController extends Controller
                                         'is_subscribed' =>  'y',
                                         'subscription_end_date' =>  NULL,
                                     ]);
+                                }
+                            }
+
+                        }
+                        else
+                        {
+                            $user_sub2 = Subscription::select('id','user_id','plan_id','end_date')->where('user_id',$request->id)->where('plan_id','==',3)->whereNull('deleted_at')->count();
+                            if ($user_sub2 > 0) {
+                                // update user table subscription details
+                                User::where('id',$request->id)->update([ 
+                                    'gender' =>  $request->gender ?? $users->gender,
+                                    'is_subscribed' =>  'y',
+                                    'subscription_end_date' =>  NULL,
+                                ]);
+
+                            }
+                            else
+                            {
+                                $free_subscription = config('utility.subscription.free_for_girls');
+                                if($free_subscription && $request->gender == 'Female') {
+
+                                    $plan = SubscriptionPlan::where('is_default_for_girl','y')->first();
+                                    if($plan){
+
+                                        $new_subscription_start_date = \Carbon\Carbon::today()->format('Y-m-d');
+                                        if ($users->subscription_end_date >= $new_subscription_start_date) {
+                                            $new_subscription_start_date = $users->subscription_end_date;
+                                        }
+
+                                        // add free subscription
+                                        Subscription::firstOrCreate([
+                                            'user_id'       =>  $users->id ?? NULL,
+                                            'plan_id'       =>  $plan->id ?? NULL,
+                                            'months'        =>  $plan->months,
+                                            'amount'        =>  $plan->amount,
+                                            'start_date'    =>  $new_subscription_start_date,
+                                            'end_date'      =>  NULL,
+                                            'payment_date'  =>  now(),
+                                            'payment_type'  =>  'admin',
+                                            'status'        =>  'active',
+                                        ], [
+                                            'custom_id'     =>  getUniqueString('subscriptions'),
+                                        ]);
+
+                                        // update user table subscription details
+                                        User::where('id',$request->id)->update([ 
+                                            'gender' =>  $request->gender ?? $users->gender,
+                                            'is_subscribed' =>  'y',
+                                            'subscription_end_date' =>  NULL,
+                                        ]);
+                                    }
                                 }
                             }
                         }
@@ -1286,12 +1457,13 @@ class UsersController extends Controller
 
                             Subscription::where('user_id',$request->id)->whereNull('end_date')->delete();
 
-                            $user_sub2 = Subscription::select('id','user_id','plan_id','end_date')->where('user_id',$request->id)->whereNull('deleted_at')->count();
-                            if ($user_sub2 > 0) {
+                            $user_sub2 = Subscription::select('id','user_id','plan_id','end_date')->where('user_id',$request->id)->where('plan_id','!=',3)->whereNull('deleted_at')->first();
+                            if (!empty($user_sub2)) {
                                 // update user table subscription details
                                 User::where('id',$request->id)->update([ 
                                     'gender' =>  $request->gender ?? $users->gender,
                                     'is_subscribed' =>  'y',
+                                    'subscription_end_date' =>  isset($user_sub2->end_date) ? $user_sub2->end_date : NULL,
                                 ]);
 
                             }
@@ -1350,6 +1522,7 @@ class UsersController extends Controller
             
 
         $user_id_arr            = explode(",",$request->multi_user_id);
+        $multi_user_id            = explode(",",$request->multi_auto_user_id);
         
 
         if (!empty($user_id_arr)) {
@@ -1357,11 +1530,12 @@ class UsersController extends Controller
             for($i = 0; $i< count($user_id_arr); $i++) {
 
                     $req_user_id = $user_id_arr[$i];
+                    $multi_auto_user_id = $multi_user_id[$i];
                     $req_gender  = $request->target_gender;
 
                     $users = User::select('id','gender','is_subscribed','subscription_end_date')->where('custom_id',$req_user_id)->first();
 
-                     $user_sub = Subscription::select('id','user_id','plan_id','end_date')->where('user_id',$users->id)->whereNull('deleted_at')->count();
+                    $user_sub = Subscription::select('id','user_id','plan_id','end_date')->where('user_id',$multi_auto_user_id)->where('plan_id','!=',3)->whereNull('deleted_at')->count();
                     $today_date = date("Y-m-d");
 
                     $subscription_end_date = "";
@@ -1375,27 +1549,7 @@ class UsersController extends Controller
                             if (($users->gender == "Male" && $req_gender == "Female") || ($users->gender == "" && $req_gender == "Female")) {
 
                                 if ($user_sub > 0) {
-                                    $user_sub2 = Subscription::select('id','user_id','plan_id','end_date')->where('user_id',$users->id)->whereNull('deleted_at')->count();
-                                    if ($user_sub2 > 0) {
-                                        // update user table subscription details
-                                        User::where('custom_id',$req_user_id)->update([ 
-                                            'gender' =>  $req_gender ?? $users->gender,
-                                            'is_subscribed' =>  'y',
-                                        ]);
 
-                                    }
-                                    else
-                                    {
-                                        // update user table subscription details
-                                        User::where('custom_id',$req_user_id)->update([ 
-                                            'gender' =>  $req_gender ?? $users->gender,
-                                            'is_subscribed' =>  'n',
-                                            'subscription_end_date' =>  NULL,
-                                        ]);
-                                    }
-                                }
-                                else
-                                {
                                     $free_subscription = config('utility.subscription.free_for_girls');
                                     if($free_subscription && $req_gender == 'Female') {
 
@@ -1416,18 +1570,69 @@ class UsersController extends Controller
                                                 'start_date'    =>  $new_subscription_start_date,
                                                 'end_date'      =>  NULL,
                                                 'payment_date'  =>  now(),
-                                                'payment_type'  =>  '',
+                                                'payment_type'  =>  'admin',
                                                 'status'        =>  'active',
                                             ], [
                                                 'custom_id'     =>  getUniqueString('subscriptions'),
                                             ]);
 
                                             // update user table subscription details
-                                            User::where('custom_id',$req_user_id)->update([ 
+                                            User::where('custom_id',$req_user_id)->update([
                                                 'gender' =>  $req_gender ?? $users->gender,
                                                 'is_subscribed' =>  'y',
                                                 'subscription_end_date' =>  NULL,
                                             ]);
+                                        }
+                                    }
+
+                                }
+                                else
+                                {
+                                    $user_sub2 = Subscription::select('id','user_id','plan_id','end_date')->where('user_id',$multi_auto_user_id)->where('plan_id','==',3)->whereNull('deleted_at')->count();
+                                    if ($user_sub2 > 0) {
+                                        // update user table subscription details
+                                        User::where('custom_id',$req_user_id)->update([
+                                            'gender' =>  $req_gender ?? $users->gender,
+                                            'is_subscribed' =>  'y',
+                                            'subscription_end_date' =>  NULL,
+                                        ]);
+
+                                    }
+                                    else
+                                    {
+                                        $free_subscription = config('utility.subscription.free_for_girls');
+                                        if($free_subscription && $req_gender == 'Female') {
+
+                                            $plan = SubscriptionPlan::where('is_default_for_girl','y')->first();
+                                            if($plan){
+
+                                                $new_subscription_start_date = \Carbon\Carbon::today()->format('Y-m-d');
+                                                if ($users->subscription_end_date >= $new_subscription_start_date) {
+                                                    $new_subscription_start_date = $users->subscription_end_date;
+                                                }
+
+                                                // add free subscription
+                                                Subscription::firstOrCreate([
+                                                    'user_id'       =>  $users->id ?? NULL,
+                                                    'plan_id'       =>  $plan->id ?? NULL,
+                                                    'months'        =>  $plan->months,
+                                                    'amount'        =>  $plan->amount,
+                                                    'start_date'    =>  $new_subscription_start_date,
+                                                    'end_date'      =>  NULL,
+                                                    'payment_date'  =>  now(),
+                                                    'payment_type'  =>  'admin',
+                                                    'status'        =>  'active',
+                                                ], [
+                                                    'custom_id'     =>  getUniqueString('subscriptions'),
+                                                ]);
+
+                                                // update user table subscription details
+                                                User::where('custom_id',$req_user_id)->update([ 
+                                                    'gender' =>  $req_gender ?? $users->gender,
+                                                    'is_subscribed' =>  'y',
+                                                    'subscription_end_date' =>  NULL,
+                                                ]);
+                                            }
                                         }
                                     }
                                 }
@@ -1439,34 +1644,22 @@ class UsersController extends Controller
 
                             if (($users->gender == "Female" && $req_gender == "Male") || ($users->gender == "" && $req_gender == "Male")) {
 
-                                if ($user_sub > 0) {
+                                // delete subscription data
+                                Subscription::where('user_id',$multi_auto_user_id)->whereNull('end_date')->delete();
 
-                                    Subscription::where('user_id',$users->id)->whereNull('end_date')->delete();
+                                $user_sub2 = Subscription::select('id','user_id','plan_id','end_date')->where('user_id',$multi_auto_user_id)->where('plan_id','!=',3)->whereNull('deleted_at')->first();
+                                if (!empty($user_sub2)) {
 
-                                    $user_sub2 = Subscription::select('id','user_id','plan_id','end_date')->where('user_id',$users->id)->whereNull('deleted_at')->count();
-                                    if ($user_sub2 > 0) {
-                                        // update user table subscription details
-                                        User::where('custom_id',$req_user_id)->update([ 
-                                            'gender' =>  $req_gender ?? $users->gender,
-                                            'is_subscribed' =>  'y',
-                                        ]);
+                                    // update user table subscription details
+                                    User::where('custom_id',$req_user_id)->update([
+                                        'gender' =>  $req_gender ?? $users->gender,
+                                        'is_subscribed' =>  'y',
+                                        'subscription_end_date' =>  isset($user_sub2->end_date) ? $user_sub2->end_date : NULL,
+                                    ]);
 
-                                    }
-                                    else
-                                    {
-                                        // update user table subscription details
-                                        User::where('custom_id',$req_user_id)->update([ 
-                                            'gender' =>  $req_gender ?? $users->gender,
-                                            'is_subscribed' =>  'n',
-                                            'subscription_end_date' =>  NULL,
-                                        ]);
-                                    }
                                 }
                                 else
                                 {
-                                    // delete subscription data
-                                    Subscription::where('user_id',$users->id)->whereNull('end_date')->delete();
-
                                     // update user table subscription details
                                     User::where('custom_id',$req_user_id)->update([ 
                                         'gender' =>  $req_gender ?? $users->gender,
@@ -1474,6 +1667,10 @@ class UsersController extends Controller
                                         'subscription_end_date' =>  NULL,
                                     ]);
                                 }
+
+                                $content['status'] = 200;
+                                $content['message'] = "Gender updated successfully.";
+                                return response()->json($content);
                             }
                         }
                         
