@@ -152,12 +152,12 @@ class LocationController extends Controller
 
         $locations = Location::select("locations.id as id","locations.custom_id as custom_id","locations.is_active as is_active","location_translations.location_id as location_id","location_translations.name as name","location_translations.state as state");
         $locations = $locations->join("location_translations","location_translations.location_id","=","locations.id");
-        $locations = $locations->where('locations.is_active','y');
         $locations = $locations->where('location_translations.locale','en');
         if ($search != '') {
             $locations->where("location_translations.name","like",'%'.$search.'%');
             $locations->orWhere("location_translations.state","like",'%'.$search.'%');
         }
+        $locations = $locations->where("locations.is_active","y");
         $count = $locations->count();
         $records['recordsTotal'] = $count;
         $records['recordsFiltered'] = $count;

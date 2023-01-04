@@ -249,7 +249,7 @@ class AuthenticationController extends Controller
                     $apilogs->url = url()->current();
                     $apilogs->request = json_encode($request->all());
                     $apilogs->response = json_encode(new SignUpResource($user));
-                    // $apilogs->api_status = $this->response();
+                    $apilogs->api_status = 200;
                     $apilogs->save();
 
                     return (new SignUpResource($user))

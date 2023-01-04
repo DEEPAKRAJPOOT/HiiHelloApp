@@ -25,6 +25,7 @@ class ApiLogController extends Controller
 
         $from_date         = ($request->from_date) ? $request->from_date." 00:00:00" : "";
         $to_date           = ($request->to_date) ? $request->to_date." 23:59:59" : "";
+        $api_status        = ($request->api_status) ? $request->api_status : "";
 
         $records = [];
         $apilogs = ApiLogs::select("api_logs.*","users.account_id as account_id","user_translations.full_name as full_name")
@@ -44,6 +45,10 @@ class ApiLogController extends Controller
         // ST - Filter
         if($from_date != "" && $to_date != "") {
             $apilogs = $apilogs->whereBetween('api_logs.created_at', [$from_date, $to_date]);
+        }
+
+        if($api_status != "") {
+            $apilogs = $apilogs->where('api_logs.api_status', $api_status);
         }
 
 
@@ -67,7 +72,7 @@ class ApiLogController extends Controller
                 'full_name' =>  $apilog->full_name ?? "N/A",
                 'created_at' => date('Y-m-d h:i A', strtotime($apilog->created_at)) ?? 'N/A',
                 'api_status' =>  $apilog->api_status ?? "N/A",
-                'action' => view('admin.layouts.includes.view_apilog')->with(['custom_title' => 'User log data', 'id' => $apilog->id], $apilog)->render(),
+                // 'action' => view('admin.layouts.includes.view_apilog')->with(['custom_title' => 'User log data', 'id' => $apilog->id], $apilog)->render(),
             ];
         }
         return $records;
@@ -94,7 +99,9 @@ class ApiLogController extends Controller
         $apilogs    = ApiLogs::select("api_logs.*","users.account_id as account_id","user_translations.full_name as full_name")
                         ->join("users","users.id","=","api_logs.user_id")
                         ->join("user_translations","user_translations.user_id","=","api_logs.user_id")
-                        ->where("user_translations.locale","en");
+                        ->where("user_translations.locale","en")
+                        ->orderBy("created_at","DESC")
+                        ->limit(10000);
 
         $apilogs = $apilogs->get();
         if (!$apilogs->isEmpty()) {
