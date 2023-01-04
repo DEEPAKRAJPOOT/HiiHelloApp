@@ -28,11 +28,9 @@ class ApiLogController extends Controller
         $api_status        = ($request->api_status) ? $request->api_status : "";
 
         $records = [];
-        $apilogs = ApiLogs::select("api_logs.*","users.account_id as account_id","user_translations.full_name as full_name")
-                        ->join("users","users.id","=","api_logs.user_id")
-                        ->join("user_translations","user_translations.user_id","=","api_logs.user_id")
-                        ->where("user_translations.locale","en");
-                        // ->groupBy("api_logs.id");
+        $apilogs = ApiLogs::select("api_logs.*","api_logs.api_status as api_status","users.account_id as account_id","user_translations.full_name as full_name")
+                        ->leftJoin("users","api_logs.user_id","=","users.id")
+                        ->leftJoin("user_translations","users.id","=","user_translations.user_id"," and ","user_translations.locale","=","en");
 
         if ($search != '') {
             $apilogs->where(function ($query) use ($search) {
@@ -58,6 +56,9 @@ class ApiLogController extends Controller
         $records['data'] = [];
 
        
+       
+        // $apilogs = $apilogs->where("user_translations.locale","en");
+        $apilogs = $apilogs->groupBy("api_logs.id");
         $apilogs = $apilogs->offset($offset)->limit($limit)->orderBy("api_logs.created_at",$sort_order);
 
         $apilogs = $apilogs->get();
@@ -84,8 +85,8 @@ class ApiLogController extends Controller
         $apilogs = array();
         if (!empty($auth_id)) {
             $apilogs   = ApiLogs::select("api_logs.*","users.account_id as account_id","user_translations.full_name as full_name")
-                        ->join("users","users.id","=","api_logs.user_id")
-                        ->join("user_translations","user_translations.user_id","=","api_logs.user_id")
+                        ->leftJoin("user_translations","user_translations.user_id","=","api_logs.user_id")
+                        ->leftJoin("users","users.id","=","api_logs.user_id")
                         ->where("user_translations.locale","en")
                         ->where("api_logs.id",$auth_id)
                         ->first();
@@ -97,8 +98,8 @@ class ApiLogController extends Controller
     {
         $down_file_name = 'Api log report';
         $apilogs    = ApiLogs::select("api_logs.*","users.account_id as account_id","user_translations.full_name as full_name")
-                        ->join("users","users.id","=","api_logs.user_id")
-                        ->join("user_translations","user_translations.user_id","=","api_logs.user_id")
+                        ->leftJoin("users","users.id","=","api_logs.user_id")
+                        ->leftJoin("user_translations","user_translations.user_id","=","api_logs.user_id")
                         ->where("user_translations.locale","en")
                         ->orderBy("created_at","DESC")
                         ->limit(10000);
