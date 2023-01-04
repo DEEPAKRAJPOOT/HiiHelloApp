@@ -84,20 +84,20 @@ class ApiLogController extends Controller
         return $records;
     }
 
-    public function get_single_apilog_data(Request $request)
-    {
-        $auth_id = $request->user_id;
-        $apilogs = array();
-        if (!empty($auth_id)) {
-            $apilogs   = ApiLogs::select("api_logs.*","users.account_id as account_id","user_translations.full_name as full_name")
-                        ->leftJoin("user_translations","user_translations.user_id","=","api_logs.user_id")
-                        ->leftJoin("users","users.id","=","api_logs.user_id")
-                        ->where("user_translations.locale","en")
-                        ->where("api_logs.id",$auth_id)
-                        ->first();
-        }
-        return $apilogs;
-    }
+    // public function get_single_apilog_data(Request $request)
+    // {
+    //     $auth_id = $request->user_id;
+    //     $apilogs = array();
+    //     if (!empty($auth_id)) {
+    //         $apilogs   = ApiLogs::select("api_logs.*","users.account_id as account_id","user_translations.full_name as full_name")
+    //                     ->leftJoin("user_translations","user_translations.user_id","=","api_logs.user_id")
+    //                     ->leftJoin("users","users.id","=","api_logs.user_id")
+    //                     ->where("user_translations.locale","en")
+    //                     ->where("api_logs.id",$auth_id)
+    //                     ->first();
+    //     }
+    //     return $apilogs;
+    // }
 
     public function csvDownload(Request $request)
     {
