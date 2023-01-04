@@ -15,6 +15,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\File;
 
 class UserTreeController extends Controller
 {
@@ -937,5 +939,98 @@ class UserTreeController extends Controller
         // echo "<pre>"; print_r($male_users_records); die();
         return view('admin.pages.tree.toplist', compact('male_users_records','female_users_records'))->with(['custom_title' => __('Top 5 User Tree')]);
 
+    }
+
+
+    public function csvDownload(Request $request)
+    {
+
+        $down_file_name = 'User Tree Report';
+        $users = User::select("id","account_id","facebook_id","google_id","apple_id","created_at")->with('userTransDefault');
+
+        if ($request->month != '') {
+            $users = $users->whereMonth("created_at",$request->month);
+        }
+        else
+        {
+            $users = $users->whereMonth("created_at",Carbon::now()->month);
+        }
+        $users = $users->orderBy('created_at','desc');
+        // $users = $users->count();
+        $users = $users->get();
+        // echo $users; die();
+        // echo "<pre>"; print_r($users->toArray()); die();
+        if (!empty($users)) {
+            foreach ($users as $user) {
+                $total_like_send = Like::where("liker_id",$user->id)->count();
+                $total_like_received = Like::where("user_id",$user->id)->count();
+                $total_dislike_send = DisLike::where("dis_liker_id",$user->id)->count();
+                $total_dislike_received = DisLike::where("user_id",$user->id)->count();
+
+                $likes = DB::table('likes')
+                    ->join("likes as like", function ($q) {
+                        $q->on("likes.liker_id", "=", "like.user_id");
+                        $q->on("like.liker_id", "=", "likes.user_id");
+                    })
+                    ->join('users', function ($q) {
+                        $q->on('users.id', "=", "likes.user_id");
+                    })
+                    ->where("likes.liker_id", '=', $user->id)                //  To only get users details who likes current user
+                    ->where("likes.user_id", '!=', $user->id)
+                    ->count();
+
+                $is_signup_mode = "";
+                if (!empty($user->facebook_id) && $user->is_social_user == 'y') {
+                    $is_signup_mode = "Facebook";
+                }else if (!empty($user->google_id) && $user->is_social_user == 'y') {
+                    $is_signup_mode = "Google";
+                }else if (!empty($user->apple_id) && $user->is_social_user == 'y') {
+                    $is_signup_mode = "Apple";
+                }else {
+                    $is_signup_mode = "Phone";
+                }
+
+                $data[] = [
+                    'account_id' => $user->account_id ?? "N/A",
+                    'full_name' =>  $user->userTransDefault ? $user->userTransDefault->full_name : "N/A",
+                    'mode_of_registration' =>  $is_signup_mode,
+                    'created_at' => date('Y-m-d h:i A', strtotime($user->created_at)) ?? 'N/A',
+                    'send_total_like' => $total_like_send,
+                    'received_total_like' => $total_like_received,
+                    'send_total_dislikes' => $total_dislike_send,
+                    'received_total_dislikes' => $total_dislike_received,
+                    'total_matches' => $likes,
+                ];
+            }
+
+            if (!File::exists(public_path() . "/files")) {
+                File::makeDirectory(public_path() . "/files");
+            }
+
+            $filename = public_path('files/' . $down_file_name . ".csv");
+            $handle   = fopen($filename, 'w+');
+            fputcsv($handle, array(
+                'Account Id', 'Full Name', 'Mode of registration', 'Created Date', 'Send total like', 'Received total like', 'Send total dislikes', 'Received total dislikes', 'Total matches'
+            ));
+
+            foreach ($data as $row) {
+                fputcsv($handle, array(
+                    $row['account_id'], $row['full_name'], $row['mode_of_registration'], $row['created_at'], $row['send_total_like'], $row['received_total_like'], $row['send_total_dislikes'], $row['received_total_dislikes'], $row['total_matches'],
+                ));
+            }
+            fclose($handle);
+
+            $headers = array(
+                'Content-Type' => 'text/csv',
+            );
+
+            return Response::download($filename, $down_file_name . ".csv", $headers);
+        }
+        else
+        {
+            flash('Unable to generate user csv. Try again later')->error();
+        }
+
+        return redirect(route('admin.usertree.index'));
     }
 }

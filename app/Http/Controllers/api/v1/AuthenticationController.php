@@ -74,6 +74,9 @@ class AuthenticationController extends Controller
                 }
                 $traslate_data = [];
 
+                if (empty($user) && !empty($request->contact_no)) {
+                    $user = User::whereContactNo($request->contact_no)->first();
+                }
                 if (!empty($request->country_code)) {
                     $country = Country::wherePhonecode($request->country_code)->whereIsActive('y')->firstOrFail();
                     $country_id = $country->id;
