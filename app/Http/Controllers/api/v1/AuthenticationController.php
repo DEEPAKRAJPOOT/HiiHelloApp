@@ -74,6 +74,9 @@ class AuthenticationController extends Controller
                 }
                 $traslate_data = [];
 
+                if (empty($user) && !empty($request->contact_no)) {
+                    $user = User::whereContactNo($request->contact_no)->first();
+                }
                 if (!empty($request->country_code)) {
                     $country = Country::wherePhonecode($request->country_code)->whereIsActive('y')->firstOrFail();
                     $country_id = $country->id;
@@ -246,6 +249,7 @@ class AuthenticationController extends Controller
                     $apilogs->url = url()->current();
                     $apilogs->request = json_encode($request->all());
                     $apilogs->response = json_encode(new SignUpResource($user));
+                    // $apilogs->api_status = $this->response();
                     $apilogs->save();
 
                     return (new SignUpResource($user))
@@ -256,6 +260,8 @@ class AuthenticationController extends Controller
                                 'safe_image'    =>  $safe_image,                                
                             ]
                         ]);
+
+
                 } else {
                     $this->response['meta']['message']   = trans('api.profile_setuped_fail');
                     $this->response['meta']['safe_image']= $safe_image;                  

@@ -93,6 +93,9 @@
                         </select>
                     </td>
                     <td>
+                        <input type='text' id='profile_percentage' class="form-control" placeholder='profile percentage'>
+                    </td>
+                    <td>
                         <input type='button' class="btn btn-primary mr-1 ml-1" id="btn_search_filter" value="Search">
                     </td>
                     <td>
@@ -132,11 +135,13 @@
                     var from_date       = $("#search_fromdate").val();
                     var to_date         = $("#search_todate").val();
                     var gender_filter   = $("select[name=gender_filter] :selected").val();
+                    var profile_percentage = $("#profile_percentage").val();
                     // EN - Filter Params
 
                     data.from_date         = from_date;
                     data.to_date           = to_date;
                     data.gender_filter     = gender_filter;
+                    data.profile_percentage= profile_percentage;
                     data.flgPendingProfile = $(".getpendingprofile").is(':checked') ? 1 : 0;
                }                
             },
@@ -152,6 +157,8 @@
                 { data: 'contact_no' },
                 { data: 'email' },                
                 { data: 'city' },
+                { data: 'device_app_version' },
+                { data: 'lat_long' },
                 { data: 'active' },
                 { data: 'action'},
             ],
@@ -164,13 +171,15 @@
                 { targets: 4, title: 'Name', orderable: false },
                 { targets: 5, title: 'Gender', orderable: true },
                 { targets: 6, title: 'Created At', orderable: true },
-                { targets: 7, title: 'Profile Percentage', orderable: true },
-                { targets: 8, title: 'Contact Number', orderable: true },
+                { targets: 7, title: 'Percentage', orderable: true },
+                { targets: 8, title: 'Number', orderable: true },
                 { targets: 9, title: 'E-mail', orderable: true },                
                 { targets: 10, title: 'City', orderable: false },                
-                { targets: 11, title: 'Ban', orderable: false },
+                { targets: 11, title: 'Device/version', orderable: true },                
+                { targets: 12, title: 'Lat/Long', orderable: false },
+                { targets: 13, title: 'Ban', orderable: false },
                 // Action buttons
-                { targets: 12, title: 'Action',orderable: false },
+                { targets: 14, title: 'Action',orderable: false },
             ],
             order: [
                 [6, 'DESC']
@@ -192,7 +201,7 @@
     });
 
     $(document).on("click", "#btn_reset_filter", function () {
-        $("#search_fromdate,#search_todate,#gender_filter").val('');
+        $("#search_fromdate,#search_todate,#gender_filter,#profile_percentage").val('');
         oTable.draw();
     });
 

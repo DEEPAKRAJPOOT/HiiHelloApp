@@ -117,53 +117,53 @@ class LocationController extends Controller
      */
     public function destroy(Request $request, $custom_id)
     {
-        if(!empty($request->action) && $request->action == 'delete_all'){
-            $content = ['status'=>204, 'message'=>"something went wrong"];
-            $locations = Location::select('id')->whereIn('custom_id',explode(',',$request->ids))->get();
-            foreach($locations as $location){
-                $location->locationTranslations()->delete();
-                $location->delete();
-            }
-            // Location::whereIn('custom_id',explode(',',$request->ids))->delete();
-            $content['status']=200;
-            $content['message'] = "Location deleted successfully.";
-            $content['count'] = Location::all()->count();
-            return response()->json($content);
-        }else{
-            $location = Location::where('custom_id', $custom_id)->firstOrFail();
-            $location->locationTranslations()->delete();
-            $location->delete();
-            if(request()->ajax()){
-                $content = array('status'=>200, 'message'=>"Location deleted successfully.", 'count' => Location::all()->count());
-                return response()->json($content);
-            }else{
-                flash('Location deleted successfully.')->success();
-                return redirect()->route('admin.locations.index');
-            }
-        }
+        // if(!empty($request->action) && $request->action == 'delete_all'){
+        //     $content = ['status'=>204, 'message'=>"something went wrong"];
+        //     $locations = Location::select('id')->whereIn('custom_id',explode(',',$request->ids))->get();
+        //     foreach($locations as $location){
+        //         $location->locationTranslations()->delete();
+        //         $location->delete();
+        //     }
+        //     // Location::whereIn('custom_id',explode(',',$request->ids))->delete();
+        //     $content['status']=200;
+        //     $content['message'] = "Location deleted successfully.";
+        //     $content['count'] = Location::all()->count();
+        //     return response()->json($content);
+        // }else{
+        //     $location = Location::where('custom_id', $custom_id)->firstOrFail();
+        //     $location->locationTranslations()->delete();
+        //     $location->delete();
+        //     if(request()->ajax()){
+        //         $content = array('status'=>200, 'message'=>"Location deleted successfully.", 'count' => Location::all()->count());
+        //         return response()->json($content);
+        //     }else{
+        //         flash('Location deleted successfully.')->success();
+        //         return redirect()->route('admin.locations.index');
+        //     }
+        // }
+
+        return redirect()->route('admin.locations.index');
     }
 
     public function listing(Request $request)
     {
         extract($this->DTFilters($request->all()));
         $records = [];
-        $locations = Location::with('locationTransDefault')->orderBy($sort_column, $sort_order);
 
+        $locations = Location::select("locations.id as id","locations.custom_id as custom_id","locations.is_active as is_active","location_translations.location_id as location_id","location_translations.name as name","location_translations.state as state");
+        $locations = $locations->join("location_translations","location_translations.location_id","=","locations.id");
+        $locations = $locations->where('locations.is_active','y');
+        $locations = $locations->where('location_translations.locale','en');
         if ($search != '') {
-            $locations->where(function ($query) use ($search) {
-                $query->where('custom_id', 'like', "%{$search}%")
-                    ->orWhereHas('locationTranslations', function ($query) use ($search) {
-                        $query->where('name', 'like', "%{$search}%");
-                    });
-            });
+            $locations->where("location_translations.name","like",'%'.$search.'%');
+            $locations->orWhere("location_translations.state","like",'%'.$search.'%');
         }
-
         $count = $locations->count();
         $records['recordsTotal'] = $count;
         $records['recordsFiltered'] = $count;
         $records['data'] = [];
 
-        $locations = $locations->offset($offset)->limit($limit)->orderBy($sort_column, $sort_order);
+        $locations = $locations->offset($offset)->limit($limit)->orderBy("location_translations.name", "asc");
         $locations = $locations->get();
 
         foreach ($locations as $location) {
@@ -176,7 +176,8 @@ class LocationController extends Controller
 
             $records['data'][] = [
                 'id'            =>  $location->id,
-                'name'          =>  $location->locationTransDefault ? $location->locationTransDefault->name : "",
+                'name'          =>  $location->name ?? "",
+                'state'         =>  $location->state ?? "",
                 'active'        =>  view('admin.layouts.includes.switch', compact('params'))->render(),
                 'action'        =>  view('admin.layouts.includes.actions')->with(['custom_title' => 'Location', 'id' => $location->custom_id], $location)->render(),
                 'checkbox'      =>  view('admin.layouts.includes.checkbox')->with('id', $location->custom_id)->render(),
@@ -191,6 +192,7 @@ class LocationController extends Controller
         $location_reports = Location::select("locations.id as id","location_translations.name as name","location_translations.state as state",DB::raw("count(users.id) as total_users"))
                             ->join("users","users.location_id","=","locations.id")
                             ->join("location_translations","locations.id","=","location_translations.location_id")
+                            ->where("users.new_location_id","=",'y')
                             ->where("locations.is_active","=",'y')
                             ->where("location_translations.locale","=",'en')
                             ->groupBy('location_translations.location_id')

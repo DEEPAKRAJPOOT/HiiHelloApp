@@ -508,6 +508,40 @@ function user_match_data(user_id){
     }
 }
 
+function user_apilog_data(user_id){
+
+    var url = $(".usermatchmodel").attr('data-url');
+    if (url != '' && user_id != '') {
+        $.ajax({
+            url: url,
+            type: "POST",
+            dataType: "json",
+            data: {
+                _token: $("meta[name='csrf-token']").attr("content"),
+                user_id: user_id,
+            },
+            cache: false,
+            success: function (responce) {
+                var str =''; 
+                if (responce != '') {
+                    var req = JSON.parse(responce.request);
+                    str +='<tr><td>'+responce.account_id+'</td><td>'+responce.full_name+'</td><td>'+responce.created_at+'</td></tr>';
+                    str +='<tr><td>'+req.gender+'</td><td></td><td>'+req.birth_date+'</td></tr>';
+                    str +='<tr><td>'+req.gender+'</td><td></td><td>'+req.birth_date+'</td></tr>';
+                    str +='<tr><td>'+req.gender+'</td><td></td><td>'+req.birth_date+'</td></tr>';
+                    str +='<tr><td>'+req.gender+'</td><td></td><td>'+req.birth_date+'</td></tr>';
+                    $("#user_api_log").html(str);
+                }
+                else
+                {
+                    var nostr = '<tr>No data found..</tr>';
+                    $("#user_api_log").html(nostr);
+                }
+            },
+        });
+    }
+}
+
 function user_report_data(user_id){
 
     var url = $(".userreportmodel").attr('data-url');
