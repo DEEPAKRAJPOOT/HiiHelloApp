@@ -93,8 +93,7 @@
                                     </b></label>
                             </div>
                             <div class="mb-2">
-                                <label class="control-label"><span class="mendatory" style="font-size: 20px;"></span>Razor
-                                    Pay Order Id : <b>
+                                <label class="control-label"><span class="mendatory" style="font-size: 20px;"></span>Order Id : <b>
                                         @if ($tran->razorpay_order_id)
                                             {{ $tran->razorpay_order_id }}
                                         @else
@@ -137,6 +136,26 @@
                                         style="font-size: 20px;"></span>Transaction Date : <b>
                                         @if ($tran->created_at)
                                             {{ date('Y-m-d', strtotime($tran->created_at)) }}
+                                        @else
+                                            -
+                                        @endif
+                                    </b></label>
+                            </div>
+                            <div class="mb-2">
+                                <label class="control-label"><span class="mendatory"
+                                        style="font-size: 20px;"></span>Transaction Mode : <b>
+                                        @if ($tran->payment_type)
+                                            {{ $tran->payment_type }}
+                                        @else
+                                            -
+                                        @endif
+                                    </b></label>
+                            </div>
+                            <div class="mb-2">
+                                <label class="control-label"><span class="mendatory"
+                                        style="font-size: 20px;"></span>End Date : <b>
+                                        @if ($tran->subscription_end_date)
+                                            {{ date('Y-m-d', strtotime($tran->subscription_end_date)) }}
                                         @else
                                             -
                                         @endif

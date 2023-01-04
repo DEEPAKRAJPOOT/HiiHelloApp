@@ -40,6 +40,40 @@
             </div>
         </div>
         <div class="card-body">
+            {{-- Filter Start --}}
+            <table class="mb-5" align="center">                
+                <tr>
+                    <td>
+                        <span class="card-icon">
+                            <i class="fa fa-filter text-primary"></i>
+                        </span>
+                        <label>Filter:&nbsp;&nbsp;</label>
+                    </td>
+                    <td>                        
+                        <input type='date' id='search_fromdate' class="form-control" placeholder='From date' value="">
+                    </td>
+                    <td>
+                        <input type='date' id='search_todate' class="form-control" placeholder='To date' value="">
+                    </td>
+
+                    <td>
+                       <select class="form-control" name="search_status" id="search_status">
+                           <option value="">-- Select mode --</option>
+                           <option value="Google Play">Google Play</option>
+                           <option value="UPI">UPI</option>
+                           <option value="android">Android</option>
+                       </select>
+                    </td>
+                    
+                    <td>
+                        <input type='button' class="btn btn-primary mr-1 ml-1" id="btn_search_filter" value="Search">
+                    </td>
+                    <td>
+                        <a href="javascript:;" class="btn btn-warning" id="btn_reset_filter">Reset</a>
+                    </td>
+                </tr>
+            </table>
+            {{-- Filter End --}}
             {{--  Datatable Start  --}}
             <table class="table table-bordered table-hover table-checkable" id="subscription_pan_table" style="margin-top: 13px !important"></table>
             {{--  Datatable End  --}}
@@ -63,6 +97,20 @@
                 data: {
                     columnsDef: ['account_id','user_id', 'plan_id', 'razorpay_order_id','amount', 'status','action'],
                 },
+                data: function(data) {                    
+
+                    // ST - Filter Params
+                    var from_date       = $("#search_fromdate").val();
+                    var to_date         = $("#search_todate").val();  
+                    var search_status   = $("#search_status").val();  
+                        
+                    // EN - Filter Params
+
+                    data.from_date         = from_date;
+                    data.to_date           = to_date;                    
+                    data.search_status     = search_status;                    
+                    //data.flgPendingProfile = $(".getpendingprofile").is(':checked') ? 1 : 0;
+                },           
             },
             columns: [
                 { data: 'account_id' },
@@ -70,7 +118,9 @@
                 { data: 'plan_id' },
                 { data: 'razorpay_order_id' },
                 { data: 'amount' },
-                { data: 'status' },
+                { data: 'purchase_date' },
+                { data: 'original_purchase_date' },
+                { data: 'payment_type' },
                 { data: 'action', responsivePriority: -1 },
             ],
             columnDefs: [
@@ -78,15 +128,17 @@
                 { targets: 0, title: "Account Id", orderable: false },
                 { targets: 1, title: "User Name", orderable: false },
                 { targets: 2, title: 'Plan Name', orderable: true },
-                { targets: 3, title: 'RazorPay Id', orderable: false },
+                { targets: 3, title: 'Order Id', orderable: false },
                 { targets: 4, title: 'Amount', orderable: true },
-                { targets: 5, title: 'Status', orderable: false },
+                { targets: 5, title: 'Start Date', orderable: true },
+                { targets: 6, title: 'End Date', orderable: true },
+                { targets: 7, title: 'Mode', orderable: true },
                 // Action buttons
                 { targets: -1, title: 'Action',
                 orderable: false },
             ],
             order: [
-                [1, 'asc']
+                [5, 'DESC']
             ],
             lengthMenu: [
                 [10, 20, 50, 100],
@@ -94,6 +146,16 @@
             ],
             pageLength: 10,
         });
+    });
+
+    $(document).on("click", "#btn_search_filter", function () {
+        
+        oTable.draw();
+    });
+
+    $(document).on("click", "#btn_reset_filter", function () {
+        $("#search_fromdate,#search_todate,#search_status").val('');
+        oTable.draw();
     });
 </script>
 @endpush
