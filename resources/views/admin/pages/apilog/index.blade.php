@@ -152,7 +152,7 @@
             $('#apilog_table').DataTable().draw();
         });
          $(document).on("click", "#btn_reset_filter", function () {
-            $("#from_date,#to_date,#api_status").val('');
+            $("#search_fromdate,#search_todate,#api_status").val('');
             oTable.draw();
         });
 
