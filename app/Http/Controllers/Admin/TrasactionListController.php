@@ -37,13 +37,19 @@ class TrasactionListController extends Controller
     public function listing(Request $request)
     {
         extract($this->DTFilters($request->all()));
+
+        $from_date         = ($request->from_date) ? $request->from_date." 00:00:00" : "";
+        $to_date           = ($request->to_date) ? $request->to_date." 23:59:59" : "";
+        $search_status     = ($request->search_status) ? $request->search_status : "";
+
+
         $records = [];
         $transactions = Transaction::with(['subscriptionPlan', 'user', 'user.userTransDefault', 'subscriptionPlan.subscriptionPlanTranslation'])->orderBy($sort_column, $sort_order);
 
         if ($search != '') {
             $transactions->where(function ($query) use ($search, $transactions) {
                 $query->where('amount', 'like', "%{$search}%")
-                    ->orWhere('status', 'like', "%{$search}%")
+                    ->orWhere('payment_type', 'like', "%{$search}%")
                     ->orWhere('razorpay_order_id', 'like', "%{$search}%")
                     ->orWhereHas('user', function ($query) use ($search) {
                         $query->where('account_id', 'like', "%{$search}%");
@@ -57,11 +63,21 @@ class TrasactionListController extends Controller
             });
         }
 
+        // ST - Filter
+        if($from_date != "" && $to_date != "") {
+            $transactions = $transactions->whereBetween('transactions.purchase_date', [$from_date, $to_date]);
+        }
+
+        if($request->search_status != '') {
+            $transactions = $transactions->where('transactions.payment_type',$request->search_status);
+        }
+
         $count = $transactions->count();
         $records['recordsTotal'] = $count;
         $records['recordsFiltered'] = $count;
         $records['data'] = [];
 
+        $transactions = $transactions->where('transactions.status','success');
         $transactions = $transactions->offset($offset)->limit($limit)->orderBy($sort_column, $sort_order);
         $transactions = $transactions->get();
 
@@ -74,6 +90,9 @@ class TrasactionListController extends Controller
                 'razorpay_order_id' => $transaction->razorpay_order_id,
                 'amount' => $transaction->amount,
                 'status' => $transaction->status,
+                'payment_type' => isset($transaction->payment_type) && !empty($transaction->payment_type) ? $transaction->payment_type : "N/A",
+                'purchase_date' => isset($transaction->purchase_date) && !empty($transaction->purchase_date) ? date("d-m-Y",strtotime($transaction->purchase_date)) : "N/A",
+                'original_purchase_date' => isset($transaction->original_purchase_date) && !empty($transaction->original_purchase_date) ? date("d-m-Y",strtotime($transaction->original_purchase_date)) : "N/A",
                 'action' => view('admin.layouts.includes.actions')->with(['custom_title' => 'Subscriptions', 'id' => $transaction->custom_id], $transaction)->render(),
 
             ];
