@@ -28,9 +28,19 @@ class ApiLogController extends Controller
         $api_status        = ($request->api_status) ? $request->api_status : "";
 
         $records = [];
+
+        $apilogscount = ApiLogs::select("api_logs.*","api_logs.api_status as api_status","users.account_id as account_id","user_translations.full_name as full_name")
+                        ->leftJoin("users","api_logs.user_id","=","users.id")
+                        ->leftJoin("user_translations","users.id","=","user_translations.user_id"," and ","user_translations.locale","=","en")
+                        ->groupBy("api_logs.id")
+                        ->orderBy("api_logs.created_at","DESC")
+                        ->get();
+
+
         $apilogs = ApiLogs::select("api_logs.*","api_logs.api_status as api_status","users.account_id as account_id","user_translations.full_name as full_name")
                         ->leftJoin("users","api_logs.user_id","=","users.id")
-                        ->leftJoin("user_translations","users.id","=","user_translations.user_id"," and ","user_translations.locale","=","en");
+                        ->leftJoin("user_translations","users.id","=","user_translations.user_id"," and ","user_translations.locale","=","en")
+                        ->groupBy("api_logs.id");
 
         if ($search != '') {
             $apilogs->where(function ($query) use ($search) {
@@ -41,26 +51,21 @@ class ApiLogController extends Controller
         }
 
         // ST - Filter
-        if($from_date != "" && $to_date != "") {
-            $apilogs = $apilogs->whereBetween('api_logs.created_at', [$from_date, $to_date]);
+        if($from_date != '') {
+            $apilogs->whereBetween('api_logs.created_at', [$from_date, $to_date]);
         }
 
-        if($api_status != "") {
-            $apilogs = $apilogs->where('api_logs.api_status', $api_status);
+        if($api_status != '') {
+            $apilogs->where('api_logs.api_status', $api_status);
         }
 
-
-        $count = $apilogs->count();
-        $records['recordsTotal'] = $count;
-        $records['recordsFiltered'] = $count;
+        $records['recordsTotal'] = count($apilogscount);
+        $records['recordsFiltered'] = count($apilogscount);
         $records['data'] = [];
 
        
        
-        // $apilogs = $apilogs->where("user_translations.locale","en");
-        $apilogs = $apilogs->groupBy("api_logs.id");
         $apilogs = $apilogs->offset($offset)->limit($limit)->orderBy("api_logs.created_at",$sort_order);
-
         $apilogs = $apilogs->get();
 
         // echo "<pre>"; print_r($apilogs->toArray()); die();
@@ -97,11 +102,11 @@ class ApiLogController extends Controller
     public function csvDownload(Request $request)
     {
         $down_file_name = 'Api log report';
-        $apilogs    = ApiLogs::select("api_logs.*","users.account_id as account_id","user_translations.full_name as full_name")
-                        ->leftJoin("users","users.id","=","api_logs.user_id")
-                        ->leftJoin("user_translations","user_translations.user_id","=","api_logs.user_id")
-                        ->where("user_translations.locale","en")
-                        ->orderBy("created_at","DESC")
+        $apilogs = ApiLogs::select("api_logs.*","api_logs.api_status as api_status","users.account_id as account_id","user_translations.full_name as full_name")
+                        ->leftJoin("users","api_logs.user_id","=","users.id")
+                        ->leftJoin("user_translations","users.id","=","user_translations.user_id"," and ","user_translations.locale","=","en")
+                        ->groupBy("api_logs.id")
+                        ->orderBy("api_logs.created_at","DESC")
                         ->limit(10000);
 
         $apilogs = $apilogs->get();
