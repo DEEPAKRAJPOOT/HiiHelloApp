@@ -118,6 +118,7 @@ Route::group(['namespace' => 'Admin', 'middleware' => ['check_permit', 'revalida
 
 	/* transaction */
 	Route::get('transaction-lists/listing', 'TrasactionListController@listing')->name('transaction-lists.listing');
+	Route::get('transaction/filters', 'TrasactionListController@filters')->name('transaction.filters');
 	Route::resource('transaction-lists', 'TrasactionListController');
 
 	/* App Details */
@@ -179,6 +180,7 @@ Route::post('profile-reports/filters', 'Admin\ProfileReportController@filters')-
 Route::post('profilereports/get_user_report_data', 'Admin\ProfileReportController@get_user_report_data')->name('profilereports.get_user_report_data');
 // user translations table hindi language translate manualy
 Route::get('user-translations', 'Admin\PagesController@user_translations')->name('user.translations');
+
 // delete all location if user is not used 
 Route::get('deletelocation', 'Admin\PagesController@deletelocation')->name('user.deletelocation');
 Route::get('locationTranslations', 'UtilityController@locationTranslations');

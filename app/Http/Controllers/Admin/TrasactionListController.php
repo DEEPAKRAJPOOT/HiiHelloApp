@@ -99,6 +99,25 @@ class TrasactionListController extends Controller
         }
         return $records;
     }
+
+    public function filters(Request $request)
+    {
+        $google_play = 'Google Play';
+        $upi = 'UPI';
+        $IOS = 'IOS';
+
+        $total_google_play = Transaction::where("payment_type","LIKE","%{$google_play}%")->count();
+        $total_upi = Transaction::where("payment_type","LIKE","%{$upi}%")->count();
+        $total_ios = Transaction::where("payment_type","LIKE","%{$IOS}%")->count();
+
+        $records['total_google_play'] = number_format($total_google_play);
+        $records['total_upi'] = number_format($total_upi);
+        $records['total_ios'] = number_format($total_ios);
+
+        return $records;
+
+    }
+
     public function csvDownload(Request $request)
     {
         $down_file_name = 'Transactions';
