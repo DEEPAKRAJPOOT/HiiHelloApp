@@ -28,13 +28,33 @@
         </div>
         <div class="card-body">
             <table class="mb-5" align="center">
-            <tr style="display: inline-flex;">
+            <tr>
+                <td>
+                    <span class="card-icon">
+                        <i class="fa fa-filter text-primary"></i>
+                    </span>
+                    <label>Filter:&nbsp;&nbsp;</label>
+                </td>
                <td id="search_fromdate_td">
                   <input type='date' id='search_fromdate' class="form-control" placeholder='From date'>
                </td>
                <td id="search_todate_td">
                   <input type='date' id='search_todate' class="form-control" placeholder='To date'>
                </td>
+               <td id="search_todate_td">
+                  <select class="form-control" id="api_status">
+                      <option value="">-- Select status --</option>
+                      <option value="200">200</option>
+                      <option value="412">412</option>
+                  </select>
+               </td>
+               <!-- <td id="search_todate_td">
+                  <input type='text' id='account_id' class="form-control" placeholder='Account Id'>
+               </td>
+               <td>
+                    <input type="hidden" id="accountidto_downlode_url" value="{{ route('admin.apilog.csv-account-download') }}">
+                  <input type='button' class="btn btn-primary mr-1 ml-1" id="btn_downlode" value="Download">
+               </td> -->
                <td>
                   <input type='button' class="btn btn-primary mr-1 ml-1" id="btn_search" value="Search">
                </td>
@@ -102,10 +122,12 @@
                     // Read values
                     var from_date = $('#search_fromdate').val();
                     var to_date = $('#search_todate').val();
+                    var api_status = $('#api_status').val();
 
                     // Append to data
                     data.from_date = from_date;
                     data.to_date = to_date;
+                    data.api_status = api_status;
                 }
             },
             columns: [
@@ -113,15 +135,15 @@
                 { data: 'full_name' },
                 { data: 'created_at' },
                 { data: 'api_status' },
-                { data: 'action'},
+                // { data: 'action'},
             ],
             columnDefs: [
                 // Specify columns titles here...
                 { targets: 0, title: 'Account Id', orderable: false },
                 { targets: 1, title: 'Full Name', orderable: false },
                 { targets: 2, title: 'Created Date', orderable: true },
-                { targets: 3, title: 'Status Code', orderable: false },
-                { targets: 4, title: 'Action',orderable: false },
+                { targets: 3, title: 'Status Code', orderable: true },
+                // { targets: 4, title: 'Action',orderable: false },
             ],
             order: [
                 [2, 'DESC']
@@ -136,13 +158,41 @@
         $('#btn_search').click(function(){
             $('#apilog_table').DataTable().draw();
         });
-        $(document).on("click", "#btn_reset_filter", function () {
-            $("#search_fromdate,#search_todate").val('');
+         $(document).on("click", "#btn_reset_filter", function () {
+            $("#search_fromdate,#search_todate,#api_status,#account_id").val('');
             oTable.draw();
         });
 
     });
     
+</script>
+<script>
+$('#btn_downlode').click(function(){
+
+    var account_id = $("#account_id").val();
+    var accountidto_downlode_url     = $("#accountidto_downlode_url").val();
+    if (account_id != '' && accountidto_downlode_url != '') {
+        $.ajax({
+            url: accountidto_downlode_url,
+            type: "POST",
+            dataType: "json",
+            data: {
+                _token: $("meta[name='csrf-token']").attr("content"),
+                account_id: account_id,
+            },
+            cache: false,
+            beforeSend: function(){
+                $("#btn_downlode").val("processing..");
+            },
+            complete: function(){
+                $("#btn_downlode").val("Download");
+            },
+            success: function (result) {
+                
+            },
+        });
+    }
+});
 </script>
 
 
