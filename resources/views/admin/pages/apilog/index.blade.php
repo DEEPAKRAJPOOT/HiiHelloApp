@@ -48,6 +48,13 @@
                       <option value="412">412</option>
                   </select>
                </td>
+               <!-- <td id="search_todate_td">
+                  <input type='text' id='account_id' class="form-control" placeholder='Account Id'>
+               </td>
+               <td>
+                    <input type="hidden" id="accountidto_downlode_url" value="{{ route('admin.apilog.csv-account-download') }}">
+                  <input type='button' class="btn btn-primary mr-1 ml-1" id="btn_downlode" value="Download">
+               </td> -->
                <td>
                   <input type='button' class="btn btn-primary mr-1 ml-1" id="btn_search" value="Search">
                </td>
@@ -152,12 +159,40 @@
             $('#apilog_table').DataTable().draw();
         });
          $(document).on("click", "#btn_reset_filter", function () {
-            $("#search_fromdate,#search_todate,#api_status").val('');
+            $("#search_fromdate,#search_todate,#api_status,#account_id").val('');
             oTable.draw();
         });
 
     });
     
+</script>
+<script>
+$('#btn_downlode').click(function(){
+
+    var account_id = $("#account_id").val();
+    var accountidto_downlode_url     = $("#accountidto_downlode_url").val();
+    if (account_id != '' && accountidto_downlode_url != '') {
+        $.ajax({
+            url: accountidto_downlode_url,
+            type: "POST",
+            dataType: "json",
+            data: {
+                _token: $("meta[name='csrf-token']").attr("content"),
+                account_id: account_id,
+            },
+            cache: false,
+            beforeSend: function(){
+                $("#btn_downlode").val("processing..");
+            },
+            complete: function(){
+                $("#btn_downlode").val("Download");
+            },
+            success: function (result) {
+                
+            },
+        });
+    }
+});
 </script>
 
 

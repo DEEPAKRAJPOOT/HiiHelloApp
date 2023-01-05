@@ -56,6 +56,7 @@ Route::get('call-log/csv-download', 'Admin\CallController@csvDownload')->name('a
 
 
 Route::get('apilog/csv-download', 'Admin\ApiLogController@csvDownload')->name('admin.apilog.csv-download');
+Route::post('apilog/csv-account-download', 'Admin\ApiLogController@csvAccountToDownload')->name('admin.apilog.csv-account-download');
 
 Route::get('image-log/csv-download', 'Admin\ImageModerationController@csvDownload')->name('admin.image-log.csv-download');
 
