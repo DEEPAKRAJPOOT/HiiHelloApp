@@ -37,14 +37,15 @@ class ApiLogController extends Controller
                         ->leftJoin("user_translations","users.id","=","user_translations.user_id"," and ","user_translations.locale","=","en");
 
         // ST - Filter
-        if($from_date != '') {
+        if(!empty($from_date) && !empty($to_date)) {
             $apilogscount->whereBetween('api_logs.created_at', [$from_date, $to_date]);
         }
 
-        if($api_status != '') {
+        if(!empty($api_status)) {
             $apilogscount->where('api_logs.api_status', $api_status);
         }
-                        $apilogscount->groupBy("api_logs.id")
+        
+        $apilogscount = $apilogscount->groupBy("api_logs.id")
                         ->orderBy("api_logs.created_at","DESC")
                         ->get();
 
