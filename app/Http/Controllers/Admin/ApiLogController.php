@@ -7,7 +7,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Response;
 use App\Models\ApiLogs;
+use App\Models\User;
 use DB; 
+use Carbon\Carbon;
 
 class ApiLogController extends Controller
 {
@@ -84,21 +86,6 @@ class ApiLogController extends Controller
         return $records;
     }
 
-    // public function get_single_apilog_data(Request $request)
-    // {
-    //     $auth_id = $request->user_id;
-    //     $apilogs = array();
-    //     if (!empty($auth_id)) {
-    //         $apilogs   = ApiLogs::select("api_logs.*","users.account_id as account_id","user_translations.full_name as full_name")
-    //                     ->leftJoin("user_translations","user_translations.user_id","=","api_logs.user_id")
-    //                     ->leftJoin("users","users.id","=","api_logs.user_id")
-    //                     ->where("user_translations.locale","en")
-    //                     ->where("api_logs.id",$auth_id)
-    //                     ->first();
-    //     }
-    //     return $apilogs;
-    // }
-
     public function csvDownload(Request $request)
     {
         $down_file_name = 'Api log report';
@@ -106,9 +93,8 @@ class ApiLogController extends Controller
                         ->leftJoin("users","api_logs.user_id","=","users.id")
                         ->leftJoin("user_translations","users.id","=","user_translations.user_id"," and ","user_translations.locale","=","en")
                         ->groupBy("api_logs.id")
-                        ->orderBy("api_logs.created_at","DESC")
-                        ->limit(10000);
-
+                        ->whereBetween('api_logs.created_at',[Carbon::now()->startOfWeek(), Carbon::now()->endOfWeek()])
+                        ->orderBy("api_logs.created_at","DESC");
         $apilogs = $apilogs->get();
         if (!$apilogs->isEmpty()) {
             foreach ($apilogs as $log) {
@@ -149,5 +135,61 @@ class ApiLogController extends Controller
             flash('Unable to generate user csv. Try again later')->error();
         }
         return redirect(route('admin.apilog'));
+    }
+
+    public function csvAccountToDownload(Request $request)
+    {
+        if(!empty($request->account_id)){
+
+            $user_data = User::select('id')->where("account_id",$request->account_id)->first();
+            if (!empty($user_data)) {
+                $down_file_name = 'Api log report';
+                $apilogs = ApiLogs::select("api_logs.*","api_logs.api_status as api_status","users.account_id as account_id","user_translations.full_name as full_name")
+                                ->leftJoin("users","api_logs.user_id","=","users.id")
+                                ->leftJoin("user_translations","users.id","=","user_translations.user_id"," and ","user_translations.locale","=","en")
+                                ->groupBy("api_logs.id")
+                                ->where("api_logs.user_id",$user_data->id);
+                $apilogs = $apilogs->get();
+                // echo "<pre>"; print_r($apilogs->toArray()); die();
+                if (!$apilogs->isEmpty()) {
+                    foreach ($apilogs as $log) {
+                        $data[] = [
+                            'Account Id'            =>  $log->account_id ?? "",
+                            'Full Name'             =>  $log->full_name ?? "",
+                            'URL'                   =>  $log->url,
+                            'Request'               =>  $log->request ?? "",
+                            'Response'              =>  $log->response ?? "",
+                            'Status Code'           =>  $log->api_status ?? "",
+                            'Created At'            =>  $log->created_at ?? "",
+                        ];
+                    }
+
+                    if (!File::exists(public_path() . "/files")) {
+                        File::makeDirectory(public_path() . "/files");
+                    }
+
+                    $filename = public_path('files/' . $down_file_name . ".csv");
+                    $handle   = fopen($filename, 'w+');
+                    fputcsv($handle, array(
+                        'Account Id', 'Full Name', 'URL', 'Request', 'Response', 'Status Code', 'Created At'
+                    ));
+
+                    foreach ($data as $row) {
+                        fputcsv($handle, array(
+                            $row['Account Id'], $row['Full Name'], $row['URL'], $row['Request'], $row['Response'], $row['Status Code'], $row['Created At'],
+                        ));
+                    }
+                    fclose($handle);
+
+                    $headers = array(
+                        'Content-Type' => 'text/csv',
+                    );
+                    
+                    return Response::download($filename, $down_file_name . ".csv", $headers);
+                } else {
+                    return false;
+                }
+            }
+        }
     }
 }
