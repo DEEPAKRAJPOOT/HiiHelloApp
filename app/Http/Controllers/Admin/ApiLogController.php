@@ -31,10 +31,20 @@ class ApiLogController extends Controller
 
         $records = [];
 
+
         $apilogscount = ApiLogs::select("api_logs.*","api_logs.api_status as api_status","users.account_id as account_id","user_translations.full_name as full_name")
                         ->leftJoin("users","api_logs.user_id","=","users.id")
-                        ->leftJoin("user_translations","users.id","=","user_translations.user_id"," and ","user_translations.locale","=","en")
-                        ->groupBy("api_logs.id")
+                        ->leftJoin("user_translations","users.id","=","user_translations.user_id"," and ","user_translations.locale","=","en");
+
+        // ST - Filter
+        if($from_date != '') {
+            $apilogscount->whereBetween('api_logs.created_at', [$from_date, $to_date]);
+        }
+
+        if($api_status != '') {
+            $apilogscount->where('api_logs.api_status', $api_status);
+        }
+                        $apilogscount->groupBy("api_logs.id")
                         ->orderBy("api_logs.created_at","DESC")
                         ->get();
 
