@@ -28,41 +28,50 @@
         </div>
         <div class="card-body">
             <table class="mb-5" align="center">
-            <tr>
-                <td>
-                    <span class="card-icon">
-                        <i class="fa fa-filter text-primary"></i>
-                    </span>
-                    <label>Filter:&nbsp;&nbsp;</label>
-                </td>
-               <td id="search_fromdate_td">
-                  <input type='date' id='search_fromdate' class="form-control" placeholder='From date'>
-               </td>
-               <td id="search_todate_td">
-                  <input type='date' id='search_todate' class="form-control" placeholder='To date'>
-               </td>
-               <td id="search_todate_td">
-                  <select class="form-control" id="api_status">
-                      <option value="">-- Select status --</option>
-                      <option value="200">200</option>
-                      <option value="412">412</option>
-                  </select>
-               </td>
-               <!-- <td id="search_todate_td">
-                  <input type='text' id='account_id' class="form-control" placeholder='Account Id'>
-               </td>
-               <td>
-                    <input type="hidden" id="accountidto_downlode_url" value="{{ route('admin.apilog.csv-account-download') }}">
-                  <input type='button' class="btn btn-primary mr-1 ml-1" id="btn_downlode" value="Download">
-               </td> -->
-               <td>
-                  <input type='button' class="btn btn-primary mr-1 ml-1" id="btn_search" value="Search">
-               </td>
-               <td>
-                  <a href="javascript:;" class="btn btn-warning" id="btn_reset_filter">Reset</a>
-               </td>
-             </tr>
-           </table>
+                <tr>
+                    <td>
+                        <span class="card-icon">
+                            <i class="fa fa-filter text-primary"></i>
+                        </span>
+                        <label>Filter:&nbsp;&nbsp;</label>
+                    </td>
+                   <td id="search_fromdate_td">
+                      <input type='date' id='search_fromdate' class="form-control" placeholder='From date'>
+                   </td>
+                   <td id="search_todate_td">
+                      <input type='date' id='search_todate' class="form-control" placeholder='To date'>
+                   </td>
+                   <td id="search_todate_td">
+                      <select class="form-control" id="api_status">
+                          <option value="">-- Select status --</option>
+                          <option value="200">200</option>
+                          <option value="412">412</option>
+                      </select>
+                   </td>
+                   <td>
+                      <input type='button' class="btn btn-primary mr-1 ml-1" id="btn_search" value="Search">
+                   </td>
+                   <td>
+                      <a href="javascript:;" class="btn btn-warning" id="btn_reset_filter">Reset</a>
+                   </td>
+                 </tr>
+            </table>
+            <form action="{{ route('admin.apilog.csv-account-download') }}" method="POST">
+                 @csrf
+            <table class="mb-5" align="center">
+                <tr>
+                   <td id="search_todate_td">
+                      <input type='text' id="account_id" name="account_id" class="form-control" placeholder='Account Id'>
+                   </td>
+                   <td>
+                      <input type='submit' class="btn btn-primary mr-1 ml-1" id="btn_downlode" value="Download">
+                   </td>
+                   <td>
+                      <a href="javascript:;" class="btn btn-warning" id="btn_reset_filter">Reset</a>
+                   </td>
+                 </tr>
+            </table>
+            </form>
             {{-- Datatable Start --}}
             <table class="table table-bordered table-hover table-checkable" id="apilog_table"
                 style="margin-top: 13px !important"></table>
@@ -167,32 +176,32 @@
     
 </script>
 <script>
-$('#btn_downlode').click(function(){
+// $('#btn_downlode').click(function(){
 
-    var account_id = $("#account_id").val();
-    var accountidto_downlode_url     = $("#accountidto_downlode_url").val();
-    if (account_id != '' && accountidto_downlode_url != '') {
-        $.ajax({
-            url: accountidto_downlode_url,
-            type: "POST",
-            dataType: "json",
-            data: {
-                _token: $("meta[name='csrf-token']").attr("content"),
-                account_id: account_id,
-            },
-            cache: false,
-            beforeSend: function(){
-                $("#btn_downlode").val("processing..");
-            },
-            complete: function(){
-                $("#btn_downlode").val("Download");
-            },
-            success: function (result) {
+//     var account_id = $("#account_id").val();
+//     var accountidto_downlode_url     = $("#accountidto_downlode_url").val();
+//     if (account_id != '' && accountidto_downlode_url != '') {
+//         $.ajax({
+//             url: accountidto_downlode_url,
+//             type: "POST",
+//             dataType: "json",
+//             data: {
+//                 _token: $("meta[name='csrf-token']").attr("content"),
+//                 account_id: account_id,
+//             },
+//             cache: false,
+//             beforeSend: function(){
+//                 $("#btn_downlode").val("processing..");
+//             },
+//             complete: function(){
+//                 $("#btn_downlode").val("Download");
+//             },
+//             success: function (result) {
                 
-            },
-        });
-    }
-});
+//             },
+//         });
+//     }
+// });
 </script>
 
 
