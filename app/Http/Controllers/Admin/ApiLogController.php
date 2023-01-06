@@ -198,8 +198,9 @@ class ApiLogController extends Controller
                     
                     return Response::download($filename, $down_file_name . ".csv", $headers);
                 } else {
-                    return false;
+                    flash('Unable to generate user csv. Try again later')->error();
                 }
+                return redirect(route('admin.apilog'));
             }
         }
     }
