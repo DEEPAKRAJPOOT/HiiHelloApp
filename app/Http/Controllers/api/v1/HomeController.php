@@ -88,6 +88,7 @@ class HomeController extends Controller
                     $users = $users->with(['userDetails', 'interests.interest.interestTranslation', 'userTranslation', 'location.locationTranslation'])
                         ->where('id', '!=', $auth_id)
                         ->whereNotNull('profile_photo')
+                        ->whereNotNull('location_id')
                         ->whereIsActive('y');
 
                         if ($auth_interest != 'Both') {
