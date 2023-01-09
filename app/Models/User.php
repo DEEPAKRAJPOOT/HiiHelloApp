@@ -30,7 +30,7 @@ class User extends Authenticatable implements MustVerifyEmail, TranslatableContr
 
     protected $fillable = [
         'custom_id', 'account_id', 'email', 'country_code', 'contact_no', 'birth_date', 'gender',
-        'interest', 'country_id', 'location_id', 'profile_percentage', 'language_id', 'profile_photo', 'voice', 'voice_answer', 'password',
+        'interest', 'country_id', 'location_id', 'new_location_id', 'profile_percentage', 'language_id', 'latitude', 'longitude', 'profile_photo', 'voice', 'voice_answer', 'password',
         'swipe_count', 'like_count', 'match_count', 'chat_count',
         'is_social_user', 'is_trans_full_name', 'is_trans_about_me', 'is_trans_fav_movie', 
         'is_media_checked', 'is_subscribed', 'subscription_end_date',
@@ -44,7 +44,7 @@ class User extends Authenticatable implements MustVerifyEmail, TranslatableContr
         'verify_photo', 'verify_video', 'photo_suggestion', 'video_suggestion',
         'verify_photo_status', 'verify_video_status',
         'verify_status', 'email_verified_at', 'contact_verified_at', 'photo_verified_at', 'video_verified_at',
-        'reason_of_delete'
+        'reason_of_delete','app_delete','device_type','device_app_version'
     ];
     
     protected $translatedAttributes = ['full_name', 'about_me', 'fav_movie'];
@@ -191,11 +191,11 @@ class User extends Authenticatable implements MustVerifyEmail, TranslatableContr
 
     public function isNewMatchAllow(){
         $is_match_allow = true;
-        if($this->verify_status != "verified" 
-            && $this->gender != 'Female' 
-            && $this->subscription_end_date < \Carbon\Carbon::today()->format('Y-m-d')){
-            $is_match_allow = false;
-        }
+        // if($this->verify_status != "verified" 
+        //     && $this->gender != 'Female' 
+        //     && $this->subscription_end_date < \Carbon\Carbon::today()->format('Y-m-d')){
+        //     $is_match_allow = false;
+        // }
         return $is_match_allow;   
     }
 

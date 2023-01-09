@@ -231,7 +231,159 @@ $(function () {
             },
         });
     });
+
+    $(document).on("click", "#update_gender", function (e) {
+
+        e.preventDefault();
+        
+        var searchIDs       = [];
+        var searchAutoIDs   = [];
+
+        $(".dataTable tbody input[class='small-chk']:checked").each(
+            function () {
+                searchIDs.push($(this).val());
+                searchAutoIDs.push($(this).data('id'));
+            }
+        );
+
+        if (searchIDs.length == 0) {
+
+            Swal.fire({                
+                text: "Please select at least one checkbox.",
+                icon: "warning",
+                showConfirmButton: true,
+            });
+
+        } else {
+
+            $("#myModal #multi_user_id").val(searchIDs);
+            $("#myModal #multi_auto_user_id").val(searchAutoIDs);
+            $("#myModal").modal('show');
+        }
+    });
+
+    $(document).on("click", ".save_frm_gender", function (e) {
+
+        e.preventDefault();
+
+        $(".processing").show();
+        $(this).attr("disabled", true);        
+        var data               = $('#frm_gender').serializeArray();
+        var url                = $('#frm_gender').attr('action');
+        var multi_auto_user_id = $("#myModal #multi_auto_user_id").val();
+        var target_gender      = $("select[name=target_gender] :selected").val();
+
+        $.ajax({
+            url: url,
+            type: "post",
+            dataType: "json",
+            data: data,
+            cache: false,
+            success: function (success) {
+                console.log(success['message']);
+                toastr.success("Gender Changed!");
+                $("#myModal").modal('hide');
+                $(".save_frm_gender").attr("disabled", false);
+                $(".processing").hide();
+
+                var arr_id = multi_auto_user_id.split(",");
+                for(var index = 0; index < arr_id.length; index++) {                    
+                    $(".dynamic_gender_"+arr_id[index]).val(target_gender);
+                }
+
+                $(".dataTable tbody input[class='small-chk']:checked").each(function () {
+                    $(this).prop('checked', false);                    
+                    $(this).parent().parent().trigger("click");
+                });
+
+            },
+        });
+    });
+    
+    $(document).on("click", "#photo_verification", function (e) {
+
+        e.preventDefault();
+        
+        var searchIDs       = [];
+
+        $(".dataTable tbody input[class='small-chk']:checked").each(
+            function () {
+                searchIDs.push($(this).val());
+            }
+        );
+
+        if (searchIDs.length == 0) {
+
+            Swal.fire({                
+                text: "Please select at least one checkbox.",
+                icon: "warning",
+                showConfirmButton: true,
+            });
+
+        } else {
+
+            $("#myModalPhotoVerification #multi_user_id").val(searchIDs);
+            $("#myModalPhotoVerification").modal('show');
+        }
+    });
+
+    $(document).on("click", ".save_frm_photo_verification", function (e) {
+
+        e.preventDefault();
+        $(".processing").show();
+        $(this).attr("disabled", true);
+        var data    = $('#frm_photo_verification').serializeArray();
+        var url     = $('#frm_photo_verification').attr('action');
+
+        $.ajax({
+            url: url,
+            type: "post",
+            dataType: "json",
+            data: data,
+            cache: false,
+            success: function (success) {                
+                
+                toastr.success("Photo verification done!");
+
+                $("#myModalPhotoVerification").modal('hide');
+                $(".save_frm_photo_verification").attr("disabled", false);
+                $(".processing").hide();
+
+                var table = $('#users_table').DataTable();
+                table.ajax.reload(null, false);
+            },
+        });
+    });
 });
+
+
+$(document).on("click", ".my_profile_image", function (e) {
+// Get the modal
+
+var user_id = $(this).attr('data-id');
+
+var modal = document.getElementById("myimageModal");
+
+// Get the image and insert it inside the modal - use its "alt" text as a caption
+
+var modalImg1 = document.getElementById("img01");
+var modalImg2 = document.getElementById("img02");
+
+
+modal.style.display = "block";
+modalImg1.src = $('#1photo_'+user_id).attr('src');
+modalImg2.src = $('#2photo_'+user_id).attr('src');
+
+        
+});
+
+
+$(document).on("click", ".close", function (e) {
+    var modal = document.getElementById("myimageModal");
+      modal.style.display = "none";
+});
+
+
 function getStatusText(code) {
     sText = "";
     if (code !== undefined) {
@@ -317,3 +469,107 @@ function addOverlay(){
 }
 
 function removeOverlay(){$('#overlayDocument').remove();}
+
+function user_match_data(user_id){
+
+    var type = $("#type").val();
+    var from_date = $('#search_fromdate').val();
+    var to_date = $('#search_todate').val();
+    var url = $(".usermatchmodel").attr('data-url');
+    if (url != '' && user_id != '') {
+        $.ajax({
+            url: url,
+            type: "POST",
+            dataType: "json",
+            data: {
+                _token: $("meta[name='csrf-token']").attr("content"),
+                user_id: user_id,
+                filter_types: type,
+                from_date: from_date,
+                to_date: to_date,
+            },
+            cache: false,
+            success: function (responce) {
+                // console.log(responce.length);
+                var str =''; 
+                if (responce != '' && responce.length > 0) {
+                    $.each(responce, function(key,value ) {
+                        str +='<tr><td>'+value.full_name+'</td><td>'+value.gender+'</td><td>'+value.created_at+'</td></tr>';
+                    });
+                    $("#user_match_table_body").html(str);
+                }
+                else
+                {
+                    var nostr = '<tr>No data found..</tr>';
+                    $("#user_match_table_body").html(nostr);
+                }
+            },
+        });
+    }
+}
+
+function user_apilog_data(user_id){
+
+    var url = $(".usermatchmodel").attr('data-url');
+    if (url != '' && user_id != '') {
+        $.ajax({
+            url: url,
+            type: "POST",
+            dataType: "json",
+            data: {
+                _token: $("meta[name='csrf-token']").attr("content"),
+                user_id: user_id,
+            },
+            cache: false,
+            success: function (responce) {
+                var str =''; 
+                if (responce != '') {
+                    var req = JSON.parse(responce.request);
+                    str +='<tr><td>'+responce.account_id+'</td><td>'+responce.full_name+'</td><td>'+responce.created_at+'</td></tr>';
+                    str +='<tr><td>'+req.gender+'</td><td></td><td>'+req.birth_date+'</td></tr>';
+                    str +='<tr><td>'+req.gender+'</td><td></td><td>'+req.birth_date+'</td></tr>';
+                    str +='<tr><td>'+req.gender+'</td><td></td><td>'+req.birth_date+'</td></tr>';
+                    str +='<tr><td>'+req.gender+'</td><td></td><td>'+req.birth_date+'</td></tr>';
+                    $("#user_api_log").html(str);
+                }
+                else
+                {
+                    var nostr = '<tr>No data found..</tr>';
+                    $("#user_api_log").html(nostr);
+                }
+            },
+        });
+    }
+}
+
+function user_report_data(user_id){
+
+    var url = $(".userreportmodel").attr('data-url');
+    if (url != '' && user_id != '') {
+        $.ajax({
+            url: url,
+            type: "POST",
+            dataType: "json",
+            data: {
+                _token: $("meta[name='csrf-token']").attr("content"),
+                user_id: user_id,
+            },
+            cache: false,
+            success: function (responce) {
+                // console.log(responce.length);
+                var str =''; 
+                if (responce != '' && responce.length > 0) {
+                    $.each(responce, function(key,value ) {
+                        str +='<tr><td>'+value.full_name+'</td><td>'+value.gender+'</td><td>'+value.message+'</td><td>'+value.created_at+'</td></tr>';
+                    });
+                    $("#user_profile_report_table_body").html(str);
+                }
+                else
+                {
+                    var nostr = '<tr>No data found..</tr>';
+                    $("#user_profile_report_table_body").html(nostr);
+                }
+            },
+        });
+    }
+}

@@ -28,6 +28,7 @@ Route::get('/cache', function () {
 });
 
 
+
 Auth::routes(['register' => false, 'login' => false]);
 
 // Twilio Voice Response
@@ -53,6 +54,19 @@ Route::get('transaction/csv-download', 'Admin\TrasactionListController@csvDownlo
 Route::get('profile-report/csv-download', 'Admin\ProfileReportController@csvDownload')->name('admin.profile-report.csv-download');
 Route::get('call-log/csv-download', 'Admin\CallController@csvDownload')->name('admin.call-log.csv-download');
 
+
+Route::get('apilog/csv-download', 'Admin\ApiLogController@csvDownload')->name('admin.apilog.csv-download');
+Route::post('apilog/csv-account-download', 'Admin\ApiLogController@csvAccountToDownload')->name('admin.apilog.csv-account-download');
+
+Route::get('image-log/csv-download', 'Admin\ImageModerationController@csvDownload')->name('admin.image-log.csv-download');
+
+Route::get('user-tree/csv-download', 'Admin\UserTreeController@csvDownload')->name('admin.user-tree.csv-download');
+
+
+Route::get('location/csv-download', 'Admin\LocationController@csvDownload')->name('admin.location.csv-download');
+// user data with location data csv downlode
+Route::get('location/user-location-csv-download', 'Admin\LocationController@userlocationcsvDownload')->name('admin.location.user-location-csv-download');
+Route::get('location/user-not-location-csv-download', 'Admin\LocationController@usernotlocationcsvDownload')->name('admin.location.user-not-location-csv-download');
 /* CMS Pages */
   Route::get('about-us/{device?}', 'FrontendPagesController@about')->name('about.us');
   Route::get('terms-and-conditions/{device?}', 'FrontendPagesController@terms')->name('terms');

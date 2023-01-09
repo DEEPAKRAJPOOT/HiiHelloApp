@@ -48,7 +48,7 @@ jobs:
                       cd  /var/www/hihelloapp.com 
                       git reset --hard HEAD 
                       git pull origin dev-branch  && git checkout  dev-branch
-                      php artisan optimize:clear
+                      sudo php artisan optimize:clear
                       php artisan config:clear
                       php artisan route:clear
                       php artisan view:clear
@@ -71,7 +71,7 @@ jobs:
                       cd  /var/www/hihelloapp.com 
                       git reset --hard HEAD 
                       git pull origin dev-branch  && git checkout  dev-branch
-                      php artisan optimize:clear
+                      sudo php artisan optimize:clear
                       php artisan config:clear
                       php artisan route:clear 
                       php artisan view:clear

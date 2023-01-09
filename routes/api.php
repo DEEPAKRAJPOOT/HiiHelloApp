@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Middleware\CheckApiLanguage;
 use App\Http\Controllers\api\v1\ { AuthenticationController, GeneralController, UserController, LikeController, TwillioController, ChatController, MatchController, SearchController, BlockController, VerificationController, ProfileController, DiscoveryController, FilterController, HomeController, PaymentController, SubscriptionController };
+use App\Http\Controllers\api\v2\Authenticationv2Controller;
 
 /*
 |--------------------------------------------------------------------------
@@ -64,6 +65,9 @@ Route::group(['namespace' => 'v1', 'prefix' => 'v1'], function () {
     
     // Send Chat Notification
     Route::post('chat/send-push/{chatmessage}/{message?}', [ChatController::class,'sendChatPush'])->name('chat.send-push');
+
+    // Third Party
+    Route::post('image/aws_rekognition_check', [GeneralController::class,'checkAwsRekognitionImageModeration'])->name('api.image.aws-moderation');
 });
 
 Route::group(['namespace' => 'v1', 'prefix' => 'v1', 'middleware' => ['auth:sanctum','checkapiuser']], function () {
@@ -164,4 +168,10 @@ Route::group(['namespace' => 'v1', 'prefix' => 'v1', 'middleware' => ['auth:sanc
     Route::post('/twillio/create-api-key',[TwillioController::class,'createApiKey'])->name('api.twillio.create-api-key');
     Route::post('/twillio/outgoing-app-sid',[TwillioController::class,'getOutgoingAppSid'])->name('api.twillio.outgoing-app-sid');
     */
+});
+
+// // v2 apis
+Route::group(['namespace' => 'v2', 'prefix' => 'v2'], function () {
+    // Authentication
+    Route::post('social/login', [Authenticationv2Controller::class,'social_login'])->name('api.social_login');
 });

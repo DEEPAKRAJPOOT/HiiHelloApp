@@ -327,8 +327,21 @@ Breadcrumbs::register('dashboard', function ($breadcrumbs) {
 		$breadcrumbs->parent('cms_list');
 		$breadcrumbs->push('Edit CMS Page', route('admin.pages.edit', $id));
 	});
-//site configuartion
+	//site configuartion
 	Breadcrumbs::register('site_setting', function ($breadcrumbs) {
 		$breadcrumbs->parent('dashboard');
 		$breadcrumbs->push('Site Configuration', route('admin.settings.index'));
+	});
+
+	//site configuartion
+	Breadcrumbs::register('usertree', function ($breadcrumbs) {
+		$breadcrumbs->parent('dashboard');
+		$breadcrumbs->push('User Tree', route('admin.usertree'));
+	});
+
+	// Image Logs ------------------------------------------------------------------
+	Breadcrumbs::register('image_log_list', function($breadcrumbs)
+	{
+		$breadcrumbs->parent('dashboard');
+		$breadcrumbs->push('Image Moderation Logs', route('admin.image-logs.listing'));
 	});

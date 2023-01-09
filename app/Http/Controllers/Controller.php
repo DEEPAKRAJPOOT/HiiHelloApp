@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Response;
 use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
+use App\Models\ApiLogs;
 
 class Controller extends BaseController
 {
@@ -213,6 +214,15 @@ class Controller extends BaseController
                 }
                 $subscription_end_date = Auth::user()->subscription_end_date;
             }
+
+            // store api request and responce
+            $apilogs = new ApiLogs();
+            $apilogs->user_id = 0;
+            $apilogs->url = url()->current();
+            $apilogs->request = json_encode($fields);
+            $apilogs->response = $r_message;
+            $apilogs->api_status = $this->status;
+            $apilogs->save();
 
             $this->response['meta']['message'] = $r_message;
             $this->response['meta']['url'] = url()->current();

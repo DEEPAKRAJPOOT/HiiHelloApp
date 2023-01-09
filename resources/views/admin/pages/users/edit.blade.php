@@ -35,8 +35,8 @@
 
                 {{-- Country Code --}}
                 <div class="form-group">
-                    <label for="country_code">{!!$mend_sign!!}Country Code</label>
-                    <select type="text" class="form-control @error('country_code') is-invalid @enderror" id="country_code" name="country_code" spellcheck="false" tabindex="0" />
+                    <label for="country_code">Country Code</label>
+                    <select type="text" class="form-control @error('country_code') @enderror" id="country_code" name="country_code" spellcheck="false" tabindex="0" />
                         <option value="">Select Country Code</option>
                         @foreach($countries as $country)
                             <option {{ $country->id == $user->country_id ? 'selected=selected' : '' }} value="{{ $country->phonecode }}">{{ $country->phonecode }}</option> 
@@ -51,8 +51,8 @@
 
                 {{-- Contact Number --}}
                 <div class="form-group">
-                    <label for="contact_no">{!!$mend_sign!!}Contact Number</label>
-                    <input type="contact_no" class="form-control @error('contact_no') is-invalid @enderror" id="contact_no" name="contact_no" value="{{ old('contact_no') != null ? old('contact_no') : $user->contact_no }}" placeholder="Enter contact number" autocomplete="contact_no" spellcheck="false" tabindex="0" />
+                    <label for="contact_no">Contact Number</label>
+                    <input type="contact_no" class="form-control @error('contact_no') @enderror" id="contact_no" name="contact_no" value="{{ old('contact_no') != null ? old('contact_no') : $user->contact_no }}" placeholder="Enter contact number" autocomplete="contact_no" spellcheck="false" tabindex="0" />
                     @if ($errors->has('contact_no'))
                         <span class="text-danger">
                             <strong class="form-text">{{ $errors->first('contact_no') }}</strong>
@@ -140,22 +140,35 @@
                     @endif
                 </div>
 
-                {{-- Location --}}
-                <div class="form-group">
-                    <label for="location">{!!$mend_sign!!}Location</label>
-                    <select type="text" class="form-control @error('location') is-invalid @enderror" id="location" name="location" spellcheck="false" tabindex="0" />
-                        <option value="">Select Location</option>
-                        @foreach($locations as $location)
-                            @if($location->locationTransDefault)
-                                <option {{ $location->id == $user->location_id ? 'selected=selected' : '' }} value="{{ $location->id }}">{{ $location->locationTransDefault->name }}</option> 
-                            @endif
-                        @endforeach
-                    </select>
-                    @if ($errors->has('location'))
-                        <span class="text-danger">
-                            <strong class="form-text">{{ $errors->first('location') }}</strong>
-                        </span>
-                    @endif
+                <div class="row">
+                    {{-- Location --}}
+                   <div class="form-group col-md-4">
+                        <label for="location">{!!$mend_sign!!}Location</label>
+                        <select type="text" class="form-control @error('location') is-invalid @enderror" id="location" name="location" spellcheck="false" tabindex="0" disabled/>
+                            <option value="">Select Location</option>
+                            @foreach($locations as $location)
+                                @if($location->locationTransDefault)
+                                    <option {{ $location->id == $user->location_id ? 'selected=selected' : '' }} value="{{ $location->id }}">{{ $location->locationTransDefault->name }}</option> 
+                                @endif
+                            @endforeach
+                        </select>
+                        @if ($errors->has('location'))
+                            <span class="text-danger">
+                                <strong class="form-text">{{ $errors->first('location') }}</strong>
+                            </span>
+                        @endif
+                    </div>
+
+                    {{-- Latitude --}}
+                    <div class="form-group col-md-4">
+                        <label for="location">Latitude</label>
+                        <input type="text" class="form-control @error('latitude') is-invalid @enderror" id="latitude" name="latitude" value="{{ old('latitude') != null ? old('latitude') : $user->latitude }}" placeholder="Enter latitude" autocomplete="latitude" spellcheck="false" tabindex="0" />
+                    </div>
+                    {{-- longitude --}}
+                    <div class="form-group col-md-4">
+                        <label for="location">Longitude</label>
+                        <input type="text" class="form-control @error('longitude') is-invalid @enderror" id="longitude" name="longitude" value="{{ old('longitude') != null ? old('longitude') : $user->longitude }}" placeholder="Enter longitude" autocomplete="longitude" spellcheck="false" tabindex="0" />
+                    </div>
                 </div>
 
                 {{-- Language --}}
@@ -831,7 +844,7 @@
                 </div>
 
                 {{-- Video Verification Status --}}
-                <div class="form-group">
+                <!-- <div class="form-group">
                     <label for="verify_video_status">{!!$mend_sign!!} Video Verification Status:</label>
                     <select type="text"class="form-control" 
                     id="verify_video_status" name="verify_video_status" value="@if(old('verify_video_status')){{ old('verify_video_status') }}@else{{ $user->verify_video_status }}@endif"
@@ -858,6 +871,27 @@
                     @if ($errors->has('verify_video_status'))
                         <span class="help-block">
                             <strong class="form-text">{{ $errors->first('verify_video_status') }}</strong>
+                        </span>
+                    @endif
+                </div> -->
+
+                {{-- Email Verification Status --}}
+                <div class="form-group">
+                    <label for="verify_email_send">Email Verification Status:</label>
+                    <select type="text"class="form-control" 
+                    id="verify_email_send" name="verify_email_send" value="@if(old('verify_email_send')){{ old('verify_email_send') }}@else{{ $user->verify_email_send }}@endif"
+                    placeholder="Select Verification Status" spellcheck="false" autocapitalize="sentences" tabindex="0" autofocus />
+                            <option value="y" @if($user->verify_email_send == 'y') selected @endif>Yes</option>
+                            <option value="n" @if($user->verify_email_send == 'n') selected @endif>No</option>
+                    </select>
+                    @if ($errors->has('verify_email_send'))
+                        <span class="help-block">
+                            <strong class="form-text">{{ $errors->first('verify_email_send') }}</strong>
+                        </span>
+                    @endif
+                    @if ($user->verify_email_send == 'y')
+                        <span class="help-block">
+                            <strong class="form-text">Email Verification at : {{ $user->email_verified_at }}</strong>
                         </span>
                     @endif
                 </div>
@@ -922,7 +956,7 @@
                                 <option value="-1" selected>No Plan</option>          
                         @endif                                    
                         @foreach($subscription_plans as $plan)
-                        <option  <?php if($user_active_plan_id==$plan->id){ echo " selected=selected"; }  ?> value="{{ $plan->id }}">{{ $plan->name }}</option>
+                        <option  <?php if($user_active_plan_id==$plan->subscription_plan_id){ echo " selected=selected"; }  ?> value="{{ $plan->subscription_plan_id  }}">{{ $plan->name }}</option>
                         @endforeach                       
                           
                     </select>                    
@@ -987,11 +1021,11 @@ $(document).ready(function () {
                 valid_email: true,
             },
             country_code: {
-                required: true,
+                required: false,
                 not_empty: true,
             },
             contact_no: {
-                required: true,
+                required: false,
                 not_empty: true,
                 maxlength: 16,
                 minlength: 6,

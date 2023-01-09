@@ -8,8 +8,9 @@ use App\Http\Resources\v1\{UserProfile, LoginResource, SignUpResource};
 use Illuminate\Database\Eloquent\{ModelNotFoundException};
 use Illuminate\Support\Facades\{Storage, Auth, Hash};
 use App\Http\Requests\Api\Authentication\{LoginRequest, RegisterRequest, SocialLoginRequest};
-use App\Models\{User, Country, UserDetail, Location, Interest, UserInterest, Language, ProfileDetail, DeviceToken, Subscription, SubscriptionPlan};
+use App\Models\{User, Country, UserDetail, Location, Interest, UserInterest, Language, ProfileDetail, DeviceToken, Subscription, SubscriptionPlan,LocationTranslation,ApiLogs,ImageModerationLog};
 use Illuminate\Support\Str;
+use DB;
 
 class AuthenticationController extends Controller
 {
@@ -65,52 +66,82 @@ class AuthenticationController extends Controller
         if ($this->apiValidator($request->all(), $registerRequest->rules())) {
             try {
                 $user = $this->getAuthUser();
-                $country_id = $location_id = $language_id = NULL;
+
+                $country_id = $location_id = $language_id = $device_type = $device_app_version = NULL;
                 $full_name = $request->first_name . ' ' . $request->last_name;
                 if ($request->language == 'en') {
                     $full_name = Str::title($full_name);
                 }
                 $traslate_data = [];
 
+                if (empty($user) && !empty($request->contact_no)) {
+                    $user = User::whereContactNo($request->contact_no)->first();
+                }
                 if (!empty($request->country_code)) {
                     $country = Country::wherePhonecode($request->country_code)->whereIsActive('y')->firstOrFail();
                     $country_id = $country->id;
                 }
-                if (!empty($request->location)) {
-                    $location = Location::whereCustomId($request->location)->whereIsActive('y')->firstOrFail();
-                    $location_id = $location->id;
+                if (!empty($request->latitude) && !empty($request->longitude)) {
+                    $location_id = $this->get_user_location($request->latitude,$request->longitude);
+                    $new_location_id = 'y';
+                }
+                else
+                {
+                    $new_location_id = 'n';
                 }
                 if (!empty($request->language)) {
                     $language = Language::whereLangCode($request->language)->whereIsActive('y')->firstOrFail();
                     $language_id = $language->id;
                 }
+                if (!empty($request->device_type)) {
+                    $device_type = $request->device_type;
+                }
+                if (!empty($request->device_app_version)) {
+                    $device_app_version = $request->device_app_version;
+                }
                 if (empty($user) && !empty($request->email)) {
                     $user = User::whereEmail($request->email)->first();
                 }
-
+                if (!empty($request->email)) {
+                    $is_social_user = 'y';
+                }
+                else
+                {
+                    $is_social_user = 'n';
+                }
+                // echo "<pre>"; print_r($request->all()); die();
                 if (!empty($user)) {
                     $user->fill($request->all());
                     $user->country_id = $country_id;
-                    $user->location_id = $location_id;
-                    $user->discover_location_id = $location_id;
+                    $user->location_id = isset($location_id) ? $location_id : null;
+                    $user->discover_location_id = isset($location_id) ? $location_id : null;
                     $user->language_id = $language_id;
                 } else {
-                    $user = User::updateOrCreate([
-                        'country_code'          =>  $request->country_code ?? NULL,
-                        'contact_no'            =>  $request->contact_no ?? NULL,
-                    ], [
+                    $user = User::create([
                         'custom_id'             =>  getUniqueString('users'),
+                        'account_id'            =>  Str::slug(substr($full_name, 0, 4), "_") . '_' . time(),
                         'birth_date'            =>  $request->birth_date ?? NULL,
                         'gender'                =>  $request->gender ?? NULL,
                         'interest'              =>  $request->interest ?? NULL,
                         'country_id'            =>  $country_id ?? NULL,
+                        'country_code'          =>  $request->country_code ?? NULL,
+                        'contact_no'            =>  $request->contact_no ?? NULL,
+                        'email'                 =>  isset($request->email) ? $request->email : NULL,
                         'location_id'           =>  $location_id ?? NULL,
                         'discover_location_id'  =>  $location_id ?? NULL,
+                        'new_location_id'       =>  $new_location_id,
                         'language_id'           =>  $language_id ?? NULL,
+                        'is_social_user'        =>  isset($request->is_social_user) ? $request->is_social_user : $is_social_user,
+                        'google_id'             =>  isset($request->google_id) ? $request->google_id : NULL,
+                        'apple_id'              =>  isset($request->apple_id) ? $request->apple_id : NULL,
+                        'facebook_id'           =>  isset($request->facebook_id) ? $request->facebook_id : NULL,
+                        'device_type'           =>  $device_type ?? NULL,
+                        'device_app_version'    =>  $device_app_version ?? NULL,
                         'star_sign_id'          =>  $request->star_sign_id ?? NULL,
                         'password'              =>  Hash::make(config('utility.default_password')),
                     ]);
                 }
+                // echo "<pre>"; print_r($user); die();
 
                 if (!empty($full_name)) {
                     $language_codes = Language::pluck('lang_code')->toArray();
@@ -120,9 +151,9 @@ class AuthenticationController extends Controller
                     $user->update($traslate_data);
 
                     // Store Account Id
-                    if (!empty($request->language) && $request->language == 'en') {
-                        $user->account_id = Str::slug(substr($full_name, 0, 4), "_") . '_' . time();
-                    }
+                    // if (!empty($request->language) && $request->language == 'en') {
+                    //     $user->account_id = Str::slug(substr($full_name, 0, 4), "_") . '_' . time();
+                    // }
                     $user->is_trans_full_name = 'n';
                 }
 
@@ -136,19 +167,71 @@ class AuthenticationController extends Controller
                     $user->sendWelcomeSms(); // Send Welcome SMS
                 }
 
+                $safe_image = "true";
+
                 if (!empty($request->profile_photo)) {
+                    
                     if (!empty($user->profile_photo)) {
                         if (Storage::exists($user->profile_photo)) {
                             Storage::delete($user->profile_photo);
                         }
                     }
-                    $path = $request->file('profile_photo')->store('users/profile_photo');
-                    $user->profile_photo = $path;
-                    $user->is_media_checked = 'n';
+                    ///CHECK FOR AWS REKOGNIZTION START
+                    $awsImgResultArr = checkAwsImageModeration($request,"profile_photo");
+
+                    if(count($awsImgResultArr) > 0)
+                    {
+                        if($awsImgResultArr["is_safe_image"]==true) 
+                        {
+                            $path = $request->file('profile_photo')->store('users/profile_photo');
+                            $user->profile_photo = $path;
+                            $user->is_media_checked = 'n';
+                        }   
+                        else
+                        {
+                            $user->profile_photo = NULL;
+                            $user->is_media_checked = 'n';
+                            $invalid_image_uploaded = true;
+                            $safe_image = "false";                            
+                        }  
+
+                        //INSERT IN TO IMAGE MODERATIO LOG START
+                        if($awsImgResultArr["is_safe_image"]==true) 
+                            $is_approved = 1;
+                        else
+                            $is_approved = 0;
+
+                        $image_type = "profile_photo";  
+                        $message = $awsImgResultArr["log_message"];                        
+                        $total_face_detected = $awsImgResultArr["total_face_detected"];                        
+                        
+                        $response_data = $awsImgResultArr["image_moderation_response"];
+                        $request_data = $awsImgResultArr["image_moderation_request"];
+
+                        
+                        $endpoint_url = url()->current();
+
+
+                        ImageModerationLog::Create([
+                            'user_id'             => $user->id,
+                            'is_approved'         => $is_approved,
+                            'request'             => $request_data,
+                            'response'            => $response_data,
+                            'total_face_detected' => $total_face_detected,
+                            'message'             => $message,
+                            'image_type'          => $image_type,
+                            'endpoint_url'        => $endpoint_url,
+                        ]);    
+
+                        //INSERT IN TO IMAGE MODERATIO LOG END
+
+                    }                    
+                    //CHECK FOR AWS REKOGNIZTION END
                 }
 
                 $user->latitude = $request->latitude;
                 $user->longitude = $request->longitude;
+                $user->setprofile_api_run = 'y';
 
                 // Set Default Discover
                 $user->discover_distance    =   config('utility.profile.detail.discover_distance');
@@ -159,15 +242,29 @@ class AuthenticationController extends Controller
                     $user = User::with(['userTranslation', 'interests', 'userDetails', 'location.locationTranslation', 'language'])
                         ->whereId($user->id)->firstOrFail();
                     Auth::login($user);
+
+                    // store api request and responce
+                    $apilogs = new ApiLogs();
+                    $apilogs->user_id = $user->id;
+                    $apilogs->url = url()->current();
+                    $apilogs->request = json_encode($request->all());
+                    $apilogs->response = json_encode(new SignUpResource($user));
+                    $apilogs->api_status = 200;
+                    $apilogs->save();
+
                     return (new SignUpResource($user))
                         ->additional([
                             'meta' => [
                                 'message'       =>  trans('api.profile_setuped'),
                                 'auth_token'    =>  $user->createToken(config('utility.token'))->plainTextToken,
+                                'safe_image'    =>  $safe_image,                                
                             ]
                         ]);
+
+
                 } else {
-                    $this->response['meta']['message']  = trans('api.profile_setuped_fail');
+                    $this->response['meta']['message']   = trans('api.profile_setuped_fail');
+                    $this->response['meta']['safe_image']= $safe_image;                  
                 }
             } catch (ModelNotFoundException $exception) {
                 switch ($exception->getModel()) {
@@ -358,7 +455,9 @@ class AuthenticationController extends Controller
                 if($user->wasRecentlyCreated){ $user->buyFreeSubscription(); } // Buy Subscription For Girls
 
                 $user->profile_photo = $path;
+                $user->setprofile_api_run = 'n';
                 $user->save();
+
                 return (new UserProfile($user))
                     ->additional([
                         'meta' => [
@@ -408,5 +507,64 @@ class AuthenticationController extends Controller
             $this->storeErrorLog($e, 'logout');
         }
         return $this->returnResponse();
+    }
+
+    // User get location id using lat and logn
+    public function get_user_location($lat,$long)
+    {
+        $apiKey = 'AIzaSyDInVSLHXa1FXO3p7kgA7B_TK9L71tZbW8';
+        $latlng = $lat.','.$long;
+        $result = [];
+        $location_id = '';
+
+        $url = "https://maps.googleapis.com/maps/api/geocode/json?latlng=".$latlng."&sensor=true&key=".$apiKey;
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);    
+        $responseJson = curl_exec($ch);
+        curl_close($ch);
+        $response = json_decode($responseJson);
+        if (!empty($response) && !empty($response->results[0]->address_components)) {
+            foreach ($response->results[0]->address_components as $key => $value) {
+                if ($value->types[0] == "administrative_area_level_3") {
+                    $result['city'] = trim($value->long_name);
+                }
+                if ($value->types[0] == "administrative_area_level_1") {
+                    $result['state'] = trim($value->long_name);
+                }
+
+                // check city and state not empty
+                if (!empty($result) && !empty($result['city']) && !empty($result['state'])) {
+                    // if already exist city and state then get id and update user location id
+                    $locationTranslation = LocationTranslation::where('name',$result['city'])->where('state',$result['state'])->where('locale','en')->first();
+                    if (!empty($locationTranslation)) {
+                        $location_id = $locationTranslation->location_id;
+
+                        // update location table for city is used some one users
+                        Location::where('id',$location_id)->update([ 
+                            'is_used' =>  'y',
+                        ]);
+                    }
+                    else
+                    {
+                        // if city and state not exits then create new
+                        $location = new Location();        
+                        $location->custom_id = getUniqueString('locations');  
+                        $location->is_used   = 'y';  
+                        $location->save();
+
+                        $location_id = $location->id;
+
+                        $LocationTranslation = new LocationTranslation();
+                        $LocationTranslation->locale = 'en';  
+                        $LocationTranslation->location_id = $location_id;  
+                        $LocationTranslation->name = $result['city'];  
+                        $LocationTranslation->state = $result['state'];  
+                        $LocationTranslation->save();
+                    }
+                }
+            }
+            return $location_id;
+        }
     }
 }

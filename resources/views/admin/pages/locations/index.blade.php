@@ -32,6 +32,22 @@
                         Add {{ $custom_title }}
                     </a>
                 @endif
+                <a href="{{ route('admin.location.csv-download') }}"
+                class="btn btn-sm btn-primary font-weight-bolder text-uppercase ml-2">
+                    <i class="fas fa-arrow-down"></i>
+                    Download CSV
+                </a>
+
+                <a href="{{ route('admin.location.user-location-csv-download') }}"
+                class="btn btn-sm btn-primary font-weight-bolder text-uppercase ml-2">
+                    <i class="fas fa-arrow-down"></i>
+                    Download User location CSV
+                </a>
+                <a href="{{ route('admin.location.user-not-location-csv-download') }}"
+                class="btn btn-sm btn-primary font-weight-bolder text-uppercase ml-2">
+                    <i class="fas fa-arrow-down"></i>
+                    Download Not location Id Assign
+                </a>
             </div>
         </div>
         <div class="card-body">
@@ -63,6 +79,7 @@
                 { data: 'checkbox' },
                 { data: 'id' },
                 { data: 'name' },
+                { data: 'state' },
                 { data: 'active' },
                 { data: 'action', responsivePriority: -1 },
             ],
@@ -71,7 +88,8 @@
                 { targets: 0, title: "<center><input type='checkbox' class='all_select'></center>", orderable: false },
                 { targets: 1, title: 'Id', orderable: true },
                 { targets: 2, title: 'Name', orderable: false },
-                { targets: 3, title: 'Active', orderable: false },
+                { targets: 3, title: 'State Name', orderable: false },
+                { targets: 4, title: 'Active', orderable: false },
                 // Action buttons
                 { targets: -1, title: 'Action',
                 orderable: false },

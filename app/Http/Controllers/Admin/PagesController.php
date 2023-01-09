@@ -13,6 +13,7 @@ use App\Models\City;
 use App\Models\Location;
 use App\Models\LocationTranslation;
 use App\Models\State;
+use App\Models\Language;
 use App\Models\Subscription;
 use App\Models\SubscriptionPlan;
 use App\Models\SubscriptionPlanTranslation;
@@ -23,68 +24,115 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use DB;
+use Artisan;
+
 class PagesController extends Controller
 {
 
     public function dashboard()
     {   
-
         $location_result = array();
         $city_result = array(); 
         $subscription_result = array(); 
         $age_result = array(); 
 
         // analytic dashboard to get last recoad
-
         $dashboard_data = DB::table("analytic_dashboard")->orderBy("id","DESC")->first();
         $total_subscribed = $dashboard_data ? $dashboard_data->paid_users : 0;
         $total_unsubscribed = $dashboard_data ? $dashboard_data->non_paid_users : 0;
         $total_male = $dashboard_data ? $dashboard_data->male_users : 0;
+        $total_female = $dashboard_data ? $dashboard_data->female_users : 0;
+        $total_users = $dashboard_data ? $dashboard_data->total_users : 0;
 
-        $user['Count'] = $dashboard_data ? number_format($dashboard_data->total_users) : 0;
-        $user['total_male'] = $total_male;
-        $user['total_female'] = $dashboard_data ? $dashboard_data->female_users : 0;
-        $user['total_na_user'] = $dashboard_data ? $dashboard_data->na_users : 0;
-        $user['total_subscribed'] = $total_subscribed;
-        $user['total_unsubscribed'] = $total_unsubscribed;
+        $user['Count'] = $dashboard_data ? number_format($total_users) : 0;
+        $user['total_male'] = number_format($total_male);
+        $user['total_female'] = number_format($total_female);
+        $user['total_na_user'] = $dashboard_data ? number_format($dashboard_data->na_users) : 0;
+        $user['total_subscribed'] = number_format($total_subscribed);
+        $user['total_unsubscribed'] = number_format($total_unsubscribed);
+        $user['created_at'] = Carbon::parse($dashboard_data->created_at)->format('d-m-Y h:i A');
         
-        $subscription_plans = SubscriptionPlanTranslation::select("locale","subscription_plan_id","name")->where(['locale' => 'en'])->get();
-        $no_of_sub_buy = 0;
-        if (count($subscription_plans) > 0) {
-            foreach ($subscription_plans as $key => $val) {
-                $total_users    = Subscription::where("plan_id",$val->subscription_plan_id)
-                                    ->where("status","active")
-                                    ->groupBy("user_id")
+        $subscription_plans = SubscriptionPlanTranslation::select("locale","subscription_plan_id","name","subscriptions.plan_id as plan_id","subscriptions.status as status",DB::raw("count(users.id) as total_users"),DB::raw("sum(subscriptions.amount) as total_amount"))
+                                    ->join("subscriptions","subscriptions.plan_id","=","subscription_plan_translations.subscription_plan_id")
+                                    ->join("users","users.id","=","subscriptions.user_id")
+                                    ->where("subscriptions.status","active")
+                                    ->whereNull("subscriptions.deleted_at")
+                                    ->where("users.gender","Male")
+                                    ->groupBy("subscription_plan_translations.id")
+                                    ->where(['subscription_plan_translations.locale' => 'en'])
                                     ->get();
-                $subscription_result[] = [
-                    'name' => $val->name,
-                    'total_users' => count($total_users),
-                ];
-                $no_of_sub_buy = 0;
-            }
-        }
+
         $age_result[] = [
-            'male_age_18_25'    => $dashboard_data ? $dashboard_data->male_18_25 : 0,
-            'male_age_26_35'    => $dashboard_data ? $dashboard_data->male_26_35 : 0,
-            'male_age_36_45'    => $dashboard_data ? $dashboard_data->male_36_45 : 0,
-            'male_age_45'       => $dashboard_data ? $dashboard_data->male_45 : 0,
-            'female_age_18_25'  => $dashboard_data ? $dashboard_data->female_18_25 : 0,
-            'female_age_26_35'  => $dashboard_data ? $dashboard_data->female_26_35 : 0,
-            'female_age_36_45'  => $dashboard_data ? $dashboard_data->female_36_45 : 0,
-            'female_age_45'     => $dashboard_data ? $dashboard_data->female_45 : 0,
+            'male_age_18_25'    => $dashboard_data ? number_format($dashboard_data->male_18_25) : 0,
+            'male_age_18_25_pr' => $dashboard_data ? number_format($dashboard_data->male_18_25 * 100 / $total_male,2) : 0,
+            'male_age_26_35'    => $dashboard_data ? number_format($dashboard_data->male_26_35) : 0,
+            'male_age_26_35_pr' => $dashboard_data ? number_format($dashboard_data->male_26_35 * 100 / $total_male,2) : 0,
+            'male_age_36_45'    => $dashboard_data ? number_format($dashboard_data->male_36_45) : 0,
+            'male_age_36_45_pr' => $dashboard_data ? number_format($dashboard_data->male_36_45 * 100 / $total_male,2) : 0,
+            'male_age_45'       => $dashboard_data ? number_format($dashboard_data->male_45) : 0,
+            'male_age_45_pr'    => $dashboard_data ? number_format($dashboard_data->male_45 * 100 / $total_male,2) : 0,
+            'female_age_18_25'  => $dashboard_data ? number_format($dashboard_data->female_18_25) : 0,
+            'female_age_18_25_pr'  => $dashboard_data ? number_format($dashboard_data->female_18_25 * 100 / $total_female,2) : 0,
+            'female_age_26_35'  => $dashboard_data ? number_format($dashboard_data->female_26_35) : 0,
+            'female_age_26_35_pr'  => $dashboard_data ? number_format($dashboard_data->female_26_35 * 100 / $total_female,2) : 0,
+            'female_age_36_45'  => $dashboard_data ? number_format($dashboard_data->female_36_45) : 0,
+            'female_age_36_45_pr'  => $dashboard_data ? number_format($dashboard_data->female_36_45 * 100 / $total_female,2) : 0,
+            'female_age_45'     => $dashboard_data ? number_format($dashboard_data->female_45) : 0,
+            'female_age_45_pr'     => $dashboard_data ? number_format($dashboard_data->female_45 * 100 / $total_female,2) : 0,
         ];
 
         $user['PerDayCount'] = $dashboard_data ? number_format($dashboard_data->per_day_users) : 0;
         $user['PerWeekCount'] = $dashboard_data ? number_format($dashboard_data->per_week_users) : 0;
         $user['Per30DayCount'] = $dashboard_data ? number_format($dashboard_data->per_30_day_users) : 0;
+       
+        $total_phone_users = $dashboard_data->total_phone_users;
+        $total_google_users = $dashboard_data->total_google_users;
+        $total_facebook_users = $dashboard_data->total_facebook_users;
+        $total_apple_users = $dashboard_data->total_apple_users;
+        $user['total_phone_users'] = $dashboard_data ? number_format($total_phone_users) : 0;
+        $user['total_google_users'] = $dashboard_data ? number_format($total_google_users) : 0;
+        $user['total_facebook_users'] = $dashboard_data ? number_format($total_facebook_users) : 0;
+        $user['total_apple_users'] = $dashboard_data ? number_format($total_apple_users) : 0;
+        $user['pr_phone_users'] = $total_phone_users ? number_format($total_phone_users * 100 / $total_users) : 0;
+        $user['pr_google_users'] = $total_phone_users ? number_format($total_google_users * 100 / $total_users) : 0;
+        $user['pr_facebook_users'] = $total_phone_users ? number_format($total_facebook_users * 100 / $total_users) : 0;
+        $user['pr_apple_users'] = $total_phone_users ? number_format($total_apple_users * 100 / $total_users) : 0;
+        
+        $user['male_phone_verified'] = $dashboard_data ? number_format($dashboard_data->male_phone_verified) : 0;
+        $user['male_phone_unverified'] = $dashboard_data ? number_format($dashboard_data->male_phone_unverified) : 0;
+        $user['male_email_verified'] = $dashboard_data ? number_format($dashboard_data->male_email_verified) : 0;
+        $user['male_email_unverified'] = $dashboard_data ? number_format($dashboard_data->male_email_unverified) : 0;
+        $user['male_photo_verified'] = $dashboard_data ? number_format($dashboard_data->male_photo_verified) : 0;
+        $user['male_photo_unverified'] = $dashboard_data ? number_format($dashboard_data->male_photo_unverified) : 0;
+        $user['male_phone_unverified'] = $dashboard_data ? number_format($dashboard_data->male_phone_unverified) : 0;
+        $user['male_account_verified'] = $dashboard_data ? number_format($dashboard_data->male_account_verified) : 0;
+        $user['male_account_unverified'] = $dashboard_data ? number_format($dashboard_data->male_account_unverified) : 0;
+        $user['female_phone_verified'] = $dashboard_data ? number_format($dashboard_data->female_phone_verified) : 0;
+        $user['female_phone_unverified'] = $dashboard_data ? number_format($dashboard_data->female_phone_unverified) : 0;
+        $user['female_email_verified'] = $dashboard_data ? number_format($dashboard_data->female_email_verified) : 0;
+        $user['female_email_unverified'] = $dashboard_data ? number_format($dashboard_data->female_email_unverified) : 0;
+        $user['female_photo_verified'] = $dashboard_data ? number_format($dashboard_data->female_photo_verified) : 0;
+        $user['female_photo_unverified'] = $dashboard_data ? number_format($dashboard_data->female_photo_unverified) : 0;
+        $user['female_account_verified'] = $dashboard_data ? number_format($dashboard_data->female_account_verified) : 0;
+        $user['female_account_unverified'] = $dashboard_data ? number_format($dashboard_data->female_account_unverified) : 0;
+
         $user['location_result'] = [];
         $user['city_result'] = [];
-        $user['subscription_result'] = $subscription_result;
+        $user['subscription_result'] = $subscription_plans;
         $user['age_result'] = $age_result;
         $user['paid_users_pr'] = number_format($total_subscribed / $total_male * 100,2);
         $user['nonpaid_users_pr'] = number_format($total_unsubscribed / $total_male * 100,2);
-        // echo "<pre>"; print_r($user); die();
+
+
+        // echo "<pre>"; print_r($subscription_result); die();
         return view('admin.pages.general.dashboard', compact('user'))->with(['custom_title' => __('Dashboard')]);
+    }
+
+    public function dashboardupdate()
+    {
+        Artisan::call('admin:dashboard');
+        flash('Dashboard details updated successfully!')->success();
+        return redirect(route('admin.dashboard.index'));
     }
     public function profile()
     {
@@ -222,81 +270,81 @@ class PagesController extends Controller
         return $diff->format('%y');
     }
 
-    public function gender_listing(Request $request)
-    {
+    // public function gender_listing(Request $request)
+    // {
 
-        $records = [];
-        extract($this->DTFilters($request->all()));
+    //     $records = [];
+    //     extract($this->DTFilters($request->all()));
 
-        // count only no of recoad
-        $city_lists_count = Location::with(['locationTranslation']);
-        $city_lists_count = $city_lists_count->select("users.*","locations.*","users.location_id as location_id","users.id as user_id");
-        $city_lists_count = $city_lists_count->join("users","users.location_id","=","locations.id");
-        $city_lists_count = $city_lists_count->where("users.deleted_at","=",NULL);
-        $city_lists_count = $city_lists_count->where("users.location_id","!=",NULL);
-        $city_lists_count = $city_lists_count->groupBy("users.location_id");
+    //     // count only no of recoad
+    //     $city_lists_count = Location::with(['locationTranslation']);
+    //     $city_lists_count = $city_lists_count->select("users.*","locations.*","users.location_id as location_id","users.id as user_id");
+    //     $city_lists_count = $city_lists_count->join("users","users.location_id","=","locations.id");
+    //     $city_lists_count = $city_lists_count->where("users.deleted_at","=",NULL);
+    //     $city_lists_count = $city_lists_count->where("users.location_id","!=",NULL);
+    //     $city_lists_count = $city_lists_count->groupBy("users.location_id");
 
-        if ($search != '') {
-            $city_lists_count->where(function ($query) use ($search) {
-                $query->orWhereHas('locationTranslation', function ($q) use ($search) {
-                    $q->where('name', 'like', "%{$search}%");
-                });
-            });
-        }
-        $city_lists_count = $city_lists_count->get();
+    //     if ($search != '') {
+    //         $city_lists_count->where(function ($query) use ($search) {
+    //             $query->orWhereHas('locationTranslation', function ($q) use ($search) {
+    //                 $q->where('name', 'like', "%{$search}%");
+    //             });
+    //         });
+    //     }
+    //     $city_lists_count = $city_lists_count->get();
 
 
-        $city_lists = Location::with(['locationTranslation']);
-        $city_lists = $city_lists->select("users.*","locations.*","users.location_id as location_id","users.id as user_id");
-        $city_lists = $city_lists->join("users","users.location_id","=","locations.id");
-        $city_lists = $city_lists->where("users.deleted_at","=",NULL);
-        $city_lists = $city_lists->where("users.location_id","!=",NULL);
-        $city_lists = $city_lists->groupBy("users.location_id");
+    //     $city_lists = Location::with(['locationTranslation']);
+    //     $city_lists = $city_lists->select("users.*","locations.*","users.location_id as location_id","users.id as user_id");
+    //     $city_lists = $city_lists->join("users","users.location_id","=","locations.id");
+    //     $city_lists = $city_lists->where("users.deleted_at","=",NULL);
+    //     $city_lists = $city_lists->where("users.location_id","!=",NULL);
+    //     $city_lists = $city_lists->groupBy("users.location_id");
 
-        if ($search != '') {
-            $city_lists->where(function ($query) use ($search) {
-                $query->orWhereHas('locationTranslation', function ($q) use ($search) {
-                    $q->where('name', 'like', "%{$search}%");
-                });
-            });
-        }
+    //     if ($search != '') {
+    //         $city_lists->where(function ($query) use ($search) {
+    //             $query->orWhereHas('locationTranslation', function ($q) use ($search) {
+    //                 $q->where('name', 'like', "%{$search}%");
+    //             });
+    //         });
+    //     }
 
-        $city_lists = $city_lists->offset($offset)->limit($limit);
-        $city_lists = $city_lists->get();
+    //     $city_lists = $city_lists->offset($offset)->limit($limit);
+    //     $city_lists = $city_lists->get();
 
-        $records['recordsTotal'] = count($city_lists_count);
-        $records['recordsFiltered'] = count($city_lists_count);
-        $records['data'] = [];
+    //     $records['recordsTotal'] = count($city_lists_count);
+    //     $records['recordsFiltered'] = count($city_lists_count);
+    //     $records['data'] = [];
 
-        foreach ($city_lists as $val) {
-            $all_users          = User::where('location_id','=',$val->location_id)->count();
-            $total_male_user    = User::where('location_id','=',$val->location_id)
-                                ->where('gender','=','Male')
-                                ->count();
-            $total_female_user  = User::where('location_id','=',$val->location_id)
-                                ->where('gender','=','Female')
-                                ->count();
-            $total_na_user      = User::where('location_id','=',$val->location_id)
-                                ->whereNull('gender')
-                                    ->count();
+    //     foreach ($city_lists as $val) {
+    //         $all_users          = User::where('location_id','=',$val->location_id)->count();
+    //         $total_male_user    = User::where('location_id','=',$val->location_id)
+    //                             ->where('gender','=','Male')
+    //                             ->count();
+    //         $total_female_user  = User::where('location_id','=',$val->location_id)
+    //                             ->where('gender','=','Female')
+    //                             ->count();
+    //         $total_na_user      = User::where('location_id','=',$val->location_id)
+    //                             ->whereNull('gender')
+    //                                 ->count();
             
 
-            $male_pr = $total_male_user/$all_users * 100;
-            $female_pr = $total_female_user/$all_users * 100;
-            $na_pr = $total_na_user/$all_users * 100;
-            $total_users = $total_male_user + $total_female_user + $total_na_user;
-            $records['data'][] = [
-                'city_name' => $val->name,
-                'total_male_pr' => number_format($male_pr,2)."%",
-                'total_female_pr' => number_format($female_pr,2)."%",
-                'total_na_pr' => number_format($na_pr,2)."%",
-            ];
-        }
-        $keys = array_column($records['data'], 'total_female_pr');
-        array_multisort($keys, SORT_DESC, $records['data']);
-        return $records;
-        return $records;
-    }
+    //         $male_pr = $total_male_user/$all_users * 100;
+    //         $female_pr = $total_female_user/$all_users * 100;
+    //         $na_pr = $total_na_user/$all_users * 100;
+    //         $total_users = $total_male_user + $total_female_user + $total_na_user;
+    //         $records['data'][] = [
+    //             'city_name' => $val->name,
+    //             'total_male_pr' => number_format($male_pr,2)."%",
+    //             'total_female_pr' => number_format($female_pr,2)."%",
+    //             'total_na_pr' => number_format($na_pr,2)."%",
+    //         ];
+    //     }
+    //     $keys = array_column($records['data'], 'total_female_pr');
+    //     array_multisort($keys, SORT_DESC, $records['data']);
+    //     return $records;
+    //     return $records;
+    // }
 
     public function location_listing(Request $request)
     {
@@ -304,12 +352,11 @@ class PagesController extends Controller
 
         //count only no of recoad
         $city_lists_count = Location::with(['locationTranslation']);
-        $city_lists_count = $city_lists_count->select("users.*","locations.*","users.location_id as location_id","users.id as user_id");
+        $city_lists_count = $city_lists_count->select("locations.*","users.location_id as location_id","users.id as user_id",DB::raw("count(users.id) as total_no_of_users"));
         $city_lists_count = $city_lists_count->join("users","users.location_id","=","locations.id");
         $city_lists_count = $city_lists_count->where("users.deleted_at","=",NULL);
         $city_lists_count = $city_lists_count->where("users.location_id","!=",NULL);
         $city_lists_count = $city_lists_count->where("locations.is_active","=",'y');
-        // $city_lists_count = $city_lists_count->orderBy("users.location_id","ASC");
         $city_lists_count = $city_lists_count->groupBy("users.location_id");
 
         if ($search != '') {
@@ -319,17 +366,17 @@ class PagesController extends Controller
                 });
             });
         }
-
+        $city_lists_count = $city_lists_count->orderBy("total_no_of_users","DESC");
+        $city_lists_count = $city_lists_count->limit(10);
         $city_lists_count = $city_lists_count->get();
 
 
         $city_lists = Location::with(['locationTranslation']);
-        $city_lists = $city_lists->select("users.*","locations.*","users.location_id as location_id","users.id as user_id");
+        $city_lists = $city_lists->select("locations.*","users.location_id as location_id","users.id as user_id",DB::raw("count(users.id) as total_no_of_users"));
         $city_lists = $city_lists->join("users","users.location_id","=","locations.id");
         $city_lists = $city_lists->where("users.deleted_at","=",NULL);
         $city_lists = $city_lists->where("users.location_id","!=",NULL);
         $city_lists = $city_lists->where("locations.is_active","=",'y');
-        // $city_lists = $city_lists->orderBy("users.location_id","ASC");
         $city_lists = $city_lists->groupBy("users.location_id");
 
         if ($search != '') {
@@ -344,6 +391,8 @@ class PagesController extends Controller
         $records = [];
 
         $city_lists = $city_lists->offset($offset)->limit($limit);
+        $city_lists = $city_lists->orderBy("total_no_of_users","DESC");
+        $city_lists = $city_lists->limit(10);
         $city_lists = $city_lists->get();
         $records['recordsTotal'] = count($city_lists_count);
         $records['recordsFiltered'] = count($city_lists_count);
@@ -365,6 +414,7 @@ class PagesController extends Controller
                 if($total_users > 0){
                     $records['data'][] = [
                         'city_name' => $val->name,
+                        'state_name' => $val->state,
                         'total_male_user' => $total_male_user,
                         'total_female_user' => $total_female_user,
                         'total_na_user' => $total_na_user,
@@ -378,91 +428,67 @@ class PagesController extends Controller
         return $records;
     }
 
-    public function user_translations()
+    // language list
+    public function language_listing(Request $request)
     {
-        $apiKey = 'AIzaSyCnTLblh4He46O3-5NoJ0sXOzyelS76jEY';
-        $text = 'दयाकर भंडारी';
-        $source = 'en';
-        $target = 'hi';
+        extract($this->DTFilters($request->all()));
+
+        $language_lists = Language::select("languages.*",DB::raw("count(users.id) as total_users"));
+        $language_lists = $language_lists->join("users","users.language_id","=","languages.id");
+
+        if ($search != '') {
+            $language_lists = $language_lists->Where('languages.language', 'like', "%{$search}%");
+            $language_lists = $language_lists->orWhere('languages.hint', 'like', "%{$search}%");
+        }
+
+        $language_lists = $language_lists->whereNull("users.deleted_at");
+        $language_lists = $language_lists->groupBy("languages.id");
+        $language_lists = $language_lists->orderBy("total_users","DESC");
+        $language_lists = $language_lists->get();
         
+        $records = [];
+        $records['recordsTotal'] = count($language_lists);
+        $records['recordsFiltered'] = count($language_lists);
+        $records['data'] = [];
 
-        $UserTranslation = UserTranslation::where("locale","en")->groupBy('user_id')->paginate(50);
-        // echo "<pre>"; print_r($UserTranslation->toArray()); die();
+        $dashboard_data = DB::table("analytic_dashboard")->orderBy("id","DESC")->first();
+        $all_users = $dashboard_data ? $dashboard_data->total_users : 0;
 
-        $singledata = UserTranslation::where('user_id','211292')->first();
-        echo "<pre>"; print_r($singledata); die();
-
-        if (count($UserTranslation) > 0) {
-            foreach ($UserTranslation as $key => $val) {
-                $singledata = UserTranslation::where("locale","hi")->where('user_id',$val->user_id)->first();
-                $result[] = array(
-                    "id"        => $val->id,
-                    "locale"    => $val->locale,
-                    "user_id"   => $val->user_id,
-                    "full_name" => $val->full_name,
-                    "about_me"  => $val->about_me,
-                    "fav_movie" => $val->fav_movie,
-                    "singledata"=> $singledata
-                );
-             }
+        foreach ($language_lists as $val) {
+                $total_users = $val->total_users;
+                $pr = $total_users/$all_users * 100;
+                $records['data'][] = [
+                    'language' => $val->language,
+                    'hint' => $val->hint,
+                    'total_pr' => number_format($pr,2)."%",
+                    'total_users' => number_format($total_users),
+                ];
         }
-
-        echo "<pre>"; print_r($result); die();
-
-        if ($source == $target) {
-            $url = 'https://translation.googleapis.com/language/translate/v2?key=AIzaSyCnTLblh4He46O3-5NoJ0sXOzyelS76jEY&source=en&target='.$target.'&q='.rawurlencode($text);
-        }
-        else
-        {
-        $url = 'https://translation.googleapis.com/language/translate/v2?key=AIzaSyCnTLblh4He46O3-5NoJ0sXOzyelS76jEY&source='.$source.'&target='.$target.'&q='.rawurlencode($text);
-        }
-
-        //for detect
-        // $url = 'https://translation.googleapis.com/language/translate/v2/detect?key=AIzaSyCnTLblh4He46O3-5NoJ0sXOzyelS76jEY&q=helloworld';
-
-        $handle = curl_init($url);
-        curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
-        $response = curl_exec($handle);
-        $responseDecoded = json_decode($response, true);
-        $responseCode = curl_getinfo($handle, CURLINFO_HTTP_CODE);
-              //Here we fetch the HTTP response code
-        // dd($url);
-        curl_close($handle);
-        
-        if($responseCode != 200) {
-            dump('Fetching translation failed! Server response code:' . $responseCode);
-            dd('Error description: ' . $responseDecoded['error']['errors'][0]['message']);
-        }
-        else {
-            // echo "<br>";
-            // dump('Source: ' . $text);
-            // echo "<br>";
-            echo $responseDecoded['data']['translations'][0]['translatedText'];
-            // dd($responseDecoded);
-            // dd('Translation: ' . $responseDecoded['data']['translations'][0]['translatedText']);
-        }
+        // $keys = array_column($records['data'], 'total_users');
+        // array_multisort($keys, SORT_DESC, $records['data']);
+        return $records;
     }
 
     // delete not used location
-    public function deletelocation()
-    {
-         $locationlist = DB::table('locations')
-            ->select("locations.id")
-            ->leftJoin('users', function($join) {
-                $join->on('locations.id', '=', 'users.location_id');
-            })
-            ->whereNull('users.location_id')
-            ->get();
-            // ->paginate(5);
-        // echo "<pre>"; 
-        // print_r($locationlist);
-        // die();
-        foreach ($locationlist as $key => $val) {
-            Location::where('id',$val->id)->delete();
-            LocationTranslation::where('location_id',$val->id)->delete();
-        }
-        echo "done";
+    // public function deletelocation()
+    // {
+    //      $locationlist = DB::table('locations')
+    //         ->select("locations.id")
+    //         ->leftJoin('users', function($join) {
+    //             $join->on('locations.id', '=', 'users.location_id');
+    //         })
+    //         ->whereNull('users.location_id')
+    //         ->get();
+    //         // ->paginate(5);
+    //     // echo "<pre>"; 
+    //     // print_r($locationlist);
+    //     // die();
+    //     foreach ($locationlist as $key => $val) {
+    //         Location::where('id',$val->id)->delete();
+    //         LocationTranslation::where('location_id',$val->id)->delete();
+    //     }
+    //     echo "done";
 
-        die();
-    }
+    //     die();
+    // }
 }

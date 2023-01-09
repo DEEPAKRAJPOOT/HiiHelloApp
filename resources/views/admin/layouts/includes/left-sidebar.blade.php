@@ -113,6 +113,24 @@
 						</li>
 					@endif
 				@endforeach
+				<li class="menu-item side-item" aria-haspopup="true" data-title="">
+					<a href="{{ route('admin.image-logs') }}" class="menu-link">
+						<i class="menu-icon icon-users"></i>
+						<span class="menu-text">Image Moderation Log</span>
+					</a>
+				</li>
+				<li class="menu-item side-item" aria-haspopup="true" data-title="">
+					<a href="{{ route('admin.usertree') }}" class="menu-link">
+						<i class="menu-icon icon-users"></i>
+						<span class="menu-text">User Tree</span>
+					</a>
+				</li>
+				<li class="menu-item side-item" aria-haspopup="true" data-title="">
+					<a href="{{ route('admin.apilog') }}" class="menu-link">
+						<i class="menu-icon icon-users"></i>
+						<span class="menu-text">API Log</span>
+					</a>
+				</li>
 
 			</ul>
 			<!--end::Menu Nav-->

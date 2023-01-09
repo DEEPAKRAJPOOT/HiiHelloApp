@@ -1,4 +1,6 @@
 <?php
+use Aws\Rekognition\RekognitionClient;
+
 
 // Permission for admin panel
 function getPermissions($user_type = 'normal')
@@ -158,4 +160,126 @@ function get_guard()
     } else {
         return "Guard not match";
     }
+}
+
+function checkAwsImageModeration($request,$image_param_name,$check_type = 'file')
+{
+   
+    $image_arr_result = array();
+    $api_status_code  = "";    
+    
+    $min_confidence = config('utility.aws_image_moderation.min_confidence', 70);
+
+
+    $client = new RekognitionClient([
+        'region'    => 'ap-south-1',
+        'version'   => 'latest'
+    ]);                
+    
+
+
+    if($check_type=='file')
+    {
+        //FILE OBJECT 
+        $image = fopen($request->file($image_param_name)->getPathName(), 'r');
+        $bytes = fread($image, $request->file($image_param_name)->getSize());
+    }
+    else
+    {
+        //image_param_name = S3 image url will be here as parameter if check type is url
+        $image_path =   $image_param_name;
+        $bytes = file_get_contents($image_path);
+    }    
+
+
+    $moderate_image_results = $client->detectModerationLabels([                   
+        'Image'         => ['Bytes' => $bytes], 
+        'MinConfidence' => $min_confidence
+    ]);
+
+
+    $cat_filter = config('utility.aws_image_moderation.category_filter', array());    
+
+    if(isset($moderate_image_results["@metadata"]) && $moderate_image_results["@metadata"]['statusCode']==200)
+    {
+            //response received then status code 200                            
+            $api_status_code = "success";
+
+            $log_message = "";
+
+
+            if(count($moderate_image_results['ModerationLabels']) > 0)
+            {
+
+               $is_safe_image_category_filter = true; 
+
+               $filter_detail_message = "";
+               
+
+               foreach ($moderate_image_results['ModerationLabels'] as $cat_key => $res_data) {
+                        // code...
+                     //echo "<br> Category ".$res_data['Name'];
+                     //echo "<br> Parent Category ".$res_data['ParentName'];
+                     //echo "<br> Confidence ".$res_data['Confidence'];
+
+                     if (array_key_exists($res_data['Name'],$cat_filter))
+                     {
+                           // echo "<Br> in----".$cat_filter[$res_data['Name']];
+                           // if($res_data['Confidence'] >)
+                            if($res_data['Confidence'] >= $cat_filter[$res_data['Name']])
+                            {
+                                    //dd($cat_filter[$res_data['Name']]);
+                                    $is_safe_image_category_filter = false;
+                                    $filter_detail_message = $res_data['Name'] ." value in setting (".$cat_filter[$res_data['Name']]."). In response confidence value (".$res_data['Confidence'].")";
+
+                                    $log_message = "Image Contain ".$res_data['Name']. " With Confidence value ".$res_data['Confidence'];
+                                    break;
+
+                            }
+                     }
+
+               }     
+               $image_arr_result["is_safe_image"] = $is_safe_image_category_filter;
+               $image_arr_result["moderation_labels_data"] = $filter_detail_message;
+               $image_arr_result["log_message"] = $log_message;
+               
+            }
+            else
+            {
+                $image_arr_result["is_safe_image"] = true;   
+                $image_arr_result["moderation_labels_data"] = "";
+                $image_arr_result["log_message"] = $log_message;
+            }
+
+            $image_arr_result["image_moderation_request"] = json_encode($moderate_image_results["@metadata"]);    
+            $image_arr_result["image_moderation_response"] = json_encode($moderate_image_results["ModerationLabels"]);    
+
+            /// CHECK FOR FACE DETECTION : HOW MAN FACE DETECTED.
+            $result_face = $client->detectFaces([
+                'Attributes' => ['ALL'], //ALL, DEFAULT
+                'Image'         => ['Bytes' => $bytes], 
+            ]);
+
+
+            $image_arr_result["total_face_detected"] = count($result_face['FaceDetails']);
+
+            if(count($result_face['FaceDetails'])==0)
+            {
+                $image_arr_result["is_safe_image"] = false;
+                $image_arr_result["face_detected_message"] = "Image have no face detected";
+                $image_arr_result["log_message"] = "Image have no face detected";
+                
+                
+            }
+            else if(count($result_face['FaceDetails']) >= 1)
+            {                                
+                $image_arr_result["face_detected_message"] = "";                                
+                
+            }   
+
+            return $image_arr_result;
+            
+    }
+    return $image_arr_result;
+
 }

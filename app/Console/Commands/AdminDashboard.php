@@ -42,14 +42,19 @@ class AdminDashboard extends Command
     public function handle()
     {      
         $message            =   "No Analytic dashboard records found.";
+        $past_30_day_date   =    Carbon::today()->subDays(30);
+        
         $total_users = User::whereNull('deleted_at')->count();
         $male_users = User::where('gender','=','Male')->whereNull('deleted_at')->count();
         $female_users = User::where('gender','=','Female')->whereNull('deleted_at')->count();
         $na_users = User::whereNull('gender')->whereNull('deleted_at')->count();
         $total_subscribed = User::where('gender','=','Male')->where('is_subscribed','=','y')->whereNull('deleted_at')->count();
         $total_unsubscribed = User::where('gender','=','Male')->where('is_subscribed','!=','y')->whereNull('deleted_at')->count();
+        $per_day_users = User::whereNull('deleted_at')->whereDate("created_at",Carbon::today())->count();
+        $per_week_users = User::whereNull('deleted_at')->whereBetween('created_at',[Carbon::now()->startOfWeek(), Carbon::now()->endOfWeek()])->count();
+        $per_30_day_users = User::whereNull('deleted_at')->where("created_at",">=",$past_30_day_date)->count();
 
-        $all_users = User::select('birth_date','gender')->whereNull('deleted_at')->whereNotNull('birth_date')->whereNotNull('gender')->get();
+        $all_users = User::select('birth_date','gender','facebook_id','google_id','apple_id','is_social_user')->whereNull('deleted_at')->whereNotNull('birth_date')->whereNotNull('gender')->get();
         // echo "<pre>"; print_r($all_users->toArray()); die();
         $male_age_18_25   = 0;
         $male_age_26_35   = 0;
@@ -59,8 +64,10 @@ class AdminDashboard extends Command
         $female_age_26_35 = 0;
         $female_age_36_45 = 0;
         $female_age_45    = 0;
+
         if(count($all_users) > 0){
             foreach ($all_users as $key => $val) {
+
                 $age_check = $this->age_check($val->birth_date);
                 // echo $age_check; echo "<br>";
                 if ($val->gender == "Male") {
@@ -96,23 +103,109 @@ class AdminDashboard extends Command
             
         }
 
+        $all_user_list = User::select('facebook_id','google_id','apple_id','is_social_user','gender','contact_verified_at','email_verified_at','verify_photo_status','verify_status')->whereNull('deleted_at')->get();
+        $is_phone_user = 0;
+        $is_google_user = 0;
+        $is_facebook_user = 0;
+        $is_apple_user = 0;
+
+        $male_phone_verified = 0;
+        $male_phone_unverified = 0;
+        $male_email_verified = 0;
+        $male_email_unverified = 0;
+        $male_photo_verified = 0;
+        $male_photo_unverified = 0;
+        $male_account_verified = 0;
+        $male_account_unverified = 0;
+
+        $female_phone_verified = 0;
+        $female_phone_unverified = 0;
+        $female_email_verified = 0;
+        $female_email_unverified = 0;
+        $female_photo_verified = 0;
+        $female_photo_unverified = 0;
+        $female_account_verified = 0;
+        $female_account_unverified = 0;
+        if(count($all_user_list) > 0){
+            foreach ($all_user_list as $key => $val) {
+
+                // mode of reg.
+                if (!empty($val->facebook_id) && $val->is_social_user == 'y') {
+                    $is_facebook_user += 1;
+                }
+                if (!empty($val->google_id) && $val->is_social_user == 'y') {
+                    $is_google_user += 1;
+                }
+                if (!empty($val->apple_id) && $val->is_social_user == 'y') {
+                    $is_apple_user += 1;
+                }
+                if (empty($val->facebook_id) && empty($val->google_id) && empty($val->apple_id) && $val->is_social_user == 'n') {
+                    $is_phone_user += 1;
+                }
+
+                // verified-unverified 
+                // phone
+                if (!empty($val->gender) && !empty($val->contact_verified_at) && $val->gender == 'Male') {
+                    $male_phone_verified += 1;
+                }
+                if (!empty($val->gender) && !empty($val->contact_verified_at) && $val->gender == 'Female') {
+                    $female_phone_verified += 1;
+                }
+                if (!empty($val->gender) && empty($val->contact_verified_at) && $val->gender == 'Male') {
+                    $male_phone_unverified += 1;
+                }
+                if (!empty($val->gender) && empty($val->contact_verified_at) && $val->gender == 'Female') {
+                    $female_phone_unverified += 1;
+                }
+
+                // email
+                if (!empty($val->gender) && !empty($val->email_verified_at) && $val->gender == 'Male') {
+                    $male_email_verified += 1;
+                }
+                if (!empty($val->gender) && !empty($val->email_verified_at) && $val->gender == 'Female') {
+                    $female_email_verified += 1;
+                }
+                if (!empty($val->gender) && empty($val->email_verified_at) && $val->gender == 'Male') {
+                    $male_email_unverified += 1;
+                }
+                if (!empty($val->gender) && empty($val->email_verified_at) && $val->gender == 'Female') {
+                    $female_email_unverified += 1;
+                }
+
+                // photo
+                if (!empty($val->gender) && !empty($val->verify_photo_status) && $val->gender == 'Male' && $val->verify_photo_status == 'verified') {
+                    $male_photo_verified += 1;
+                }
+                if (!empty($val->gender) && !empty($val->verify_photo_status) && $val->gender == 'Female' && $val->verify_photo_status == 'verified') {
+                    $female_photo_verified += 1;
+                }
+                if (!empty($val->gender) && !empty($val->verify_photo_status) && $val->gender == 'Male' && $val->verify_photo_status == 'unverified') {
+                    $male_photo_unverified += 1;
+                }
+                if (!empty($val->gender) && !empty($val->verify_photo_status) && $val->gender == 'Female' && $val->verify_photo_status == 'unverified') {
+                    $female_photo_unverified += 1;
+                }
+
+                // profile
+                if (!empty($val->gender) && !empty($val->verify_status) && $val->gender == 'Male' && $val->verify_status == 'verified') {
+                    $male_account_verified += 1;
+                }
+                if (!empty($val->gender) && !empty($val->verify_status) && $val->gender == 'Female' && $val->verify_status == 'verified') {
+                    $female_account_verified += 1;
+                }
+                if (!empty($val->gender) && !empty($val->verify_status) && $val->gender == 'Male' && $val->verify_status == 'unverified') {
+                    $male_account_unverified += 1;
+                }
+                if (!empty($val->gender) && !empty($val->verify_status) && $val->gender == 'Female' && $val->verify_status == 'unverified') {
+                    $female_account_unverified += 1;
+                }
+            }
+        }
         $created_at         = date("Y-m-d H:i:s");
         cache()->forget('oldest-record'); //forget cache recorde change on development
         $old_date = cache()->rememberForever('oldest-record', function () {
             return User::selectRaw('created_at')->orderBy('created_at', 'asc')->first();
         });
-
-        if (isset($old_date->created_at)) {
-            $startDate = Carbon::parse($old_date->created_at)->startOfDay();
-            $endDate = Carbon::now()->endOfDay();
-            $diffInDays = $startDate->diffInDays($endDate);
-
-            //diffInDays same date return 0 day and if date 4 and 5 diffInDays return 1 day
-            $diffInDays = $diffInDays + 1;
-            $per_day_users = $diffInDays >= 1 ? floor(($total_users / $diffInDays)) : 0; //Per Day Register User
-            $per_week_users = $diffInDays >= 7 ? floor(($total_users / ($diffInDays / 7))) : 0; //Per Week Register User
-            $per_30_day_users = $diffInDays >= 30 ? floor(($total_users / ($diffInDays / 30))) : 0; //Per 30 Day Register User
-        }
 
         $insert_data = array(
             'total_users'=>$total_users,
@@ -132,6 +225,26 @@ class AdminDashboard extends Command
             "female_45"=>$female_age_45,
             "paid_users"=>$total_subscribed,
             "non_paid_users"=>$total_unsubscribed,
+            "total_phone_users"=>$is_phone_user,
+            "total_google_users"=>$is_google_user,
+            "total_facebook_users"=>$is_facebook_user,
+            "total_apple_users"=>$is_apple_user,
+            "male_phone_verified"=>$male_phone_verified,
+            "male_phone_unverified"=>$male_phone_unverified,
+            "male_email_verified"=>$male_email_verified,
+            "male_email_unverified"=>$male_email_unverified,
+            "male_photo_verified"=>$male_photo_verified,
+            "male_photo_unverified"=>$male_photo_unverified,
+            "male_account_verified"=>$male_account_verified,
+            "male_account_unverified"=>$male_account_unverified,
+            "female_phone_verified"=>$female_phone_verified,
+            "female_phone_unverified"=>$female_phone_unverified,
+            "female_email_verified"=>$female_email_verified,
+            "female_email_unverified"=>$female_email_unverified,
+            "female_photo_verified"=>$female_photo_verified,
+            "female_photo_unverified"=>$female_photo_unverified,
+            "female_account_verified"=>$female_account_verified,
+            "female_account_unverified"=>$female_account_unverified,
             "created_at"=>$created_at
         );
          // echo "<pre>"; print_r($insert_data); die();

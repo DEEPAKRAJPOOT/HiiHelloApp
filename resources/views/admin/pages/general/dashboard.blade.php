@@ -15,6 +15,13 @@
 <div class="container">
   <!-- first row -->
   <div class="row">
+    <div class="col-lg-3"></div>
+    <div class="col-lg-3"></div>
+    <div class="col-lg-3"></div>
+    <div class="col-lg-3">
+      <span style="margin-left: 10px;">last sync : {{ $user['created_at'] }} </span>
+      <!-- <a href="{{ route('admin.dashboardupdate') }}" style="float: right;font-size: 18px;">Refresh</a> -->
+    </div>
     <!--beging::first count-->
     <div class="col-lg-3">
       <div class="card card-custom rounded-xl gutter-b bg-dark card-stretch">
@@ -294,7 +301,7 @@
       <div class="card card-custom gutter-b">
         <div class="card-header flex-wrap border-0 py-5">
           <div class="card-title">
-            <h3 class="card-label">Location </h3>
+            <h3 class="card-label">Top Locations </h3>
           </div>
 
         </div>
@@ -305,6 +312,7 @@
                 <thead>
                   <tr>
                     <th>City</th>
+                    <th>State</th>
                     <th>Male</th>
                     <th>Female</th>
                     <th>N/A</th>
@@ -344,7 +352,7 @@
         </div>
       </div>
     </div>
-    <div class="col-lg-12">
+    <!-- <div class="col-lg-12">
       <div class="card card-custom gutter-b">
         <div class="card-header flex-wrap border-0 py-5">
           <div class="card-title">
@@ -388,6 +396,81 @@
                           <div class="ph-col-6 empty"></div>
                         </div>
                     </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div> -->
+
+    <div class="col-lg-12">
+      <div class="card card-custom gutter-b">
+        <div class="card-header flex-wrap border-0 py-5">
+          <div class="card-title">
+            <h3 class="card-label">Top Languages</h3>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-sm-12">
+              <table class="table table-separate table-head-custom table-checkable dataTable no-footer dtr-inline" id="language_DT">
+                <thead>
+                  <tr>
+                    <th>Language</th>
+                    <th>Hint</th>
+                    <th>Total Users</th>
+                    <th>Percentage (%)</th>
+                  </tr>
+                </thead>
+                <tbody>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-lg-12">
+      <div class="card card-custom gutter-b">
+        <div class="card-header flex-wrap border-0 py-5">
+          <div class="card-title">
+            <h3 class="card-label">Mode of registration </h3>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-sm-12">
+              <table class="table table-separate table-head-custom table-checkable dataTable no-footer dtr-inline">
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Total Users</th>
+                    <th>Percentage (%)</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>Phone</td>
+                    <td>{{ $user['total_phone_users'] ?? 0 }}</td>
+                    <td>{{ $user['pr_phone_users'] ?? 0 }} %</td>
+                  </tr>
+                  <tr>
+                    <td>Google </td>
+                    <td>{{ $user['total_google_users'] ?? 0 }}</td>
+                    <td>{{ $user['pr_google_users'] ?? 0 }}%</td>
+                  </tr>
+                  <tr>
+                    <td>Facebook </td>
+                    <td>{{ $user['total_facebook_users'] ?? 0 }}</td>
+                    <td>{{ $user['pr_facebook_users'] ?? 0 }}%</td>
+                  </tr>
+                  <tr>
+                    <td>Apple </td>
+                    <td>{{ $user['total_apple_users'] ?? 0 }}</td>
+                    <td>{{ $user['pr_apple_users'] ?? 0 }}%</td>
+                  </tr>
                 </tbody>
               </table>
             </div>
@@ -448,6 +531,7 @@
                   <tr>
                     <th>Subscriptions name</th>
                     <th>No of Users</th>
+                    <th>Total Amount</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -455,10 +539,54 @@
                     @foreach($user['subscription_result'] as $val)
                       <tr>
                         <td>{{ $val['name'] }}</td>
-                        <td>{{ $val['total_users'] }}</td>
+                        <td>{{ number_format($val['total_users']) }}</td>
+                        <td>{{ number_format($val['total_amount']) }}</td>
                       </tr>
                     @endforeach
                   @endif
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-12">
+      <div class="card card-custom gutter-b">
+        <div class="card-header flex-wrap border-0 py-5">
+          <div class="card-title">
+            <h3 class="card-label">Verified/unverified</h3>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-sm-12">
+              <table class="table table-separate table-head-custom table-checkable dataTable no-footer dtr-inline">
+                <thead>
+                  <tr>
+                    <th>User Type</th>
+                    <th>Phone Verified/Unverified</th>
+                    <th>Email Verified/Unverified</th>
+                    <th>Photo Verified/Unverified</th>
+                    <th>Account Verified/Unverified</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>Male</td>
+                    <td>{{ $user['male_phone_verified'] ?? 0 }} / {{ $user['male_phone_unverified'] ?? 0 }}</td>
+                    <td>{{ $user['male_email_verified'] ?? 0 }} / {{ $user['male_email_unverified'] ?? 0 }}</td>
+                    <td>{{ $user['male_photo_verified'] ?? 0 }} / {{ $user['male_photo_unverified'] ?? 0 }}</td>
+                    <td>{{ $user['male_account_verified'] ?? 0 }} / {{ $user['male_account_unverified'] ?? 0 }}</td>
+                  </tr>
+                  <tr>
+                    <td>Female</td>
+                    <td>{{ $user['female_phone_verified'] ?? 0 }} / {{ $user['female_phone_unverified'] ?? 0 }}</td>
+                    <td>{{ $user['female_email_verified'] ?? 0 }} / {{ $user['female_email_unverified'] ?? 0 }}</td>
+                    <td>{{ $user['female_photo_verified'] ?? 0 }} / {{ $user['female_photo_unverified'] ?? 0 }}</td>
+                    <td>{{ $user['female_account_verified'] ?? 0 }} / {{ $user['female_account_unverified'] ?? 0 }}</td>
+                  </tr>
                 </tbody>
               </table>
             </div>
@@ -502,6 +630,16 @@
                         <td>{{ $val['female_age_26_35'] }}</td>
                         <td>{{ $val['female_age_36_45'] }}</td>
                         <td>{{ $val['female_age_45'] }}</td>
+                      </tr>
+                      <tr>
+                        <td>{{ $val['male_age_18_25_pr'] }} %</td>
+                        <td>{{ $val['male_age_26_35_pr'] }} %</td>
+                        <td>{{ $val['male_age_36_45_pr'] }} %</td>
+                        <td>{{ $val['male_age_45_pr'] }} %</td>
+                        <td>{{ $val['female_age_18_25_pr'] }} %</td>
+                        <td>{{ $val['female_age_26_35_pr'] }} %</td>
+                        <td>{{ $val['female_age_36_45_pr'] }} %</td>
+                        <td>{{ $val['female_age_45_pr'] }} %</td>
                       </tr>
                     @endforeach
                   @endif
@@ -549,11 +687,11 @@ $(document).ready(function() {
   $("#location_DT_filter").css("display","none");
   $("#location_DT thead").hide();
 
-  $("#gender_DT_length").css("display","none");
-  $("#gender_DT_filter").css("display","none");
-  $("#gender_DT thead").hide();
-  $("#location_DT_processing").css("display","none");
-  $("#gender_DT_processing").css("display","none");
+  // $("#gender_DT_length").css("display","none");
+  // $("#gender_DT_filter").css("display","none");
+  // $("#gender_DT thead").hide();
+  // $("#location_DT_processing").css("display","none");
+  // $("#gender_DT_processing").css("display","none");
 });
 </script>
 <script type="text/javascript">
@@ -634,7 +772,7 @@ $(document).ready(function() {
 </script>
 
 <!-- gender dt -->
-<script type="text/javascript">
+<!-- <script type="text/javascript">
   $(function() {
     var table = $('#gender_DT');
 
@@ -697,7 +835,7 @@ $(document).ready(function() {
 
 
   });
-</script>
+</script> -->
 
 <!-- location dt -->
 <script type="text/javascript">
@@ -707,6 +845,10 @@ $(document).ready(function() {
     oTable = table.dataTable({
       "processing": true,
       "serverSide": true,
+      "paging": false,
+      "ordering": false,
+      "searching": false,
+      "info": false,
       "language": {
         "lengthMenu": "_MENU_ entries",
         "paginate": {
@@ -717,6 +859,11 @@ $(document).ready(function() {
       "columns": [{
           "title": "City",
           "data": "city_name",
+          orderable: false
+        },
+        {
+          "title": "State",
+          "data": "state_name",
           orderable: false
         },
         {
@@ -763,6 +910,128 @@ $(document).ready(function() {
         $("#location_DT_filter").css("display","block");
         $("#location_DT thead").show();
         $('.location-loader').hide();
+        $('.status-switch').bootstrapSwitch();
+        $('.status-switch').bootstrapSwitch('onColor', 'success');
+        $('.status-switch').bootstrapSwitch('offColor', 'danger');
+      },
+      "dom": "<'row' <'col-md-12'>><'row'<'col-md-6 col-sm-12'l><'col-md-6 col-sm-12'f>r><'table-scrollable't><'row'<'col-md-5 col-sm-12'i><'col-md-7 col-sm-12'p>>", 
+      // horizobtal scrollable datatable
+    });
+
+
+  });
+</script>
+
+<!-- language dt -->
+<script type="text/javascript">
+  $(function() {
+    var table = $('#language_DT');
+
+    oTable = table.dataTable({
+      "processing": true,
+      "serverSide": true,
+      "paging": false,
+      "ordering": false,
+      "info": false,
+      "searching": false,
+      "language": {
+        "lengthMenu": "_MENU_ entries",
+        "paginate": {
+          "previous": '<i class="fa fa-angle-left" ></i>',
+          "next": '<i class="fa fa-angle-right" ></i>'
+        }
+      },
+      "columns": [{
+          "title": "Language",
+          "data": "language",
+          orderable: true
+        },
+        {
+          "title": "Hint",
+          "data": "hint",
+          orderable: true
+        },
+        {
+          "title": "Total Users",
+          "data": "total_users",
+          orderable: false
+        },
+        {
+          "title": "Percentage (%)",
+          "data": "total_pr",
+          orderable: false
+        },
+      ],
+      responsive: true,
+      order: [
+          [2, 'DESC']
+      ],
+      "pageLength": 12,
+      "ajax": {
+        "data": {},
+        "url": "{{route('admin.dashboard.languagelisting')}}", // ajax source
+      },
+      drawCallback: function(oSettings) {
+        $('.status-switch').bootstrapSwitch();
+        $('.status-switch').bootstrapSwitch('onColor', 'success');
+        $('.status-switch').bootstrapSwitch('offColor', 'danger');
+      },
+      "dom": "<'row' <'col-md-12'>><'row'<'col-md-6 col-sm-12'l><'col-md-6 col-sm-12'f>r><'table-scrollable't><'row'<'col-md-5 col-sm-12'i><'col-md-7 col-sm-12'p>>", 
+      // horizobtal scrollable datatable
+    });
+
+
+  });
+</script>
+
+<!-- mode of registration with no of users listing dt -->
+<script type="text/javascript">
+  $(function() {
+    var table = $('#mode_of_registration_DT');
+
+    oTable = table.dataTable({
+      "processing": true,
+      "serverSide": true,
+      "paging": false,
+      "ordering": false,
+      "info": false,
+      "language": {
+        "lengthMenu": "_MENU_ entries",
+        "paginate": {
+          "previous": '<i class="fa fa-angle-left" ></i>',
+          "next": '<i class="fa fa-angle-right" ></i>'
+        }
+      },
+      "columns": [{
+          "title": "Language",
+          "data": "language",
+          orderable: true
+        },
+        {
+          "title": "Hint",
+          "data": "hint",
+          orderable: true
+        },
+        {
+          "title": "Total Users",
+          "data": "total_users",
+          orderable: false
+        },
+      ],
+      responsive: true,
+      order: [
+          [2, 'DESC']
+      ],
+      // "lengthMenu": [
+      //   [10, 20, 50, 100],
+      //   [10, 20, 50, 100]
+      // ],
+      "pageLength": 12,
+      "ajax": {
+        "data": {},
+        "url": "{{route('admin.dashboard.languagelisting')}}", // ajax source
+      },
+      drawCallback: function(oSettings) {
         $('.status-switch').bootstrapSwitch();
         $('.status-switch').bootstrapSwitch('onColor', 'success');
         $('.status-switch').bootstrapSwitch('offColor', 'danger');
