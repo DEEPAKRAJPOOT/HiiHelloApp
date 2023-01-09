@@ -48,20 +48,21 @@
 
                                 {{-- User Type --}}
                                 <div class="form-group" {{ $errors->has('parent_id') ? 'has-error' : '' }}>
-                                    <label for="user_type">{!!$mend_sign!!}User Type:</label>
+                                    <label for="user_type">{!!$mend_sign!!}Notifiaction Type:</label>
                                     <div class="custom-file">
                                         <div class="row">
-                                            <div class="col-md-2">
-                                                <input type="radio" id="All" name="user_type" value="All" data-error-container="#error-authorizable">
-                                                <label for="All">Send To All</label><br> 
-                                            </div>
-                                            <div class="col-md-2">
-                                                <input type="radio" id="Male" name="user_type" value="Male" data-error-container="#error-authorizable">
-                                                <label for="Male">Send To Male</label><br> 
-                                            </div>
-                                            <div class="col-md-2">
-                                                <input type="radio" id="Female" name="user_type" value="Female" data-error-container="#error-authorizable">
-                                                <label for="Female">Send To Female</label><br>
+                                            <div class="col-md-4">
+                                                <select class="form-control" name="user_type">
+                                                    <option value="">-- Select Type --</option>
+                                                    <option value="send_all">All</option>
+                                                    <option value="send_male">Male</option>
+                                                    <option value="send_female">Female</option>
+                                                    <option value="send_empty_profile_image">Empty Profile Image</option>
+                                                    <option value="send_less_then_15_pr">Less Then 15% Profile Percentage</option>
+                                                    <option value="send_unverified_photo">Unverified Photo</option>
+                                                    <option value="send_unverified_email">Unverified Email</option>
+                                                    <option value="send_unverified_phone">Unverified Phone</option>
+                                                </select>
                                             </div>
                                         </div>
                                         <span id="error-authorizable"></span>

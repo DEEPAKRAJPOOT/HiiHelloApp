@@ -33,10 +33,29 @@ class PushNotificationController extends Controller
             $title = $request->subject;
 
             $users = User::with('deviceToken')->whereIsActive('y');
-            if(!empty($request->user_type) && $request->user_type != 'All'){
-                $users = User::whereGender($request->user_type);
+            if(!empty($request->user_type) && $request->user_type != 'send_all'){
+                if ($request->user_type == "send_male") {
+                    $users = $users->where("Gender","Male");
+                }else if ($request->user_type == "send_female") {
+                    $users = $users->where("Gender","Female");
+                }else if ($request->user_type == "send_empty_profile_image") {
+                    $users = $users->whereNull("profile_photo");
+                }else if ($request->user_type == "send_less_then_15_pr") {
+                    $users = $users->where("profile_percentage","<","15");
+                }else if ($request->user_type == "send_unverified_photo") {
+                    $users = $users->whereNull("photo_verified_at");
+                }else if ($request->user_type == "send_unverified_photo") {
+                    $users = $users->whereNull("email_verified_at");
+                }else if ($request->user_type == "send_unverified_photo") {
+                    $users = $users->whereNull("contact_verified_at");
+                }else{
+                    flash('Unable to send push notification Please select valid type.')->error();
+                    return redirect(route('admin.push-notification.index'));
+                }
             }
+            $users = $users->limit(1);
             $users = $users->get();
+            // echo "<pre>"; print_r($users->toArray()); die();
 
             $notification = [
                 'custom_id'     =>  getUniqueString('notifications'),
