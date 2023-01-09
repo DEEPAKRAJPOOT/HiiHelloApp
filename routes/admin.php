@@ -54,8 +54,10 @@ Route::group(['namespace' => 'Admin', 'middleware' => ['check_permit', 'revalida
 	Route::get('users/listing', 'UsersController@listing')->name('users.listing');
 	Route::post('users/genderupdate', 'UsersController@gender_update')->name('users.genderupdate');
 	Route::post('users/bulk_gender_update', 'UsersController@bulk_gender_update')->name('users.bulk_gender_update');
+	Route::post('users/single_gender_update', 'UsersController@single_gender_update')->name('users.single_gender_update');
 	Route::post('users/bulk_photo_verification', 'UsersController@bulk_photo_verification')->name('users.bulk_photo_verification');
 	
+	Route::get('unde_review/listing', 'UsersController@under_review_listing')->name('users.under-review-listing');
 	Route::get('users/unde_review', 'UsersController@unde_review')->name('users.unde-review');
 	Route::get('users/deleted', 'UsersController@deleted')->name('users.deleted');
 	Route::resource('users', 'UsersController');

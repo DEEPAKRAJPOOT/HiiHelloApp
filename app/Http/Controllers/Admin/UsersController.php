@@ -1108,6 +1108,179 @@ class UsersController extends Controller
         // dd($records);
         return $records;
     }
+    public function under_review_listing(Request $request)
+    {        
+        extract($this->DTFilters($request->all()));
+
+        DB::enableQueryLog();
+
+        $flgPendingProfile = $request->flgPendingProfile;        
+        $from_date         = ($request->from_date) ? $request->from_date." 00:00:00" : "";
+        $to_date           = ($request->to_date) ? $request->to_date." 23:59:59" : "";
+        $gender_filter     = ($request->gender_filter) ? $request->gender_filter : "";
+        $profile_percentage     = ($request->profile_percentage) ? $request->profile_percentage : "";
+
+        $records = [];
+        $users = User::with('userTransDefault','location')->orderBy($sort_column, $sort_order);
+
+        if ($search != '') {
+            $users->where(function ($query) use ($search) {
+                $query->Where('account_id', 'like', "%{$search}%")
+                    ->orWhere('profile_percentage', 'like', "%{$search}%")
+                    ->orWhere('country_code', 'like', "%{$search}%")
+                    ->orWhere('contact_no', 'like', "%{$search}%")
+                    ->orWhere('gender', 'like', "%{$search}%")
+                    ->orWhere('interest', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%")
+                    ->orWhereHas('userTransDefault', function ($q) use ($search) {
+                        $q->where('full_name', 'like', "%{$search}%");
+                    });
+            });
+        }
+
+        // For Pending Profile Verify
+        if($flgPendingProfile > 0) {
+            //verify_photo not null
+            $users->where('verify_photo_status', '=' , 'under_review')->where('verify_photo', '!=' , '');
+        }
+
+        if($request->is_deleted_list == 'yes') {
+            //verify_photo not null
+            $users->onlyTrashed();
+        }
+
+        // ST - Filter
+        if($from_date != "" && $to_date != "") {
+            $users = $users->whereBetween('created_at', [$from_date, $to_date]);
+        }
+        if($gender_filter != "") {
+            $users = $users->where('gender', $gender_filter);
+        }
+        if($profile_percentage != "") {
+            $users = $users->where('profile_percentage', $profile_percentage);
+        }
+        if($request->profile_percentage != '' && $request->profile_percentage == 0 || $request->profile_percentage == '0') {
+            $users = $users->where('profile_percentage',0);
+        }
+        // EN - Filter
+
+        $count = $users->count();
+
+        $records['recordsTotal'] = $count;
+        $records['recordsFiltered'] = $count;
+        $records['data'] = [];
+
+       
+        $users = $users->offset($offset)->limit($limit)->orderBy($sort_column, $sort_order);
+
+        $users = $users->get();
+
+        // dd(DB::getQueryLog());
+        // exit();
+
+        foreach ($users as $user) {
+
+            $params = [
+                'checked' => ($user->is_active == 'y' ? 'checked' : ''),
+                'getaction' => $user->is_active,
+                'class' => '',
+                'id' => $user->custom_id,
+                'user_id' => $user->id,
+                'male_user' => ($user->gender == 'Male' ? 'selected' : ''),
+                'female_user' => ($user->gender == 'Female' ? 'selected' : ''),
+                'na_user' => ($user->gender == '' ? 'selected' : ''),
+            ];
+
+            if (!empty($user->latitude)) {
+                $latitude = $user->latitude;
+            }
+            else{
+                $latitude = "-";
+            }
+
+            if (!empty($user->longitude)) {
+                $longitude = $user->longitude;
+            }
+            else{
+                $longitude = "-";
+            }
+
+            if (!empty($user->device_type)) {
+                $device_type = $user->device_type;
+            }
+            else{
+                $device_type = "-";
+            }
+
+            if (!empty($user->device_app_version)) {
+                $device_app_version = $user->device_app_version;
+            }
+            else{
+                $device_app_version = "-";
+            }
+
+            if (!empty($user->app_delete)) {
+                if ($user->app_delete == 'y') {
+                    $app_delete = "App";
+                }else{
+                    $app_delete = "Web";
+                }
+            }
+            else{
+                $app_delete = "-";
+            }
+
+            if($flgPendingProfile > 0) {
+
+                $records['data'][] = [
+                    'id' => $user->id,
+                    'profile_photo' => view('admin.layouts.includes.photos_verify')->with(['user_id' => $user->id,'profile_photo' => $user->profile_photo  ?? 'N/A', 'is_profile_photo' => 1, 'is_verify_photo' => 0])->render(),
+                    'verify_photo' => view('admin.layouts.includes.photos_verify')->with(['user_id' => $user->id,'verify_photo' => $user->verify_photo  ?? 'N/A', 'is_profile_photo' => 0, 'is_verify_photo' => 1])->render(),
+                    'account_id' => $user->account_id ?? "N/A",
+                    'full_name' =>  $user->userTransDefault ? $user->userTransDefault->full_name : "N/A",
+                    'gender' => view('admin.layouts.includes.gender', compact('params'))->render(),
+                    'profile_percentage' =>  $user->profile_percentage,
+                    'contact_no' => $user->contact_no ? '<a href="tel:' . $user->country_code . '' . $user->contact_no . '" >' . $user->country_code . '' . $user->contact_no . '</a>' : 'N/A',
+                    'email' => $user->email ? '<a href="mailto:' . $user->email . '" >' . $user->email . '</a>' : 'N/A',                    
+                    'city' => $user->location->name ?? 'N/A',                
+                    'device_app_version' => $device_type.'/'.$device_app_version,                
+                    'lat_long' => $latitude.','.$longitude,                
+                    'app_delete' => $app_delete,                
+                    'created_at' => date('Y-m-d H:i:s', strtotime($user->created_at)) ?? 'N/A',
+                    'active' => view('admin.layouts.includes.switch', compact('params'))->render(),
+                    'action' => view('admin.layouts.includes.actions')->with(['custom_title' => 'User', 'id' => $user->custom_id], $user)->render(),
+                    'status' => view('admin.layouts.includes.unde_review_status',compact('params'))->render(),
+                    'checkbox' => view('admin.layouts.includes.checkbox', compact('params'))->with('id', $user->custom_id)->render(),
+                ];
+
+            } else {
+
+                $records['data'][] = [
+                    'id' => $user->id, 
+                    'profile_photo' => view('admin.layouts.includes.photos_verify')->with(['user_id' => $user->id,'profile_photo' => $user->profile_photo  ?? 'N/A', 'is_profile_photo' => 1, 'is_verify_photo' => 0])->render(),
+                    'verify_photo' => view('admin.layouts.includes.photos_verify')->with(['user_id' => $user->id,'verify_photo' => $user->verify_photo  ?? 'N/A', 'is_profile_photo' => 0, 'is_verify_photo' => 1])->render(),                   
+                    'account_id' => $user->account_id ?? "N/A",
+                    'full_name' =>  $user->userTransDefault ? $user->userTransDefault->full_name : "N/A",
+                    'gender' => view('admin.layouts.includes.gender', compact('params'))->render(),
+                    'profile_percentage' =>  $user->profile_percentage,
+                    'contact_no' => $user->contact_no ? '<a href="tel:' . $user->country_code . '' . $user->contact_no . '" >' . $user->country_code . '' . $user->contact_no . '</a>' : 'N/A',
+                    'email' => $user->email ? '<a href="mailto:' . $user->email . '" >' . $user->email . '</a>' : 'N/A',                    
+                    'city' => $user->location->name ?? 'N/A',      
+                    'device_app_version' => $device_type.'/'.$device_app_version,                
+                    'lat_long' => $latitude.','.$longitude, 
+                    'app_delete' => $app_delete,               
+                    'created_at' => date('Y-m-d H:i:s', strtotime($user->created_at)) ?? 'N/A',
+                    'active' => view('admin.layouts.includes.switch', compact('params'))->render(),
+                    'action' => view('admin.layouts.includes.actions')->with(['custom_title' => 'User', 'id' => $user->custom_id], $user)->render(),
+                    'status' => view('admin.layouts.includes.unde_review_status',compact('params'))->render(),
+                    'checkbox' => view('admin.layouts.includes.checkbox', compact('params'))->with('id', $user->custom_id)->render(),
+                ];
+
+            }
+        }
+        // dd($records);
+        return $records;
+    }
 
     public function trashed()
     {
