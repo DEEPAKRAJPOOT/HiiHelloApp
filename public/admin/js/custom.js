@@ -262,6 +262,33 @@ $(function () {
         }
     });
 
+    $(document).on("click", "#SingleUpdateGenderStatus", function (e) {
+
+        e.preventDefault();
+        
+        var searchIDs       = [];
+        var searchAutoIDs   = [];
+
+        var id = $(this).attr('data-id');
+        searchIDs.push(id);
+        searchAutoIDs.push(id);
+
+        if (searchIDs.length == 0) {
+
+            Swal.fire({                
+                text: "Please select at least one checkbox.",
+                icon: "warning",
+                showConfirmButton: true,
+            });
+
+        } else {
+
+            $("#myModalPhotoVerification #multi_user_id").val(searchIDs);
+            $("#myModalPhotoVerification").modal('show');
+        }
+    });
+
+
     $(document).on("click", ".save_frm_gender", function (e) {
 
         e.preventDefault();
