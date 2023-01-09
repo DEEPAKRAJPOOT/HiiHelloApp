@@ -88,7 +88,7 @@
             processing: true,
             serverSide: true,
             ajax: {
-                url: "{{ route('admin.users.listing') }}",
+                url: "{{ route('admin.users.under-review-listing') }}",
                 data: {
                     columnsDef: ['checkbox', 'country_code', 'contact_no', 'gender','Created At', 'active', 'action'],                    
                 },
@@ -118,6 +118,7 @@
                 { data: 'contact_no' },
                 { data: 'email' },
                 { data: 'active' },
+                { data: 'status'},
                 { data: 'action'},
             ],
             columnDefs: [
@@ -133,6 +134,7 @@
                 { targets: 8, title: 'Contact Number', orderable: true },
                 { targets: 9, title: 'E-mail', orderable: true },
                 { targets: 10, title: 'Ban', orderable: false },
+                { targets: 11, title: 'status', orderable: false },
                 // Action buttons
                 { targets: -1, title: 'Action', orderable: false },
             ],
@@ -195,6 +197,9 @@
         </div>      
     </div>
 </div>
+
+<!-- Modal For Single user Photo Verification -->
+
 
 <div id="myimageModal" class="modal">
 
