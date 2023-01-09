@@ -59,7 +59,8 @@ class FilterController extends Controller
                                 $query->where('gender', $auth_interest);
                             }    // Interested in Gender
                         });
-
+                    $users = $users->whereNotNull('profile_photo');
+                    $users = $users->whereNotNull('location_id');
                     $users = $users->where(function ($query_filter)  use ($request) {
                         if (!empty($request->relationship_status)) {
                             $query_filter->orWhereHas('relationshipStatus', function ($query_relation) use ($request) {
@@ -89,6 +90,7 @@ class FilterController extends Controller
                         }
                     });
 
+                    
                     $users = $users->orderBy('distance');
                     $count = $users->count();
                     $users = $users->limit($request->limit ?? config('utility.pagination.limit'))

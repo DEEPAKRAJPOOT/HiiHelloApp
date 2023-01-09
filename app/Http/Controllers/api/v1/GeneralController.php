@@ -689,17 +689,6 @@ class GeneralController extends Controller
         $locationRequest = new CheckLocationRequest();
         if ($this->apiValidator($request->all(), $locationRequest->rules())) {    
 
-            // $language_codes = Language::pluck('lang_code')->toArray();
-            // foreach ($language_codes as $language_code) {
-            //     LocationTranslation::create([
-            //         'locale' => $language_code,
-            //         'location_id' => $location_id,
-            //         'name' => $location_name,
-            //         'locality' => $locality,
-            //         'state' => $state,
-            //     ]);
-            // }
-
              try {
                 $location_name = $request->location; 
                 $locality = isset($request->locality) ? $request->locality : ''; 
@@ -715,13 +704,13 @@ class GeneralController extends Controller
                 )
                     ->join('location_translations', 'locations.id', '=', 'location_translations.location_id')
                     ->where('location_translations.locale', $lang)
-                    ->where('location_translations.state', $state)
-                    ->where('location_translations.name', 'like', "{$location_name}%")
+                    ->where('location_translations.name', 'like', "%{$location_name}%")
+                    ->where('location_translations.state', 'like', "%{$state}%")
                     ->orderBy('location_translations.name');
                 $locations = $locations->get();
                 if ($locations->isEmpty())
                 {         
-                    $location_Translation = LocationTranslation::where('name', 'like', "{$location_name}%")->where('state', 'like', "{$state}%")->first();
+                    $location_Translation = LocationTranslation::where('name', 'like', "%{$location_name}%")->where('state', 'like', "%{$state}%")->first();
                     if (empty($location_Translation)) {
 
                         $location_data      = Location::create([
@@ -750,13 +739,14 @@ class GeneralController extends Controller
                          )
                         ->join('location_translations', 'locations.id', '=', 'location_translations.location_id')
                         ->where('location_translations.locale', $lang)
-                        ->where('location_translations.name', 'like', "{$location_name}%")
+                        ->where('location_translations.name', 'like', "%{$location_name}%")
+                        ->where('location_translations.state', 'like', "%{$state}%")
                         ->orderBy('location_translations.name');
                         $locations = $locations->get();
                     }
                     else
                     {
-                        $locationTranslation = LocationTranslation::where('name', 'like', "{$location_name}%")->first();
+                        $locationTranslation = LocationTranslation::where('name', 'like', "%{$location_name}%")->where('state', 'like', "%{$state}%")->first();
                         if ($locationTranslation == '') {
                             $location_data     = Location::create([
                                 'custom_id'     => getUniqueString('locations'),
@@ -786,7 +776,8 @@ class GeneralController extends Controller
                          )
                         ->join('location_translations', 'locations.id', '=', 'location_translations.location_id')
                         ->where('location_translations.locale', $lang)
-                        ->where('location_translations.name', 'like', "{$location_name}%")
+                        ->where('location_translations.name', 'like', "%{$location_name}%")
+                        ->where('location_translations.state', 'like', "%{$state}%")
                         ->orderBy('location_translations.name');
                         $locations = $locations->get();
                     }
@@ -794,13 +785,8 @@ class GeneralController extends Controller
                 }
                 else
                 {
-                    $locationTranslation = LocationTranslation::where('name', 'like', "{$location_name}%")->first();
-                    if (empty($locationTranslation['state']) && $state != '') {
-                        LocationTranslation::updateOrCreate([
-                            'id'         =>  $locationTranslation->id,
-                        ],[
-                            'state'      =>  $state,
-                        ]);
+                    $locationTranslation = LocationTranslation::where('name', 'like', "%{$location_name}%")->where('state', 'like', "%{$state}%")->first();
+                    if (empty($locationTranslation)) {
 
                         $locations = Location::select(                    
                             'locations.custom_id',
@@ -811,7 +797,8 @@ class GeneralController extends Controller
                          )
                         ->join('location_translations', 'locations.id', '=', 'location_translations.location_id')
                         ->where('location_translations.locale', $lang)
-                        ->where('location_translations.name', 'like', "{$location_name}%")
+                        ->where('location_translations.name', 'like', "%{$location_name}%")
+                        ->where('location_translations.state', 'like', "%{$state}%")
                         ->orderBy('location_translations.name');
                         $locations = $locations->get();
                     }else{
@@ -824,7 +811,8 @@ class GeneralController extends Controller
                          )
                         ->join('location_translations', 'locations.id', '=', 'location_translations.location_id')
                         ->where('location_translations.locale', $lang)
-                        ->where('location_translations.name', 'like', "{$location_name}%")
+                        ->where('location_translations.name', 'like', "%{$location_name}%")
+                        ->where('location_translations.state', 'like', "%{$state}%")
                         ->orderBy('location_translations.name');
                         $locations = $locations->get();
                     }
