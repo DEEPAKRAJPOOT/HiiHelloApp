@@ -92,7 +92,11 @@ class TrasactionListController extends Controller
                 'status' => $transaction->status,
                 'payment_type' => isset($transaction->payment_type) && !empty($transaction->payment_type) ? $transaction->payment_type : "N/A",
                 'purchase_date' => isset($transaction->purchase_date) && !empty($transaction->purchase_date) ? date("d-m-Y",strtotime($transaction->purchase_date)) : "N/A",
+
                 'subscription_end_date' => isset($transaction->subscription_end_date) && !empty($transaction->subscription_end_date) ? date("d-m-Y",strtotime($transaction->subscription_end_date)) : "N/A",
+
+                'original_purchase_date' => isset($transaction->original_purchase_date) && !empty($transaction->original_purchase_date) ? date("d-m-Y",strtotime($transaction->original_purchase_date)) : "N/A",
+
                 'action' => view('admin.layouts.includes.actions')->with(['custom_title' => 'Subscriptions', 'id' => $transaction->custom_id], $transaction)->render(),
 
             ];
