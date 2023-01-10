@@ -65,7 +65,7 @@ class PushNotificationController extends Controller
                 'title'         =>  $title,
                 'message'       =>  $request->message,
                 'image'         =>  '',
-                'type'          =>  config('utility.notification.type.send_by_admin'),
+                'type'          =>  config('utility.notification.type.profile_verified'),
             ];
                 
             $this->sendPushNotificationToAll($notification, $users);
