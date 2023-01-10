@@ -32,6 +32,7 @@ class PushNotificationController extends Controller
         if(  $request->has('user_type') && $request->has('subject') && $request->has('message') ) {
             $title = $request->subject;
 
+            $today_date = date("Y-m-d");
             $users = User::with('deviceToken')->whereIsActive('y');
             if(!empty($request->user_type) && $request->user_type != 'send_all'){
                 if ($request->user_type == "send_male") {
@@ -48,6 +49,10 @@ class PushNotificationController extends Controller
                     $users = $users->whereNull("email_verified_at");
                 }else if ($request->user_type == "send_unverified_phone") {
                     $users = $users->whereNull("contact_verified_at");
+                }else if ($request->user_type == "send_paid_male_subscription_not_expired") {
+                    $users = $users->where("is_subscribed","y")->where("subscription_end_date",">",$today_date);
+                }else if ($request->user_type == "send_paid_male_subscription_expired") {
+                    $users = $users->where("is_subscribed","n")->where("subscription_end_date","<",$today_date);
                 }else{
                     flash('Unable to send push notification Please select valid type.')->error();
                     return redirect(route('admin.push-notification.index'));
