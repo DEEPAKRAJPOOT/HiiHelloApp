@@ -40,8 +40,8 @@ class PushNotificationController extends Controller
                     $users = $users->where("Gender","Female");
                 }else if ($request->user_type == "send_empty_profile_image") {
                     $users = $users->whereNull("profile_photo");
-                }else if ($request->user_type == "send_less_then_15_pr") {
-                    $users = $users->where("profile_percentage","<","15");
+                }else if ($request->user_type == "send_less_then_20_pr") {
+                    $users = $users->where("profile_percentage","<","20");
                 }else if ($request->user_type == "send_unverified_photo") {
                     $users = $users->whereNull("photo_verified_at");
                 }else if ($request->user_type == "send_unverified_photo") {
