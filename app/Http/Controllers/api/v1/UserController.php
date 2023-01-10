@@ -10,7 +10,7 @@ use App\Http\Resources\v1\{UserProfile, UserDetailResource, MyProfile};
 use App\Http\Requests\Api\User\{ProfileRequest, ProfileReportRequest, SetLatLongRequest};
 use App\Http\Requests\Api\Authentication\{DeleteAccountRequest};
 use App\Http\Requests\Api\General\{PaginationRequest};
-use App\Models\{User, Location, ProfileReport, NotificationStatus, Language};
+use App\Models\{User, Location, ProfileReport, NotificationStatus, Language,LocationTranslation};
 
 class UserController extends Controller
 {
@@ -258,6 +258,18 @@ class UserController extends Controller
         if( $this->apiValidator($request->all(), $setLatLongRequest->rules()) ) {
             try{
                 $user = $request->user();
+
+                //if db lat and long eampty and new lat and long not empty then lat and log to update location id user 09-01-23
+                if (empty($user->latitude) && empty($user->longitude) && !empty($request->latitude) && !empty($request->longitude)) {
+                    $location_id = $this->get_user_location($request->latitude,$request->longitude);
+                    if (!empty($location_id)) {
+                        $user->location_id = $location_id;
+                        $user->discover_location_id = $location_id;
+                        $user->new_location_id = 'y';
+                        $user->latitude = $request->latitude;
+                        $user->longitude = $request->longitude;
+                    }
+                }
                 $user->current_latitude = $request->latitude;
                 $user->current_longitude = $request->longitude;
                 $user->save(); 
@@ -313,5 +325,65 @@ class UserController extends Controller
             };
         }
         return $this->returnResponse();
+    }
+
+    // User get location id using lat and logn
+    public function get_user_location($lat,$long)
+    {
+        $apiKey = 'AIzaSyDInVSLHXa1FXO3p7kgA7B_TK9L71tZbW8';
+        $latlng = $lat.','.$long;
+        $result = [];
+        $location_id = '';
+
+        $url = "https://maps.googleapis.com/maps/api/geocode/json?latlng=".$latlng."&sensor=true&key=".$apiKey;
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);    
+        $responseJson = curl_exec($ch);
+        curl_close($ch);
+        $response = json_decode($responseJson);
+        if (!empty($response) && !empty($response->results[0]->address_components)) {
+            foreach ($response->results[0]->address_components as $key => $value) {
+                if ($value->types[0] == "administrative_area_level_3") {
+                    $result['city'] = trim($value->long_name);
+                }
+                if ($value->types[0] == "administrative_area_level_1") {
+                    $result['state'] = trim($value->long_name);
+                }
+
+                // check city and state not empty
+                if (!empty($result) && !empty($result['city']) && !empty($result['state'])) {
+                    // if already exist city and state then get id and update user location id
+                    $locationTranslation = LocationTranslation::where('name',$result['city'])->where('state',$result['state'])->where('locale','en')->first();
+                    if (!empty($locationTranslation)) {
+                        $location_id = $locationTranslation->location_id;
+
+                        // update location table for city is used some one users
+                        Location::where('id',$location_id)->update([ 
+                            'is_used' =>  'y',
+                        ]);
+                    }
+                    else
+                    {
+                        // if city and state not exits then create new
+                        $location = new Location();        
+                        $location->custom_id = getUniqueString('locations');  
+                        $location->is_used   = 'y';  
+                        $location->is_new    = 'y';  
+                        $location->save();
+
+                        $location_id = $location->id;
+
+                        $LocationTranslation = new LocationTranslation();
+                        $LocationTranslation->locale = 'en';  
+                        $LocationTranslation->location_id = $location_id;  
+                        $LocationTranslation->name = $result['city'];  
+                        $LocationTranslation->state = $result['state'];  
+                        $LocationTranslation->save();
+                    }
+                }
+            }
+            return $location_id;
+        }
     }
 }
