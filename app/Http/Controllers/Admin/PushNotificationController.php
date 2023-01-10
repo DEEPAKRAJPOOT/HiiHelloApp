@@ -60,22 +60,26 @@ class PushNotificationController extends Controller
             }
             $users = $users->whereIn("id",[61037,60997,61039,1493]);
             $users = $users->get();
-            // echo "<pre>"; print_r($users->toArray()); die();
-
-            $notification = [
-                'custom_id'     =>  getUniqueString('notifications'),
-                'key'           =>  'push_notification',
-                'value'         =>  'Push Notification Send By Admin',
-                'user_id'       =>  $request->user_type,
-                'title'         =>  $title,
-                'message'       =>  $request->message,
-                'image'         =>  '',
-                'type'          =>  config('utility.notification.type.send_by_admin'),
-            ];
-                
-            $this->sendPushNotificationToAll($notification, $users);
+            if (count($users) > 0) {
+                $notification = [
+                    'custom_id'     =>  getUniqueString('notifications'),
+                    'key'           =>  'push_notification',
+                    'value'         =>  'Push Notification Send By Admin',
+                    'user_id'       =>  $request->user_type,
+                    'title'         =>  $title,
+                    'message'       =>  $request->message,
+                    'image'         =>  '',
+                    'type'          =>  config('utility.notification.type.send_by_admin'),
+                ];
+                    
+                $this->sendPushNotificationToAll($notification, $users);
             
-            flash('Push Notification Send successfully!')->success();
+                flash('Push Notification Send successfully!')->success();
+            }
+            else
+            {
+                flash('No user data for send push notification.')->error();
+            }
         } else {
             flash('Unable to send push notification Please try again later.')->error();
         }
