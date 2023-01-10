@@ -44,16 +44,16 @@ class PushNotificationController extends Controller
                     $users = $users->where("profile_percentage","<","20");
                 }else if ($request->user_type == "send_unverified_photo") {
                     $users = $users->whereNull("photo_verified_at");
-                }else if ($request->user_type == "send_unverified_photo") {
+                }else if ($request->user_type == "send_unverified_email") {
                     $users = $users->whereNull("email_verified_at");
-                }else if ($request->user_type == "send_unverified_photo") {
+                }else if ($request->user_type == "send_unverified_phone") {
                     $users = $users->whereNull("contact_verified_at");
                 }else{
                     flash('Unable to send push notification Please select valid type.')->error();
                     return redirect(route('admin.push-notification.index'));
                 }
             }
-            $users = $users->limit(1);
+            $users = $users->whereIn("id",[61037,60997,61039,1493]);
             $users = $users->get();
             // echo "<pre>"; print_r($users->toArray()); die();
 
