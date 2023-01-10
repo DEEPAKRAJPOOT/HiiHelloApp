@@ -58,7 +58,7 @@
                                                     <option value="send_male">Male</option>
                                                     <option value="send_female">Female</option>
                                                     <option value="send_empty_profile_image">Empty Profile Image</option>
-                                                    <option value="send_less_then_15_pr">Less Then 15% Profile Percentage</option>
+                                                    <option value="send_less_then_20_pr">Less Then 20% Profile Percentage</option>
                                                     <option value="send_unverified_photo">Unverified Photo</option>
                                                     <option value="send_unverified_email">Unverified Email</option>
                                                     <option value="send_unverified_phone">Unverified Phone</option>
