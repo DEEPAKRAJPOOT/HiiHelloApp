@@ -189,11 +189,7 @@
                 { data: 'razorpay_order_id' },
                 { data: 'amount' },
                 { data: 'purchase_date' },
-
                 { data: 'subscription_end_date' },
-
-                
-
                 { data: 'payment_type' },
                 { data: 'action', responsivePriority: -1 },
             ],

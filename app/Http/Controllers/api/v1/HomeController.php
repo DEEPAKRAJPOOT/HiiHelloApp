@@ -51,8 +51,7 @@ class HomeController extends Controller
                             'verify_photo_status', 
                             'verify_email_send',
                             'email_verified_at',
-                            'contact_verified_at',  
-                            'trusted_score',                         
+                            'contact_verified_at',                           
                             'is_active',
                             DB::raw("3959 * 1.609344 * acos(cos(radians(" . $latitude . ")) 
                             * cos(radians(users.latitude)) 
@@ -75,8 +74,7 @@ class HomeController extends Controller
                             'verify_photo_status', 
                             'verify_email_send',
                             'email_verified_at',
-                            'contact_verified_at',  
-                            'trusted_score',                            
+                            'contact_verified_at',     
                             'interest',
                             'location_id',
                             'language_id',
@@ -88,7 +86,6 @@ class HomeController extends Controller
                     $users = $users->with(['userDetails', 'interests.interest.interestTranslation', 'userTranslation', 'location.locationTranslation'])
                         ->where('id', '!=', $auth_id)
                         ->whereNotNull('profile_photo')
-                        ->whereNotNull('location_id')
                         ->whereIsActive('y');
 
                         if ($auth_interest != 'Both') {

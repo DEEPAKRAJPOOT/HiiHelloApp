@@ -13,7 +13,7 @@ use App\Console\Commands\RenewSwipeLimit;
 use App\Console\Commands\ChatMediaCheker;
 use App\Console\Commands\AutoVerifyProfile;
 use App\Console\Commands\LocationTranslations;
-use App\Console\Commands\TrustScore;
+
 use App\Console\Commands\AdminDashboard;
 
 class Kernel extends ConsoleKernel
@@ -33,7 +33,7 @@ class Kernel extends ConsoleKernel
         ChatMediaCheker::class,
         AutoVerifyProfile::class,
         LocationTranslations::class,
-        TrustScore::class,
+
         AdminDashboard::class,
     ];
 
@@ -118,11 +118,6 @@ class Kernel extends ConsoleKernel
         })->everyFifteenMinutes();
         
 
-        // Calculate Trust Scroe on the first day of every month at 2:00
-        $schedule->call(function () {
-            $scheculeCommand = new TrustScore;
-            $scheculeCommand->handle();
-        })->monthlyOn(1, '2:00');        
     
         // $schedule->command('inspire')->hourly();
     }

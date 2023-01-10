@@ -31,10 +31,6 @@ class LoginResource extends JsonResource
             'interests'         =>  HomeInterestResource::collection($this->interests),
             'language'          =>  new LanguageResource($this->language),
             'profile_photo'     =>  generateURL($this->profile_photo) ?? "",
-            'is_email_verify'   =>  ($this->emailVerifyStatus()=='verified') ? true : false,
-            'is_contact_verify' =>  ($this->contactVerifyStatus()=='verified') ? true : false,
-            'is_photo_verify'   =>  ($this->verify_photo_status=='verified') ? true : false,
-            'trusted_score'     =>  $this->trusted_score,
             'media' =>  [
                 'profile_images'    =>  $this->getProfileImages(),
                 'profile_videos'    =>  $this->getProfileVideos(),
