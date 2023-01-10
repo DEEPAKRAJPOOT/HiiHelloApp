@@ -62,6 +62,8 @@
                                                     <option value="send_unverified_photo">Unverified Photo</option>
                                                     <option value="send_unverified_email">Unverified Email</option>
                                                     <option value="send_unverified_phone">Unverified Phone</option>
+                                                    <option value="send_paid_male_subscription_not_expired">Paid Male subscription still not expired</option>
+                                                    <option value="send_paid_male_subscription_expired">Paid Male subscription still expired</option>
                                                 </select>
                                             </div>
                                         </div>
