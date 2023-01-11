@@ -172,7 +172,7 @@ class GoogleTransForAdmin extends Command
 
                     $transaction_data = [
                         $language_allowed    =>  [
-                            $column =>  $translatedText,
+                            $column =>  trim($translatedText),
                         ],
                     ];
                     $module->update($transaction_data);

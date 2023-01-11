@@ -37,7 +37,7 @@
                             <label class="control-label"><span class="mendatory" style="font-size: 20px;"></span>Account Id : <b>@if($user->account_id) {{ $user->account_id }} @else - @endif </b></label>
                         </div>
                         <div class="mb-2">
-                            <label class="control-label"><span class="mendatory" style="font-size: 20px;"></span>Profile Percentage : <b>{{ $user->calculateProfilePercent() }} %</b></label>
+                            <label class="control-label"><span class="mendatory" style="font-size: 20px;"></span>Profile Percentage : <b>{{ $user->profile_percentage }} %</b></label>
                         </div>
                         <div class="mb-2">
                             <label class="control-label"><span class="mendatory" style="font-size: 20px;"></span>Full Name : <b>@if($user->userTransDefault) {{ $user->userTransDefault->full_name }} @else - @endif </b></label>
@@ -59,7 +59,16 @@
                                 {{ $user->location->locationTransDefault->name }}
                             @else
                                 - 
-                            @endif </b></label>
+                            @endif </b>
+                            </label>
+                        </div> 
+                        <div class="mb-2">
+                            <label class="control-label"><span class="mendatory" style="font-size: 20px;"></span>State : <b>@if($user->location && $user->location->locationTransDefault) 
+                                {{ $user->location->locationTransDefault->state }}
+                            @else
+                                - 
+                            @endif </b>
+                            </label>
                         </div>
                         <div class="mb-2">
                             <label class="control-label"><span class="mendatory" style="font-size: 20px;"></span>Country : <b>@if($user->country && $user->country->countryTransDefault) 
@@ -224,6 +233,54 @@
                                     @else
                                         - 
                                     @endif 
+                                </b>
+                            </label>
+                        </div>
+                        <div class="mb-2">
+                            <label class="control-label">
+                                <span class="mendatory" style="font-size: 20px;"></span>Latitude : 
+                                <b>
+                                    @if($user->latitude)
+                                        {{ $user->latitude }} 
+                                    @else
+                                        - 
+                                    @endif 
+                                </b>
+                            </label>
+                        </div>
+                        <div class="mb-2">
+                            <label class="control-label">
+                                <span class="mendatory" style="font-size: 20px;"></span>Longitude : 
+                                <b>
+                                    @if($user->longitude)
+                                        {{ $user->longitude }} 
+                                    @else
+                                        - 
+                                    @endif
+                                </b>
+                            </label>
+                        </div>
+                        <div class="mb-2">
+                            <label class="control-label">
+                                <span class="mendatory" style="font-size: 20px;"></span>Device Type : 
+                                <b>
+                                    @if($user->device_type)
+                                        {{ $user->device_type }} 
+                                    @else
+                                        - 
+                                    @endif 
+                                </b>
+                            </label>
+                        </div>
+                        <div class="mb-2">
+                            <label class="control-label">
+                                <span class="mendatory" style="font-size: 20px;"></span>App Version : 
+                                <b>
+                                    @if($user->device_app_version)
+                                        {{ $user->device_app_version }} 
+                                    @else
+                                        - 
+                                    @endif
                                 </b>
                             </label>
                         </div>

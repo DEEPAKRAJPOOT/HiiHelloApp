@@ -262,6 +262,33 @@ $(function () {
         }
     });
 
+    $(document).on("click", "#SingleUpdateGenderStatus", function (e) {
+
+        e.preventDefault();
+        
+        var searchIDs       = [];
+        var searchAutoIDs   = [];
+
+        var id = $(this).attr('data-id');
+        searchIDs.push(id);
+        searchAutoIDs.push(id);
+
+        if (searchIDs.length == 0) {
+
+            Swal.fire({                
+                text: "Please select at least one checkbox.",
+                icon: "warning",
+                showConfirmButton: true,
+            });
+
+        } else {
+
+            $("#myModalPhotoVerification #multi_user_id").val(searchIDs);
+            $("#myModalPhotoVerification").modal('show');
+        }
+    });
+
+
     $(document).on("click", ".save_frm_gender", function (e) {
 
         e.preventDefault();
@@ -502,6 +529,40 @@ function user_match_data(user_id){
                 {
                     var nostr = '<tr>No data found..</tr>';
                     $("#user_match_table_body").html(nostr);
+                }
+            },
+        });
+    }
+}
+
+function user_apilog_data(user_id){
+
+    var url = $(".usermatchmodel").attr('data-url');
+    if (url != '' && user_id != '') {
+        $.ajax({
+            url: url,
+            type: "POST",
+            dataType: "json",
+            data: {
+                _token: $("meta[name='csrf-token']").attr("content"),
+                user_id: user_id,
+            },
+            cache: false,
+            success: function (responce) {
+                var str =''; 
+                if (responce != '') {
+                    var req = JSON.parse(responce.request);
+                    str +='<tr><td>'+responce.account_id+'</td><td>'+responce.full_name+'</td><td>'+responce.created_at+'</td></tr>';
+                    str +='<tr><td>'+req.gender+'</td><td></td><td>'+req.birth_date+'</td></tr>';
+                    str +='<tr><td>'+req.gender+'</td><td></td><td>'+req.birth_date+'</td></tr>';
+                    str +='<tr><td>'+req.gender+'</td><td></td><td>'+req.birth_date+'</td></tr>';
+                    str +='<tr><td>'+req.gender+'</td><td></td><td>'+req.birth_date+'</td></tr>';
+                    $("#user_api_log").html(str);
+                }
+                else
+                {
+                    var nostr = '<tr>No data found..</tr>';
+                    $("#user_api_log").html(nostr);
                 }
             },
         });
