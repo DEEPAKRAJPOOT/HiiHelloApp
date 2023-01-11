@@ -146,12 +146,12 @@ class HomeController extends Controller
                             $query->orWhereIn('language_id', $languages);   // Languages
                         }
                     });
-                    $users = $users
-                        ->leftJoin('user_interests', 'user_interests.user_id',  '=', 'users.id')
-                        ->orderBy('email_verified_at', "DESC")
+
+                    // $users = $users->leftJoin('user_interests', 'user_interests.user_id',  '=', 'users.id')
+                    $users = $users->orderBy('email_verified_at', "DESC")
                         ->orderBy('contact_verified_at', "DESC")
                         ->orderBy('photo_verified_at', "DESC")
-                        ->orderBy('user_interests.interest_id', "DESC")
+                        // ->orderBy('user_interests.interest_id', "DESC")
                         ->orderBy('profile_percentage', "DESC");
                     $count = $users->count();
                     $users = $users->limit($request->limit ?? config('utility.pagination.limit'))
