@@ -52,6 +52,8 @@ class FilterController extends Controller
                             'userDetails', 'interests', 'interests.interest.interestTranslation',
                             'userTranslation', 'location.locationTranslation'
                         ])
+                        ->whereNotNull('profile_photo')
+                        ->whereNotNull('location_id')
                         ->where(function ($query)  use ($auth_id, $auth_interest) {
                             $query->where('id', '!=', $auth_id)->whereIsActive('y');
 
@@ -61,27 +63,27 @@ class FilterController extends Controller
                         });
 
                     $users = $users->where(function ($query_filter)  use ($request) {
-                        if (!empty($request->relationship_status)) {
-                            $query_filter->orWhereHas('relationshipStatus', function ($query_relation) use ($request) {
-                                $query_relation->whereSlug($request->relationship_status)->whereIsActive('y');
-                            });
-                        }
-                        if (!empty($request->personalities)) {
-                            $query_filter->orWhereHas('personalities.personality', function ($query_personality) use ($request) {
-                                $query_personality->whereIn('custom_id', $request->personalities)->whereIsActive('y');
-                            });
-                        }
-                        if (!empty($request->star_sign)) {
-                            $query_filter->orWhereHas('starSign', function ($query_star_sign) use ($request) {
-                                $query_star_sign->whereSlug($request->star_sign)->whereIsActive('y');
-                            });
-                        }
-                        if (!empty($request->fav_movie)) {
-                            $fav_movie = $request->fav_movie;
-                            $query_filter->orWhereHas('userTranslations', function ($query_fav_movie) use ($fav_movie) {
-                                $query_fav_movie->where('fav_movie', 'like', "%{$fav_movie}%");
-                            });
-                        }
+                        // if (!empty($request->relationship_status)) {
+                        //     $query_filter->orWhereHas('relationshipStatus', function ($query_relation) use ($request) {
+                        //         $query_relation->whereSlug($request->relationship_status)->whereIsActive('y');
+                        //     });
+                        // }
+                        // if (!empty($request->personalities)) {
+                        //     $query_filter->orWhereHas('personalities.personality', function ($query_personality) use ($request) {
+                        //         $query_personality->whereIn('custom_id', $request->personalities)->whereIsActive('y');
+                        //     });
+                        // }
+                        // if (!empty($request->star_sign)) {
+                        //     $query_filter->orWhereHas('starSign', function ($query_star_sign) use ($request) {
+                        //         $query_star_sign->whereSlug($request->star_sign)->whereIsActive('y');
+                        //     });
+                        // }
+                        // if (!empty($request->fav_movie)) {
+                        //     $fav_movie = $request->fav_movie;
+                        //     $query_filter->orWhereHas('userTranslations', function ($query_fav_movie) use ($fav_movie) {
+                        //         $query_fav_movie->where('fav_movie', 'like', "%{$fav_movie}%");
+                        //     });
+                        // }
                         if (!empty($request->interests)) {
                             $query_filter->orWhereHas('interests.interest', function ($query_interests) use ($request) {
                                 $query_interests->whereIn('custom_id', $request->interests)->whereIsActive('y');
@@ -94,6 +96,8 @@ class FilterController extends Controller
                     $users = $users->limit($request->limit ?? config('utility.pagination.limit'))
                         ->offset($request->offset ?? config('utility.pagination.offset'))
                         ->get();
+
+                        // echo "<pre>"; print_r($users->toArray()); die();
 
                     if ($users->isNotEmpty()) {
                         return (HomeResource::collection($users))->additional([

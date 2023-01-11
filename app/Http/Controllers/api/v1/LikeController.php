@@ -50,41 +50,41 @@ class LikeController extends Controller
                     DisLike::whereUserId($user_id)->whereDisLikerId($auth_id)->delete();
 
                     if ($like->save()) {
-                        // if ($like->wasRecentlyCreated) {
-                        //     $user->increment('like_count');
+                        if ($like->wasRecentlyCreated) {
+                            $user->increment('like_count');
 
-                        //     $matched = Like::select('id')->whereUserId($auth_id)->whereLikerId($user_id)->first();
-                        //     if ($matched) {
-                        //         $auth_user->increment('match_count');
-                        //         $user->increment('match_count');
-                        //         $is_matched = true;
+                            $matched = Like::select('id')->whereUserId($auth_id)->whereLikerId($user_id)->first();
+                            if ($matched) {
+                                $auth_user->increment('match_count');
+                                $user->increment('match_count');
+                                $is_matched = true;
 
-                        //         // Delete Unmatch Details
-                        //         UnMatch::whereUnmatchBy($auth_id)->whereUnmatchTo($user_id)->delete();
+                                // Delete Unmatch Details
+                                UnMatch::whereUnmatchBy($auth_id)->whereUnmatchTo($user_id)->delete();
 
-                        //         $title = trans('api.notify_message.new_match.title');
-                        //         $message = trans('api.notify_message.new_match.message');
-                        //         $type = config('utility.notification.type.new_match');
-                        //     } else {
-                        //         $title = trans('api.notify_message.add_like.title');
-                        //         $message = trans('api.notify_message.add_like.message');
-                        //         $type = config('utility.notification.type.add_like');
-                        //     }
-                        //     $notification = [
-                        //         'custom_id'     =>  getUniqueString('notifications'),
-                        //         'key'           =>  'user_id',
-                        //         'value'         =>  $like->liker_id,
-                        //         'user_id'       =>  $user_id,
-                        //         'title'         =>  $title,
-                        //         'message'       =>  $message,
-                        //         'image'         =>  '',
-                        //         'type'          =>  $type,
-                        //     ];
+                                $title = trans('api.notify_message.new_match.title');
+                                $message = trans('api.notify_message.new_match.message');
+                                $type = config('utility.notification.type.new_match');
+                            } else {
+                                $title = trans('api.notify_message.add_like.title');
+                                $message = trans('api.notify_message.add_like.message');
+                                $type = config('utility.notification.type.add_like');
+                            }
+                            $notification = [
+                                'custom_id'     =>  getUniqueString('notifications'),
+                                'key'           =>  'user_id',
+                                'value'         =>  $like->liker_id,
+                                'user_id'       =>  $user_id,
+                                'title'         =>  $title,
+                                'message'       =>  $message,
+                                'image'         =>  '',
+                                'type'          =>  $type,
+                            ];
 
-                        //     // Notify
-                        //     $notificationJob = new NotificationJob($notification, $user);
-                        //     dispatch($notificationJob);
-                        // }
+                            // Notify
+                            $notificationJob = new NotificationJob($notification, $user);
+                            dispatch($notificationJob);
+                        }
 
                         $this->status = Response::HTTP_OK;
                         return ([
