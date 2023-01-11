@@ -2,18 +2,24 @@
 
 namespace App\Http\Controllers\api\v1;
 
+use Carbon\Carbon;
+use App\Models\Like;
+use App\Models\ProfileReport;
 use App\Http\Controllers\Controller;
-use Illuminate\Http\{Request, Response};
-use Illuminate\Database\Eloquent\{ModelNotFoundException};
-use App\Http\Resources\v1\{HomeResource};
 use Illuminate\Support\Facades\{DB};
+use Illuminate\Http\{Request, Response};
+use App\Http\Resources\v1\{HomeResource};
 use App\Http\Requests\Api\General\{PaginationRequest};
 use App\Models\{User, BlockUser, UserSetting, DisLike};
+use Illuminate\Database\Eloquent\{ModelNotFoundException};
 
 class HomeController extends Controller
 {
     private $version = "v.1.0";
-    public function getVersion(){ return $this->version; }
+    public function getVersion()
+    {
+        return $this->version;
+    }
 
     // Get All Users List
     public function getHomeFeeds(Request $request)
@@ -28,19 +34,29 @@ class HomeController extends Controller
                 if ($is_swipe_allow) {
                     $auth_interest = $user->interest ? $user->interest : 'Both';
                     $radius = $user->discover_distance;
-                    
+
                     $latitude = $user->current_latitude;
                     $longitude = $user->current_longitude;
 
+                    $last15thDate = (new Carbon)->subDays(15)->startOfDay();
+                    $last30thDate = (new Carbon)->subDays(30)->startOfDay();
+                    $currentDate = (new Carbon)->now()->endOfDay();
+
                     // $blocked    =   BlockUser::whereBlockBy($auth_id)->whereNotNull('blocked_to')->distinct()->pluck('blocked_to')->toArray();
                     $languages  =   UserSetting::whereUserId($auth_id)->whereNotNull('language_id')->distinct()->pluck('language_id')->toArray();
-                    $disLikes   =   DisLike::whereDisLikerId($auth_id)->whereDate('updated_at', \Carbon\Carbon::today())
+                    $disLikes   =   DisLike::whereDisLikerId($auth_id)->whereBetween('updated_at', [$last15thDate, $currentDate])
+                        ->whereNotNull('user_id')->distinct()->pluck('user_id')->toArray();
+                    $likes   =   Like::whereLikerId($auth_id)
+                        ->whereBetween('updated_at', [$last15thDate, $currentDate])
                         ->whereNotNull('user_id')->distinct()->pluck('user_id')->toArray();
 
+                    $reported = ProfileReport::where('user_id', $auth_id)
+                        ->whereBetween('updated_at', [$last30thDate, $currentDate])
+                        ->whereNotNull('user_id')->distinct()->pluck('reported_user_id')->toArray();
                     if (!empty($radius) && !empty($latitude) && !empty($longitude)) {
                         $users = User::select(
-                            'id',
-                            'custom_id',
+                            'users.id',
+                            'users.custom_id',
                             'birth_date',
                             'profile_photo',
                             'gender',
@@ -48,9 +64,11 @@ class HomeController extends Controller
                             'location_id',
                             'language_id',
                             'verify_status',
-                            'verify_photo_status', 
+                            'verify_photo_status',
                             'verify_email_send',
+                            // 'trusted_score',
                             'email_verified_at',
+                            'profile_percentage',
                             'contact_verified_at',                           
                             'is_active',
                             DB::raw("3959 * 1.609344 * acos(cos(radians(" . $latitude . ")) 
@@ -66,15 +84,16 @@ class HomeController extends Controller
                         }
                     } else {
                         $users = User::select(
-                            'id',
-                            'custom_id',
+                            'users.id',
+                            'users.custom_id',
                             'birth_date',
                             'profile_photo',
                             'gender',
-                            'verify_photo_status', 
+                            'verify_photo_status',
                             'verify_email_send',
                             'email_verified_at',
-                            'contact_verified_at',     
+                            'contact_verified_at',
+                            // 'trusted_score',
                             'interest',
                             'location_id',
                             'language_id',
@@ -83,43 +102,57 @@ class HomeController extends Controller
                         );
                     }
 
+
                     $users = $users->with(['userDetails', 'interests.interest.interestTranslation', 'userTranslation', 'location.locationTranslation'])
-                        ->where('id', '!=', $auth_id)
+                        ->where('users.id', '!=', $auth_id)
                         ->whereNotNull('profile_photo')
                         ->whereIsActive('y');
+                    if ($auth_interest != 'Both') {
+                        $users->where('gender', $auth_interest);
+                    }     // Interested in Gender
 
-                        if ($auth_interest != 'Both') {
-                            $users->where('gender', $auth_interest);
-                        }     // Interested in Gender
-
-                        if (!empty($user->discover_location_id)) {                                    
-                            if ($user->location_id != $user->discover_location_id) {
-                                $users->where('location_id', $user->discover_location_id);  // Location
-                            }
+                    if (!empty($user->discover_location_id)) {
+                        if ($user->location_id != $user->discover_location_id) {
+                            $users->where('location_id', $user->discover_location_id);  // Location
                         }
+                    }
 
-                        if (count($disLikes) > 0) {
-                            $users->whereNotIn('id', $disLikes);    // Restirct DisLiked Profile
-                        }                                           
+                    if (count($disLikes) > 0) {
+                        $users->whereNotIn('users.id', $disLikes);    // Restrict DisLiked Profile
+                    }
 
-                        $users->doesnthave('blockedTos');
+                    if (count($likes) > 0) {
+                        $users->whereNotIn('users.id', $likes);   // Restrict Liked Profile
+                    }
 
-                        // if (count($blocked) > 0) {
-                        //     $users->whereNotIn('id', $blocked);     // Restirct Blocked Profile
-                        // }                                           
+                    if (count($reported) > 0) {
+                        $users->whereNotIn('users.id', $reported);    // Restrict Reported Profile
+                    }
 
-                        // Discovery
-                        if (!empty($user->discover_start_age) && !empty($user->discover_end_age)) {
-                            // $users->whereBetween('birth_date', array($user->discover_start_age, $user->discover_end_age)); // Age
-                            $users->whereBetween(\DB::raw('TIMESTAMPDIFF(YEAR,users.birth_date,CURDATE())'),array($user->discover_start_age,$user->discover_end_age));
+                    $users->doesnthave('blockedTos');
+
+                    // if (count($blocked) > 0) {
+                    //     $users->whereNotIn('id', $blocked);     // Restrict Blocked Profile
+                    // }                                           
+
+                    // Discovery
+                    if (!empty($user->discover_start_age) && !empty($user->discover_end_age)) {
+                        // $users->whereBetween('birth_date', array($user->discover_start_age, $user->discover_end_age)); // Age
+                        $users->whereBetween(\DB::raw('TIMESTAMPDIFF(YEAR,users.birth_date,CURDATE())'), array($user->discover_start_age, $user->discover_end_age));
+                    }
+
+                    $users->where(function ($query)  use ($languages) {
+                        if (count($languages) > 0) {
+                            $query->orWhereIn('language_id', $languages);   // Languages
                         }
-
-                        $users->where(function ($query)  use ($languages) {
-                            if (count($languages) > 0) {
-                                $query->orWhereIn('language_id', $languages);   // Languages
-                            }       
-                        });
-
+                    });
+                    $users = $users
+                        ->leftJoin('user_interests', 'user_interests.user_id',  '=', 'users.id')
+                        ->orderBy('email_verified_at', "DESC")
+                        ->orderBy('contact_verified_at', "DESC")
+                        ->orderBy('photo_verified_at', "DESC")
+                        ->orderBy('user_interests.interest_id', "DESC")
+                        ->orderBy('profile_percentage', "DESC");
                     $count = $users->count();
                     $users = $users->limit($request->limit ?? config('utility.pagination.limit'))
                         ->offset($request->offset ?? config('utility.pagination.offset'))
@@ -163,6 +196,7 @@ class HomeController extends Controller
                         break;
                 };
             } catch (\Exception $e) {
+                throw $e;
                 $this->storeErrorLog($e, 'get_home_feed');
             }
         }
