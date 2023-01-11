@@ -32,26 +32,54 @@ class PushNotificationController extends Controller
         if(  $request->has('user_type') && $request->has('subject') && $request->has('message') ) {
             $title = $request->subject;
 
+            $today_date = date("Y-m-d");
             $users = User::with('deviceToken')->whereIsActive('y');
-            if(!empty($request->user_type) && $request->user_type != 'All'){
-                $users = User::whereGender($request->user_type);
+            if(!empty($request->user_type) && $request->user_type != 'send_all'){
+                if ($request->user_type == "send_male") {
+                    $users = $users->where("Gender","Male");
+                }else if ($request->user_type == "send_female") {
+                    $users = $users->where("Gender","Female");
+                }else if ($request->user_type == "send_empty_profile_image") {
+                    $users = $users->whereNull("profile_photo");
+                }else if ($request->user_type == "send_less_then_20_pr") {
+                    $users = $users->where("profile_percentage","<","20");
+                }else if ($request->user_type == "send_unverified_photo") {
+                    $users = $users->whereNull("photo_verified_at");
+                }else if ($request->user_type == "send_unverified_email") {
+                    $users = $users->whereNull("email_verified_at");
+                }else if ($request->user_type == "send_unverified_phone") {
+                    $users = $users->whereNull("contact_verified_at");
+                }else if ($request->user_type == "send_paid_male_subscription_not_expired") {
+                    $users = $users->where("Gender","Male")->where("is_subscribed","y")->where("subscription_end_date",">",$today_date);
+                }else if ($request->user_type == "send_paid_male_subscription_expired") {
+                    $users = $users->where("Gender","Male")->where("is_subscribed","n")->where("subscription_end_date","<",$today_date);
+                }else{
+                    flash('Unable to send push notification Please select valid type.')->error();
+                    return redirect(route('admin.push-notification.index'));
+                }
             }
+            $users = $users->whereIn("id",[61037,60997,61039,1493]);
             $users = $users->get();
-
-            $notification = [
-                'custom_id'     =>  getUniqueString('notifications'),
-                'key'           =>  'push_notification',
-                'value'         =>  'Push Notification Send By Admin',
-                'user_id'       =>  $request->user_type,
-                'title'         =>  $title,
-                'message'       =>  $request->message,
-                'image'         =>  '',
-                'type'          =>  config('utility.notification.type.send_by_admin'),
-            ];
-                
-            $this->sendPushNotificationToAll($notification, $users);
+            if (count($users) > 0) {
+                $notification = [
+                    'custom_id'     =>  getUniqueString('notifications'),
+                    'key'           =>  'push_notification',
+                    'value'         =>  'Push Notification Send By Admin',
+                    'user_id'       =>  $request->user_type,
+                    'title'         =>  $title,
+                    'message'       =>  $request->message,
+                    'image'         =>  '',
+                    'type'          =>  config('utility.notification.type.send_by_admin'),
+                ];
+                    
+                $this->sendPushNotificationToAll($notification, $users);
             
-            flash('Push Notification Send successfully!')->success();
+                flash('Push Notification Send successfully!')->success();
+            }
+            else
+            {
+                flash('No user data for send push notification.')->error();
+            }
         } else {
             flash('Unable to send push notification Please try again later.')->error();
         }
