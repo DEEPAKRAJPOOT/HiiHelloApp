@@ -69,6 +69,7 @@ class HomeController extends Controller
                             // 'trusted_score',
                             'email_verified_at',
                             'profile_percentage',
+                            'contact_verified_at',                           
                             'is_active',
                             DB::raw("3959 * 1.609344 * acos(cos(radians(" . $latitude . ")) 
                             * cos(radians(users.latitude)) 

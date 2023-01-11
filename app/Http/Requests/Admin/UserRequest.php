@@ -32,7 +32,7 @@ class UserRequest extends FormRequest
         $id = (!empty(Route::current()->parameters()['user']->id) ? Route::current()->parameters()['user']->id : NULL);
         $min_birth_date = now()->subYears(config('utility.minimum_age'))->format('m/d/Y');
 
-        $location_ids = Location::whereIsActive('y')->pluck('id')->toArray();
+        // $location_ids = Location::whereIsActive('y')->pluck('id')->toArray();
         $language_ids = Language::whereIsActive('y')->pluck('lang_code')->toArray();
         $phone_codes = Country::whereIsActive('y')->pluck('phonecode')->toArray();
         $personality_ids = Personality::whereIsActive('y')->pluck('id')->toArray(); 
@@ -46,7 +46,8 @@ class UserRequest extends FormRequest
             'birth_date'                =>  'required_unless:action,'.$unless.'|date|before:'.$min_birth_date,
             'gender'                    =>  'required_unless:action,'.$unless.'|in:'.implode(',', ['Male','Female']),
             'interest'                  =>  'required_unless:action,'.$unless.'|in:'.implode(',', ['Male','Female', 'Both']),
-            'location'                  =>  'required_unless:action,'.$unless.'|in:'.implode(',', $location_ids),
+            // 'location'                  =>  'required_unless:action,'.$unless.'|in:'.implode(',', $location_ids),
+            'location'                  =>  'nullable',
             'language'                  =>  'required_unless:action,'.$unless.'|in:'.implode(',', $language_ids),
             'profile_photo'             =>  'nullable|mimes:jpg,jpeg,png',
 
@@ -81,8 +82,8 @@ class UserRequest extends FormRequest
             // Verification
             'photo_suggestion'          =>  'nullable|min:3|max:150',
             'video_suggestion'          =>  'nullable|min:3|max:150',
-            'verify_photo_status'       =>  'nullable|in:under_review,verified,unverified',
-            'verify_video_status'       =>  'nullable|in:under_review,verified,unverified',
+            'verify_photo_status'       =>  'nullable|in:under_review,verified,unverified,pending',
+            'verify_video_status'       =>  'nullable|in:under_review,verified,unverified,pending',
             'verify_status'             =>  'nullable|in:under_review,verified,unverified,pending',
         ];
     }

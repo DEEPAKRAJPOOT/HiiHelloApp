@@ -54,8 +54,10 @@ Route::group(['namespace' => 'Admin', 'middleware' => ['check_permit', 'revalida
 	Route::get('users/listing', 'UsersController@listing')->name('users.listing');
 	Route::post('users/genderupdate', 'UsersController@gender_update')->name('users.genderupdate');
 	Route::post('users/bulk_gender_update', 'UsersController@bulk_gender_update')->name('users.bulk_gender_update');
+	Route::post('users/single_gender_update', 'UsersController@single_gender_update')->name('users.single_gender_update');
 	Route::post('users/bulk_photo_verification', 'UsersController@bulk_photo_verification')->name('users.bulk_photo_verification');
 	
+	Route::get('unde_review/listing', 'UsersController@under_review_listing')->name('users.under-review-listing');
 	Route::get('users/unde_review', 'UsersController@unde_review')->name('users.unde-review');
 	Route::get('users/deleted', 'UsersController@deleted')->name('users.deleted');
 	Route::resource('users', 'UsersController');
@@ -118,6 +120,7 @@ Route::group(['namespace' => 'Admin', 'middleware' => ['check_permit', 'revalida
 
 	/* transaction */
 	Route::get('transaction-lists/listing', 'TrasactionListController@listing')->name('transaction-lists.listing');
+	Route::get('transaction/filters', 'TrasactionListController@filters')->name('transaction.filters');
 	Route::resource('transaction-lists', 'TrasactionListController');
 
 	/* App Details */
@@ -148,7 +151,12 @@ Route::get('usertree/usermatchlisting', 'Admin\UserTreeController@usermatchlisti
 Route::get('/usertree', 'Admin\UserTreeController@index')->name('usertree');
 Route::post('usertree/get_user_match_data', 'Admin\UserTreeController@get_user_match_data')->name('usertree.get_user_match_data');
 Route::get('usertree/top_usertree', 'Admin\UserTreeController@top_usertree')->name('usertree.top_usertree');
-	
+
+// user apilog
+Route::get('apilog/listing', 'Admin\ApiLogController@listing')->name('apilog.listing');
+Route::get('/apilog', 'Admin\ApiLogController@index')->name('apilog');
+Route::post('/apilog/get_single_apilog_data', 'Admin\ApiLogController@get_single_apilog_data')->name('apilog.get_single_apilog_data');
+
 //User Exception
 Route::get('users-error-listing', 'Admin\ErrorController@listing')->name('error.listing');
 Route::get('gender-listing', 'Admin\PagesController@gender_listing')->name('gender.listing');
@@ -174,6 +182,7 @@ Route::post('profile-reports/filters', 'Admin\ProfileReportController@filters')-
 Route::post('profilereports/get_user_report_data', 'Admin\ProfileReportController@get_user_report_data')->name('profilereports.get_user_report_data');
 // user translations table hindi language translate manualy
 Route::get('user-translations', 'Admin\PagesController@user_translations')->name('user.translations');
+
 // delete all location if user is not used 
 Route::get('deletelocation', 'Admin\PagesController@deletelocation')->name('user.deletelocation');
 Route::get('locationTranslations', 'UtilityController@locationTranslations');

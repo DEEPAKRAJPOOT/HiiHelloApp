@@ -30,6 +30,7 @@ class ImageModerationController extends Controller
 
         $from_date         = ($request->from_date) ? $request->from_date." 00:00:00" : "";
         $to_date           = ($request->to_date) ? $request->to_date." 23:59:59" : "";
+        $search_status     = ($request->search_status) ? $request->search_status : "";
 
 
         $records = [];
@@ -39,18 +40,31 @@ class ImageModerationController extends Controller
 
 
         $image_logs = ImageModerationLog::select('image_moderation_log.*','user_translations.full_name as full_name',$query_field_approve);
-        $image_logs->leftJoin('user_translations', 'user_translations.user_id', '=', 'image_moderation_log.user_id')->where('locale','en')->orderBy($sort_column, $sort_order);
+        $image_logs->leftJoin('user_translations', 'user_translations.user_id', '=', 'image_moderation_log.user_id');
+        $image_logs->leftJoin('users', 'users.id', '=', 'image_moderation_log.user_id');
+        $image_logs->where('locale','en')->orderBy($sort_column, $sort_order);
 
         // ST - Filter
         if($from_date != "" && $to_date != "") {
-            $image_logs = $image_logs->whereBetween('created_at', [$from_date, $to_date]);
+            $image_logs = $image_logs->whereBetween('image_moderation_log.created_at', [$from_date, $to_date]);
+        }
+
+        if($request->search_status != '' && $search_status == 1 || $search_status == '1') {
+            $image_logs = $image_logs->where('image_moderation_log.is_approved',1);
+        }
+
+        if($request->search_status != '' && $search_status == 0 || $search_status == '0') {
+            $image_logs = $image_logs->where('image_moderation_log.is_approved',0);
         }
 
         
 
         if ($search != '') {
             $image_logs->where(function ($query) use ($search, $image_logs) {
-                $query->where('created_at', 'like', "%{$search}%")->orwhere('endpoint_url', 'like', "%{$search}%")->orwhere('message', 'like', "%{$search}%")
+                $query->where('image_moderation_log.created_at', 'like', "%{$search}%")
+                    ->orwhere('image_moderation_log.endpoint_url', 'like', "%{$search}%")
+                    ->orwhere('image_moderation_log.message', 'like', "%{$search}%")
+                    ->orwhere('users.account_id', 'like', "%{$search}%")
                     ->orWhereHas('userDetails.userTranslations', function ($query1) use ($search) {
                         $query1->where('full_name', 'like', "%{$search}%");
                     });
@@ -151,8 +165,8 @@ class ImageModerationController extends Controller
         if (!$image_logs->isEmpty()) {
             foreach ($image_logs as $call_log) {
                 $data[] = [
-                    'user_id'               => $call_log->userDetails->account_id,
-                    'full_name'             => $call_log->full_name,
+                    'user_id'               => $call_log->userDetails->account_id ?? "N/A",
+                    'full_name'             => $call_log->full_name ?? "N/A",
                     'message'               => $call_log->message,
                     'created_at'            => date('Y-m-d H:i:s',strtotime($call_log->created_at)),
                     'is_approved'           => $call_log->approve_staus,

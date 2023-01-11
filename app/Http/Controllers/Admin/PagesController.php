@@ -414,6 +414,7 @@ class PagesController extends Controller
                 if($total_users > 0){
                     $records['data'][] = [
                         'city_name' => $val->name,
+                        'state_name' => $val->state,
                         'total_male_user' => $total_male_user,
                         'total_female_user' => $total_female_user,
                         'total_na_user' => $total_na_user,

@@ -110,23 +110,35 @@
                         </span>
                     @endif
                 </div>
+                <div class="row">
+                    {{-- Location --}}
+                    <div class="form-group col-md-4">
+                        <label for="location">Location</label>
+                        <select type="text" class="form-control @error('location') is-invalid @enderror" id="location" name="location" spellcheck="false" tabindex="0" disabled />
+                            <option value="">Select Location</option>
+                            @foreach($locations as $location)
+                                @if($location->locationTransDefault)
+                                    <option value="{{ $location->id }}">{{ $location->locationTransDefault->name }}</option> 
+                                @endif
+                            @endforeach
+                        </select>
+                        @if ($errors->has('location'))
+                            <span class="text-danger">
+                                <strong class="form-text">{{ $errors->first('location') }}</strong>
+                            </span>
+                        @endif
+                    </div>
 
-                {{-- Location --}}
-                <div class="form-group">
-                    <label for="location">{!!$mend_sign!!}Location</label>
-                    <select type="text" class="form-control @error('location') is-invalid @enderror" id="location" name="location" spellcheck="false" tabindex="0" />
-                        <option value="">Select Location</option>
-                        @foreach($locations as $location)
-                            @if($location->locationTransDefault)
-                                <option value="{{ $location->id }}">{{ $location->locationTransDefault->name }}</option> 
-                            @endif
-                        @endforeach
-                    </select>
-                    @if ($errors->has('location'))
-                        <span class="text-danger">
-                            <strong class="form-text">{{ $errors->first('location') }}</strong>
-                        </span>
-                    @endif
+                    {{-- Latitude --}}
+                    <div class="form-group col-md-4">
+                        <label for="location">Latitude</label>
+                        <input type="text" class="form-control @error('latitude') is-invalid @enderror" id="latitude" name="latitude" value="{{ old('latitude') }}" placeholder="Enter latitude" autocomplete="latitude" autocapitalize="sentences" tabindex="0" autofocus />
+                    </div>
+                    {{-- longitude --}}
+                    <div class="form-group col-md-4">
+                        <label for="location">Longitude</label>
+                        <input type="text" class="form-control @error('longitude') is-invalid @enderror" id="longitude" name="longitude" value="{{ old('longitude') }}" placeholder="Enter longitude" autocomplete="longitude" spellcheck="false" autocapitalize="sentences" tabindex="0" autofocus />
+                    </div>
                 </div>
 
                 {{-- Language --}}

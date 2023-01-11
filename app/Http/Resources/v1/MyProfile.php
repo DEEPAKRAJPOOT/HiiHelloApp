@@ -14,7 +14,7 @@ class MyProfile extends JsonResource
      * @return array|\Illuminate\Contracts\Support\Arrayable|\JsonSerializable
      */
     public function toArray($request)
-    {        
+    {
         return [
             'id'                =>  $this->custom_id ?? "",
             'full_name'         =>  $this->userTranslation ? $this->userTranslation->full_name : "",
@@ -31,12 +31,6 @@ class MyProfile extends JsonResource
             'interests'         =>  UserInterestResource::collection($this->interests),
             'profile_photo'     =>  generateURL($this->profile_photo) ?? "",
             'subscription'      =>  new SubscriptionResource($this->subscription),
-
-            'is_email_verify'   =>  ($this->emailVerifyStatus()=='verified') ? true : false,
-            'is_contact_verify' =>  ($this->contactVerifyStatus()=='verified') ? true : false,
-            'is_photo_verify'   =>  ($this->verify_photo_status=='verified') ? true : false,
-            'trusted_score'     =>  $this->trusted_score,
-
             'my_things'         =>  [
                 'relationship_status'   =>  new ProfileDetailResource($this->relationshipStatus),
                 'i_am_here'             =>  new ProfileDetailResource($this->youAreHere),
