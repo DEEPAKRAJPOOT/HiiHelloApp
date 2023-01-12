@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Transaction;
+use App\Models\SubscriptionPlan;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
@@ -18,7 +19,10 @@ class TrasactionListController extends Controller
      */
     public function index()
     {
-        return view('admin.pages.transaction-lists.index')->with(['custom_title' => 'Transactions']);
+        $SubscriptionPlans = SubscriptionPlan::all();
+        // echo "<pre>"; print_r($SubscriptionPlans->toArray()); exit();
+
+        return view('admin.pages.transaction-lists.index')->with(['custom_title' => 'Transactions', 'subscription_plans' => $SubscriptionPlans]);
     }
 
     /**
@@ -41,6 +45,7 @@ class TrasactionListController extends Controller
         $from_date         = ($request->from_date) ? $request->from_date." 00:00:00" : "";
         $to_date           = ($request->to_date) ? $request->to_date." 23:59:59" : "";
         $search_status     = ($request->search_status) ? $request->search_status : "";
+        $search_plan       = ($request->search_plan) ? $request->search_plan : "";
 
 
         $records = [];
@@ -72,15 +77,21 @@ class TrasactionListController extends Controller
             $transactions = $transactions->where('transactions.payment_type',$request->search_status);
         }
 
+        if($request->search_plan != '') {
+            $transactions = $transactions->where('transactions.plan_id',$request->search_plan);
+        }
+
+        $transactions = $transactions->where('transactions.status','success');
+
         $count = $transactions->count();
         $records['recordsTotal'] = $count;
         $records['recordsFiltered'] = $count;
         $records['data'] = [];
 
-        $transactions = $transactions->where('transactions.status','success');
         $transactions = $transactions->offset($offset)->limit($limit)->orderBy($sort_column, $sort_order);
         $transactions = $transactions->get();
 
+        
         foreach ($transactions as $transaction) {
             $records['data'][] = [
                 'id' => $transaction->id,
@@ -97,6 +108,7 @@ class TrasactionListController extends Controller
 
             ];
         }
+        //echo "test"; exit();
         return $records;
     }
 
@@ -109,6 +121,17 @@ class TrasactionListController extends Controller
         $total_google_play = Transaction::where("payment_type","LIKE","%{$google_play}%")->count();
         $total_upi = Transaction::where("payment_type","LIKE","%{$upi}%")->count();
         $total_ios = Transaction::where("payment_type","LIKE","%{$IOS}%")->count();
+
+        $SubscriptionPlans = SubscriptionPlan::all();
+
+        foreach($SubscriptionPlans as $val){
+            $count = Transaction::where("plan_id","=",$val->id)
+                                    ->where('status', '=', 'success') 
+                                    ->whereNull('deleted_at')
+                                    ->count();
+
+            $records['plan'][$val->id] = number_format($count);
+        }
 
         $records['total_google_play'] = number_format($total_google_play);
         $records['total_upi'] = number_format($total_upi);

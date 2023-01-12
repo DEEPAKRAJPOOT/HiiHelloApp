@@ -11,6 +11,9 @@
 @section('content')
 <div class="container">
     <div class="row">
+        <div class="col-lg-12">
+            <h3 class="card-label">Mode of payment</h3>
+        </div>
         <input type="hidden" name="filter_type_url" id="filter_type_url" value="{{ route('admin.transaction.filters') }}">
         <div class="col-lg-3">
            <div class="card card-custom rounded-xl gutter-b bg-dark card-stretch">
@@ -79,7 +82,43 @@
               </div>
            </div>
         </div>
+
+        <div class="col-lg-3"></div>
+
     </div>
+
+
+    <div class="row">
+        <div class="col-lg-12">
+            <h3 class="card-label">Subscription plans</h3>
+        </div>
+        <?php foreach ($subscription_plans as $key => $value) { ?>
+        <div class="col-lg-3"> 
+           <div class="card card-custom rounded-xl gutter-b bg-dark card-stretch">
+              <div class="d-flex align-items-center mr-2">
+                 <div class="symbol-label px-6 py-8 rounded-xl mr-7">
+
+                    <span class="svg-icon svg-icon-4x svg-icon-white d-block my-2"><!--begin::Svg Icon | path:/var/www/preview.keenthemes.com/metronic/releases/2021-05-14-112058/theme/html/demo1/dist/../src/media/svg/icons/Text/Align-justify.svg--><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="24px" height="24px" viewBox="0 0 24 24" version="1.1">
+    <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <rect x="0" y="0" width="24" height="24"/>
+        <path d="M5,5 L19,5 C19.5522847,5 20,5.44771525 20,6 C20,6.55228475 19.5522847,7 19,7 L5,7 C4.44771525,7 4,6.55228475 4,6 C4,5.44771525 4.44771525,5 5,5 Z M5,13 L19,13 C19.5522847,13 20,13.4477153 20,14 C20,14.5522847 19.5522847,15 19,15 L5,15 C4.44771525,15 4,14.5522847 4,14 C4,13.4477153 4.44771525,13 5,13 Z" fill="#000000" opacity="0.3"/>
+        <path d="M5,9 L19,9 C19.5522847,9 20,9.44771525 20,10 C20,10.5522847 19.5522847,11 19,11 L5,11 C4.44771525,11 4,10.5522847 4,10 C4,9.44771525 4.44771525,9 5,9 Z M5,17 L19,17 C19.5522847,17 20,17.4477153 20,18 C20,18.5522847 19.5522847,19 19,19 L5,19 C4.44771525,19 4,18.5522847 4,18 C4,17.4477153 4.44771525,17 5,17 Z" fill="#000000"/>
+    </g>
+</svg><!--end::Svg Icon--></span>
+
+                    <span class="font-size-h6 text-muted font-weight-bold"><?=$value->name?></span>
+                 </div>
+                 <div>
+                    <div class="font-size-h1 text-white font-weight-bolder planCountTotal" id="planCountTotal_<?=$value->id?>" data-planID="<?=$value->id?>"></div>
+                 </div>
+              </div>
+           </div>
+        </div>
+        <?php } ?>
+    </div>
+
+
+
     <div class="card card-custom">
         <div class="card-header">
             <div class="card-title">
@@ -134,6 +173,15 @@
                            <option value="IOS">IOS</option>
                        </select>
                     </td>
+
+                    <td>
+                        <select class="form-control" name="search_plan" id="search_plan">
+                           <option value="">-- Select plan --</option>
+                           <?php foreach ($subscription_plans as $key => $value) { ?>
+                               <option value="<?=$value->id?>"><?=$value->name?></option>
+                           <?php } ?>
+                       </select>
+                    </td>
                     
                     <td>
                         <input type='button' class="btn btn-primary mr-1 ml-1" id="btn_search_filter" value="Search">
@@ -173,12 +221,14 @@
                     var from_date       = $("#search_fromdate").val();
                     var to_date         = $("#search_todate").val();  
                     var search_status   = $("#search_status").val();  
+                    var search_plan     = $("#search_plan").val();  
                         
                     // EN - Filter Params
 
                     data.from_date         = from_date;
                     data.to_date           = to_date;                    
-                    data.search_status     = search_status;                    
+                    data.search_status     = search_status; 
+                    data.search_plan       = search_plan;                    
                     //data.flgPendingProfile = $(".getpendingprofile").is(':checked') ? 1 : 0;
                 },           
             },
@@ -224,7 +274,7 @@
     });
 
     $(document).on("click", "#btn_reset_filter", function () {
-        $("#search_fromdate,#search_todate,#search_status").val('');
+        $("#search_fromdate,#search_todate,#search_status,#search_plan").val('');
         oTable.draw();
     });
 </script>
@@ -246,19 +296,31 @@
                     $("#total_upi").html("<p style='font-size: 18px;'>processing..</p>");
                     $("#total_android").html("<p style='font-size: 18px;'>processing..</p>");
                     $("#total_ios").html("<p style='font-size: 18px;'>processing..</p>");
+                    $(".planCountTotal").html("<p style='font-size: 18px;'>processing..</p>");
                 },
                 complete: function(){
                     $("#total_google_play").html();
                     $("#total_upi").html();
                     $("#total_android").html();
                     $("#total_ios").html();
+                    $(".planCountTotal").html();
                 },
                 success: function (result) {
                     if (result != '') {
                         $("#total_google_play").html(result.total_google_play);
                         $("#total_upi").html(result.total_upi);
                         $("#total_android").html(result.total_android);
-                        $("#total_ios").html(result.total_ios);
+                        $("#total_ios").html(result.total_ios); 
+                        //$("#planCountTotal_").html(result.total_ios);
+
+                        console.log(result.plan);
+                        if(result.plan){
+                            for (var key of Object.keys(result.plan)) {
+                                $("#planCountTotal_"+key).html(result.plan[key]);
+                            }
+
+                        }
+
                     }
                 },
             });
