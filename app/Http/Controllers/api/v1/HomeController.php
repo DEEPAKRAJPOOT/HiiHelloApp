@@ -66,10 +66,17 @@ class HomeController extends Controller
                             'verify_status',
                             'verify_photo_status',
                             'verify_email_send',
-                            // 'trusted_score',
+
+                            //'trusted_score',
                             'email_verified_at',
+
+
                             'profile_percentage',
+
                             'contact_verified_at',                           
+
+                            'profile_percentage',
+
                             'is_active',
                             DB::raw("3959 * 1.609344 * acos(cos(radians(" . $latitude . ")) 
                             * cos(radians(users.latitude)) 
@@ -92,8 +99,12 @@ class HomeController extends Controller
                             'verify_photo_status',
                             'verify_email_send',
                             'email_verified_at',
+
+
+
                             'contact_verified_at',
                             // 'trusted_score',
+
                             'interest',
                             'location_id',
                             'language_id',
@@ -106,6 +117,7 @@ class HomeController extends Controller
                     $users = $users->with(['userDetails', 'interests.interest.interestTranslation', 'userTranslation', 'location.locationTranslation'])
                         ->where('users.id', '!=', $auth_id)
                         ->whereNotNull('profile_photo')
+                        ->whereNotNull('location_id')
                         ->whereIsActive('y');
                     if ($auth_interest != 'Both') {
                         $users->where('gender', $auth_interest);
@@ -116,6 +128,7 @@ class HomeController extends Controller
                             $users->where('location_id', $user->discover_location_id);  // Location
                         }
                     }
+
 
                     if (count($disLikes) > 0) {
                         $users->whereNotIn('users.id', $disLikes);    // Restrict DisLiked Profile
@@ -130,6 +143,7 @@ class HomeController extends Controller
                     }
 
                     $users->doesnthave('blockedTos');
+
 
                     // if (count($blocked) > 0) {
                     //     $users->whereNotIn('id', $blocked);     // Restrict Blocked Profile
@@ -147,11 +161,13 @@ class HomeController extends Controller
                         }
                     });
 
-                    // $users = $users->leftJoin('user_interests', 'user_interests.user_id',  '=', 'users.id')
-                    $users = $users->orderBy('email_verified_at', "DESC")
+                    $users = $users
+                        ->leftJoin('user_interests', 'user_interests.user_id',  '=', 'users.id')
+                        ->orderBy('email_verified_at', "DESC")
                         ->orderBy('contact_verified_at', "DESC")
                         ->orderBy('photo_verified_at', "DESC")
-                        // ->orderBy('user_interests.interest_id', "DESC")
+                        ->orderBy('user_interests.interest_id', "DESC")
+
                         ->orderBy('profile_percentage', "DESC");
                     $count = $users->count();
                     $users = $users->limit($request->limit ?? config('utility.pagination.limit'))
