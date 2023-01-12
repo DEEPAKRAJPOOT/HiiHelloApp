@@ -292,10 +292,10 @@ class GeneralController extends Controller
                 $interests = Interest::with([
                     'parentInterest:id,custom_id', 'masterInterest:id,custom_id',
                     'interestTranslation:id,interest_id,title'
-                ])
-                ->whereHas('location',function($query) use ($request) {
-                   $query->whereCustomId($request->location_id)->whereIsActive('y');
-                });
+                ]);
+                // ->whereHas('location',function($query) use ($request) {
+                //    $query->whereCustomId($request->location_id)->whereIsActive('y');
+                // });
 
                 if (!empty($search)) {
                     $interests = $interests->whereHas('interestTranslation', function ($query) use ($search) {
@@ -315,12 +315,12 @@ class GeneralController extends Controller
                     }
                 }
 
-                $interests = $interests->whereIsActive('y')->withCount('subInterests')
-                ->withCount(['subInterests' => function ($query) use ($request) {
-                    $query->whereHas('location',function($q) use ($request) {
-                       $q->whereCustomId($request->location_id)->whereIsActive('y');
-                    });
-                }]);
+                $interests = $interests->whereIsActive('y')->withCount('subInterests');
+                // ->withCount(['subInterests' => function ($query) use ($request) {
+                //     $query->whereHas('location',function($q) use ($request) {
+                //        $q->whereCustomId($request->location_id)->whereIsActive('y');
+                //     });
+                // }]);
 
                 $count = $interests->count();
                 $interests = $interests->orderBy('sequence')
