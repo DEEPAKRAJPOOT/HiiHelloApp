@@ -52,8 +52,6 @@ class FilterController extends Controller
                             'userDetails', 'interests', 'interests.interest.interestTranslation',
                             'userTranslation', 'location.locationTranslation'
                         ])
-                        ->whereNotNull('profile_photo')
-                        ->whereNotNull('location_id')
                         ->where(function ($query)  use ($auth_id, $auth_interest) {
                             $query->where('id', '!=', $auth_id)->whereIsActive('y');
 
@@ -96,8 +94,6 @@ class FilterController extends Controller
                     $users = $users->limit($request->limit ?? config('utility.pagination.limit'))
                         ->offset($request->offset ?? config('utility.pagination.offset'))
                         ->get();
-
-                        // echo "<pre>"; print_r($users->toArray()); die();
 
                     if ($users->isNotEmpty()) {
                         return (HomeResource::collection($users))->additional([
