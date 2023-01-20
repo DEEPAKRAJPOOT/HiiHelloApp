@@ -158,11 +158,11 @@
           <div class="card-toolbar">
             <select class="form-control" id="registerUserChart">
               <option value="week" selected>This Week</option>
-              {{-- <option value="month">This Month</option>
+              <option value="month">This Month</option>
               <option value="3 month">3 Months</option>
               <option value="6 month">6 Months</option>
               <option value="year">This Year</option>
-              <option value="overall">Overall</option>
+              {{-- <option value="overall">Overall</option>
               <option value="custom">Custom Range</option> --}}
             </select>
           </div>
