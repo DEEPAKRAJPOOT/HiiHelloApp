@@ -85,10 +85,10 @@ class Kernel extends ConsoleKernel
         */
 
         // Google Translate Command
-        $schedule->call(function () {
-            $scheculeCommand = new GoogleTranslation;
-            $scheculeCommand->handle();
-        })->everyMinute();
+        // $schedule->call(function () {
+        //     $scheculeCommand = new GoogleTranslation;
+        //     $scheculeCommand->handle();
+        // })->everyMinute();
        
 
         // Location Translations Command

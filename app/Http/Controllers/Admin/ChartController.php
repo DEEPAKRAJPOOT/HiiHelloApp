@@ -22,66 +22,66 @@ class ChartController extends Controller
                 $datasetLabel = "This Week";
                 $period = CarbonPeriod::create($startDate, $endDate);
                 break;
-            case 'month':
-                $startDate = Carbon::now()->startOfMonth();
-                $endDate = Carbon::now()->endOfMonth();
-                $dateFormat = 'd';
-                $filterBy = "Month";
-                $datasetLabel = "This Month";
-                $period = CarbonPeriod::create($startDate, $endDate);
-                break;
-            case '3 month':
-                $startDate = Carbon::now()->subMonths(2)->startOfMonth();
-                $endDate = Carbon::now()->endOfMonth();
-                $dateFormat = 'F';
-                $datasetLabel = "3 Months";
-                $period = CarbonPeriod::create($startDate, '1 month', $endDate);
-                break;
-            case '6 month':
-                $startDate = Carbon::now()->subMonths(5)->startOfMonth();
-                $endDate = Carbon::now()->endOfMonth();
-                $dateFormat = 'F';
-                $datasetLabel = "6 Months";
-                $period = CarbonPeriod::create($startDate, '1 month', $endDate);
-                break;
-            case 'year':
-                $startDate = Carbon::now()->startOfYear();
-                $endDate = Carbon::now()->endOfYear();
-                $dateFormat = 'F';
-                $datasetLabel = "This Year";
-                $period = CarbonPeriod::create($startDate, '1 month', $endDate);
-                break;
-            case 'overall':
-                //set cache for oldest record  never change  in the production
-                cache()->forget('oldest-record'); //forget cache recorde change on development
-                $old_date = cache()->rememberForever('oldest-record', function () {
-                    return User::selectRaw('created_at')->orderBy('created_at', 'asc')->first();
-                });
-                $startDate = Carbon::parse($old_date->created_at)->startOfYear();
-                $endDate = Carbon::now()->endOfYear();
-                $dateFormat = 'Y';
-                $datasetLabel = "Overall";
-                $period = CarbonPeriod::create($startDate, '1 year', $endDate);
-                break;
-            case 'custom':
-                $startDate = Carbon::parse($request->startDate)->startOfDay();
-                $endDate = Carbon::parse($request->endDate)->endOfDay();
-                $datasetLabel = "Custom Range";
-                $diffInDays = $startDate->diffInDays($endDate);
-                if ($diffInDays <= 31) {
-                    $dateFormat = 'd-F';
-                    $period = CarbonPeriod::create($startDate, $endDate);
-                } elseif ($diffInDays <= 365) {
-                    $dateFormat = 'F';
-                    $period = CarbonPeriod::create($startDate, '1 month', $endDate);
-                } elseif ($diffInDays > 365) {
-                    $dateFormat = 'Y';
-                    $period = CarbonPeriod::create($startDate, '1 year', $endDate);
-                }
-                break;
-            default:
-                # code...
-                break;
+            // case 'month':
+            //     $startDate = Carbon::now()->startOfMonth();
+            //     $endDate = Carbon::now()->endOfMonth();
+            //     $dateFormat = 'd';
+            //     $filterBy = "Month";
+            //     $datasetLabel = "This Month";
+            //     $period = CarbonPeriod::create($startDate, $endDate);
+            //     break;
+            // case '3 month':
+            //     $startDate = Carbon::now()->subMonths(2)->startOfMonth();
+            //     $endDate = Carbon::now()->endOfMonth();
+            //     $dateFormat = 'F';
+            //     $datasetLabel = "3 Months";
+            //     $period = CarbonPeriod::create($startDate, '1 month', $endDate);
+            //     break;
+            // case '6 month':
+            //     $startDate = Carbon::now()->subMonths(5)->startOfMonth();
+            //     $endDate = Carbon::now()->endOfMonth();
+            //     $dateFormat = 'F';
+            //     $datasetLabel = "6 Months";
+            //     $period = CarbonPeriod::create($startDate, '1 month', $endDate);
+            //     break;
+            // case 'year':
+            //     $startDate = Carbon::now()->startOfYear();
+            //     $endDate = Carbon::now()->endOfYear();
+            //     $dateFormat = 'F';
+            //     $datasetLabel = "This Year";
+            //     $period = CarbonPeriod::create($startDate, '1 month', $endDate);
+            //     break;
+            // case 'overall':
+            //     //set cache for oldest record  never change  in the production
+            //     cache()->forget('oldest-record'); //forget cache recorde change on development
+            //     $old_date = cache()->rememberForever('oldest-record', function () {
+            //         return User::selectRaw('created_at')->orderBy('created_at', 'asc')->first();
+            //     });
+            //     $startDate = Carbon::parse($old_date->created_at)->startOfYear();
+            //     $endDate = Carbon::now()->endOfYear();
+            //     $dateFormat = 'Y';
+            //     $datasetLabel = "Overall";
+            //     $period = CarbonPeriod::create($startDate, '1 year', $endDate);
+            //     break;
+            // case 'custom':
+            //     $startDate = Carbon::parse($request->startDate)->startOfDay();
+            //     $endDate = Carbon::parse($request->endDate)->endOfDay();
+            //     $datasetLabel = "Custom Range";
+            //     $diffInDays = $startDate->diffInDays($endDate);
+            //     if ($diffInDays <= 31) {
+            //         $dateFormat = 'd-F';
+            //         $period = CarbonPeriod::create($startDate, $endDate);
+            //     } elseif ($diffInDays <= 365) {
+            //         $dateFormat = 'F';
+            //         $period = CarbonPeriod::create($startDate, '1 month', $endDate);
+            //     } elseif ($diffInDays > 365) {
+            //         $dateFormat = 'Y';
+            //         $period = CarbonPeriod::create($startDate, '1 year', $endDate);
+            //     }
+            //     break;
+            // default:
+            //     # code...
+            //     break;
         }
 
         // Iterate over the period
