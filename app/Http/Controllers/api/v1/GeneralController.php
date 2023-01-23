@@ -7,7 +7,7 @@ use Illuminate\Http\{Request, Response};
 use Illuminate\Support\Facades\{Storage};
 use Illuminate\Database\Eloquent\{ModelNotFoundException};
 use App\Http\Resources\v1\{LanguageResource, CmsResource, CountryResource, LocationResource, InterestResource, FaqResource, ProfileDetailResource, PersonalityResource, LocationTransResource, LocationSearchResource, DeviceTokenResource};
-use App\Http\Requests\Api\General\{PaginationRequest, LocationRequest, ProfileDetailRequest, InterestRequest,CheckLocationRequest};
+use App\Http\Requests\Api\General\{PaginationRequest, LocationRequest, ProfileDetailRequest, InterestRequest, CheckLocationRequest};
 use App\Http\Requests\Api\User\{AddDeviceTokenRequest, GetDeviceTokenRequest};
 use App\Models\{User, Language, CmsPage, Country, Location, Interest, Faq, DeviceToken, ProfileDetail, AppDetail, Personality, LocationTranslation};
 use Illuminate\Support\Facades\Redis;
@@ -20,7 +20,10 @@ class GeneralController extends Controller
 {
     use RedisTrait;
     private $version = "v.1.0";
-    public function getVersion(){ return $this->version; }
+    public function getVersion()
+    {
+        return $this->version;
+    }
 
     // Get App Status
     public function appStatus()
@@ -174,8 +177,8 @@ class GeneralController extends Controller
         $locationRequest = new LocationRequest();
         if ($this->apiValidator($request->all(), $locationRequest->rules())) {
             try {
-                 $search = $request->search; 
-                $lang = 'en';//app()->getLocale();
+                $search = $request->search;
+                $lang = 'en'; //app()->getLocale();
 
                 $locations = Location::select(
                     'locations.id',
@@ -187,9 +190,11 @@ class GeneralController extends Controller
                     ->where('locations.is_active', 'y')
                     ->where('location_translations.locale', $lang)
                     ->where('location_translations.name', 'like', "%{$search}%")
-                    ->orderBy('location_translations.name');
+                    ->orderBy('location_translations.name')
+                    ->groupBy('location_translations.name')
+                    ->groupBy('location_translations.state');
 
-              /*  if (!empty($search)) { 
+                /*  if (!empty($search)) { 
                     $locations = $locations->whereHas('locationTranslation', function ($query) use ($search) {
                        // echo $search; exit;
                         $query->where('name', 'like', "{$search}%");
@@ -315,12 +320,16 @@ class GeneralController extends Controller
                     }
                 }
 
-                $interests = $interests->whereIsActive('y')->withCount('subInterests');
-                // ->withCount(['subInterests' => function ($query) use ($request) {
-                //     $query->whereHas('location',function($q) use ($request) {
-                //        $q->whereCustomId($request->location_id)->whereIsActive('y');
-                //     });
-                // }]);
+                $interests = $interests->whereIsActive('y')
+                    // ->withCount('subInterests');
+                    ->withCount(['subInterests' => function ($query) use ($request) {
+                        $query->whereHas('location', function ($q) use ($request) {
+                            $q->whereIsActive('y');
+                            // if ($request->location_id) {
+                            //     $q->whereCustomId($request->location_id);
+                            // }
+                        });
+                    }]);
 
                 $count = $interests->count();
                 $interests = $interests->orderBy('sequence')
@@ -687,7 +696,7 @@ class GeneralController extends Controller
         $data = array();
         $location_data = array();
         $locationRequest = new CheckLocationRequest();
-        if ($this->apiValidator($request->all(), $locationRequest->rules())) {    
+        if ($this->apiValidator($request->all(), $locationRequest->rules())) {
 
             // $language_codes = Language::pluck('lang_code')->toArray();
             // foreach ($language_codes as $language_code) {
@@ -700,13 +709,13 @@ class GeneralController extends Controller
             //     ]);
             // }
 
-             try {
-                $location_name = $request->location; 
-                $locality = isset($request->locality) ? $request->locality : ''; 
-                $state = isset($request->state) ? $request->state : ''; 
-                $lang = 'en';//app()->getLocale();
+            try {
+                $location_name = $request->location;
+                $locality = isset($request->locality) ? $request->locality : '';
+                $state = isset($request->state) ? $request->state : '';
+                $lang = 'en'; //app()->getLocale();
 
-                $locations = Location::select(                    
+                $locations = Location::select(
                     'locations.custom_id',
                     'locations.is_active',
                     'location_translations.name as location_name',
@@ -719,8 +728,7 @@ class GeneralController extends Controller
                     ->where('location_translations.name', 'like', "{$location_name}%")
                     ->orderBy('location_translations.name');
                 $locations = $locations->get();
-                if ($locations->isEmpty())
-                {         
+                if ($locations->isEmpty()) {
                     $location_Translation = LocationTranslation::where('name', 'like', "{$location_name}%")->where('state', 'like', "{$state}%")->first();
                     if (empty($location_Translation)) {
 
@@ -741,21 +749,19 @@ class GeneralController extends Controller
                                 'state' => $state,
                             ]);
                         }
-                        $locations = Location::select(                    
+                        $locations = Location::select(
                             'locations.custom_id',
                             'locations.is_active',
                             'location_translations.name as location_name',
                             'location_translations.locality as location_locality',
                             'location_translations.state as location_state'
-                         )
-                        ->join('location_translations', 'locations.id', '=', 'location_translations.location_id')
-                        ->where('location_translations.locale', $lang)
-                        ->where('location_translations.name', 'like', "{$location_name}%")
-                        ->orderBy('location_translations.name');
+                        )
+                            ->join('location_translations', 'locations.id', '=', 'location_translations.location_id')
+                            ->where('location_translations.locale', $lang)
+                            ->where('location_translations.name', 'like', "{$location_name}%")
+                            ->orderBy('location_translations.name');
                         $locations = $locations->get();
-                    }
-                    else
-                    {
+                    } else {
                         $locationTranslation = LocationTranslation::where('name', 'like', "{$location_name}%")->first();
                         if ($locationTranslation == '') {
                             $location_data     = Location::create([
@@ -777,55 +783,52 @@ class GeneralController extends Controller
                             }
                         }
 
-                        $locations = Location::select(                    
+                        $locations = Location::select(
                             'locations.custom_id',
                             'locations.is_active',
                             'location_translations.name as location_name',
                             'location_translations.locality as location_locality',
                             'location_translations.state as location_state'
-                         )
-                        ->join('location_translations', 'locations.id', '=', 'location_translations.location_id')
-                        ->where('location_translations.locale', $lang)
-                        ->where('location_translations.name', 'like', "{$location_name}%")
-                        ->orderBy('location_translations.name');
+                        )
+                            ->join('location_translations', 'locations.id', '=', 'location_translations.location_id')
+                            ->where('location_translations.locale', $lang)
+                            ->where('location_translations.name', 'like', "{$location_name}%")
+                            ->orderBy('location_translations.name');
                         $locations = $locations->get();
                     }
-
-                }
-                else
-                {
+                } else {
                     $locationTranslation = LocationTranslation::where('name', 'like', "{$location_name}%")->first();
                     if (empty($locationTranslation['state']) && $state != '') {
                         LocationTranslation::updateOrCreate([
                             'id'         =>  $locationTranslation->id,
-                        ],[
+                        ], [
                             'state'      =>  $state,
                         ]);
 
-                        $locations = Location::select(                    
+                        $locations = Location::select(
                             'locations.custom_id',
                             'locations.is_active',
                             'location_translations.name as location_name',
                             'location_translations.locality as location_locality',
                             'location_translations.state as location_state'
-                         )
-                        ->join('location_translations', 'locations.id', '=', 'location_translations.location_id')
-                        ->where('location_translations.locale', $lang)
-                        ->where('location_translations.name', 'like', "{$location_name}%")
-                        ->orderBy('location_translations.name');
+                        )
+                            ->join('location_translations', 'locations.id', '=', 'location_translations.location_id')
+                            ->where('location_translations.locale', $lang)
+                            ->where('location_translations.name', 'like', "{$location_name}%")
+                            ->orderBy('location_translations.name');
                         $locations = $locations->get();
-                    }else{
-                        $locations = Location::select(                    
+                    } else {
+                        $locations = Location::select(
                             'locations.custom_id',
                             'locations.is_active',
                             'location_translations.name as location_name',
                             'location_translations.locality as location_locality',
                             'location_translations.state as location_state'
-                         )
-                        ->join('location_translations', 'locations.id', '=', 'location_translations.location_id')
-                        ->where('location_translations.locale', $lang)
-                        ->where('location_translations.name', 'like', "{$location_name}%")
-                        ->orderBy('location_translations.name');
+                        )
+                            ->join('location_translations', 'locations.id', '=', 'location_translations.location_id')
+                            ->where('location_translations.locale', $lang)
+                            ->where('location_translations.name', 'like', "{$location_name}%")
+                            ->orderBy('location_translations.name');
                         $locations = $locations->get();
                     }
                 }
@@ -834,7 +837,7 @@ class GeneralController extends Controller
 
                 if ($locations->isNotEmpty()) {
                     return (LocationSearchResource::collection($locations))->additional([
-                        'meta' => [                            
+                        'meta' => [
                             'url'       =>  url()->current(),
                             'api'       =>  $this->getVersion(),
                             'language'  =>  app()->getLocale(),
@@ -857,10 +860,8 @@ class GeneralController extends Controller
             } catch (\Exception $e) {
                 $this->storeErrorLog($e, 'get_locations');
             }
-      
-
         }
-            
+
         return $this->returnResponse();
     }
 
@@ -876,7 +877,7 @@ class GeneralController extends Controller
 
 
                 $image_arr_result = array();
-                $api_status_code  = "";    
+                $api_status_code  = "";
 
                 $client = new RekognitionClient([
                     'region'    => 'ap-south-1',
@@ -889,16 +890,16 @@ class GeneralController extends Controller
                 $image_path =   $request->image_path;
                 $bytes = file_get_contents($image_path);
                 */
-               
+
 
                 //FILE OBJECT 
 
                 $image = fopen($request->file('image_path')->getPathName(), 'r');
                 $bytes = fread($image, $request->file('image_path')->getSize());
 
-                
-                $moderate_image_results = $client->detectModerationLabels([                   
-                    'Image'         => ['Bytes' => $bytes], 
+
+                $moderate_image_results = $client->detectModerationLabels([
+                    'Image'         => ['Bytes' => $bytes],
                     'MinConfidence' => 60
                 ]);
 
@@ -909,81 +910,65 @@ class GeneralController extends Controller
 
 
 
-                if(isset($moderate_image_results["@metadata"]) && $moderate_image_results["@metadata"]['statusCode']==200)
-                {
-                        //response received then status code 200                            
-                        $api_status_code = "success";
+                if (isset($moderate_image_results["@metadata"]) && $moderate_image_results["@metadata"]['statusCode'] == 200) {
+                    //response received then status code 200                            
+                    $api_status_code = "success";
 
-                        // Moderation Label have array element means the image is not safe   
+                    // Moderation Label have array element means the image is not safe   
 
-                        if(count($moderate_image_results['ModerationLabels']) > 0)
-                        {
+                    if (count($moderate_image_results['ModerationLabels']) > 0) {
 
-                           $is_safe_image_category_filter = true; 
+                        $is_safe_image_category_filter = true;
 
-                           $filter_detail_message = "";
+                        $filter_detail_message = "";
 
-                           foreach ($moderate_image_results['ModerationLabels'] as $cat_key => $res_data) {
-                                    // code...
-                                 //echo "<br> Category ".$res_data['Name'];
-                                 //echo "<br> Parent Category ".$res_data['ParentName'];
-                                 //echo "<br> Confidence ".$res_data['Confidence'];
+                        foreach ($moderate_image_results['ModerationLabels'] as $cat_key => $res_data) {
+                            // code...
+                            //echo "<br> Category ".$res_data['Name'];
+                            //echo "<br> Parent Category ".$res_data['ParentName'];
+                            //echo "<br> Confidence ".$res_data['Confidence'];
 
-                                 if (array_key_exists($res_data['Name'],$cat_filter))
-                                 {
-                                       // echo "<Br> in----".$cat_filter[$res_data['Name']];
-                                       // if($res_data['Confidence'] >)
-                                        if($res_data['Confidence'] >= $cat_filter[$res_data['Name']])
-                                        {
-                                                //dd($cat_filter[$res_data['Name']]);
-                                                $is_safe_image_category_filter = false;
-                                                $filter_detail_message = $res_data['Name'] ." value in setting (".$cat_filter[$res_data['Name']]."). In response confidence value (".$res_data['Confidence'].")";
-                                                break;
-
-                                        }
-                                 }
-
-                           }     
-                           $image_arr_result["is_safe_image"] = $is_safe_image_category_filter;
-                           $image_arr_result["moderation_labels_data"] = $filter_detail_message;
+                            if (array_key_exists($res_data['Name'], $cat_filter)) {
+                                // echo "<Br> in----".$cat_filter[$res_data['Name']];
+                                // if($res_data['Confidence'] >)
+                                if ($res_data['Confidence'] >= $cat_filter[$res_data['Name']]) {
+                                    //dd($cat_filter[$res_data['Name']]);
+                                    $is_safe_image_category_filter = false;
+                                    $filter_detail_message = $res_data['Name'] . " value in setting (" . $cat_filter[$res_data['Name']] . "). In response confidence value (" . $res_data['Confidence'] . ")";
+                                    break;
+                                }
+                            }
                         }
-                        else
-                        {
-                            $image_arr_result["is_safe_image"] = true;   
-                            $image_arr_result["moderation_labels_data"] = "";
-                        }
+                        $image_arr_result["is_safe_image"] = $is_safe_image_category_filter;
+                        $image_arr_result["moderation_labels_data"] = $filter_detail_message;
+                    } else {
+                        $image_arr_result["is_safe_image"] = true;
+                        $image_arr_result["moderation_labels_data"] = "";
+                    }
 
 
-                        /// CHECK FOR FACE DETECTION : HOW MAN FACE DETECTED.
-                        $result_face = $client->detectFaces([
-                            'Attributes' => ['ALL'], //ALL, DEFAULT
-                            'Image'         => ['Bytes' => $bytes], 
-                        ]);
+                    /// CHECK FOR FACE DETECTION : HOW MAN FACE DETECTED.
+                    $result_face = $client->detectFaces([
+                        'Attributes' => ['ALL'], //ALL, DEFAULT
+                        'Image'         => ['Bytes' => $bytes],
+                    ]);
 
-                        $image_arr_result["total_face_detected"] = count($result_face['FaceDetails']);
+                    $image_arr_result["total_face_detected"] = count($result_face['FaceDetails']);
+                    $image_arr_result["face_detected_message"] = "";
+
+                    if (count($result_face['FaceDetails']) == 0) {
+                        $image_arr_result["is_safe_image"] = false;
+                        $image_arr_result["face_detected_message"] = "Image have no face detected";
+                    } else if (count($result_face['FaceDetails']) >= 1) {
                         $image_arr_result["face_detected_message"] = "";
-
-                        if(count($result_face['FaceDetails'])==0)
-                        {
-                            $image_arr_result["is_safe_image"] = false;
-                            $image_arr_result["face_detected_message"] = "Image have no face detected";
-                        }
-                        else if(count($result_face['FaceDetails']) >= 1)
-                        {                                
-                            $image_arr_result["face_detected_message"] = "";
-                        }                        
+                    }
 
 
-                        $this->response['data']  = $image_arr_result;
-                        
-                }
-                else
-                {
+                    $this->response['data']  = $image_arr_result;
+                } else {
                     $this->response['meta']['message']  =   trans('api.not_found', ['entity' => __('AWS Image Moderation')]);
-                    $this->status = Response::HTTP_NOT_FOUND;  
+                    $this->status = Response::HTTP_NOT_FOUND;
                 }
-
-
             } catch (\Exception $e) {
                 $this->response['meta']['message'] = trans('api.went_wrong');
                 $this->status = Response::HTTP_NOT_FOUND;

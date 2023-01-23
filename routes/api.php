@@ -29,10 +29,13 @@ Route::get('/cache', function () {
     dd("Cache is cleared");
 });
 
+
+
 Route::group(['namespace' => 'v1', 'prefix' => 'v1'], function () {
     // Authentication
     Route::post('login', [AuthenticationController::class,'login'])->name('api.user.login');
     Route::post('social/login', [AuthenticationController::class,'socialLogin'])->name('api.social-login');
+    Route::post('otpless/login', [AuthenticationController::class,'otpLessLogin'])->name('api.otp-less-login');
     Route::any('generate-checksum', [AuthenticationController::class,'generateChecksum'])->name('api.generate-checksum');
     Route::post('user/set-profile', [AuthenticationController::class,'setProfile'])->name('api.user.set-profile');
 

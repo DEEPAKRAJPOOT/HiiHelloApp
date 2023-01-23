@@ -7,16 +7,23 @@ use Illuminate\Http\{Request, Response};
 use App\Http\Resources\v1\{UserProfile, LoginResource, SignUpResource};
 use Illuminate\Database\Eloquent\{ModelNotFoundException};
 use Illuminate\Support\Facades\{Storage, Auth, Hash};
-use App\Http\Requests\Api\Authentication\{LoginRequest, RegisterRequest, SocialLoginRequest};
-use App\Models\{User, Country, UserDetail, Location, Interest, UserInterest, Language, ProfileDetail, DeviceToken, Subscription, SubscriptionPlan,LocationTranslation,ApiLogs,ImageModerationLog};
+use App\Http\Requests\Api\Authentication\{LoginRequest, OTPLessRequest, RegisterRequest, SocialLoginRequest};
+use App\Http\Resources\OTPLessResource;
+use App\Models\{User, Country, UserDetail, Location, Interest, UserInterest, Language, ProfileDetail, DeviceToken, Subscription, SubscriptionPlan, LocationTranslation, ApiLogs, ImageModerationLog};
 use Illuminate\Support\Str;
 use DB;
 
 class AuthenticationController extends Controller
 {
     private $version = "v.1.0";
-    public function getVersion(){ return $this->version; }
-    public function getAuthUser(){ return auth('sanctum')->user(); }
+    public function getVersion()
+    {
+        return $this->version;
+    }
+    public function getAuthUser()
+    {
+        return auth('sanctum')->user();
+    }
 
     // User Login
     public function login(Request $request)
@@ -82,11 +89,9 @@ class AuthenticationController extends Controller
                     $country_id = $country->id;
                 }
                 if (!empty($request->latitude) && !empty($request->longitude)) {
-                    $location_id = $this->get_user_location($request->latitude,$request->longitude);
+                    $location_id = $this->get_user_location($request->latitude, $request->longitude);
                     $new_location_id = 'y';
-                }
-                else
-                {
+                } else {
                     $new_location_id = 'n';
                 }
                 if (!empty($request->language)) {
@@ -104,9 +109,7 @@ class AuthenticationController extends Controller
                 }
                 if (!empty($request->email)) {
                     $is_social_user = 'y';
-                }
-                else
-                {
+                } else {
                     $is_social_user = 'n';
                 }
                 // echo "<pre>"; print_r($request->all()); die();
@@ -116,6 +119,7 @@ class AuthenticationController extends Controller
                     $user->location_id = isset($location_id) ? $location_id : null;
                     $user->discover_location_id = isset($location_id) ? $location_id : null;
                     $user->language_id = $language_id;
+                    $user->otp_less_id = $request->otp_less_id ?? null;
                 } else {
                     $user = User::create([
                         'custom_id'             =>  getUniqueString('users'),
@@ -139,6 +143,7 @@ class AuthenticationController extends Controller
                         'device_app_version'    =>  $device_app_version ?? NULL,
                         'star_sign_id'          =>  $request->star_sign_id ?? NULL,
                         'password'              =>  Hash::make(config('utility.default_password')),
+                        'otp_less_id'           =>  $request->otp_less_id ?? null
                     ]);
                 }
                 // echo "<pre>"; print_r($user); die();
@@ -158,7 +163,7 @@ class AuthenticationController extends Controller
                 }
 
                 // Buy Subscription For Girls
-                if($user->wasRecentlyCreated || ($user->gender == 'Female' && empty($user->subscription)) ) {
+                if ($user->wasRecentlyCreated || ($user->gender == 'Female' && empty($user->subscription))) {
                     $user->buyFreeSubscription();
                 }
 
@@ -170,45 +175,41 @@ class AuthenticationController extends Controller
                 $safe_image = "true";
 
                 if (!empty($request->profile_photo)) {
-                    
+
                     if (!empty($user->profile_photo)) {
                         if (Storage::exists($user->profile_photo)) {
                             Storage::delete($user->profile_photo);
                         }
                     }
                     ///CHECK FOR AWS REKOGNIZTION START
-                    $awsImgResultArr = checkAwsImageModeration($request,"profile_photo");
+                    $awsImgResultArr = checkAwsImageModeration($request, "profile_photo");
 
-                    if(count($awsImgResultArr) > 0)
-                    {
-                        if($awsImgResultArr["is_safe_image"]==true) 
-                        {
+                    if (count($awsImgResultArr) > 0) {
+                        if ($awsImgResultArr["is_safe_image"] == true) {
                             $path = $request->file('profile_photo')->store('users/profile_photo');
                             $user->profile_photo = $path;
                             $user->is_media_checked = 'n';
-                        }   
-                        else
-                        {
+                        } else {
                             $user->profile_photo = NULL;
                             $user->is_media_checked = 'n';
                             $invalid_image_uploaded = true;
-                            $safe_image = "false";                            
-                        }  
+                            $safe_image = "false";
+                        }
 
                         //INSERT IN TO IMAGE MODERATIO LOG START
-                        if($awsImgResultArr["is_safe_image"]==true) 
+                        if ($awsImgResultArr["is_safe_image"] == true)
                             $is_approved = 1;
                         else
                             $is_approved = 0;
 
-                        $image_type = "profile_photo";  
-                        $message = $awsImgResultArr["log_message"];                        
-                        $total_face_detected = $awsImgResultArr["total_face_detected"];                        
-                        
+                        $image_type = "profile_photo";
+                        $message = $awsImgResultArr["log_message"];
+                        $total_face_detected = $awsImgResultArr["total_face_detected"];
+
                         $response_data = $awsImgResultArr["image_moderation_response"];
                         $request_data = $awsImgResultArr["image_moderation_request"];
 
-                        
+
                         $endpoint_url = url()->current();
 
 
@@ -221,11 +222,11 @@ class AuthenticationController extends Controller
                             'message'             => $message,
                             'image_type'          => $image_type,
                             'endpoint_url'        => $endpoint_url,
-                        ]);    
+                        ]);
 
                         //INSERT IN TO IMAGE MODERATIO LOG END
 
-                    }                    
+                    }
                     //CHECK FOR AWS REKOGNIZTION END
                 }
 
@@ -257,14 +258,12 @@ class AuthenticationController extends Controller
                             'meta' => [
                                 'message'       =>  trans('api.profile_setuped'),
                                 'auth_token'    =>  $user->createToken(config('utility.token'))->plainTextToken,
-                                'safe_image'    =>  $safe_image,                                
+                                'safe_image'    =>  $safe_image,
                             ]
                         ]);
-
-
                 } else {
                     $this->response['meta']['message']   = trans('api.profile_setuped_fail');
-                    $this->response['meta']['safe_image']= $safe_image;                  
+                    $this->response['meta']['safe_image'] = $safe_image;
                 }
             } catch (ModelNotFoundException $exception) {
                 switch ($exception->getModel()) {
@@ -451,8 +450,12 @@ class AuthenticationController extends Controller
                     $path = $request->file('profile_photo')->store('users/profile_photo');
                 }
 
-                if(empty($user->email_verified_at)){ $user->markEmailAsVerified(); } // Mark Email As Verified
-                if($user->wasRecentlyCreated){ $user->buyFreeSubscription(); } // Buy Subscription For Girls
+                if (empty($user->email_verified_at)) {
+                    $user->markEmailAsVerified();
+                } // Mark Email As Verified
+                if ($user->wasRecentlyCreated) {
+                    $user->buyFreeSubscription();
+                } // Buy Subscription For Girls
 
                 $user->profile_photo = $path;
                 $user->setprofile_api_run = 'n';
@@ -498,7 +501,7 @@ class AuthenticationController extends Controller
                     $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("User")]);
                     $this->response['meta']['is_ban'] = false;
                     break;
-                    default:
+                default:
                     $this->response['meta']['message'] = trans('api.went_wrong');
                     $this->response['meta']['is_ban'] = false;
                     break;
@@ -510,17 +513,17 @@ class AuthenticationController extends Controller
     }
 
     // User get location id using lat and logn
-    public function get_user_location($lat,$long)
+    public function get_user_location($lat, $long)
     {
         $apiKey = 'AIzaSyDInVSLHXa1FXO3p7kgA7B_TK9L71tZbW8';
-        $latlng = $lat.','.$long;
+        $latlng = $lat . ',' . $long;
         $result = [];
         $location_id = '';
 
-        $url = "https://maps.googleapis.com/maps/api/geocode/json?latlng=".$latlng."&sensor=true&key=".$apiKey;
+        $url = "https://maps.googleapis.com/maps/api/geocode/json?latlng=" . $latlng . "&sensor=true&key=" . $apiKey;
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);    
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         $responseJson = curl_exec($ch);
         curl_close($ch);
         $response = json_decode($responseJson);
@@ -536,35 +539,94 @@ class AuthenticationController extends Controller
                 // check city and state not empty
                 if (!empty($result) && !empty($result['city']) && !empty($result['state'])) {
                     // if already exist city and state then get id and update user location id
-                    $locationTranslation = LocationTranslation::where('name',$result['city'])->where('state',$result['state'])->where('locale','en')->first();
+                    $locationTranslation = LocationTranslation::where('name', $result['city'])->where('state', $result['state'])->where('locale', 'en')->first();
                     if (!empty($locationTranslation)) {
                         $location_id = $locationTranslation->location_id;
 
                         // update location table for city is used some one users
-                        Location::where('id',$location_id)->update([ 
+                        Location::where('id', $location_id)->update([
                             'is_used' =>  'y',
                         ]);
-                    }
-                    else
-                    {
+                    } else {
                         // if city and state not exits then create new
-                        $location = new Location();        
-                        $location->custom_id = getUniqueString('locations');  
-                        $location->is_used   = 'y';  
+                        $location = new Location();
+                        $location->custom_id = getUniqueString('locations');
+                        $location->is_used   = 'y';
                         $location->save();
 
                         $location_id = $location->id;
 
                         $LocationTranslation = new LocationTranslation();
-                        $LocationTranslation->locale = 'en';  
-                        $LocationTranslation->location_id = $location_id;  
-                        $LocationTranslation->name = $result['city'];  
-                        $LocationTranslation->state = $result['state'];  
+                        $LocationTranslation->locale = 'en';
+                        $LocationTranslation->location_id = $location_id;
+                        $LocationTranslation->name = $result['city'];
+                        $LocationTranslation->state = $result['state'];
                         $LocationTranslation->save();
                     }
                 }
             }
             return $location_id;
         }
+    }
+
+    public function otpLessLogin(Request $request)
+    {
+        $otpLessRequest = new OTPLessRequest();
+        if ($this->apiValidator($request->all(), $otpLessRequest->rules($request), $this->version)) {
+            try {
+
+
+                $this->response['meta']['message']  = trans('api.login_fail');
+
+                $verifiedOTPLessAuth = verifyOTPLessAuth($request->wa_id);
+                if (is_array($verifiedOTPLessAuth)) {
+                    $verifiedOTPLessAuth['otp_less_id'] = $request->wa_id;
+                    
+                    $this->status = Response::HTTP_UNPROCESSABLE_ENTITY;
+                    $this->response['meta']['otp_less_data']  = $verifiedOTPLessAuth;
+                    try {
+                        $user = User::with([
+                            'userTranslation', 'userTransEn', 'userDetails', 'interests.interest.interestTranslation',
+                            'language', 'location.locationTranslation'
+                        ])
+                            ->whereContactNo(substr($verifiedOTPLessAuth['userMobile'], 2))->firstOrFail();
+                        if ($user->is_active == 'y') {
+                            Auth::login($user);
+                            Auth::user()->tokens()->delete(); // Logout From All Devices    
+                            $user->changeLanguage(); // Change Language
+                            $user->otp_less_id = $request->wa_id;
+                            $user->save();
+                            return (new LoginResource($user))
+                                ->additional([
+                                    'meta' => [
+                                        'message'           =>  trans('api.login'),
+                                        'auth_token'        =>  $user->createToken(config('utility.token'))->plainTextToken,
+                                        'otp_less_data'     => $verifiedOTPLessAuth
+                                    ]
+                                ]);
+                        } else {
+                            $this->response['meta']['message']  = trans('api.in_active');
+                        }
+                    } catch (\Exception $e) {
+                        $this->storeErrorLog($e, 'login', trans('api.login_fail'));
+                    }
+                } else {
+                    $this->status = Response::HTTP_UNPROCESSABLE_ENTITY;
+                    $this->response['meta']['message']  = $verifiedOTPLessAuth;
+                }
+            } catch (ModelNotFoundException $exception) {
+                switch ($exception->getModel()) {
+                    case 'App\Models\User':
+                        $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("User")]);
+                        break;
+                    default:
+                        $this->response['meta']['message'] = trans('api.went_wrong');
+                        break;
+                };
+            } catch (\Exception $e) {
+                $this->storeErrorLog($e, 'otp_less_login');
+            }
+        }
+        return $this->returnResponse();
     }
 }

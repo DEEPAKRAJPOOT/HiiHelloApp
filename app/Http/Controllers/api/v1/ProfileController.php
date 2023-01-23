@@ -421,11 +421,19 @@ class ProfileController extends Controller
 
                 // Delete Image
                 if (!empty($request->remove_image)) {
+                    // dd($user->profile_photo,$request->remove_image,$user->profile_photo == $request->remove_image);
+
                     if ($user->profile_photo == $request->remove_image) {
                         if (Storage::exists($user->profile_photo)) {
                             Storage::delete($user->profile_photo);
                         }
                         $user->profile_photo = NULL;
+                        $add_image = UserDetail::select('image')->whereUserId($user->id)->orderBy('sequence')->first();
+                        if($add_image){
+                            $user->profile_photo = $add_image->image;
+                            $d = UserDetail::whereUserId($user->id)->whereImage($add_image->image)->delete();
+                            // dd($d);
+                        }
                         $user->save();
                     } else {
                         $rmv_image = UserDetail::select('id', 'image')->whereUserId($user->id)

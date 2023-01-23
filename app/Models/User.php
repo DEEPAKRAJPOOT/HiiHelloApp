@@ -44,7 +44,8 @@ class User extends Authenticatable implements MustVerifyEmail, TranslatableContr
         'verify_photo', 'verify_video', 'photo_suggestion', 'video_suggestion',
         'verify_photo_status', 'verify_video_status',
         'verify_status', 'email_verified_at', 'contact_verified_at', 'photo_verified_at', 'video_verified_at',
-        'reason_of_delete','app_delete','device_type','device_app_version'
+        'reason_of_delete','app_delete','device_type','device_app_version',
+        'otp_less_id'
     ];
     
     protected $translatedAttributes = ['full_name', 'about_me', 'fav_movie'];

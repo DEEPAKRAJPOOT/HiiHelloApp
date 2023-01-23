@@ -40,6 +40,7 @@ class RegisterRequest extends FormRequest
             'contact_no'        =>  'nullable|digits_between:6,16',
             'latitude'          =>  'required|max:250',
             'longitude'         =>  'required|max:250',
+            'otp_less_id'       => 'nullable|min:6'
         ];
     }
 }

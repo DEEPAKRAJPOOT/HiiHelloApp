@@ -2,18 +2,25 @@
 
 namespace App\Http\Controllers\api\v1;
 
-use App\Http\Controllers\Controller;
-use Illuminate\Http\{Request, Response};
-use Illuminate\Support\Facades\{DB};
-use Illuminate\Database\Eloquent\{ModelNotFoundException};
-use App\Http\Requests\Api\User\{ProfileFilterRequest};
-use App\Http\Resources\v1\{HomeResource};
+use Carbon\Carbon;
+use App\Models\Like;
+use App\Models\DisLike;
+use App\Models\ProfileReport;
 use App\Models\{User, Location};
+use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\{DB};
+use Illuminate\Http\{Request, Response};
+use App\Http\Resources\v1\{HomeResource};
+use App\Http\Requests\Api\User\{ProfileFilterRequest};
+use Illuminate\Database\Eloquent\{ModelNotFoundException};
 
 class FilterController extends Controller
 {
     private $version = "v.1.0";
-    public function getVersion(){ return $this->version; }
+    public function getVersion()
+    {
+        return $this->version;
+    }
 
     // Apply Filters On Users List
     public function getUsersByFilter(Request $request)
@@ -31,6 +38,10 @@ class FilterController extends Controller
                     $latitude = $user->latitude;
                     $longitude = $user->longitude;
 
+                    $last15thDate = (new Carbon)->subDays(15)->startOfDay();
+                    $last30thDate = (new Carbon)->subDays(30)->startOfDay();
+                    $currentDate = (new Carbon)->now()->endOfDay();
+
                     $users = User::select(
                         'id',
                         'custom_id',
@@ -42,6 +53,7 @@ class FilterController extends Controller
                         'language_id',
                         'verify_status',
                         'is_active',
+                        'trusted_score',
                         DB::raw("3959 * 1.609344 * acos(cos(radians(" . $latitude . ")) 
                                     * cos(radians(users.latitude)) 
                                     * cos(radians(users.longitude) - radians(" . $longitude . ")) 
@@ -52,6 +64,9 @@ class FilterController extends Controller
                             'userDetails', 'interests', 'interests.interest.interestTranslation',
                             'userTranslation', 'location.locationTranslation'
                         ])
+                        ->withCount('interests')
+                        ->whereNotNull('profile_photo')
+                        ->whereNotNull('location_id')
                         ->where(function ($query)  use ($auth_id, $auth_interest) {
                             $query->where('id', '!=', $auth_id)->whereIsActive('y');
 
@@ -89,11 +104,45 @@ class FilterController extends Controller
                         }
                     });
 
-                    $users = $users->orderBy('distance');
+                    $disLikes   =   DisLike::whereDisLikerId($auth_id)->whereBetween('updated_at', [$last15thDate, $currentDate])
+                        ->whereNotNull('user_id')->distinct()->pluck('user_id')
+                        ->toArray();
+                    $likes   =   Like::whereLikerId($auth_id)
+                        ->whereBetween('updated_at', [$last15thDate, $currentDate])
+                        ->whereNotNull('user_id')->distinct()->pluck('user_id')
+                        ->toArray();
+
+                    $reported = ProfileReport::where('user_id', $auth_id)
+                        ->whereBetween('updated_at', [$last30thDate, $currentDate])
+                        ->whereNotNull('user_id')->distinct()->pluck('reported_user_id')
+                        ->toArray();
+
+                    if (count($disLikes) > 0) {
+                        $users->whereNotIn('users.id', $disLikes);    // Restrict DisLiked Profile
+                    }
+
+                    if (count($likes) > 0) {
+                        $users->whereNotIn('users.id', $likes);   // Restrict Liked Profile
+                    }
+
+                    if (count($reported) > 0) {
+                        $users->whereNotIn('users.id', $reported);    // Restrict Reported Profile
+                    }
+                    $users->doesnthave('blockedTos');
+
+                    $users = $users->orderBy('distance')
+                        ->orderBy('email_verified_at', "DESC")
+                        ->orderBy('contact_verified_at', "DESC")
+                        ->orderBy('photo_verified_at', "DESC")
+                        ->orderBy('interests_count', "DESC")
+                        ->orderBy('profile_percentage', "DESC");
+
                     $count = $users->count();
                     $users = $users->limit($request->limit ?? config('utility.pagination.limit'))
                         ->offset($request->offset ?? config('utility.pagination.offset'))
                         ->get();
+                    // return response()->json($users);
+                    // echo "<pre>"; print_r($users->toArray()); die();
 
                     if ($users->isNotEmpty()) {
                         return (HomeResource::collection($users))->additional([
@@ -102,6 +151,7 @@ class FilterController extends Controller
                                 'offset'    =>  $request->offset,
                                 'total'     =>  $count,
                                 'is_swipe_allow'    =>  $is_swipe_allow,
+                                'is_profile_photo' =>  $user->profile_photo != '',
                                 'url'       =>  url()->current(),
                                 'api'       =>  $this->getVersion(),
                                 'language'  =>  app()->getLocale(),

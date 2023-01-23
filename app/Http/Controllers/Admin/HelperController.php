@@ -11,18 +11,20 @@ class HelperController extends Controller
     public static function generateUrl($path)
     {
         $url = "";
-        if( !empty($path) )
+        if (!empty($path))
             $path = ltrim($path, '/');
 
-        if( !empty($path) && Storage::exists($path) )
+        if (!empty($path) && Storage::exists($path))
             $url = Storage::url($path);
 
         // $url = Storage::temporaryUrl( $path, now()->addMinutes(5) );
 
         // For AWS CDN
-        if( !empty($path) && !empty(env('AWS_URl')) && !empty(env('FILESYSTEM_DRIVER')) && env('FILESYSTEM_DRIVER') == 's3' ){
+        $s3_bucket_url = config('utility.s3.prefix_url');
+        $file_system = config('filesystems.default');
+        if (!empty($path) && !empty($s3_bucket_url) && !empty($file_system) && $file_system  == 's3') {
             // $url = Storage::disk('s3')->url($path);
-            $url = env('AWS_URl').$path;
+            $url = $s3_bucket_url .'/'. $path;
         }
 
         return $url;

@@ -66,11 +66,18 @@ class HomeController extends Controller
                             'verify_status',
                             'verify_photo_status',
                             'verify_email_send',
-                            // 'trusted_score',
+
+                            'trusted_score',
                             'email_verified_at',
                             'profile_percentage',
-                            'contact_verified_at',                           
+
+                            'contact_verified_at',
+
+                            'profile_percentage',
+
                             'is_active',
+                            // DB::raw('GROUP_CONCAT(user_interests.interest_id) AS groupC'),
+
                             DB::raw("3959 * 1.609344 * acos(cos(radians(" . $latitude . ")) 
                             * cos(radians(users.latitude)) 
                             * cos(radians(users.longitude) - radians(" . $longitude . ")) 
@@ -93,7 +100,7 @@ class HomeController extends Controller
                             'verify_email_send',
                             'email_verified_at',
                             'contact_verified_at',
-                            // 'trusted_score',
+                            'trusted_score',
                             'interest',
                             'location_id',
                             'language_id',
@@ -104,6 +111,7 @@ class HomeController extends Controller
 
 
                     $users = $users->with(['userDetails', 'interests.interest.interestTranslation', 'userTranslation', 'location.locationTranslation'])
+                        ->withCount('interests')
                         ->where('users.id', '!=', $auth_id)
                         ->whereNotNull('profile_photo')
                         ->whereIsActive('y');
@@ -141,30 +149,36 @@ class HomeController extends Controller
                         $users->whereBetween(\DB::raw('TIMESTAMPDIFF(YEAR,users.birth_date,CURDATE())'), array($user->discover_start_age, $user->discover_end_age));
                     }
 
+
                     $users->where(function ($query)  use ($languages) {
                         if (count($languages) > 0) {
                             $query->orWhereIn('language_id', $languages);   // Languages
                         }
                     });
 
-                    // $users = $users->leftJoin('user_interests', 'user_interests.user_id',  '=', 'users.id')
                     $users = $users->orderBy('email_verified_at', "DESC")
                         ->orderBy('contact_verified_at', "DESC")
                         ->orderBy('photo_verified_at', "DESC")
-                        // ->orderBy('user_interests.interest_id', "DESC")
+                        ->orderBy('interests_count', "DESC")
                         ->orderBy('profile_percentage', "DESC");
                     $count = $users->count();
                     $users = $users->limit($request->limit ?? config('utility.pagination.limit'))
                         ->offset($request->offset ?? config('utility.pagination.offset'))
                         ->get();
 
-                    if ($users->isNotEmpty()) {
+                    $is_profile_photo = false;
+                    if ($user->profile_photo != '') {
+                        $is_profile_photo = true;
+                    }
+
+                    if ($users->isNotEmpty()) { //return $users;
                         return (HomeResource::collection($users))->additional([
                             'meta' => [
                                 'limit'     =>  $request->limit,
                                 'offset'    =>  $request->offset,
                                 'total'     =>  $count,
-                                'is_swipe_allow'    =>  $is_swipe_allow,
+                                'is_swipe_allow' =>  $is_swipe_allow,
+                                'is_profile_photo' =>  $is_profile_photo,
                                 'url'       =>  url()->current(),
                                 'api'       =>  $this->getVersion(),
                                 'is_ban'    =>  false,

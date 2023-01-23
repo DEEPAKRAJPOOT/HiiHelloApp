@@ -31,6 +31,11 @@ class MyProfile extends JsonResource
             'interests'         =>  UserInterestResource::collection($this->interests),
             'profile_photo'     =>  generateURL($this->profile_photo) ?? "",
             'subscription'      =>  new SubscriptionResource($this->subscription),
+            //'is_email_verify' =>  $this->verify_email_send=='y' ? true : false,
+            'is_email_verify'   =>  !empty($this->email_verified_at) ? true : false,
+            'is_contact_verify' =>  !empty($this->contact_verified_at) ? true : false, 
+            'is_photo_verify'   =>  !empty($this->photo_verified_at) ? true : false, 
+            'trusted_score'     =>  !empty($this->trusted_score) ? $this->trusted_score : "0.00", 
             'my_things'         =>  [
                 'relationship_status'   =>  new ProfileDetailResource($this->relationshipStatus),
                 'i_am_here'             =>  new ProfileDetailResource($this->youAreHere),
