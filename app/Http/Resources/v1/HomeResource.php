@@ -24,7 +24,7 @@ class HomeResource extends JsonResource
             'is_email_verify'   =>  ($this->emailVerifyStatus()=='verified') ? true : false,
             'is_contact_verify' =>  ($this->contactVerifyStatus()=='verified') ? true : false,
             'is_photo_verify'   =>  ($this->verify_photo_status=='verified') ? true : false,
-            'trusted_score'     =>  $this->trusted_score,
+            // 'trusted_score'     =>  $this->trusted_score,
             'location'          =>  new LocationResource($this->location),
             'interests'         =>  HomeInterestResource::collection($this->interests),
             'profile_photo'     =>  generateURL($this->profile_photo) ?? "", 

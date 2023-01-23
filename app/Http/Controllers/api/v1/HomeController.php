@@ -67,7 +67,7 @@ class HomeController extends Controller
                             'verify_photo_status',
                             'verify_email_send',
 
-                            'trusted_score',
+                            // 'trusted_score',
                             'email_verified_at',
                             'profile_percentage',
 
@@ -100,7 +100,7 @@ class HomeController extends Controller
                             'verify_email_send',
                             'email_verified_at',
                             'contact_verified_at',
-                            'trusted_score',
+                            // 'trusted_score',
                             'interest',
                             'location_id',
                             'language_id',
