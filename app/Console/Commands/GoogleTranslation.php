@@ -69,14 +69,14 @@ class GoogleTranslation extends Command
                                 $message = $this->translateText($apiKey, $language_alloweds, $user, $detected_lang, 'full_name', $full_name );
                                 $user->is_trans_full_name = 'y';
                             }
-                            if( !empty($about_me) && $user->is_trans_about_me == 'n'){
-                                $message = $this->translateText($apiKey, $language_alloweds, $user, $detected_lang, 'about_me', $about_me );
-                                $user->is_trans_about_me = 'y';
-                            }
-                            if( !empty($fav_movie) && $user->is_trans_fav_movie == 'n'){
-                                $message = $this->translateText($apiKey, $language_alloweds, $user, $detected_lang, 'fav_movie', $fav_movie );
-                                $user->is_trans_fav_movie = 'y';
-                            }
+                            // if( !empty($about_me) && $user->is_trans_about_me == 'n'){
+                            //     $message = $this->translateText($apiKey, $language_alloweds, $user, $detected_lang, 'about_me', $about_me );
+                            //     $user->is_trans_about_me = 'y';
+                            // }
+                            // if( !empty($fav_movie) && $user->is_trans_fav_movie == 'n'){
+                            //     $message = $this->translateText($apiKey, $language_alloweds, $user, $detected_lang, 'fav_movie', $fav_movie );
+                            //     $user->is_trans_fav_movie = 'y';
+                            // }
 
                             $user->save();
                         }
