@@ -162,8 +162,8 @@
               <option value="3 month">3 Months</option>
               <option value="6 month">6 Months</option>
               <option value="year">This Year</option>
-              {{-- <option value="overall">Overall</option>
-              <option value="custom">Custom Range</option> --}}
+              <option value="overall">Overall</option>
+              <option value="custom">Custom Range</option>
             </select>
           </div>
         </div>
@@ -296,7 +296,7 @@
 
   </div>
 
-  {{-- <div class="row">
+  <div class="row">
     <div class="col-lg-12">
       <div class="card card-custom gutter-b">
         <div class="card-header flex-wrap border-0 py-5">
@@ -650,7 +650,7 @@
         </div>
       </div>
     </div>
-  </div> --}}
+  </div>
 
 {{-- @if(auth()->user()->type == 'admin')
   <!--end::second raw-->
@@ -923,7 +923,7 @@ $(document).ready(function() {
 </script>
 
 <!-- language dt -->
-{{-- <script type="text/javascript">
+<script type="text/javascript">
   $(function() {
     var table = $('#language_DT');
 
@@ -982,7 +982,7 @@ $(document).ready(function() {
 
 
   });
-</script> --}}
+</script>
 
 <!-- mode of registration with no of users listing dt -->
 <script type="text/javascript">
