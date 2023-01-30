@@ -29,48 +29,48 @@ class SetDiscoveryRequest extends FormRequest
             'Male' => 'Male',
 
             'দুয়োটা' => 'Both',
-            'পুৰুষ' => 'Female',
-            'মাইকী' => 'Male',
+            'পুৰুষ' => 'Male',
+            'মাইকী' => 'Female',
 
             'উভয়' => 'Both',
-            'পুরুষ' => 'Female',
-            'মহিলা' => 'Male',
+            'পুরুষ' => 'Male',
+            'মহিলা' => 'Female',
 
             'બંને' => 'Both',
-            'પુરુષ' => 'Female',
-            'સ્ત્રી' => 'Male',
+            'પુરુષ' => 'Male',
+            'સ્ત્રી' => 'Female',
 
             'दोनों' => 'Both',
-            'पुरुष' => 'Female',
-            'महिला' => 'Male',
+            'पुरुष' => 'Male',
+            'महिला' => 'Female',
 
             'ಎರಡೂ' => 'Both',
-            'ಪುರುಷ' => 'Female',
-            'ಣ್ಣು' => 'Male',
+            'ಪುರುಷ' => 'Male',
+            'ಣ್ಣು' => 'Female',
 
             'രണ്ടും' => 'Both',
-            'ആൺ' => 'Female',
-            'സ്ത്രീ' => 'Male',
+            'ആൺ' => 'Male',
+            'സ്ത്രീ' => 'Female',
 
             'दोन्ही' => 'Both',
-            'पुरुष' => 'Female',
-            'स्त्री' => 'Male',
+            'पुरुष' => 'Male',
+            'स्त्री' => 'Female',
 
             'ଉଭୟ' => 'Both',
-            'ପୁରୁଷ' => 'Female',
-            'ମହିଳା' => 'Male',
+            'ପୁରୁଷ' => 'Male',
+            'ମହିଳା' => 'Female',
 
             'ਦੋਵੇਂ' => 'Both',
-            'ਨਰ' => 'Female',
-            'ਔਰਤ' => 'Male',
+            'ਨਰ' => 'Male',
+            'ਔਰਤ' => 'Female',
 
             'இரண்டும்' => 'Both',
-            'ஆண்' => 'Female',
-            'பெண்' => 'Male',
+            'ஆண்' => 'Male',
+            'பெண்' => 'Female',
 
             'రెండు' => 'Both',
-            'పురుషుడు' => 'Female',
-            'స్త్రీ' => 'Male'
+            'పురుషుడు' => 'Male',
+            'స్త్రీ' => 'Female'
         ];
         return [
             'distance'          =>  'required|numeric|min:1|max:500',
