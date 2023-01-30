@@ -652,7 +652,7 @@
     </div>
   </div>
 
-@if(auth()->user()->type == 'admin')
+{{-- @if(auth()->user()->type == 'admin')
   <!--end::second raw-->
   <!--begin::third row-->
   <div class="row">
@@ -676,7 +676,7 @@
     </div>
   </div>
   <!--end::third raw-->
-@endif
+@endif --}}
 </div>
 @endsection
 @push('extra-js-scripts')
