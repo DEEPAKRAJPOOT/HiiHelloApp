@@ -1,3 +1,6 @@
+<?php
+//echo "<pre>"; print_r($locations); exit();
+?>
 @extends('admin.layouts.app')
 
 @push('breadcrumb')
@@ -96,6 +99,14 @@
                         <input type='text' id='profile_percentage' class="form-control" placeholder='profile percentage'>
                     </td>
                     <td>
+                        <select name="city_filter" id="city_filter" class="form-control">
+                            <option value="">Select City</option>
+                            @foreach($locations as $location)
+                                <option value="{{ $location['location_id'] }}">{{ $location['name'].' (' .$location['user_count'].')' }}</option> 
+                            @endforeach
+                        </select>
+                    </td>
+                    <td>
                         <input type='button' class="btn btn-primary mr-1 ml-1" id="btn_search_filter" value="Search">
                     </td>
                     <td>
@@ -136,12 +147,14 @@
                     var to_date         = $("#search_todate").val();
                     var gender_filter   = $("select[name=gender_filter] :selected").val();
                     var profile_percentage = $("#profile_percentage").val();
+                    var city_filter = $("#city_filter").val();
                     // EN - Filter Params
 
                     data.from_date         = from_date;
                     data.to_date           = to_date;
                     data.gender_filter     = gender_filter;
                     data.profile_percentage= profile_percentage;
+                    data.city_filter       = city_filter;
                     data.flgPendingProfile = $(".getpendingprofile").is(':checked') ? 1 : 0;
                }                
             },
