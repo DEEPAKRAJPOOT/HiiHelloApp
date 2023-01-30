@@ -58,13 +58,61 @@ class DiscoveryController extends Controller
         $setDiscoveryRequest = new SetDiscoveryRequest();
         if ($this->apiValidator($request->all(), $setDiscoveryRequest->rules())) {
             try {
+                $interest_trans_arr = [
+                    'Both' => 'Both',
+                    'Female' => 'Female',
+                    'Male' => 'Male',
+        
+                    'দুয়োটা' => 'Both',
+                    'পুৰুষ' => 'Male',
+                    'মাইকী' => 'Female',
+        
+                    'উভয়' => 'Both',
+                    'পুরুষ' => 'Male',
+                    'মহিলা' => 'Female',
+        
+                    'બંને' => 'Both',
+                    'પુરુષ' => 'Male',
+                    'સ્ત્રી' => 'Female',
+        
+                    'दोनों' => 'Both',
+                    'पुरुष' => 'Male',
+                    'महिला' => 'Female',
+        
+                    'ಎರಡೂ' => 'Both',
+                    'ಪುರುಷ' => 'Male',
+                    'ಣ್ಣು' => 'Female',
+        
+                    'രണ്ടും' => 'Both',
+                    'ആൺ' => 'Male',
+                    'സ്ത്രീ' => 'Female',
+        
+                    'दोन्ही' => 'Both',
+                    'पुरुष' => 'Male',
+                    'स्त्री' => 'Female',
+        
+                    'ଉଭୟ' => 'Both',
+                    'ପୁରୁଷ' => 'Male',
+                    'ମହିଳା' => 'Female',
+        
+                    'ਦੋਵੇਂ' => 'Both',
+                    'ਨਰ' => 'Male',
+                    'ਔਰਤ' => 'Female',
+        
+                    'இரண்டும்' => 'Both',
+                    'ஆண்' => 'Male',
+                    'பெண்' => 'Female',
+        
+                    'రెండు' => 'Both',
+                    'పురుషుడు' => 'Male',
+                    'స్త్రీ' => 'Female'
+                ];
                 $user = $request->user();
                 $location = Location::select('id')->whereCustomId($request->location)->whereIsActive('y')->firstOrFail();
-
                 $user->discover_distance    =   $request->distance;
                 $user->discover_start_age   =   $request->start_age;
                 $user->discover_end_age     =   $request->end_age;
-                $user->interest             =   $request->interest;
+                $user->interest             =   $interest_trans_arr[$request->interest];
                 $user->discover_location_id =   $location->id;
                 $user->save();
 
