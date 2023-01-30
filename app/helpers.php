@@ -1,7 +1,8 @@
 <?php
 
-use Aws\Rekognition\RekognitionClient;
+use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Http;
+use Aws\Rekognition\RekognitionClient;
 
 if (!function_exists('verifyOTPLessAuth')) {
     function verifyOTPLessAuth($wa_id)
@@ -158,15 +159,16 @@ function number_format_short($n, $precision = 1)
 function getUniqueString($table, $length = NULL)
 {
     $length = $length ?? config('utility.custom_length', 8);
-    $field = 'custom_id';
+    return Str::random($length > 10 ? $length - 10 : 0) . time();
+    // $field = 'custom_id';
 
-    $string = \Illuminate\Support\Str::random($length);
-    $found = \Illuminate\Support\Facades\DB::table($table)->where([$field => $string])->first();
-    if ($found) {
-        return getUniqueString($table, $field, $length);
-    } else {
-        return $string;
-    }
+    // $string = \Illuminate\Support\Str::random($length);
+    // $found = \Illuminate\Support\Facades\DB::table($table)->where([$field => $string])->first();
+    // if ($found) {
+    //     return getUniqueString($table, $field, $length);
+    // } else {
+    //     return $string;
+    // }
 }
 
 function generateURL($file = "")

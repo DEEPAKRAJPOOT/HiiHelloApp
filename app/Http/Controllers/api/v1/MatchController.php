@@ -105,6 +105,7 @@ class MatchController extends Controller
                     $matches = $matches->whereNotIn('id', $restricted_ids);
                 }
                 
+                $matches = $matches->select('id','custom_id','profile_photo','created_at','gender'); 
 
 
                 //CHECK AND GENERATE NEW  SYSTEM GENERATED USER DAILY START

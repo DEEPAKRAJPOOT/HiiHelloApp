@@ -25,11 +25,11 @@ class LikeController extends Controller
             try {
                 $auth_user = $request->user();
                 $is_matched = false;
-                $user = User::whereCustomId($request->user_id)->where('id', '!=', $auth_user->id)->whereIsActive('y')->firstOrFail();
+                $user = User::select('id')->whereCustomId($request->user_id)->where('id', '!=', $auth_user->id)->whereIsActive('y')->firstOrFail();
                 $auth_id = $auth_user->id;
                 $user_id = $user->id;
 
-                $block = BlockUser::whereBlockBy($user_id)->whereBlockedTo($auth_id)->first();
+                $block = BlockUser::select('id')->whereBlockBy($user_id)->whereBlockedTo($auth_id)->first();
 
                 // Manage Swipes
                 $auth_user->addSwipeCount();
@@ -148,7 +148,7 @@ class LikeController extends Controller
                 $auth_id = $auth_user->id;
                 $user_id = $user->id;
 
-                $block = BlockUser::whereBlockBy($user_id)->whereBlockedTo($auth_id)->first();
+                $block = BlockUser::select('id')->whereBlockBy($user_id)->whereBlockedTo($auth_id)->first();
 
                 // Manage Swipes
                 $auth_user->addSwipeCount();
