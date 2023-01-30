@@ -1,6 +1,3 @@
-<?php
-//echo "<pre>"; print_r($locations); exit();
-?>
 @extends('admin.layouts.app')
 
 @push('breadcrumb')

@@ -37,7 +37,7 @@ class UsersController extends Controller
      */
 
     public function make_comparer() {
-        // Normalize criteria up front so that the comparer finds everything tidy
+        
         $criteria = func_get_args();
         foreach ($criteria as $index => $criterion) {
             $criteria[$index] = is_array($criterion)
@@ -47,11 +47,11 @@ class UsersController extends Controller
      
         return function($first, $second) use ($criteria) {
             foreach ($criteria as $criterion) {
-                // How will we compare this round?
+                
                 list($column, $sortOrder, $projection) = $criterion;
                 $sortOrder = $sortOrder === SORT_DESC ? -1 : 1;
      
-                // If a projection was defined project the values now
+                
                 if ($projection) {
                     $lhs = call_user_func($projection, $first[$column]);
                     $rhs = call_user_func($projection, $second[$column]);
@@ -60,8 +60,7 @@ class UsersController extends Controller
                     $lhs = $first[$column];
                     $rhs = $second[$column];
                 }
-     
-                // Do the actual comparison; do not return if equal
+                
                 if ($lhs < $rhs) {
                     return -1 * $sortOrder;
                 }
@@ -70,7 +69,7 @@ class UsersController extends Controller
                 }
             }
      
-            return 0; // tiebreakers exhausted, so $first == $second
+            return 0; 
         };
     }
     
@@ -93,10 +92,6 @@ class UsersController extends Controller
         usort($locationWithUserCountArray, $this->make_comparer(
                         ['user_count', SORT_DESC]
                     ));
-
-        //print_r("<pre> Modified Array : "); 
-        //print_r($locationWithUserCountArray); exit();
-
 
         return view('admin.pages.users.index', ['locations' => $locationWithUserCountArray])->with(['custom_title' => 'Users']);
     }
