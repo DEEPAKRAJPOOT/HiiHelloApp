@@ -35,9 +35,65 @@ class UsersController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
+
+    public function make_comparer() {
+        
+        $criteria = func_get_args();
+        foreach ($criteria as $index => $criterion) {
+            $criteria[$index] = is_array($criterion)
+                ? array_pad($criterion, 3, null)
+                : array($criterion, SORT_ASC, null);
+        }
+     
+        return function($first, $second) use ($criteria) {
+            foreach ($criteria as $criterion) {
+                
+                list($column, $sortOrder, $projection) = $criterion;
+                $sortOrder = $sortOrder === SORT_DESC ? -1 : 1;
+     
+                
+                if ($projection) {
+                    $lhs = call_user_func($projection, $first[$column]);
+                    $rhs = call_user_func($projection, $second[$column]);
+                }
+                else {
+                    $lhs = $first[$column];
+                    $rhs = $second[$column];
+                }
+                
+                if ($lhs < $rhs) {
+                    return -1 * $sortOrder;
+                }
+                else if ($lhs > $rhs) {
+                    return 1 * $sortOrder;
+                }
+            }
+     
+            return 0; 
+        };
+    }
+    
+
     public function index()
     {
-        return view('admin.pages.users.index')->with(['custom_title' => 'Users']);
+        $allLocations = LocationTranslation::where(['locale' => 'en'])->get();
+
+        $locationWithUserCountArray = array();
+        foreach($allLocations as $location){
+            
+            $userCount = User::where(['location_id' => $location->location_id])->count();
+
+            $locationWithUserCountArray[] = array('location_id' => $location->location_id,
+                                                  'name' => $location->name,
+                                                  'user_count' => $userCount
+                                                );
+        }
+
+        usort($locationWithUserCountArray, $this->make_comparer(
+                        ['user_count', SORT_DESC]
+                    ));
+
+        return view('admin.pages.users.index', ['locations' => $locationWithUserCountArray])->with(['custom_title' => 'Users']);
     }
 
     /**
@@ -947,7 +1003,8 @@ class UsersController extends Controller
         $from_date         = ($request->from_date) ? $request->from_date." 00:00:00" : "";
         $to_date           = ($request->to_date) ? $request->to_date." 23:59:59" : "";
         $gender_filter     = ($request->gender_filter) ? $request->gender_filter : "";
-        $profile_percentage     = ($request->profile_percentage) ? $request->profile_percentage : "";
+        $profile_percentage= ($request->profile_percentage) ? $request->profile_percentage : "";
+        $city_filter       = ($request->city_filter) ? $request->city_filter : "";
 
         $records = [];
         $users = User::with('userTransDefault','location')->orderBy($sort_column, $sort_order);
@@ -990,6 +1047,9 @@ class UsersController extends Controller
         }
         if($request->profile_percentage != '' && $request->profile_percentage == 0 || $request->profile_percentage == '0') {
             $users = $users->where('profile_percentage',0);
+        }
+        if($request->city_filter) {
+            $users = $users->where('location_id', $city_filter);
         }
         // EN - Filter
 
