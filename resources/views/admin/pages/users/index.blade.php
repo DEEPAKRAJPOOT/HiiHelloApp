@@ -99,7 +99,7 @@
                         <select name="city_filter" id="city_filter" class="form-control">
                             <option value="">Select City</option>
                             @foreach($locations as $location)
-                                <option value="{{ $location['location_id'] }}">{{ $location['name'].' (' .$location['user_count'].')' }}</option> 
+                                <option value="{{ $location['loc_ids'] }}">{{ $location['name'].' (' .$location['user_count'].')' }}</option> 
                             @endforeach
                         </select>
                     </td>
@@ -146,7 +146,6 @@
                     var profile_percentage = $("#profile_percentage").val();
                     var city_filter = $("#city_filter").val();
                     // EN - Filter Params
-
                     data.from_date         = from_date;
                     data.to_date           = to_date;
                     data.gender_filter     = gender_filter;
