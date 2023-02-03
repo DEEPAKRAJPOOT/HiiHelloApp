@@ -104,6 +104,14 @@
                         </select>
                     </td>
                     <td>
+                        <select name="state_filter" id="state_filter" class="form-control">
+                            <option value="">Select State</option>
+                            @foreach($states as $state)
+                                <option value="{{ $state['loc_ids'] }}">{{ $state['state'].' (' .$state['user_count'].')' }}</option> 
+                            @endforeach
+                        </select>
+                    </td>
+                    <td>
                         <input type='button' class="btn btn-primary mr-1 ml-1" id="btn_search_filter" value="Search">
                     </td>
                     <td>
@@ -151,6 +159,7 @@
                     data.gender_filter     = gender_filter;
                     data.profile_percentage= profile_percentage;
                     data.city_filter       = city_filter;
+                    data.state_filter = $('#state_filter').val();
                     data.flgPendingProfile = $(".getpendingprofile").is(':checked') ? 1 : 0;
                }                
             },

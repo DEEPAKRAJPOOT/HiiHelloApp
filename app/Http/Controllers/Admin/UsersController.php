@@ -75,6 +75,20 @@ class UsersController extends Controller
 
     public function index()
     {
+        $states = LocationTranslation::select(
+            DB::raw(
+                'COUNT(users.id) as user_count,
+                 GROUP_CONCAT(DISTINCT location_translations.location_id) as loc_ids,
+                 location_translations.state'
+            )
+        )
+            ->join('users', 'users.location_id', '=', 'location_translations.location_id')
+            ->where('location_translations.locale', 'en')
+            ->groupBy('location_translations.state')
+            ->orderBy('user_count', 'desc')
+            ->havingRaw('user_count > 0')
+            ->get();
+
 
         $locations = LocationTranslation::select(
             DB::raw(
@@ -92,6 +106,7 @@ class UsersController extends Controller
             ->get();
 
 
+
         // $locationWithUserCountArray = array();
         // foreach($allLocations as $location){
 
@@ -107,7 +122,7 @@ class UsersController extends Controller
         //                 ['user_count', SORT_DESC]
         //             ));
 
-        return view('admin.pages.users.index', ['locations' => $locations])->with(['custom_title' => 'Users']);
+        return view('admin.pages.users.index', ['locations' => $locations, 'states' => $states])->with(['custom_title' => 'Users']);
     }
 
     /**
@@ -998,7 +1013,7 @@ class UsersController extends Controller
         $to_date           = ($request->to_date) ? $request->to_date . " 23:59:59" : "";
         $gender_filter     = ($request->gender_filter) ? $request->gender_filter : "";
         $profile_percentage = ($request->profile_percentage) ? $request->profile_percentage : "";
-        $city_filter       = ($request->city_filter) ? $request->city_filter : "";
+        // $city_filter       = ($request->city_filter) ? $request->city_filter : "";
 
         $records = [];
         $users = User::with('userTransDefault', 'location')->orderBy($sort_column, $sort_order);
@@ -1042,8 +1057,11 @@ class UsersController extends Controller
         if ($request->profile_percentage != '' && $request->profile_percentage == 0 || $request->profile_percentage == '0') {
             $users = $users->where('profile_percentage', 0);
         }
-        if ($request->city_filter) {
-            $users = $users->whereIn('location_id', explode(',',$city_filter));
+        if ($request->filled('city_filter')) {
+            $users = $users->whereIn('location_id', explode(',',$request->city_filter));
+        }
+        if ($request->filled('state_filter')) {
+            $users = $users->whereIn('location_id', explode(',',$request->state_filter));
         }
         // EN - Filter
 
