@@ -99,10 +99,10 @@ class Kernel extends ConsoleKernel
 
     
         // Birthday Wise At Every Night 12 AM
-        $schedule->call(function () {
-            $scheculeCommand = new BirthDayWish;
-            $scheculeCommand->handle();
-        })->daily();
+        // $schedule->call(function () {
+        //     $scheculeCommand = new BirthDayWish;
+        //     $scheculeCommand->handle();
+        // })->daily();
 
 
         // Users Daily Swipe Limit Renew
