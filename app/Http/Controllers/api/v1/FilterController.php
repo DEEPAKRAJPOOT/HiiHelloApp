@@ -75,6 +75,13 @@ class FilterController extends Controller
                             }    // Interested in Gender
                         });
 
+                    if (!empty($user->discover_location_id)) {
+                        if ($user->location_id != $user->discover_location_id) {
+                            $users->where('location_id', $user->discover_location_id);  // Location
+                        }
+                    }
+
+
                     $users = $users->where(function ($query_filter)  use ($request) {
                         if (!empty($request->relationship_status)) {
                             $query_filter->orWhereHas('relationshipStatus', function ($query_relation) use ($request) {
