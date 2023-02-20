@@ -75,10 +75,20 @@ class FilterController extends Controller
                             }    // Interested in Gender
                         });
 
+                        
                     if (!empty($user->discover_location_id)) {
                         if ($user->location_id != $user->discover_location_id) {
                             $users->where('location_id', $user->discover_location_id);  // Location
                         }
+                    }
+
+                    if (!empty($user->discover_start_age) && !empty($user->discover_end_age)) {
+                        // $users->whereBetween('birth_date', array($user->discover_start_age, $user->discover_end_age)); // Age
+                        $users->whereBetween(\DB::raw('TIMESTAMPDIFF(YEAR,users.birth_date,CURDATE())'), array($user->discover_start_age, $user->discover_end_age));
+                    }
+
+                    if ($user->location_id == $user->discover_location_id) {
+                        $users = $users->having("distance", "<=", $radius)->orderBy('distance');
                     }
 
 
