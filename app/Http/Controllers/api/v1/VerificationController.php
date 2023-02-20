@@ -190,7 +190,10 @@ class VerificationController extends Controller
                         $this->status = Response::HTTP_NOT_FOUND;
                         return $this->returnResponse();
                     } else {
-                        $email_exist = User::select('id')->whereEmail($request->email)->first();
+                        $email_exist = User::select('id')
+                        ->whereEmail($request->email)
+                        ->where('id', '!=', $user->id)
+                        ->first();
                         if (!$email_exist) {
                             $user->email = $request->email;
                             $user->save();

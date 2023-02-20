@@ -18,6 +18,10 @@ class UserFullProfile extends JsonResource
             'id'                =>  $this->custom_id ?? "",
             'full_name'         =>  $this->userTranslation ? $this->userTranslation->full_name : "",
             'email'             =>  $this->email ?? "",
+            'contact'             => [
+                "code" => "91",
+                "number" =>  $this->contact_no ?? ""
+            ],
             'age'               =>  $this->getAge(),
             'interest'          =>  $this->interest ?? "",
             'extra'             =>  [
@@ -60,7 +64,7 @@ class UserFullProfile extends JsonResource
     public function with($request)
     {
         return [
-            'meta' => [ 
+            'meta' => [
                 'api'               =>  'v.1.0',
                 'url'               =>  url()->current(),
                 'language'          =>  app()->getLocale(),

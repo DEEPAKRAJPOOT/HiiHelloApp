@@ -34,7 +34,6 @@ class HomeController extends Controller
                 if ($is_swipe_allow) {
                     $auth_interest = $user->interest ? $user->interest : 'Both';
                     $radius = $user->discover_distance;
-
                     $latitude = $user->current_latitude;
                     $longitude = $user->current_longitude;
 
@@ -69,7 +68,6 @@ class HomeController extends Controller
 
                             // 'trusted_score',
                             'email_verified_at',
-                            'profile_percentage',
 
                             'contact_verified_at',
 
@@ -84,10 +82,9 @@ class HomeController extends Controller
                             + sin(radians(" . $latitude . ")) 
                             * sin(radians(users.latitude))) AS distance")
                         );
-                        // ->having("distance", "<=", $radius)
-
+                            // ->having("distance", "<=", $radius);
                         if ($user->location_id == $user->discover_location_id) {
-                            $users = $users->orderBy('distance');
+                            $users = $users->having("distance", "<=", $radius)->orderBy('distance');
                         }
                     } else {
                         $users = User::select(
@@ -105,7 +102,8 @@ class HomeController extends Controller
                             'location_id',
                             'language_id',
                             'verify_status',
-                            'is_active'
+                            'is_active',
+                            'profile_percentage'
                         );
                     }
 

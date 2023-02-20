@@ -26,6 +26,7 @@ class FullProfileRequest extends FormRequest
     {
         return [
             'email'                     =>  'nullable|email|max:150|unique:users,email,'.Auth::id(),
+            'contact_no'                     =>  'nullable|unique:users,contact_no,'.Auth::id().',id,deleted_at,NULL',
             'about_me'                  =>  'nullable|min:3|max:1000',
             'fav_movie'                 =>  'nullable|min:1|max:250',
 

@@ -472,9 +472,11 @@ class GeneralController extends Controller
                     $profile_details = $profile_details->whereAttribute($request->attribute);
                 }
                 if (!empty($search)) {
-                    $profile_details = $profile_details->whereHas('profileDetailTranslation', function ($query) use ($search) {
-                        $query->where('value', 'like', "%{$search}%");
-                    });
+                    // $profile_details = $profile_details->whereHas('profileDetailTranslation', function ($query) use ($search) {
+                    //     $query->where('value', 'like', "%{$search}%");
+                    // });
+
+                    $profile_details->whereTranslationLike('value', "%{$search}%");
                 }
                 $count = $profile_details->count();
                 $profile_details = $profile_details->limit($request->limit ?? config('utility.pagination.limit'))

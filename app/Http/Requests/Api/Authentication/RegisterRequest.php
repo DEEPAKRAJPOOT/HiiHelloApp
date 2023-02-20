@@ -35,12 +35,12 @@ class RegisterRequest extends FormRequest
             'interest'          =>  'required|in:Male,Female,Both',
             // 'location'          =>  'required|max:100',
             'language'          =>  'required|max:100',
-            'profile_photo'     =>  'required|mimes:jpg,jpeg,png',
+            //'profile_photo'     =>  'required|mimes:jpg,jpeg,png',
             'country_code'      =>  'nullable|max:100',
             'contact_no'        =>  'nullable|digits_between:6,16',
             'latitude'          =>  'required|max:250',
             'longitude'         =>  'required|max:250',
-            'otp_less_id'       => 'nullable|min:6'
+            //'otp_less_id'       => 'nullable|min:6'
         ];
     }
 }

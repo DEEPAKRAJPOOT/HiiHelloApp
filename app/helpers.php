@@ -188,12 +188,13 @@ function get_guard()
     }
 }
 
+
 function checkAwsImageModeration($request, $image_param_name, $check_type = 'file')
 {
 
     $image_arr_result = array();
     $api_status_code  = "";
-
+    $user = $request->user();
     $min_confidence = config('utility.aws_image_moderation.min_confidence', 70);
 
 
@@ -201,7 +202,6 @@ function checkAwsImageModeration($request, $image_param_name, $check_type = 'fil
         'region'    => 'ap-south-1',
         'version'   => 'latest'
     ]);
-
 
 
     if ($check_type == 'file') {
@@ -222,6 +222,62 @@ function checkAwsImageModeration($request, $image_param_name, $check_type = 'fil
 
 
     $cat_filter = config('utility.aws_image_moderation.category_filter', array());
+
+    //CHECK FOR FACE DETECTION : HOW MAN FACE DETECTED.
+    $result_face = $client->detectFaces([
+        'Attributes' => ['ALL'], //ALL, DEFAULT
+        'Image'         => ['Bytes' => $bytes],
+    ]);
+
+    if (count($result_face['FaceDetails']) == 0) {
+        $image_arr_result["is_safe_image"] = false;
+        $image_arr_result["face_detected_message"] = "Image have no face detected";
+        $image_arr_result["log_message"] = "Image have no face detected";
+        return $image_arr_result;
+    } else if (count($result_face['FaceDetails']) >= 1) {
+        $image_arr_result["face_detected_message"] = "";
+
+        $DetectedLowAge = ceil(($result_face['FaceDetails'][0]['AgeRange']['Low'] + $result_face['FaceDetails'][0]['AgeRange']['High']) / 2) ?? 0;
+        $leftEyeBrowUp_X = $result_face['FaceDetails'][0]['Landmarks'][7]['X'];
+        $leftEyeBrowUp_Y = $result_face['FaceDetails'][0]['Landmarks'][7]['Y'];
+        $rightEyeBrowUp_X = $result_face['FaceDetails'][0]['Landmarks'][10]['X'];
+        $gender = $result_face['FaceDetails'][0]['Gender']['Value'];
+        $mouthLeft_Y = $result_face['FaceDetails'][0]['Landmarks'][2]['Y'];
+        $mouthRight_Y = $result_face['FaceDetails'][0]['Landmarks'][3]['Y'];
+
+        $w = ($rightEyeBrowUp_X - $leftEyeBrowUp_X);
+        $h = ($mouthLeft_Y - $leftEyeBrowUp_Y);
+        $FWHR = ($w / $h);
+
+        $image_arr_result["Facial_Width_Height_ratio"] = $FWHR;
+
+        $width = ceil($result_face['FaceDetails'][0]['BoundingBox']['Width']);
+        $height = ceil($result_face['FaceDetails'][0]['BoundingBox']['Height']);
+        $aspect = ($width * $height);
+    }
+    dd($moderate_image_results);
+    // if($result_face){
+
+
+    // }
+
+    $c_result = $client->recognizeCelebrities([
+        'Image' => [ // REQUIRED
+            //'Bytes' => file_get_contents("1.jpg"),
+            'Bytes' => $bytes,
+        ],
+        'MaxLabels' => 10,
+        'MinConfidence' => 20,
+    ]);
+
+    $text_result = $client->detectText([
+        'Image' => [ // REQUIRED
+            'Bytes' => $bytes,
+        ],
+        'MaxLabels' => 10,
+        'MinConfidence' => 90,
+    ]);
+    // dd($moderate_image_results,$result_face,$c_result,$text_result);
 
     if (isset($moderate_image_results["@metadata"]) && $moderate_image_results["@metadata"]['statusCode'] == 200) {
         //response received then status code 200                            
@@ -259,6 +315,34 @@ function checkAwsImageModeration($request, $image_param_name, $check_type = 'fil
             $image_arr_result["is_safe_image"] = $is_safe_image_category_filter;
             $image_arr_result["moderation_labels_data"] = $filter_detail_message;
             $image_arr_result["log_message"] = $log_message;
+        } else if (count($result_face['FaceDetails']) > 1) {
+            $image_arr_result["is_safe_image"] = false;
+            $image_arr_result["moderation_labels_data"] = "";
+            $image_arr_result["log_message"] = "Multiple faces detected";
+        } else if (count($c_result['CelebrityFaces']) >= 1) {
+            $image_arr_result["is_safe_image"] = false;
+
+            $CelebrityName = $c_result['CelebrityFaces'][0]['Name'];
+
+            $image_arr_result["moderation_labels_data"] = "";
+            $image_arr_result["log_message"] = "Celebrity face detected. Name: " . $CelebrityName;
+        } else if (count($text_result['TextDetections']) >= 1) {
+            $image_arr_result["is_safe_image"] = false;
+            $image_arr_result["moderation_labels_data"] = "";
+            $image_arr_result["log_message"] = "Image has texts";
+        } else if ($DetectedLowAge <= 15) {
+            $image_arr_result["is_safe_image"] = false;
+            $image_arr_result["moderation_labels_data"] = "";
+            $image_arr_result["log_message"] = "Age less than 15 detected";
+        } else if ($gender && $gender !=  $user->gender) {
+            $image_arr_result["is_safe_image"] = false;
+
+            $image_arr_result["moderation_labels_data"] = "";
+            $image_arr_result["log_message"] = "Given image have different gender than user's gender";
+        } else if (count($text_result['TextDetections']) >= 1) {
+            $image_arr_result["is_safe_image"] = false;
+            $image_arr_result["moderation_labels_data"] = "";
+            $image_arr_result["log_message"] = "Image has texts";
         } else {
             $image_arr_result["is_safe_image"] = true;
             $image_arr_result["moderation_labels_data"] = "";
@@ -267,23 +351,12 @@ function checkAwsImageModeration($request, $image_param_name, $check_type = 'fil
 
         $image_arr_result["image_moderation_request"] = json_encode($moderate_image_results["@metadata"]);
         $image_arr_result["image_moderation_response"] = json_encode($moderate_image_results["ModerationLabels"]);
+        $image_arr_result["moderation_response"] = $moderate_image_results["ModerationLabels"];
 
         /// CHECK FOR FACE DETECTION : HOW MAN FACE DETECTED.
-        $result_face = $client->detectFaces([
-            'Attributes' => ['ALL'], //ALL, DEFAULT
-            'Image'         => ['Bytes' => $bytes],
-        ]);
-
-
         $image_arr_result["total_face_detected"] = count($result_face['FaceDetails']);
 
-        if (count($result_face['FaceDetails']) == 0) {
-            $image_arr_result["is_safe_image"] = false;
-            $image_arr_result["face_detected_message"] = "Image have no face detected";
-            $image_arr_result["log_message"] = "Image have no face detected";
-        } else if (count($result_face['FaceDetails']) >= 1) {
-            $image_arr_result["face_detected_message"] = "";
-        }
+
 
         return $image_arr_result;
     }

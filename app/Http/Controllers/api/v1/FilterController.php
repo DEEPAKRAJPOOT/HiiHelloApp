@@ -91,6 +91,17 @@ class FilterController extends Controller
                                 $query_star_sign->whereSlug($request->star_sign)->whereIsActive('y');
                             });
                         }
+
+                        if (!empty($request->community)) {
+                            $query_filter->orWhereHas('community', function ($query_community) use ($request) {
+                                $query_community->whereSlug($request->community)->whereIsActive('y');
+                            });
+                        }
+                        if (!empty($request->religion)) {
+                            $query_filter->orWhereHas('religion', function ($query_religion) use ($request) {
+                                $query_religion->whereSlug($request->religion)->whereIsActive('y');
+                            });
+                        }
                         if (!empty($request->fav_movie)) {
                             $fav_movie = $request->fav_movie;
                             $query_filter->orWhereHas('userTranslations', function ($query_fav_movie) use ($fav_movie) {
