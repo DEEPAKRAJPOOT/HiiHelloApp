@@ -7,7 +7,7 @@ class FaceConstraintClass
     private $face = null;
     private $message = null;
     private $gender = null;
-    private $min_age = 15;
+    private $min_age = 12;
     private $celeb = null;
     private $user = null;
     private $isFace = true;

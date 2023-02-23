@@ -54,8 +54,8 @@ class ImageDetectionClass
 
         $face = new FaceConstraintClass($this->user, $face_instance);
         $message = $face->isFaceDetected()
-            ->isMultipleFaces()
-            ->isGenderCompliant()
+            // ->isMultipleFaces()
+            // ->isGenderCompliant()
             ->isAgeCompliant();
 
 
@@ -139,10 +139,10 @@ class ImageDetectionClass
             return $this->response;
         }
 
-        $this->followTextConstraint();
-        if (!$this->response['is_safe_image']) {
-            return $this->response;
-        }
+        // $this->followTextConstraint();
+        // if (!$this->response['is_safe_image']) {
+        //     return $this->response;
+        // }
 
         $this->followModerationConstraint();
 
