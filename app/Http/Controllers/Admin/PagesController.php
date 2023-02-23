@@ -89,6 +89,8 @@ class PagesController extends Controller
         $total_google_users = $dashboard_data->total_google_users;
         $total_facebook_users = $dashboard_data->total_facebook_users;
         $total_apple_users = $dashboard_data->total_apple_users;
+        $total_otp_less_users = $dashboard_data->total_otp_less_users;
+        
         $user['total_phone_users'] = $dashboard_data ? number_format($total_phone_users) : 0;
         $user['total_google_users'] = $dashboard_data ? number_format($total_google_users) : 0;
         $user['total_facebook_users'] = $dashboard_data ? number_format($total_facebook_users) : 0;
@@ -98,6 +100,9 @@ class PagesController extends Controller
         $user['pr_facebook_users'] = $total_phone_users ? number_format($total_facebook_users * 100 / $total_users) : 0;
         $user['pr_apple_users'] = $total_phone_users ? number_format($total_apple_users * 100 / $total_users) : 0;
         
+        $user['total_otp_less_users'] = $dashboard_data ? number_format($total_otp_less_users) : 0;
+        $user['pr_otp_less_users'] = $total_phone_users ? number_format($total_otp_less_users * 100 / $total_users) : 0;
+
         $user['male_phone_verified'] = $dashboard_data ? number_format($dashboard_data->male_phone_verified) : 0;
         $user['male_phone_unverified'] = $dashboard_data ? number_format($dashboard_data->male_phone_unverified) : 0;
         $user['male_email_verified'] = $dashboard_data ? number_format($dashboard_data->male_email_verified) : 0;

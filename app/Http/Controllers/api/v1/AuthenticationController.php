@@ -72,6 +72,7 @@ class AuthenticationController extends Controller
         $registerRequest = new RegisterRequest();
         if ($this->apiValidator($request->all(), $registerRequest->rules())) {
             try {
+                
                 $user = $this->getAuthUser();
 
                 $country_id = $location_id = $language_id = $device_type = $device_app_version = NULL;
@@ -89,7 +90,10 @@ class AuthenticationController extends Controller
                     $country_id = $country->id;
                 }
                 if (!empty($request->latitude) && !empty($request->longitude)) {
-                    $location_id = $this->get_user_location($request->latitude, $request->longitude);
+                    $locationdata = $this->get_user_location($request->latitude, $request->longitude);
+                    // echo "<pre>"; print_r($locationdata); die();
+                    $location_id = !empty($locationdata) ? $locationdata : NULL;
+                    // $location_id = 1;
                     $new_location_id = 'y';
                 } else {
                     $new_location_id = 'n';
@@ -120,7 +124,8 @@ class AuthenticationController extends Controller
                     $user->discover_location_id = isset($location_id) ? $location_id : null;
                     $user->language_id = $language_id;
                     $user->otp_less_id = $request->otp_less_id ?? null;
-                } else {
+                } else { 
+                // echo "<pre>"; print_r($request->all()); die();
                     $user = User::create([
                         'custom_id'             =>  getUniqueString('users'),
                         'account_id'            =>  Str::slug(substr($full_name, 0, 4), "_") . '_' . time(),
@@ -156,9 +161,9 @@ class AuthenticationController extends Controller
                     $user->update($traslate_data);
 
                     // Store Account Id
-                    // if (!empty($request->language) && $request->language == 'en') {
-                    //     $user->account_id = Str::slug(substr($full_name, 0, 4), "_") . '_' . time();
-                    // }
+                    if (!empty($request->language) && $request->language == 'en') {
+                        $user->account_id = Str::slug(substr($full_name, 0, 4), "_") . '_' . time();
+                    }
                     $user->is_trans_full_name = 'n';
                 }
 
@@ -171,64 +176,65 @@ class AuthenticationController extends Controller
                     $user->contact_verified_at = \Carbon\Carbon::now();  // Set Contact Number As Verified
                     $user->sendWelcomeSms(); // Send Welcome SMS
                 }
+                
+                
+                $safe_image = "true"; 
 
-                $safe_image = "true";
+                // if (!empty($request->profile_photo)) {
 
-                if (!empty($request->profile_photo)) {
+                //     if (!empty($user->profile_photo)) {
+                //         if (Storage::exists($user->profile_photo)) {
+                //             Storage::delete($user->profile_photo);
+                //         }
+                //     }
+                //     ///CHECK FOR AWS REKOGNIZTION START
+                //     $awsImgResultArr = checkAwsImageModeration($request, "profile_photo");
 
-                    if (!empty($user->profile_photo)) {
-                        if (Storage::exists($user->profile_photo)) {
-                            Storage::delete($user->profile_photo);
-                        }
-                    }
-                    ///CHECK FOR AWS REKOGNIZTION START
-                    $awsImgResultArr = checkAwsImageModeration($request, "profile_photo");
+                //     if (count($awsImgResultArr) > 0) {
+                //         if ($awsImgResultArr["is_safe_image"] == true) {
+                //             $path = $request->file('profile_photo')->store('users/profile_photo');
+                //             $user->profile_photo = $path;
+                //             $user->is_media_checked = 'n';
+                //         } else {
+                //             $user->profile_photo = NULL;
+                //             $user->is_media_checked = 'n';
+                //             $invalid_image_uploaded = true;
+                //             $safe_image = "false";
+                //         }
 
-                    if (count($awsImgResultArr) > 0) {
-                        if ($awsImgResultArr["is_safe_image"] == true) {
-                            $path = $request->file('profile_photo')->store('users/profile_photo');
-                            $user->profile_photo = $path;
-                            $user->is_media_checked = 'n';
-                        } else {
-                            $user->profile_photo = NULL;
-                            $user->is_media_checked = 'n';
-                            $invalid_image_uploaded = true;
-                            $safe_image = "false";
-                        }
+                //         //INSERT IN TO IMAGE MODERATIO LOG START
+                //         if ($awsImgResultArr["is_safe_image"] == true)
+                //             $is_approved = 1;
+                //         else
+                //             $is_approved = 0;
 
-                        //INSERT IN TO IMAGE MODERATIO LOG START
-                        if ($awsImgResultArr["is_safe_image"] == true)
-                            $is_approved = 1;
-                        else
-                            $is_approved = 0;
+                //         $image_type = "profile_photo";
+                //         $message = $awsImgResultArr["log_message"];
+                //         $total_face_detected = $awsImgResultArr["total_face_detected"];
 
-                        $image_type = "profile_photo";
-                        $message = $awsImgResultArr["log_message"];
-                        $total_face_detected = $awsImgResultArr["total_face_detected"];
-
-                        $response_data = $awsImgResultArr["image_moderation_response"];
-                        $request_data = $awsImgResultArr["image_moderation_request"];
-
-
-                        $endpoint_url = url()->current();
+                //         $response_data = $awsImgResultArr["image_moderation_response"];
+                //         $request_data = $awsImgResultArr["image_moderation_request"];
 
 
-                        ImageModerationLog::Create([
-                            'user_id'             => $user->id,
-                            'is_approved'         => $is_approved,
-                            'request'             => $request_data,
-                            'response'            => $response_data,
-                            'total_face_detected' => $total_face_detected,
-                            'message'             => $message,
-                            'image_type'          => $image_type,
-                            'endpoint_url'        => $endpoint_url,
-                        ]);
+                //         $endpoint_url = url()->current();
 
-                        //INSERT IN TO IMAGE MODERATIO LOG END
 
-                    }
-                    //CHECK FOR AWS REKOGNIZTION END
-                }
+                //         ImageModerationLog::Create([
+                //             'user_id'             => $user->id,
+                //             'is_approved'         => $is_approved,
+                //             'request'             => $request_data,
+                //             'response'            => $response_data,
+                //             'total_face_detected' => $total_face_detected,
+                //             'message'             => $message,
+                //             'image_type'          => $image_type,
+                //             'endpoint_url'        => $endpoint_url,
+                //         ]);
+
+                //         //INSERT IN TO IMAGE MODERATIO LOG END
+
+                //     }
+                //     //CHECK FOR AWS REKOGNIZTION END
+                // }
 
                 $user->latitude = $request->latitude;
                 $user->longitude = $request->longitude;
@@ -527,6 +533,7 @@ class AuthenticationController extends Controller
         $responseJson = curl_exec($ch);
         curl_close($ch);
         $response = json_decode($responseJson);
+        // echo "<pre>"; print_r($response); die();
         if (!empty($response) && !empty($response->results[0]->address_components)) {
             foreach ($response->results[0]->address_components as $key => $value) {
                 if ($value->types[0] == "administrative_area_level_3") {

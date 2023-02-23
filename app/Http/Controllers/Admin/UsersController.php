@@ -35,9 +35,94 @@ class UsersController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
+
+    public function make_comparer()
+    {
+
+        $criteria = func_get_args();
+        foreach ($criteria as $index => $criterion) {
+            $criteria[$index] = is_array($criterion)
+                ? array_pad($criterion, 3, null)
+                : array($criterion, SORT_ASC, null);
+        }
+
+        return function ($first, $second) use ($criteria) {
+            foreach ($criteria as $criterion) {
+
+                list($column, $sortOrder, $projection) = $criterion;
+                $sortOrder = $sortOrder === SORT_DESC ? -1 : 1;
+
+
+                if ($projection) {
+                    $lhs = call_user_func($projection, $first[$column]);
+                    $rhs = call_user_func($projection, $second[$column]);
+                } else {
+                    $lhs = $first[$column];
+                    $rhs = $second[$column];
+                }
+
+                if ($lhs < $rhs) {
+                    return -1 * $sortOrder;
+                } else if ($lhs > $rhs) {
+                    return 1 * $sortOrder;
+                }
+            }
+
+            return 0;
+        };
+    }
+
+
     public function index()
     {
-        return view('admin.pages.users.index')->with(['custom_title' => 'Users']);
+        $states = LocationTranslation::select(
+            DB::raw(
+                'COUNT(users.id) as user_count,
+                 GROUP_CONCAT(DISTINCT location_translations.location_id) as loc_ids,
+                 location_translations.state'
+            )
+        )
+            ->join('users', 'users.location_id', '=', 'location_translations.location_id')
+            ->where('location_translations.locale', 'en')
+            ->groupBy('location_translations.state')
+            ->orderBy('user_count', 'desc')
+            ->havingRaw('user_count > 0')
+            ->get();
+
+
+        $locations = LocationTranslation::select(
+            DB::raw(
+                'COUNT(users.id) as user_count,
+             GROUP_CONCAT(DISTINCT location_translations.location_id) as loc_ids,
+             location_translations.name'
+            )
+        )
+            ->join('users', 'users.location_id', '=', 'location_translations.location_id')
+            ->where('location_translations.locale', 'en')
+            ->groupBy('location_translations.name')
+            ->groupBy('location_translations.state')
+            ->orderBy('user_count', 'desc')
+            ->havingRaw('user_count > 0')
+            ->get();
+
+
+
+        // $locationWithUserCountArray = array();
+        // foreach($allLocations as $location){
+
+        //     $userCount = User::where(['location_id' => $location->location_id])->count();
+
+        //     $locationWithUserCountArray[] = array('location_id' => $location->location_id,
+        //                                           'name' => $location->name,
+        //                                           'user_count' => $userCount
+        //                                         );
+        // }
+
+        // usort($locationWithUserCountArray, $this->make_comparer(
+        //                 ['user_count', SORT_DESC]
+        //             ));
+
+        return view('admin.pages.users.index', ['locations' => $locations, 'states' => $states])->with(['custom_title' => 'Users']);
     }
 
     /**
@@ -247,7 +332,7 @@ class UsersController extends Controller
             $user->profile_percentage = $user->calculateProfilePercent();
 
             // Buy Subscription For Girls
-            if($user->wasRecentlyCreated){
+            if ($user->wasRecentlyCreated) {
                 $user->buyFreeSubscription();
             }
 
@@ -257,9 +342,9 @@ class UsersController extends Controller
 
                 //lat and long to assign location id 
                 if (!empty($request->latitude) && !empty($request->longitude)) {
-                    $location_id        = $this->get_user_location($request->latitude,$request->longitude);
+                    $location_id        = $this->get_user_location($request->latitude, $request->longitude);
                     if (!empty($location_id)) {
-                        User::where('id',$user_id)->update([
+                        User::where('id', $user_id)->update([
                             "location_id" => $location_id,
                             "discover_location_id" => $location_id,
                             "latitude" => $request->latitude,
@@ -314,7 +399,7 @@ class UsersController extends Controller
      */
     public function edit(User $user)
     {
-        $user = User::with('userTransDefault','subscription.subscriptionPlan')->whereId($user->id)->firstOrFail();
+        $user = User::with('userTransDefault', 'subscription.subscriptionPlan')->whereId($user->id)->firstOrFail();
         $personalities = Personality::with('personalityTransDefault')->where('is_active', 'y')->get();
         $attributes = ProfileDetail::with(['profileDetailTransDefault'])->where(['is_active' => 'y'])->get();
         $interests = Interest::with(['subInterests.interestTransDefault', 'subInterests.subInterests.interestTransDefault'])
@@ -335,8 +420,7 @@ class UsersController extends Controller
         //echo "<br> User Is Subscribe End Date:".$user->subscription_end_date;
         $user_active_plan_id = 0;
         $plan_paid_from = "";
-        if($user->is_subscribed=='y')
-        {   
+        if ($user->is_subscribed == 'y') {
             $user_active_plan_id = isset($user->subscription->plan_id) ?  $user->subscription->plan_id : 0;
             $plan_paid_from = $user->subscription->payment_type ? $user->subscription->payment_type : '';
         }
@@ -346,7 +430,7 @@ class UsersController extends Controller
         $user_interest = UserInterest::where('user_id', $user->id)->pluck('interest_id')->toArray();
         $user_personality = UserPersonality::where('user_id', $user->id)->pluck('personality_id')->toArray();
 
-        return view('admin.pages.users.edit', compact('user', 'user_personality', 'personalities', 'user_interest', 'interests', 'attributes', 'countries', 'locations', 'languages','subscription_plans','user_active_plan_id','plan_paid_from'))->with(['custom_title' => 'Users']);
+        return view('admin.pages.users.edit', compact('user', 'user_personality', 'personalities', 'user_interest', 'interests', 'attributes', 'countries', 'locations', 'languages', 'subscription_plans', 'user_active_plan_id', 'plan_paid_from'))->with(['custom_title' => 'Users']);
     }
 
     /**
@@ -376,61 +460,57 @@ class UsersController extends Controller
             } else {
 
                 //UPDATE SUBSCRIPTION FOR USER START
-                if(isset($request->subcription_plan) && ($request->user_active_plan != $request->subcription_plan))
-                {
+                if (isset($request->subcription_plan) && ($request->user_active_plan != $request->subcription_plan)) {
 
-                    if(intval($request->subcription_plan)==0)
-                    {                                 
-                            $user->is_subscribed='n';
-                            $user->subscription_end_date= NULL;
+                    if (intval($request->subcription_plan) == 0) {
+                        $user->is_subscribed = 'n';
+                        $user->subscription_end_date = NULL;
 
-                            //delete default girls plan
-                            Subscription::where('user_id',$user->id)->whereNull('end_date')->delete();                            
+                        //delete default girls plan
+                        Subscription::where('user_id', $user->id)->whereNull('end_date')->delete();
+                    } else {
+
+                        $plan = SubscriptionPlan::whereId($request->subcription_plan)->whereIsActive('y')->firstOrFail();
+
+                        $new_subscription_start_date = \Carbon\Carbon::today()->format('Y-m-d');
+                        $subscription_end_date = strtotime("+" . $plan->day . " days", strtotime($new_subscription_start_date)); // returns timestamp
+                        $subscription_end_date = date('Y-m-d', $subscription_end_date); // formatted version
+
+                        $subscription =  Subscription::create([
+                            'custom_id'                 =>  getUniqueString('subscriptions'),
+                            'user_id'                   =>  $user->id ?? NULL,
+                            'plan_id'                   =>  $plan->id ?? NULL,
+                            'email'                     =>  $user->email,
+                            'months'                    =>  $plan->months,
+                            'day'                       =>  $plan->day,
+                            'amount'                    =>  0,
+                            'start_date'                =>  $new_subscription_start_date,
+                            'end_date'                  =>  $subscription_end_date,
+                            'payment_date'              =>  now(),
+                            'payment_type'              =>  'admin',
+                            'receipt_data'              =>  "",
+                            'status'                    =>  "active",
+                        ]);
+
+                        $user->is_subscribed = 'y';
+                        $user->subscription_end_date = $subscription_end_date;
                     }
-                    else
-                    {
-                     
-                            $plan = SubscriptionPlan::whereId($request->subcription_plan)->whereIsActive('y')->firstOrFail();                   
-
-                            $new_subscription_start_date = \Carbon\Carbon::today()->format('Y-m-d');
-                            $subscription_end_date = strtotime("+".$plan->day." days", strtotime($new_subscription_start_date)); // returns timestamp
-                            $subscription_end_date = date('Y-m-d',$subscription_end_date); // formatted version
-                            
-                            $subscription =  Subscription::create([
-                                'custom_id'                 =>  getUniqueString('subscriptions'),
-                                'user_id'                   =>  $user->id ?? NULL,
-                                'plan_id'                   =>  $plan->id ?? NULL,
-                                'email'                     =>  $user->email,
-                                'months'                    =>  $plan->months,
-                                'day'                       =>  $plan->day,
-                                'amount'                    =>  0,
-                                'start_date'                =>  $new_subscription_start_date,
-                                'end_date'                  =>  $subscription_end_date,
-                                'payment_date'              =>  now(),
-                                'payment_type'              =>  'admin',
-                                'receipt_data'              =>  "",
-                                'status'                    =>  "active",
-                            ]);
-
-                            $user->is_subscribed='y';
-                            $user->subscription_end_date=$subscription_end_date;                    
-                     }       
                 }
                 //UPDATE SUBSCRIPTION FOR USER END
 
                 //new logic for update gender to assign new plan
                 //male to female change then
 
-                $user_sub = Subscription::select('id','user_id','plan_id','end_date')->where('user_id',$user->id)->where('plan_id','!=',3)->whereNull('deleted_at')->count();
+                $user_sub = Subscription::select('id', 'user_id', 'plan_id', 'end_date')->where('user_id', $user->id)->where('plan_id', '!=', 3)->whereNull('deleted_at')->count();
                 if (($user->gender == "Male" && $request->gender == "Female") || ($user->gender == "" && $request->gender == "Female")) {
 
                     if ($user_sub > 0) {
 
                         $free_subscription = config('utility.subscription.free_for_girls');
-                        if($free_subscription && $request->gender == 'Female') {
+                        if ($free_subscription && $request->gender == 'Female') {
 
-                            $plan = SubscriptionPlan::where('is_default_for_girl','y')->first();
-                            if($plan){
+                            $plan = SubscriptionPlan::where('is_default_for_girl', 'y')->first();
+                            if ($plan) {
 
                                 $new_subscription_start_date = \Carbon\Carbon::today()->format('Y-m-d');
                                 if ($user->subscription_end_date >= $new_subscription_start_date) {
@@ -453,34 +533,28 @@ class UsersController extends Controller
                                 ]);
 
                                 // update user table subscription details
-                                User::where('id',$user->id)->update([ 
+                                User::where('id', $user->id)->update([
                                     'gender' =>  $request->gender ?? $user->gender,
                                     'is_subscribed' =>  'y',
                                     'subscription_end_date' =>  NULL,
                                 ]);
                             }
                         }
-
-                    }
-                    else
-                    {
-                        $user_sub2 = Subscription::select('id','user_id','plan_id','end_date')->where('user_id',$user->id)->where('plan_id','==',3)->whereNull('deleted_at')->count();
+                    } else {
+                        $user_sub2 = Subscription::select('id', 'user_id', 'plan_id', 'end_date')->where('user_id', $user->id)->where('plan_id', '==', 3)->whereNull('deleted_at')->count();
                         if ($user_sub2 > 0) {
                             // update user table subscription details
-                            User::where('id',$user->id)->update([ 
+                            User::where('id', $user->id)->update([
                                 'gender' =>  $request->gender ?? $user->gender,
                                 'is_subscribed' =>  'y',
                                 'subscription_end_date' =>  NULL,
                             ]);
-
-                        }
-                        else
-                        {
+                        } else {
                             $free_subscription = config('utility.subscription.free_for_girls');
-                            if($free_subscription && $request->gender == 'Female') {
+                            if ($free_subscription && $request->gender == 'Female') {
 
-                                $plan = SubscriptionPlan::where('is_default_for_girl','y')->first();
-                                if($plan){
+                                $plan = SubscriptionPlan::where('is_default_for_girl', 'y')->first();
+                                if ($plan) {
 
                                     $new_subscription_start_date = \Carbon\Carbon::today()->format('Y-m-d');
                                     if ($user->subscription_end_date >= $new_subscription_start_date) {
@@ -503,7 +577,7 @@ class UsersController extends Controller
                                     ]);
 
                                     // update user table subscription details
-                                    User::where('id',$user->id)->update([ 
+                                    User::where('id', $user->id)->update([
                                         'gender' =>  $request->gender ?? $user->gender,
                                         'is_subscribed' =>  'y',
                                         'subscription_end_date' =>  NULL,
@@ -518,35 +592,30 @@ class UsersController extends Controller
 
                     if ($user_sub > 0) {
 
-                        Subscription::where('user_id',$user->id)->whereNull('end_date')->delete();
+                        Subscription::where('user_id', $user->id)->whereNull('end_date')->delete();
 
-                        $user_sub2 = Subscription::select('id','user_id','plan_id','end_date')->where('user_id',$user->id)->where('plan_id','!=',3)->whereNull('deleted_at')->first();
+                        $user_sub2 = Subscription::select('id', 'user_id', 'plan_id', 'end_date')->where('user_id', $user->id)->where('plan_id', '!=', 3)->whereNull('deleted_at')->first();
                         if (!empty($user_sub2)) {
                             // update user table subscription details
-                            User::where('id',$user->id)->update([ 
+                            User::where('id', $user->id)->update([
                                 'gender' =>  $request->gender ?? $user->gender,
                                 'is_subscribed' =>  'y',
                                 'subscription_end_date' =>  isset($user_sub2->end_date) ? $user_sub2->end_date : NULL,
                             ]);
-
-                        }
-                        else
-                        {
+                        } else {
                             // update user table subscription details
-                            User::where('id',$user->id)->update([ 
+                            User::where('id', $user->id)->update([
                                 'gender' =>  $request->gender ?? $user->gender,
                                 'is_subscribed' =>  'n',
                                 'subscription_end_date' =>  NULL,
                             ]);
                         }
-                    }
-                    else
-                    {
+                    } else {
                         // delete subscription data
-                        Subscription::where('user_id',$user->id)->whereNull('end_date')->delete();
+                        Subscription::where('user_id', $user->id)->whereNull('end_date')->delete();
 
                         // update user table subscription details
-                        User::where('id',$user->id)->update([ 
+                        User::where('id', $user->id)->update([
                             'gender' =>  $request->gender ?? $user->gender,
                             'is_subscribed' =>  'n',
                             'subscription_end_date' =>  NULL,
@@ -645,9 +714,9 @@ class UsersController extends Controller
 
                 //lat and long new then assign new location id 
                 if (!empty($request->latitude) && !empty($request->longitude) && $user->latitude != $request->latitude && $user->longitude != $request->longitude) {
-                    $location_id        = $this->get_user_location($request->latitude,$request->longitude);
+                    $location_id        = $this->get_user_location($request->latitude, $request->longitude);
                     if (!empty($location_id)) {
-                        User::where('id',$user->id)->update([
+                        User::where('id', $user->id)->update([
                             "location_id" => $location_id,
                             "discover_location_id" => $location_id,
                             "latitude" => $request->latitude,
@@ -656,7 +725,7 @@ class UsersController extends Controller
                         ]);
                     }
                 }
-                
+
 
                 /* User Personality */
                 if (!empty($request->personalities)) {
@@ -778,30 +847,25 @@ class UsersController extends Controller
 
                 $user->profile_percentage = $user->calculateProfilePercent();
 
-                $finalVerificationStatus = ($user->emailVerifyStatus()=='verified' && $user->contactVerifyStatus()=='verified' && $user->verify_photo_status=='verified')? true : false; 
+                $finalVerificationStatus = ($user->emailVerifyStatus() == 'verified' && $user->contactVerifyStatus() == 'verified' && $user->verify_photo_status == 'verified') ? true : false;
 
-                if($user->verify_photo_status=="verified" && $finalVerificationStatus==true)
-                {
+                if ($user->verify_photo_status == "verified" && $finalVerificationStatus == true) {
                     $user->verify_status = "verified";
                 }
 
 
-                if($user->verify_photo_status=="verified")
-                {
+                if ($user->verify_photo_status == "verified") {
                     $user->verify_status = "verified";
-                } 
+                }
 
-                if($request->verify_email_send != $user->verify_email_send)
-                {
+                if ($request->verify_email_send != $user->verify_email_send) {
                     if ($request->verify_email_send == 'y') {
                         $user->verify_email_send = "y";
                         $user->email_verified_at = date("Y-m-d H:i:s");
-                    }
-                    else
-                    {
+                    } else {
                         $user->verify_email_send = "n";
                     }
-                }     
+                }
 
                 if ($user->save()) {
 
@@ -829,7 +893,7 @@ class UsersController extends Controller
                         ];
 
                         // Notify
-                       /* $notificationJob = new NotificationJob($notification, $user);
+                        /* $notificationJob = new NotificationJob($notification, $user);
                         dispatch($notificationJob);*/
                     }
 
@@ -923,34 +987,36 @@ class UsersController extends Controller
         }
     }
 
-    public function bindDataToQuery($queryItem){
+    public function bindDataToQuery($queryItem)
+    {
         $query = $queryItem['query'];
         $bindings = $queryItem['bindings'];
-        $arr = explode('?',$query);
+        $arr = explode('?', $query);
         $res = '';
-        foreach($arr as $idx => $ele){
-            if($idx < count($arr) - 1){
-                $res = $res.$ele."'".$bindings[$idx]."'";
+        foreach ($arr as $idx => $ele) {
+            if ($idx < count($arr) - 1) {
+                $res = $res . $ele . "'" . $bindings[$idx] . "'";
             }
         }
-        $res = $res.$arr[count($arr) -1];
+        $res = $res . $arr[count($arr) - 1];
         return $res;
     }
 
     public function listing(Request $request)
-    {        
+    {
         extract($this->DTFilters($request->all()));
 
         DB::enableQueryLog();
 
-        $flgPendingProfile = $request->flgPendingProfile;        
-        $from_date         = ($request->from_date) ? $request->from_date." 00:00:00" : "";
-        $to_date           = ($request->to_date) ? $request->to_date." 23:59:59" : "";
+        $flgPendingProfile = $request->flgPendingProfile;
+        $from_date         = ($request->from_date) ? $request->from_date . " 00:00:00" : "";
+        $to_date           = ($request->to_date) ? $request->to_date . " 23:59:59" : "";
         $gender_filter     = ($request->gender_filter) ? $request->gender_filter : "";
-        $profile_percentage     = ($request->profile_percentage) ? $request->profile_percentage : "";
+        $profile_percentage = ($request->profile_percentage) ? $request->profile_percentage : "";
+        // $city_filter       = ($request->city_filter) ? $request->city_filter : "";
 
         $records = [];
-        $users = User::with('userTransDefault','location')->orderBy($sort_column, $sort_order);
+        $users = User::with('userTransDefault', 'location')->orderBy($sort_column, $sort_order);
 
         if ($search != '') {
             $users->where(function ($query) use ($search) {
@@ -968,28 +1034,34 @@ class UsersController extends Controller
         }
 
         // For Pending Profile Verify
-        if($flgPendingProfile > 0) {
+        if ($flgPendingProfile > 0) {
             //verify_photo not null
-            $users->where('verify_photo_status', '=' , 'under_review')->where('verify_photo', '!=' , '');
+            $users->where('verify_photo_status', '=', 'under_review')->where('verify_photo', '!=', '');
         }
 
-        if($request->is_deleted_list == 'yes') {
+        if ($request->is_deleted_list == 'yes') {
             //verify_photo not null
             $users->onlyTrashed();
         }
 
         // ST - Filter
-        if($from_date != "" && $to_date != "") {
+        if ($from_date != "" && $to_date != "") {
             $users = $users->whereBetween('created_at', [$from_date, $to_date]);
         }
-        if($gender_filter != "") {
+        if ($gender_filter != "") {
             $users = $users->where('gender', $gender_filter);
         }
-        if($profile_percentage != "") {
+        if ($profile_percentage != "") {
             $users = $users->where('profile_percentage', $profile_percentage);
         }
-        if($request->profile_percentage != '' && $request->profile_percentage == 0 || $request->profile_percentage == '0') {
-            $users = $users->where('profile_percentage',0);
+        if ($request->profile_percentage != '' && $request->profile_percentage == 0 || $request->profile_percentage == '0') {
+            $users = $users->where('profile_percentage', 0);
+        }
+        if ($request->filled('city_filter')) {
+            $users = $users->whereIn('location_id', explode(',',$request->city_filter));
+        }
+        if ($request->filled('state_filter')) {
+            $users = $users->whereIn('location_id', explode(',',$request->state_filter));
         }
         // EN - Filter
 
@@ -999,7 +1071,7 @@ class UsersController extends Controller
         $records['recordsFiltered'] = $count;
         $records['data'] = [];
 
-       
+
         $users = $users->offset($offset)->limit($limit)->orderBy($sort_column, $sort_order);
 
         $users = $users->get();
@@ -1022,106 +1094,99 @@ class UsersController extends Controller
 
             if (!empty($user->latitude)) {
                 $latitude = $user->latitude;
-            }
-            else{
+            } else {
                 $latitude = "-";
             }
 
             if (!empty($user->longitude)) {
                 $longitude = $user->longitude;
-            }
-            else{
+            } else {
                 $longitude = "-";
             }
 
             if (!empty($user->device_type)) {
                 $device_type = $user->device_type;
-            }
-            else{
+            } else {
                 $device_type = "-";
             }
 
             if (!empty($user->device_app_version)) {
                 $device_app_version = $user->device_app_version;
-            }
-            else{
+            } else {
                 $device_app_version = "-";
             }
 
             if (!empty($user->app_delete)) {
                 if ($user->app_delete == 'y') {
                     $app_delete = "App";
-                }else{
+                } else {
                     $app_delete = "Web";
                 }
-            }
-            else{
+            } else {
                 $app_delete = "-";
             }
 
-            if($flgPendingProfile > 0) {
+            if ($flgPendingProfile > 0) {
 
                 $records['data'][] = [
                     'id' => $user->id,
-                    'profile_photo' => view('admin.layouts.includes.photos_verify')->with(['user_id' => $user->id,'profile_photo' => $user->profile_photo  ?? 'N/A', 'is_profile_photo' => 1, 'is_verify_photo' => 0])->render(),
-                    'verify_photo' => view('admin.layouts.includes.photos_verify')->with(['user_id' => $user->id,'verify_photo' => $user->verify_photo  ?? 'N/A', 'is_profile_photo' => 0, 'is_verify_photo' => 1])->render(),
+                    'profile_photo' => view('admin.layouts.includes.photos_verify')->with(['user_id' => $user->id, 'profile_photo' => $user->profile_photo  ?? 'N/A', 'is_profile_photo' => 1, 'is_verify_photo' => 0])->render(),
+                    'verify_photo' => view('admin.layouts.includes.photos_verify')->with(['user_id' => $user->id, 'verify_photo' => $user->verify_photo  ?? 'N/A', 'is_profile_photo' => 0, 'is_verify_photo' => 1])->render(),
                     'account_id' => $user->account_id ?? "N/A",
                     'full_name' =>  $user->userTransDefault ? $user->userTransDefault->full_name : "N/A",
                     'gender' => view('admin.layouts.includes.gender', compact('params'))->render(),
                     'profile_percentage' =>  $user->profile_percentage,
                     'contact_no' => $user->contact_no ? '<a href="tel:' . $user->country_code . '' . $user->contact_no . '" >' . $user->country_code . '' . $user->contact_no . '</a>' : 'N/A',
-                    'email' => $user->email ? '<a href="mailto:' . $user->email . '" >' . $user->email . '</a>' : 'N/A',                    
-                    'city' => $user->location->name ?? 'N/A',                
-                    'device_app_version' => $device_type.'/'.$device_app_version,                
-                    'lat_long' => $latitude.','.$longitude,                
-                    'app_delete' => $app_delete,                
+                    'email' => $user->email ? '<a href="mailto:' . $user->email . '" >' . $user->email . '</a>' : 'N/A',
+                    'city' => $user->location->name ?? 'N/A',
+                    'device_app_version' => $device_type . '/' . $device_app_version,
+                    'lat_long' => $latitude . ',' . $longitude,
+                    'app_delete' => $app_delete,
                     'created_at' => date('Y-m-d H:i:s', strtotime($user->created_at)) ?? 'N/A',
                     'active' => view('admin.layouts.includes.switch', compact('params'))->render(),
                     'action' => view('admin.layouts.includes.actions')->with(['custom_title' => 'User', 'id' => $user->custom_id], $user)->render(),
                     'checkbox' => view('admin.layouts.includes.checkbox', compact('params'))->with('id', $user->custom_id)->render(),
                 ];
-
             } else {
 
                 $records['data'][] = [
-                    'id' => $user->id, 
-                    'profile_photo' => view('admin.layouts.includes.photos_verify')->with(['user_id' => $user->id,'profile_photo' => $user->profile_photo  ?? 'N/A', 'is_profile_photo' => 1, 'is_verify_photo' => 0])->render(),
-                    'verify_photo' => view('admin.layouts.includes.photos_verify')->with(['user_id' => $user->id,'verify_photo' => $user->verify_photo  ?? 'N/A', 'is_profile_photo' => 0, 'is_verify_photo' => 1])->render(),                   
+                    'id' => $user->id,
+                    'profile_photo' => view('admin.layouts.includes.photos_verify')->with(['user_id' => $user->id, 'profile_photo' => $user->profile_photo  ?? 'N/A', 'is_profile_photo' => 1, 'is_verify_photo' => 0])->render(),
+                    'verify_photo' => view('admin.layouts.includes.photos_verify')->with(['user_id' => $user->id, 'verify_photo' => $user->verify_photo  ?? 'N/A', 'is_profile_photo' => 0, 'is_verify_photo' => 1])->render(),
                     'account_id' => $user->account_id ?? "N/A",
                     'full_name' =>  $user->userTransDefault ? $user->userTransDefault->full_name : "N/A",
                     'gender' => view('admin.layouts.includes.gender', compact('params'))->render(),
                     'profile_percentage' =>  $user->profile_percentage,
                     'contact_no' => $user->contact_no ? '<a href="tel:' . $user->country_code . '' . $user->contact_no . '" >' . $user->country_code . '' . $user->contact_no . '</a>' : 'N/A',
-                    'email' => $user->email ? '<a href="mailto:' . $user->email . '" >' . $user->email . '</a>' : 'N/A',                    
-                    'city' => $user->location->name ?? 'N/A',      
-                    'device_app_version' => $device_type.'/'.$device_app_version,                
-                    'lat_long' => $latitude.','.$longitude, 
-                    'app_delete' => $app_delete,               
+                    'email' => $user->email ? '<a href="mailto:' . $user->email . '" >' . $user->email . '</a>' : 'N/A',
+                    'city' => $user->location->name ?? 'N/A',
+                    'device_app_version' => $device_type . '/' . $device_app_version,
+                    'lat_long' => $latitude . ',' . $longitude,
+                    'app_delete' => $app_delete,
                     'created_at' => date('Y-m-d H:i:s', strtotime($user->created_at)) ?? 'N/A',
                     'active' => view('admin.layouts.includes.switch', compact('params'))->render(),
                     'action' => view('admin.layouts.includes.actions')->with(['custom_title' => 'User', 'id' => $user->custom_id], $user)->render(),
                     'checkbox' => view('admin.layouts.includes.checkbox', compact('params'))->with('id', $user->custom_id)->render(),
                 ];
-
             }
         }
         // dd($records);
         return $records;
     }
     public function under_review_listing(Request $request)
-    {        
+    {
         extract($this->DTFilters($request->all()));
 
         DB::enableQueryLog();
 
-        $flgPendingProfile = $request->flgPendingProfile;        
-        $from_date         = ($request->from_date) ? $request->from_date." 00:00:00" : "";
-        $to_date           = ($request->to_date) ? $request->to_date." 23:59:59" : "";
+        $flgPendingProfile = $request->flgPendingProfile;
+        $from_date         = ($request->from_date) ? $request->from_date . " 00:00:00" : "";
+        $to_date           = ($request->to_date) ? $request->to_date . " 23:59:59" : "";
         $gender_filter     = ($request->gender_filter) ? $request->gender_filter : "";
         $profile_percentage     = ($request->profile_percentage) ? $request->profile_percentage : "";
 
         $records = [];
-        $users = User::with('userTransDefault','location')->orderBy($sort_column, $sort_order);
+        $users = User::with('userTransDefault', 'location')->orderBy($sort_column, $sort_order);
 
         if ($search != '') {
             $users->where(function ($query) use ($search) {
@@ -1139,28 +1204,28 @@ class UsersController extends Controller
         }
 
         // For Pending Profile Verify
-        if($flgPendingProfile > 0) {
+        if ($flgPendingProfile > 0) {
             //verify_photo not null
-            $users->where('verify_photo_status', '=' , 'under_review')->where('verify_photo', '!=' , '');
+            $users->where('verify_photo_status', '=', 'under_review')->where('verify_photo', '!=', '');
         }
 
-        if($request->is_deleted_list == 'yes') {
+        if ($request->is_deleted_list == 'yes') {
             //verify_photo not null
             $users->onlyTrashed();
         }
 
         // ST - Filter
-        if($from_date != "" && $to_date != "") {
+        if ($from_date != "" && $to_date != "") {
             $users = $users->whereBetween('created_at', [$from_date, $to_date]);
         }
-        if($gender_filter != "") {
+        if ($gender_filter != "") {
             $users = $users->where('gender', $gender_filter);
         }
-        if($profile_percentage != "") {
+        if ($profile_percentage != "") {
             $users = $users->where('profile_percentage', $profile_percentage);
         }
-        if($request->profile_percentage != '' && $request->profile_percentage == 0 || $request->profile_percentage == '0') {
-            $users = $users->where('profile_percentage',0);
+        if ($request->profile_percentage != '' && $request->profile_percentage == 0 || $request->profile_percentage == '0') {
+            $users = $users->where('profile_percentage', 0);
         }
         // EN - Filter
 
@@ -1170,7 +1235,7 @@ class UsersController extends Controller
         $records['recordsFiltered'] = $count;
         $records['data'] = [];
 
-       
+
         $users = $users->offset($offset)->limit($limit)->orderBy($sort_column, $sort_order);
 
         $users = $users->get();
@@ -1193,89 +1258,82 @@ class UsersController extends Controller
 
             if (!empty($user->latitude)) {
                 $latitude = $user->latitude;
-            }
-            else{
+            } else {
                 $latitude = "-";
             }
 
             if (!empty($user->longitude)) {
                 $longitude = $user->longitude;
-            }
-            else{
+            } else {
                 $longitude = "-";
             }
 
             if (!empty($user->device_type)) {
                 $device_type = $user->device_type;
-            }
-            else{
+            } else {
                 $device_type = "-";
             }
 
             if (!empty($user->device_app_version)) {
                 $device_app_version = $user->device_app_version;
-            }
-            else{
+            } else {
                 $device_app_version = "-";
             }
 
             if (!empty($user->app_delete)) {
                 if ($user->app_delete == 'y') {
                     $app_delete = "App";
-                }else{
+                } else {
                     $app_delete = "Web";
                 }
-            }
-            else{
+            } else {
                 $app_delete = "-";
             }
 
-            if($flgPendingProfile > 0) {
+            if ($flgPendingProfile > 0) {
 
                 $records['data'][] = [
                     'id' => $user->id,
-                    'profile_photo' => view('admin.layouts.includes.photos_verify')->with(['user_id' => $user->id,'profile_photo' => $user->profile_photo  ?? 'N/A', 'is_profile_photo' => 1, 'is_verify_photo' => 0])->render(),
-                    'verify_photo' => view('admin.layouts.includes.photos_verify')->with(['user_id' => $user->id,'verify_photo' => $user->verify_photo  ?? 'N/A', 'is_profile_photo' => 0, 'is_verify_photo' => 1])->render(),
+                    'profile_photo' => view('admin.layouts.includes.photos_verify')->with(['user_id' => $user->id, 'profile_photo' => $user->profile_photo  ?? 'N/A', 'is_profile_photo' => 1, 'is_verify_photo' => 0])->render(),
+                    'verify_photo' => view('admin.layouts.includes.photos_verify')->with(['user_id' => $user->id, 'verify_photo' => $user->verify_photo  ?? 'N/A', 'is_profile_photo' => 0, 'is_verify_photo' => 1])->render(),
                     'account_id' => $user->account_id ?? "N/A",
                     'full_name' =>  $user->userTransDefault ? $user->userTransDefault->full_name : "N/A",
                     'gender' => view('admin.layouts.includes.gender', compact('params'))->render(),
                     'profile_percentage' =>  $user->profile_percentage,
                     'contact_no' => $user->contact_no ? '<a href="tel:' . $user->country_code . '' . $user->contact_no . '" >' . $user->country_code . '' . $user->contact_no . '</a>' : 'N/A',
-                    'email' => $user->email ? '<a href="mailto:' . $user->email . '" >' . $user->email . '</a>' : 'N/A',                    
-                    'city' => $user->location->name ?? 'N/A',                
-                    'device_app_version' => $device_type.'/'.$device_app_version,                
-                    'lat_long' => $latitude.','.$longitude,                
-                    'app_delete' => $app_delete,                
+                    'email' => $user->email ? '<a href="mailto:' . $user->email . '" >' . $user->email . '</a>' : 'N/A',
+                    'city' => $user->location->name ?? 'N/A',
+                    'device_app_version' => $device_type . '/' . $device_app_version,
+                    'lat_long' => $latitude . ',' . $longitude,
+                    'app_delete' => $app_delete,
                     'created_at' => date('Y-m-d H:i:s', strtotime($user->created_at)) ?? 'N/A',
                     'active' => view('admin.layouts.includes.switch', compact('params'))->render(),
                     'action' => view('admin.layouts.includes.actions')->with(['custom_title' => 'User', 'id' => $user->custom_id], $user)->render(),
-                    'status' => view('admin.layouts.includes.unde_review_status',compact('params'))->render(),
+                    'status' => view('admin.layouts.includes.unde_review_status', compact('params'))->render(),
                     'checkbox' => view('admin.layouts.includes.checkbox', compact('params'))->with('id', $user->custom_id)->render(),
                 ];
-
             } else {
 
                 $records['data'][] = [
-                    'id' => $user->id, 
-                    'profile_photo' => view('admin.layouts.includes.photos_verify')->with(['user_id' => $user->id,'profile_photo' => $user->profile_photo  ?? 'N/A', 'is_profile_photo' => 1, 'is_verify_photo' => 0])->render(),
-                    'verify_photo' => view('admin.layouts.includes.photos_verify')->with(['user_id' => $user->id,'verify_photo' => $user->verify_photo  ?? 'N/A', 'is_profile_photo' => 0, 'is_verify_photo' => 1])->render(),                   
+                    'id' => $user->id,
+                    'profile_photo' => view('admin.layouts.includes.photos_verify')->with(['user_id' => $user->id, 'profile_photo' => $user->profile_photo  ?? 'N/A', 'is_profile_photo' => 1, 'is_verify_photo' => 0])->render(),
+                    'verify_photo' => view('admin.layouts.includes.photos_verify')->with(['user_id' => $user->id, 'verify_photo' => $user->verify_photo  ?? 'N/A', 'is_profile_photo' => 0, 'is_verify_photo' => 1])->render(),
                     'account_id' => $user->account_id ?? "N/A",
                     'full_name' =>  $user->userTransDefault ? $user->userTransDefault->full_name : "N/A",
                     'gender' => view('admin.layouts.includes.gender', compact('params'))->render(),
                     'profile_percentage' =>  $user->profile_percentage,
                     'contact_no' => $user->contact_no ? '<a href="tel:' . $user->country_code . '' . $user->contact_no . '" >' . $user->country_code . '' . $user->contact_no . '</a>' : 'N/A',
-                    'email' => $user->email ? '<a href="mailto:' . $user->email . '" >' . $user->email . '</a>' : 'N/A',                    
-                    'city' => $user->location->name ?? 'N/A',      
-                    'device_app_version' => $device_type.'/'.$device_app_version,                
-                    'lat_long' => $latitude.','.$longitude, 
-                    'app_delete' => $app_delete,               
+                    'email' => $user->email ? '<a href="mailto:' . $user->email . '" >' . $user->email . '</a>' : 'N/A',
+                    'city' => $user->location->name ?? 'N/A',
+                    'device_app_version' => $device_type . '/' . $device_app_version,
+                    'lat_long' => $latitude . ',' . $longitude,
+                    'app_delete' => $app_delete,
                     'created_at' => date('Y-m-d H:i:s', strtotime($user->created_at)) ?? 'N/A',
                     'active' => view('admin.layouts.includes.switch', compact('params'))->render(),
                     'action' => view('admin.layouts.includes.actions')->with(['custom_title' => 'User', 'id' => $user->custom_id], $user)->render(),
-                    'status' => view('admin.layouts.includes.unde_review_status',compact('params'))->render(),
+                    'status' => view('admin.layouts.includes.unde_review_status', compact('params'))->render(),
                     'checkbox' => view('admin.layouts.includes.checkbox', compact('params'))->with('id', $user->custom_id)->render(),
                 ];
-
             }
         }
         // dd($records);
@@ -1340,8 +1398,8 @@ class UsersController extends Controller
     public function csvDownload(Request $request)
     {
         $down_file_name = 'User';
-        $users = User::with('userTransEn', 'deviceToken', 'country', 'location', 'language','subscription.subscriptionPlan.subscriptionPlanTranslation')
-            ->orderBy('created_at','desc')->get();
+        $users = User::with('userTransEn', 'deviceToken', 'country', 'location', 'language', 'subscription.subscriptionPlan.subscriptionPlanTranslation')
+            ->orderBy('created_at', 'desc')->get();
         if (!$users->isEmpty()) {
             foreach ($users as $user) {
                 $data[] = [
@@ -1349,7 +1407,7 @@ class UsersController extends Controller
                     'Name'                  =>  $user->userTransEn ? $user->userTransEn->full_name ?? "" : "",
                     'Email'                 =>  $user->email ?? "",
                     'Birth Date'            =>  $user->birth_date,
-                    'Contact No'            =>  $user->country_code." ".$user->contact_no ?? "",
+                    'Contact No'            =>  $user->country_code . " " . $user->contact_no ?? "",
                     'Verify Video Status'   =>  $user->verify_video_status ?? "",
                     'Verify Photo Status'   =>  $user->verify_photo_status ?? "",
                     'Gender'                =>  $user->gender ?? "",
@@ -1376,10 +1434,10 @@ class UsersController extends Controller
                     'Device OS Name'        =>  $user->deviceToken ? $user->deviceToken->os_name ?? "" : "",
                     'Device OS Version'     =>  $user->deviceToken ? $user->deviceToken->os_version ?? "" : "",
                     'Subscription plan'     =>  $user->subscription ? $user->subscription->subscriptionPlan ? ($user->subscription->subscriptionPlan->subscriptionPlanTranslation ? $user->subscription->subscriptionPlan->subscriptionPlanTranslation->name : "N/A") : "" : "",
-                    'Subscription month'    =>  $user->subscription ? $user->subscription->months ? : "" : "" ,
-                    'Subscription amount'   =>  $user->subscription ? $user->subscription->amount ? : "" : "" ,
-                    'Subscription end date' =>  $user->subscription ? $user->subscription->end_date ? : "" : "" ,
-                    'Subscription status'   =>  $user->subscription ? $user->subscription->status ? : "" : "" ,
+                    'Subscription month'    =>  $user->subscription ? $user->subscription->months ?: "" : "",
+                    'Subscription amount'   =>  $user->subscription ? $user->subscription->amount ?: "" : "",
+                    'Subscription end date' =>  $user->subscription ? $user->subscription->end_date ?: "" : "",
+                    'Subscription status'   =>  $user->subscription ? $user->subscription->status ?: "" : "",
                     'Active'                =>  $user->is_active == 'y' ? 'y' : 'n'
                 ];
             }
@@ -1391,17 +1449,17 @@ class UsersController extends Controller
             $filename = public_path('files/' . $down_file_name . ".csv");
             $handle   = fopen($filename, 'w+');
             fputcsv($handle, array(
-                'Account Id', 'Name', 'Email', 'Birth Date', 'Contact No', 'Verify Video Status', 'Verify Photo Status', 'Gender', 'Location', 
-                'Intrest', 'Verify Status', 'Profile Percentage', 'Language', 'Langauge Code', 'Swipe Count', 'Like Count', 'Match Count', 
+                'Account Id', 'Name', 'Email', 'Birth Date', 'Contact No', 'Verify Video Status', 'Verify Photo Status', 'Gender', 'Location',
+                'Intrest', 'Verify Status', 'Profile Percentage', 'Language', 'Langauge Code', 'Swipe Count', 'Like Count', 'Match Count',
                 'Chat Count', 'Is Social User', 'Is Subscribed', 'Subscription End Date', 'Email Verified Date', 'Contact Verified Date',
                 'Photo Verified Date', 'Video Verified Date', 'Device Name', 'Device Type', 'Device App Version', 'Device OS Name', 'Device OS Version',
-                'Subscription plan','Subscription month','Subscription amount','Subscription status','Active'
+                'Subscription plan', 'Subscription month', 'Subscription amount', 'Subscription status', 'Active'
             ));
 
             foreach ($data as $row) {
                 fputcsv($handle, array(
-                    $row['Account Id'], $row['Name'], $row['Email'], $row['Birth Date'], $row['Contact No'], $row['Verify Video Status'], $row['Verify Photo Status'], $row['Gender'], $row['Location'], $row['Intrest'], $row['Verify Status'], $row['Profile Percentage'], $row['Language'], $row['Langauge Code'], $row['Swipe Count'], $row['Like Count'], $row['Match Count'], $row['Chat Count'], $row['Is Social User'], $row['Is Subscribed'], $row['Subscription End Date'], $row['Email Verified Date'], $row['Contact Verified Date'], $row['Photo Verified Date'], $row['Video Verified Date'], $row['Device Name'], $row['Device Type'], $row['Device App Version'], $row['Device OS Name'], $row['Device OS Version'], 
-                    $row['Subscription plan'],$row['Subscription month'],$row['Subscription amount'],$row['Subscription status'], $row['Active'],
+                    $row['Account Id'], $row['Name'], $row['Email'], $row['Birth Date'], $row['Contact No'], $row['Verify Video Status'], $row['Verify Photo Status'], $row['Gender'], $row['Location'], $row['Intrest'], $row['Verify Status'], $row['Profile Percentage'], $row['Language'], $row['Langauge Code'], $row['Swipe Count'], $row['Like Count'], $row['Match Count'], $row['Chat Count'], $row['Is Social User'], $row['Is Subscribed'], $row['Subscription End Date'], $row['Email Verified Date'], $row['Contact Verified Date'], $row['Photo Verified Date'], $row['Video Verified Date'], $row['Device Name'], $row['Device Type'], $row['Device App Version'], $row['Device OS Name'], $row['Device OS Version'],
+                    $row['Subscription plan'], $row['Subscription month'], $row['Subscription amount'], $row['Subscription status'], $row['Active'],
                 ));
             }
             fclose($handle);
@@ -1430,9 +1488,9 @@ class UsersController extends Controller
     public function csvDownloadUndeReview(Request $request)
     {
         $down_file_name = 'User Unde Review';
-        $users = User::with('userTransEn', 'deviceToken', 'country', 'location', 'language','subscription.subscriptionPlan.subscriptionPlanTranslation')
-            ->orderBy('created_at','desc');
-        $users->where('verify_photo_status', '=' , 'under_review')->where('verify_photo', '!=' , '');    
+        $users = User::with('userTransEn', 'deviceToken', 'country', 'location', 'language', 'subscription.subscriptionPlan.subscriptionPlanTranslation')
+            ->orderBy('created_at', 'desc');
+        $users->where('verify_photo_status', '=', 'under_review')->where('verify_photo', '!=', '');
         $users = $users->get();
         // echo "<pre>"; print_r($users->toArray()); die();
         if (!$users->isEmpty()) {
@@ -1442,7 +1500,7 @@ class UsersController extends Controller
                     'Name'                  =>  $user->userTransEn ? $user->userTransEn->full_name ?? "" : "",
                     'Email'                 =>  $user->email ?? "",
                     'Birth Date'            =>  $user->birth_date,
-                    'Contact No'            =>  $user->country_code." ".$user->contact_no ?? "",
+                    'Contact No'            =>  $user->country_code . " " . $user->contact_no ?? "",
                     'Verify Video Status'   =>  $user->verify_video_status ?? "",
                     'Verify Photo Status'   =>  $user->verify_photo_status ?? "",
                     'Gender'                =>  $user->gender ?? "",
@@ -1469,10 +1527,10 @@ class UsersController extends Controller
                     'Device OS Name'        =>  $user->deviceToken ? $user->deviceToken->os_name ?? "" : "",
                     'Device OS Version'     =>  $user->deviceToken ? $user->deviceToken->os_version ?? "" : "",
                     'Subscription plan'     =>  $user->subscription ? $user->subscription->subscriptionPlan ? ($user->subscription->subscriptionPlan->subscriptionPlanTranslation ? $user->subscription->subscriptionPlan->subscriptionPlanTranslation->name : "N/A") : "" : "",
-                    'Subscription month'    =>  $user->subscription ? $user->subscription->months ? : "" : "" ,
-                    'Subscription amount'   =>  $user->subscription ? $user->subscription->amount ? : "" : "" ,
-                    'Subscription end date' =>  $user->subscription ? $user->subscription->end_date ? : "" : "" ,
-                    'Subscription status'   =>  $user->subscription ? $user->subscription->status ? : "" : "" ,
+                    'Subscription month'    =>  $user->subscription ? $user->subscription->months ?: "" : "",
+                    'Subscription amount'   =>  $user->subscription ? $user->subscription->amount ?: "" : "",
+                    'Subscription end date' =>  $user->subscription ? $user->subscription->end_date ?: "" : "",
+                    'Subscription status'   =>  $user->subscription ? $user->subscription->status ?: "" : "",
                     'Active'                =>  $user->is_active == 'y' ? 'y' : 'n'
                 ];
             }
@@ -1484,17 +1542,17 @@ class UsersController extends Controller
             $filename = public_path('files/' . $down_file_name . ".csv");
             $handle   = fopen($filename, 'w+');
             fputcsv($handle, array(
-                'Account Id', 'Name', 'Email', 'Birth Date', 'Contact No', 'Verify Video Status', 'Verify Photo Status', 'Gender', 'Location', 
-                'Intrest', 'Verify Status', 'Profile Percentage', 'Language', 'Langauge Code', 'Swipe Count', 'Like Count', 'Match Count', 
+                'Account Id', 'Name', 'Email', 'Birth Date', 'Contact No', 'Verify Video Status', 'Verify Photo Status', 'Gender', 'Location',
+                'Intrest', 'Verify Status', 'Profile Percentage', 'Language', 'Langauge Code', 'Swipe Count', 'Like Count', 'Match Count',
                 'Chat Count', 'Is Social User', 'Is Subscribed', 'Subscription End Date', 'Email Verified Date', 'Contact Verified Date',
                 'Photo Verified Date', 'Video Verified Date', 'Device Name', 'Device Type', 'Device App Version', 'Device OS Name', 'Device OS Version',
-                'Subscription plan','Subscription month','Subscription amount','Subscription status','Active'
+                'Subscription plan', 'Subscription month', 'Subscription amount', 'Subscription status', 'Active'
             ));
 
             foreach ($data as $row) {
                 fputcsv($handle, array(
-                    $row['Account Id'], $row['Name'], $row['Email'], $row['Birth Date'], $row['Contact No'], $row['Verify Video Status'], $row['Verify Photo Status'], $row['Gender'], $row['Location'], $row['Intrest'], $row['Verify Status'], $row['Profile Percentage'], $row['Language'], $row['Langauge Code'], $row['Swipe Count'], $row['Like Count'], $row['Match Count'], $row['Chat Count'], $row['Is Social User'], $row['Is Subscribed'], $row['Subscription End Date'], $row['Email Verified Date'], $row['Contact Verified Date'], $row['Photo Verified Date'], $row['Video Verified Date'], $row['Device Name'], $row['Device Type'], $row['Device App Version'], $row['Device OS Name'], $row['Device OS Version'], 
-                    $row['Subscription plan'],$row['Subscription month'],$row['Subscription amount'],$row['Subscription status'], $row['Active'],
+                    $row['Account Id'], $row['Name'], $row['Email'], $row['Birth Date'], $row['Contact No'], $row['Verify Video Status'], $row['Verify Photo Status'], $row['Gender'], $row['Location'], $row['Intrest'], $row['Verify Status'], $row['Profile Percentage'], $row['Language'], $row['Langauge Code'], $row['Swipe Count'], $row['Like Count'], $row['Match Count'], $row['Chat Count'], $row['Is Social User'], $row['Is Subscribed'], $row['Subscription End Date'], $row['Email Verified Date'], $row['Contact Verified Date'], $row['Photo Verified Date'], $row['Video Verified Date'], $row['Device Name'], $row['Device Type'], $row['Device App Version'], $row['Device OS Name'], $row['Device OS Version'],
+                    $row['Subscription plan'], $row['Subscription month'], $row['Subscription amount'], $row['Subscription status'], $row['Active'],
                 ));
             }
             fclose($handle);
@@ -1510,22 +1568,23 @@ class UsersController extends Controller
         return redirect(route('admin.users.index'));
     }
 
-    public function gender_update(Request $request) {
-        
+    public function gender_update(Request $request)
+    {
+
         // echo "<pre>"; print_r($request->all()); die();
 
         if ($request->id != '' && $request->gender != '') {
-            $users = User::select('id','gender','is_subscribed','subscription_end_date')->where('id',$request->id)->first();
-            $user_sub = Subscription::select('id','user_id','plan_id','end_date')->where('user_id',$request->id)->where('plan_id','!=',3)->whereNull('deleted_at')->count();
+            $users = User::select('id', 'gender', 'is_subscribed', 'subscription_end_date')->where('id', $request->id)->first();
+            $user_sub = Subscription::select('id', 'user_id', 'plan_id', 'end_date')->where('user_id', $request->id)->where('plan_id', '!=', 3)->whereNull('deleted_at')->count();
             // echo $user_sub; die();
             $today_date = date("Y-m-d");
 
             $subscription_end_date = "";
             if (!empty($users->subscription_end_date)) {
-                $subscription_end_date = date("Y-m-d",strtotime($users->subscription_end_date));
+                $subscription_end_date = date("Y-m-d", strtotime($users->subscription_end_date));
             }
             if ($users != '') {
-                
+
                 if ($request->gender != $users->gender) {
 
                     if (($users->gender == "Male" && $request->gender == "Female") || ($users->gender == "" && $request->gender == "Female")) {
@@ -1533,10 +1592,10 @@ class UsersController extends Controller
                         if ($user_sub > 0) {
 
                             $free_subscription = config('utility.subscription.free_for_girls');
-                            if($free_subscription && $request->gender == 'Female') {
+                            if ($free_subscription && $request->gender == 'Female') {
 
-                                $plan = SubscriptionPlan::where('is_default_for_girl','y')->first();
-                                if($plan){
+                                $plan = SubscriptionPlan::where('is_default_for_girl', 'y')->first();
+                                if ($plan) {
 
                                     $new_subscription_start_date = \Carbon\Carbon::today()->format('Y-m-d');
                                     if ($users->subscription_end_date >= $new_subscription_start_date) {
@@ -1559,34 +1618,28 @@ class UsersController extends Controller
                                     ]);
 
                                     // update user table subscription details
-                                    User::where('id',$request->id)->update([ 
+                                    User::where('id', $request->id)->update([
                                         'gender' =>  $request->gender ?? $users->gender,
                                         'is_subscribed' =>  'y',
                                         'subscription_end_date' =>  NULL,
                                     ]);
                                 }
                             }
-
-                        }
-                        else
-                        {
-                            $user_sub2 = Subscription::select('id','user_id','plan_id','end_date')->where('user_id',$request->id)->where('plan_id','==',3)->whereNull('deleted_at')->count();
+                        } else {
+                            $user_sub2 = Subscription::select('id', 'user_id', 'plan_id', 'end_date')->where('user_id', $request->id)->where('plan_id', '==', 3)->whereNull('deleted_at')->count();
                             if ($user_sub2 > 0) {
                                 // update user table subscription details
-                                User::where('id',$request->id)->update([ 
+                                User::where('id', $request->id)->update([
                                     'gender' =>  $request->gender ?? $users->gender,
                                     'is_subscribed' =>  'y',
                                     'subscription_end_date' =>  NULL,
                                 ]);
-
-                            }
-                            else
-                            {
+                            } else {
                                 $free_subscription = config('utility.subscription.free_for_girls');
-                                if($free_subscription && $request->gender == 'Female') {
+                                if ($free_subscription && $request->gender == 'Female') {
 
-                                    $plan = SubscriptionPlan::where('is_default_for_girl','y')->first();
-                                    if($plan){
+                                    $plan = SubscriptionPlan::where('is_default_for_girl', 'y')->first();
+                                    if ($plan) {
 
                                         $new_subscription_start_date = \Carbon\Carbon::today()->format('Y-m-d');
                                         if ($users->subscription_end_date >= $new_subscription_start_date) {
@@ -1609,7 +1662,7 @@ class UsersController extends Controller
                                         ]);
 
                                         // update user table subscription details
-                                        User::where('id',$request->id)->update([ 
+                                        User::where('id', $request->id)->update([
                                             'gender' =>  $request->gender ?? $users->gender,
                                             'is_subscribed' =>  'y',
                                             'subscription_end_date' =>  NULL,
@@ -1618,7 +1671,7 @@ class UsersController extends Controller
                                 }
                             }
                         }
-                                
+
                         $content['status'] = 200;
                         $content['message'] = "Gender updated successfully.";
                         return response()->json($content);
@@ -1628,35 +1681,30 @@ class UsersController extends Controller
 
                         if ($user_sub > 0) {
 
-                            Subscription::where('user_id',$request->id)->whereNull('end_date')->delete();
+                            Subscription::where('user_id', $request->id)->whereNull('end_date')->delete();
 
-                            $user_sub2 = Subscription::select('id','user_id','plan_id','end_date')->where('user_id',$request->id)->where('plan_id','!=',3)->whereNull('deleted_at')->first();
+                            $user_sub2 = Subscription::select('id', 'user_id', 'plan_id', 'end_date')->where('user_id', $request->id)->where('plan_id', '!=', 3)->whereNull('deleted_at')->first();
                             if (!empty($user_sub2)) {
                                 // update user table subscription details
-                                User::where('id',$request->id)->update([ 
+                                User::where('id', $request->id)->update([
                                     'gender' =>  $request->gender ?? $users->gender,
                                     'is_subscribed' =>  'y',
                                     'subscription_end_date' =>  isset($user_sub2->end_date) ? $user_sub2->end_date : NULL,
                                 ]);
-
-                            }
-                            else
-                            {
+                            } else {
                                 // update user table subscription details
-                                User::where('id',$request->id)->update([ 
+                                User::where('id', $request->id)->update([
                                     'gender' =>  $request->gender ?? $users->gender,
                                     'is_subscribed' =>  'n',
                                     'subscription_end_date' =>  NULL,
                                 ]);
                             }
-                        }
-                        else
-                        {
+                        } else {
                             // delete subscription data
-                            Subscription::where('user_id',$request->id)->whereNull('end_date')->delete();
+                            Subscription::where('user_id', $request->id)->whereNull('end_date')->delete();
 
                             // update user table subscription details
-                            User::where('id',$request->id)->update([ 
+                            User::where('id', $request->id)->update([
                                 'gender' =>  $request->gender ?? $users->gender,
                                 'is_subscribed' =>  'n',
                                 'subscription_end_date' =>  NULL,
@@ -1667,67 +1715,105 @@ class UsersController extends Controller
                         $content['message'] = "Gender updated successfully.";
                         return response()->json($content);
                     }
-                    
-                }
-                else
-                {
+                } else {
                     $content['status'] = 200;
                     $content['message'] = "Gender updated successfully.";
                     return response()->json($content);
                 }
-            }
-            else
-            {
+            } else {
                 $content['status'] = 404;
                 $content['message'] = "User not found.";
                 return response()->json($content);
             }
-        }
-        else
-        {
+        } else {
             $content['status'] = 404;
             $content['message'] = "Messing required paramater..!";
             return response()->json($content);
         }
     }
 
-    public function bulk_gender_update(Request $request) {
-            
+    public function bulk_gender_update(Request $request)
+    {
 
-        $user_id_arr            = explode(",",$request->multi_user_id);
-        $multi_user_id            = explode(",",$request->multi_auto_user_id);
-        
+
+        $user_id_arr            = explode(",", $request->multi_user_id);
+        $multi_user_id            = explode(",", $request->multi_auto_user_id);
+
 
         if (!empty($user_id_arr)) {
 
-            for($i = 0; $i< count($user_id_arr); $i++) {
+            for ($i = 0; $i < count($user_id_arr); $i++) {
 
-                    $req_user_id = $user_id_arr[$i];
-                    $multi_auto_user_id = $multi_user_id[$i];
-                    $req_gender  = $request->target_gender;
+                $req_user_id = $user_id_arr[$i];
+                $multi_auto_user_id = $multi_user_id[$i];
+                $req_gender  = $request->target_gender;
 
-                    $users = User::select('id','gender','is_subscribed','subscription_end_date')->where('custom_id',$req_user_id)->first();
+                $users = User::select('id', 'gender', 'is_subscribed', 'subscription_end_date')->where('custom_id', $req_user_id)->first();
 
-                    $user_sub = Subscription::select('id','user_id','plan_id','end_date')->where('user_id',$multi_auto_user_id)->where('plan_id','!=',3)->whereNull('deleted_at')->count();
-                    $today_date = date("Y-m-d");
+                $user_sub = Subscription::select('id', 'user_id', 'plan_id', 'end_date')->where('user_id', $multi_auto_user_id)->where('plan_id', '!=', 3)->whereNull('deleted_at')->count();
+                $today_date = date("Y-m-d");
 
-                    $subscription_end_date = "";
-                    if (!empty($users->subscription_end_date)) {
-                        $subscription_end_date = date("Y-m-d",strtotime($users->subscription_end_date));
-                    }
+                $subscription_end_date = "";
+                if (!empty($users->subscription_end_date)) {
+                    $subscription_end_date = date("Y-m-d", strtotime($users->subscription_end_date));
+                }
 
-                    if ($users != '') {
-                        if ($req_gender != $users->gender) {
+                if ($users != '') {
+                    if ($req_gender != $users->gender) {
 
-                            if (($users->gender == "Male" && $req_gender == "Female") || ($users->gender == "" && $req_gender == "Female")) {
+                        if (($users->gender == "Male" && $req_gender == "Female") || ($users->gender == "" && $req_gender == "Female")) {
 
-                                if ($user_sub > 0) {
+                            if ($user_sub > 0) {
 
+                                $free_subscription = config('utility.subscription.free_for_girls');
+                                if ($free_subscription && $req_gender == 'Female') {
+
+                                    $plan = SubscriptionPlan::where('is_default_for_girl', 'y')->first();
+                                    if ($plan) {
+
+                                        $new_subscription_start_date = \Carbon\Carbon::today()->format('Y-m-d');
+                                        if ($users->subscription_end_date >= $new_subscription_start_date) {
+                                            $new_subscription_start_date = $users->subscription_end_date;
+                                        }
+
+                                        // add free subscription
+                                        Subscription::firstOrCreate([
+                                            'user_id'       =>  $users->id ?? NULL,
+                                            'plan_id'       =>  $plan->id ?? NULL,
+                                            'months'        =>  $plan->months,
+                                            'amount'        =>  $plan->amount,
+                                            'start_date'    =>  $new_subscription_start_date,
+                                            'end_date'      =>  NULL,
+                                            'payment_date'  =>  now(),
+                                            'payment_type'  =>  'admin',
+                                            'status'        =>  'active',
+                                        ], [
+                                            'custom_id'     =>  getUniqueString('subscriptions'),
+                                        ]);
+
+                                        // update user table subscription details
+                                        User::where('custom_id', $req_user_id)->update([
+                                            'gender' =>  $req_gender ?? $users->gender,
+                                            'is_subscribed' =>  'y',
+                                            'subscription_end_date' =>  NULL,
+                                        ]);
+                                    }
+                                }
+                            } else {
+                                $user_sub2 = Subscription::select('id', 'user_id', 'plan_id', 'end_date')->where('user_id', $multi_auto_user_id)->where('plan_id', '==', 3)->whereNull('deleted_at')->count();
+                                if ($user_sub2 > 0) {
+                                    // update user table subscription details
+                                    User::where('custom_id', $req_user_id)->update([
+                                        'gender' =>  $req_gender ?? $users->gender,
+                                        'is_subscribed' =>  'y',
+                                        'subscription_end_date' =>  NULL,
+                                    ]);
+                                } else {
                                     $free_subscription = config('utility.subscription.free_for_girls');
-                                    if($free_subscription && $req_gender == 'Female') {
+                                    if ($free_subscription && $req_gender == 'Female') {
 
-                                        $plan = SubscriptionPlan::where('is_default_for_girl','y')->first();
-                                        if($plan){
+                                        $plan = SubscriptionPlan::where('is_default_for_girl', 'y')->first();
+                                        if ($plan) {
 
                                             $new_subscription_start_date = \Carbon\Carbon::today()->format('Y-m-d');
                                             if ($users->subscription_end_date >= $new_subscription_start_date) {
@@ -1750,119 +1836,60 @@ class UsersController extends Controller
                                             ]);
 
                                             // update user table subscription details
-                                            User::where('custom_id',$req_user_id)->update([
+                                            User::where('custom_id', $req_user_id)->update([
                                                 'gender' =>  $req_gender ?? $users->gender,
                                                 'is_subscribed' =>  'y',
                                                 'subscription_end_date' =>  NULL,
                                             ]);
                                         }
                                     }
-
                                 }
-                                else
-                                {
-                                    $user_sub2 = Subscription::select('id','user_id','plan_id','end_date')->where('user_id',$multi_auto_user_id)->where('plan_id','==',3)->whereNull('deleted_at')->count();
-                                    if ($user_sub2 > 0) {
-                                        // update user table subscription details
-                                        User::where('custom_id',$req_user_id)->update([
-                                            'gender' =>  $req_gender ?? $users->gender,
-                                            'is_subscribed' =>  'y',
-                                            'subscription_end_date' =>  NULL,
-                                        ]);
-
-                                    }
-                                    else
-                                    {
-                                        $free_subscription = config('utility.subscription.free_for_girls');
-                                        if($free_subscription && $req_gender == 'Female') {
-
-                                            $plan = SubscriptionPlan::where('is_default_for_girl','y')->first();
-                                            if($plan){
-
-                                                $new_subscription_start_date = \Carbon\Carbon::today()->format('Y-m-d');
-                                                if ($users->subscription_end_date >= $new_subscription_start_date) {
-                                                    $new_subscription_start_date = $users->subscription_end_date;
-                                                }
-
-                                                // add free subscription
-                                                Subscription::firstOrCreate([
-                                                    'user_id'       =>  $users->id ?? NULL,
-                                                    'plan_id'       =>  $plan->id ?? NULL,
-                                                    'months'        =>  $plan->months,
-                                                    'amount'        =>  $plan->amount,
-                                                    'start_date'    =>  $new_subscription_start_date,
-                                                    'end_date'      =>  NULL,
-                                                    'payment_date'  =>  now(),
-                                                    'payment_type'  =>  'admin',
-                                                    'status'        =>  'active',
-                                                ], [
-                                                    'custom_id'     =>  getUniqueString('subscriptions'),
-                                                ]);
-
-                                                // update user table subscription details
-                                                User::where('custom_id',$req_user_id)->update([ 
-                                                    'gender' =>  $req_gender ?? $users->gender,
-                                                    'is_subscribed' =>  'y',
-                                                    'subscription_end_date' =>  NULL,
-                                                ]);
-                                            }
-                                        }
-                                    }
-                                }
-                                        
-                                $content['status'] = 200;
-                                $content['message'] = "Gender updated successfully.";
-                                return response()->json($content);
                             }
 
-                            if (($users->gender == "Female" && $req_gender == "Male") || ($users->gender == "" && $req_gender == "Male")) {
-
-                                // delete subscription data
-                                Subscription::where('user_id',$multi_auto_user_id)->whereNull('end_date')->delete();
-
-                                $user_sub2 = Subscription::select('id','user_id','plan_id','end_date')->where('user_id',$multi_auto_user_id)->where('plan_id','!=',3)->whereNull('deleted_at')->first();
-                                if (!empty($user_sub2)) {
-
-                                    // update user table subscription details
-                                    User::where('custom_id',$req_user_id)->update([
-                                        'gender' =>  $req_gender ?? $users->gender,
-                                        'is_subscribed' =>  'y',
-                                        'subscription_end_date' =>  isset($user_sub2->end_date) ? $user_sub2->end_date : NULL,
-                                    ]);
-
-                                }
-                                else
-                                {
-                                    // update user table subscription details
-                                    User::where('custom_id',$req_user_id)->update([ 
-                                        'gender' =>  $req_gender ?? $users->gender,
-                                        'is_subscribed' =>  'n',
-                                        'subscription_end_date' =>  NULL,
-                                    ]);
-                                }
-
-                                $content['status'] = 200;
-                                $content['message'] = "Gender updated successfully.";
-                                return response()->json($content);
-                            }
+                            $content['status'] = 200;
+                            $content['message'] = "Gender updated successfully.";
+                            return response()->json($content);
                         }
-                        
+
+                        if (($users->gender == "Female" && $req_gender == "Male") || ($users->gender == "" && $req_gender == "Male")) {
+
+                            // delete subscription data
+                            Subscription::where('user_id', $multi_auto_user_id)->whereNull('end_date')->delete();
+
+                            $user_sub2 = Subscription::select('id', 'user_id', 'plan_id', 'end_date')->where('user_id', $multi_auto_user_id)->where('plan_id', '!=', 3)->whereNull('deleted_at')->first();
+                            if (!empty($user_sub2)) {
+
+                                // update user table subscription details
+                                User::where('custom_id', $req_user_id)->update([
+                                    'gender' =>  $req_gender ?? $users->gender,
+                                    'is_subscribed' =>  'y',
+                                    'subscription_end_date' =>  isset($user_sub2->end_date) ? $user_sub2->end_date : NULL,
+                                ]);
+                            } else {
+                                // update user table subscription details
+                                User::where('custom_id', $req_user_id)->update([
+                                    'gender' =>  $req_gender ?? $users->gender,
+                                    'is_subscribed' =>  'n',
+                                    'subscription_end_date' =>  NULL,
+                                ]);
+                            }
+
+                            $content['status'] = 200;
+                            $content['message'] = "Gender updated successfully.";
+                            return response()->json($content);
+                        }
                     }
-                    else
-                    {
-                        $content['status'] = 404;
-                        $content['message'] = "User not found.";
-                        return response()->json($content);
-                    }
+                } else {
+                    $content['status'] = 404;
+                    $content['message'] = "User not found.";
+                    return response()->json($content);
+                }
             }
 
             $content['status'] = 200;
             $content['message'] = "Gender updated successfully1.";
             return response()->json($content);
-
-        }
-        else
-        {
+        } else {
             $content['status'] = 404;
             $content['message'] = "Messing required paramater..!";
             return response()->json($content);
@@ -1880,29 +1907,30 @@ class UsersController extends Controller
     }
 
     // ST - For Bulk Photo Verification
-    public function bulk_photo_verification(Request $request) {
+    public function bulk_photo_verification(Request $request)
+    {
 
-        $user_id_arr          = explode(",",$request->multi_user_id);
+        $user_id_arr          = explode(",", $request->multi_user_id);
         $verify_photo_status  = $request->verify_photo_status;
 
         if (!empty($user_id_arr)) {
 
-            for($i = 0; $i< count($user_id_arr); $i++) {
+            for ($i = 0; $i < count($user_id_arr); $i++) {
 
                 // update user table verify_photo_status
-                User::where('custom_id',$user_id_arr[$i])->update([
+                User::where('custom_id', $user_id_arr[$i])->update([
                     'verify_photo_status' =>  $verify_photo_status,
                     'photo_verified_at'   =>  \Carbon\Carbon::now()
                 ]);
 
-                if($verify_photo_status == "verified") {
+                if ($verify_photo_status == "verified") {
 
-                    User::where('custom_id',$user_id_arr[$i])->update([
+                    User::where('custom_id', $user_id_arr[$i])->update([
                         'verify_status' =>  'verified'
                     ]);
                 }
 
-                $user = User::where('custom_id','=',$user_id_arr[$i])->first();
+                $user = User::where('custom_id', '=', $user_id_arr[$i])->first();
                 $user->calculateProfilePercent();
             }
         }
@@ -1915,17 +1943,17 @@ class UsersController extends Controller
 
 
     // User get location id using lat and logn
-    public function get_user_location($lat,$long)
+    public function get_user_location($lat, $long)
     {
         $apiKey = 'AIzaSyDInVSLHXa1FXO3p7kgA7B_TK9L71tZbW8';
-        $latlng = $lat.','.$long;
+        $latlng = $lat . ',' . $long;
         $result = [];
         $location_id = '';
 
-        $url = "https://maps.googleapis.com/maps/api/geocode/json?latlng=".$latlng."&sensor=true&key=".$apiKey;
+        $url = "https://maps.googleapis.com/maps/api/geocode/json?latlng=" . $latlng . "&sensor=true&key=" . $apiKey;
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);    
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         $responseJson = curl_exec($ch);
         curl_close($ch);
         $response = json_decode($responseJson);
@@ -1941,30 +1969,28 @@ class UsersController extends Controller
                 // check city and state not empty
                 if (!empty($result) && !empty($result['city']) && !empty($result['state'])) {
                     // if already exist city and state then get id and update user location id
-                    $locationTranslation = LocationTranslation::where('name',$result['city'])->where('state',$result['state'])->where('locale','en')->first();
+                    $locationTranslation = LocationTranslation::where('name', $result['city'])->where('state', $result['state'])->where('locale', 'en')->first();
                     if (!empty($locationTranslation)) {
                         $location_id = $locationTranslation->location_id;
 
                         // update location table for city is used some one users
-                        Location::where('id',$location_id)->update([ 
+                        Location::where('id', $location_id)->update([
                             'is_used' =>  'y',
                         ]);
-                    }
-                    else
-                    {
+                    } else {
                         // if city and state not exits then create new
-                        $location = new Location();        
-                        $location->custom_id = getUniqueString('locations');  
-                        $location->is_used   = 'y';  
+                        $location = new Location();
+                        $location->custom_id = getUniqueString('locations');
+                        $location->is_used   = 'y';
                         $location->save();
 
                         $location_id = $location->id;
 
                         $LocationTranslation = new LocationTranslation();
-                        $LocationTranslation->locale = 'en';  
-                        $LocationTranslation->location_id = $location_id;  
-                        $LocationTranslation->name = $result['city'];  
-                        $LocationTranslation->state = $result['state'];  
+                        $LocationTranslation->locale = 'en';
+                        $LocationTranslation->location_id = $location_id;
+                        $LocationTranslation->name = $result['city'];
+                        $LocationTranslation->state = $result['state'];
                         $LocationTranslation->save();
                     }
                 }

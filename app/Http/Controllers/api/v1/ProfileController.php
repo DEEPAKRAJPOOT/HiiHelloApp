@@ -4,17 +4,24 @@ namespace App\Http\Controllers\api\v1;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\{Request, Response};
-use App\Http\Requests\Api\User\{FullProfileRequest, SetInterestRequest, SetMediaRequest};
-use Illuminate\Database\Eloquent\{ModelNotFoundException};
 use Illuminate\Support\Facades\{Storage, Auth};
+use App\Classes\ImageDetectionClass;
+use Illuminate\Database\Eloquent\{ModelNotFoundException};
 use App\Http\Resources\v1\{UserFullProfile, UserInterestResource, MediaResource};
-use App\Models\{User, UserDetail, Interest, UserInterest, ProfileDetail, Personality, Language, UserPersonality,ImageModerationLog};
+use App\Http\Requests\Api\User\{FullProfileRequest, SetInterestRequest, SetMediaRequest};
+use App\Models\{User, UserDetail, Interest, UserInterest, ProfileDetail, Personality, Language, UserPersonality, ImageModerationLog};
 
 class ProfileController extends Controller
 {
     private $version = "v.1.0";
-    public function getVersion(){ return $this->version; }
-    public function getAuthUser(){ return auth('sanctum')->user(); }
+    public function getVersion()
+    {
+        return $this->version;
+    }
+    public function getAuthUser()
+    {
+        return auth('sanctum')->user();
+    }
 
     /**
      * Setup full profile of the user
@@ -122,6 +129,12 @@ class ProfileController extends Controller
                             'custom_id'         =>  getUniqueString('user_personalities'),
                         ]);
                     }
+                }
+
+                if (empty($user->contact_no) && $request->filled('contact_no')) {
+                    $user->contact_no = $request->contact_no;
+                    $user->country_code = 91;
+                    $user->contact_verified_at = \Carbon\Carbon::now();
                 }
                 $user->save();
 
@@ -278,6 +291,7 @@ class ProfileController extends Controller
         if ($this->apiValidator($request->all(), $setMediaRequest->rules())) {
             try {
                 $user = $request->user();
+                $awsImgResultArr = array();
 
 
 
@@ -329,29 +343,26 @@ class ProfileController extends Controller
 
                 // Store New Images
                 if (!empty($request->image_path)) {
-                   
 
-                    $s3_file_url = generateURL($request->image_path); 
 
+                    $s3_file_url = generateURL($request->image_path);
+                    // $s3_file_url = $request->image_path;
 
                     $awsImgResultArr = array();
 
-                    if($s3_file_url!="")                   
-                    {
+                    if ($s3_file_url != "") {
                         ///CHECK FOR AWS REKOGNIZTION START
-                        $awsImgResultArr = checkAwsImageModeration($request,$s3_file_url,"url");                   
-                    }    
-                    else
-                    {
+                        // $awsImgResultArr = checkAwsImageModeration($request, $s3_file_url, "url");
+                        $image_detection = new ImageDetectionClass($s3_file_url, $user, false);
+                        $awsImgResultArr = $image_detection->checkConstraints();
+                    } else {
                         $safe_image = "false";
                     }
 
-                    if(count($awsImgResultArr) > 0)
-                    {
-                        if($awsImgResultArr["is_safe_image"]==true) 
-                        {
-                           
-                           if (empty($user->profile_photo)) {
+                    if (count($awsImgResultArr) > 0) {
+                        if ($awsImgResultArr["is_safe_image"] == true) {
+
+                            if (empty($user->profile_photo)) {
                                 $user->profile_photo = $request->image_path;
                                 $user->is_media_checked = 'n';
                                 $user->save();
@@ -372,34 +383,29 @@ class ProfileController extends Controller
                                     $new_image->save();
                                 }
                             }
+                        } else {
+                            if (Storage::exists($request->image_path)) {
+                                Storage::delete($request->image_path);
+                            }
 
-                        }  
-                        else
-                        {
-                           if (Storage::exists($request->image_path)) 
-                           {                             
-                             Storage::delete($request->image_path);
-                           } 
-
-                           $safe_image = "false";  
-                        } 
+                            $safe_image = "false";
+                        }
 
 
                         //INSERT IN TO IMAGE MODERATIO LOG START
-                        if($awsImgResultArr["is_safe_image"]==true) 
+                        if ($awsImgResultArr["is_safe_image"] == true)
                             $is_approved = 1;
                         else
                             $is_approved = 0;
 
-                        $image_type = "other_photo";  
-                        $message = $awsImgResultArr["log_message"];                        
-                        $total_face_detected = $awsImgResultArr["total_face_detected"];                        
-                        
+                        $image_type = "other_photo";
+                        $message = $awsImgResultArr["log_message"];
+                        $total_face_detected = $awsImgResultArr["total_face_detected"];
+
                         $response_data = $awsImgResultArr["image_moderation_response"];
                         $request_data = $awsImgResultArr["image_moderation_request"];
                         $endpoint_url = url()->current();
 
-                        
 
                         ImageModerationLog::Create([
                             'user_id'             => $user->id,
@@ -410,12 +416,12 @@ class ProfileController extends Controller
                             'message'             => $message,
                             'image_type'          => $image_type,
                             'endpoint_url'        => $endpoint_url,
-                        ]);    
+                        ]);
 
                         //INSERT IN TO IMAGE MODERATIO LOG END     
 
 
-                    }                    
+                    }
                     //CHECK FOR AWS REKOGNIZTION END
                 }
 
@@ -429,7 +435,7 @@ class ProfileController extends Controller
                         }
                         $user->profile_photo = NULL;
                         $add_image = UserDetail::select('image')->whereUserId($user->id)->orderBy('sequence')->first();
-                        if($add_image){
+                        if ($add_image) {
                             $user->profile_photo = $add_image->image;
                             $d = UserDetail::whereUserId($user->id)->whereImage($add_image->image)->delete();
                             // dd($d);
@@ -484,11 +490,15 @@ class ProfileController extends Controller
                 }
 
                 $user = User::with(['userTranslation', 'personalities', 'userDetails', 'interests'])->whereId($user->id)->firstOrFail();
+                // unset($awsImgResultArr['image_moderation_request']);
+                // unset($awsImgResultArr['image_moderation_response']);
+
                 return (new MediaResource($user))
                     ->additional(['meta'  => [
                         'message'       =>  trans('api.profile_setuped'),
-                        'safe_image'    =>  $safe_image,       
+                        'safe_image'    =>  $safe_image,
                         'is_ban'        =>  false,
+                        'image_description' => $awsImgResultArr
                     ]]);
             } catch (ModelNotFoundException $exception) {
                 switch ($exception->getModel()) {

@@ -75,6 +75,23 @@ class FilterController extends Controller
                             }    // Interested in Gender
                         });
 
+                        
+                    if (!empty($user->discover_location_id)) {
+                        if ($user->location_id != $user->discover_location_id) {
+                            $users->where('location_id', $user->discover_location_id);  // Location
+                        }
+                    }
+
+                    if (!empty($user->discover_start_age) && !empty($user->discover_end_age)) {
+                        // $users->whereBetween('birth_date', array($user->discover_start_age, $user->discover_end_age)); // Age
+                        $users->whereBetween(\DB::raw('TIMESTAMPDIFF(YEAR,users.birth_date,CURDATE())'), array($user->discover_start_age, $user->discover_end_age));
+                    }
+
+                    if ($user->location_id == $user->discover_location_id) {
+                        $users = $users->having("distance", "<=", $radius)->orderBy('distance');
+                    }
+
+
                     $users = $users->where(function ($query_filter)  use ($request) {
                         if (!empty($request->relationship_status)) {
                             $query_filter->orWhereHas('relationshipStatus', function ($query_relation) use ($request) {
@@ -89,6 +106,17 @@ class FilterController extends Controller
                         if (!empty($request->star_sign)) {
                             $query_filter->orWhereHas('starSign', function ($query_star_sign) use ($request) {
                                 $query_star_sign->whereSlug($request->star_sign)->whereIsActive('y');
+                            });
+                        }
+
+                        if (!empty($request->community)) {
+                            $query_filter->orWhereHas('community', function ($query_community) use ($request) {
+                                $query_community->whereSlug($request->community)->whereIsActive('y');
+                            });
+                        }
+                        if (!empty($request->religion)) {
+                            $query_filter->orWhereHas('religion', function ($query_religion) use ($request) {
+                                $query_religion->whereSlug($request->religion)->whereIsActive('y');
                             });
                         }
                         if (!empty($request->fav_movie)) {

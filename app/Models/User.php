@@ -67,6 +67,9 @@ class User extends Authenticatable implements MustVerifyEmail, TranslatableContr
     // }
 
     public function userTranslations(){ return $this->hasMany('App\Models\UserTranslation'); }
+    public function userTranslationOnlyOne(){ 
+        return $this->hasOne('App\Models\UserTranslation');
+    }
     public function userTranslation(){ 
         return $this->hasOne('App\Models\UserTranslation')->whereLocale(app()->getlocale());
     }

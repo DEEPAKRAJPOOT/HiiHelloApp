@@ -231,6 +231,7 @@ class LikeController extends Controller
         if ($this->apiValidator($request->all(), $paginationRequest->rules())) {
             try {
                 $user = $request->user();
+                // dd($user->toArray());
                 $user_id = $user->id;
                 $is_subscribed = false;
                 $subscription_end_date = "";
@@ -258,7 +259,7 @@ class LikeController extends Controller
                     ->where("likes.liker_id", '=', $user_id)
                     ->where("likes.user_id", '!=', $user_id)
                     ->pluck('users.id')->toArray();
-
+                
                 $likes = Like::with([
                     'likerUser:id,custom_id,birth_date,profile_photo,location_id,is_active',
                     'likerUser.userTranslation', 'likerUser.location.locationTranslation'
@@ -268,6 +269,7 @@ class LikeController extends Controller
                     })
                     ->where('user_id', $user_id)
                     ->whereNotIn('liker_id', $match_users)
+                    ->whereNotIn('liker_id', $user->blockBys->pluck('blocked_to'))
                     ->latest();
                 $count = $likes->count();
                 $likes = $likes->limit($request->limit ?? config('utility.pagination.limit'))

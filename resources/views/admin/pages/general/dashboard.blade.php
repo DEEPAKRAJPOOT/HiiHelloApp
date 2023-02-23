@@ -471,6 +471,11 @@
                     <td>{{ $user['total_apple_users'] ?? 0 }}</td>
                     <td>{{ $user['pr_apple_users'] ?? 0 }}%</td>
                   </tr>
+                  <tr>
+                    <td>WhatsApp/OTP Less </td>
+                    <td>{{ $user['total_otp_less_users'] ?? 0 }}</td>
+                    <td>{{ $user['pr_otp_less_users'] ?? 0 }}%</td>
+                  </tr>
                 </tbody>
               </table>
             </div>
