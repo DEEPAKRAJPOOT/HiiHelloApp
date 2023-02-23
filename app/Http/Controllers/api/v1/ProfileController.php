@@ -345,8 +345,8 @@ class ProfileController extends Controller
                 if (!empty($request->image_path)) {
 
 
-                    // $s3_file_url = generateURL($request->image_path);
-                    $s3_file_url = $request->image_path;
+                    $s3_file_url = generateURL($request->image_path);
+                    // $s3_file_url = $request->image_path;
 
                     $awsImgResultArr = array();
 
