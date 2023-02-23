@@ -56,11 +56,13 @@ class FaceConstraintClass
     {
 
         if ($this->isFace) {
-            $low = $this->face['FaceDetails'][0]['AgeRange']['Low'];
-            $high =  $this->face['FaceDetails'][0]['AgeRange']['High'];
-            $age = ceil(($high + $low) / 2) ?? 0;
-            if ($age <= $this->min_age) {
-                $this->message .= "Age less than " . $this->min_age . " detected, ";
+            foreach ($this->face['FaceDetails'] as  $face_detail) {
+                $low = $face_detail['AgeRange']['Low'];
+                $high =  $face_detail['AgeRange']['High'];
+                $age = ceil(($high + $low) / 2) ?? 0;
+                if ($age <= $this->min_age) {
+                    $this->message .= "Age less than " . $this->min_age . " detected, ";
+                }
             }
         }
         return $this;
@@ -70,7 +72,7 @@ class FaceConstraintClass
     {
         if (count($this->celeb['CelebrityFaces']) > 0) {
             $celebrity_name = $this->celeb['CelebrityFaces'][0]['Name'];
-            $this->message .= "Celebrity face detected. Name: " . $celebrity_name .", ";
+            $this->message .= "Celebrity face detected. Name: " . $celebrity_name . ", ";
         }
         return $this;
     }
