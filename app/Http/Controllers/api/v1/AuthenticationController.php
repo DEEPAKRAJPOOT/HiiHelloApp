@@ -2,16 +2,17 @@
 
 namespace App\Http\Controllers\api\v1;
 
-use App\Http\Controllers\Controller;
-use Illuminate\Http\{Request, Response};
-use App\Http\Resources\v1\{UserProfile, LoginResource, SignUpResource};
-use Illuminate\Database\Eloquent\{ModelNotFoundException};
-use Illuminate\Support\Facades\{Storage, Auth, Hash};
-use App\Http\Requests\Api\Authentication\{LoginRequest, OTPLessRequest, RegisterRequest, SocialLoginRequest};
-use App\Http\Resources\OTPLessResource;
-use App\Models\{User, Country, UserDetail, Location, Interest, UserInterest, Language, ProfileDetail, DeviceToken, Subscription, SubscriptionPlan, LocationTranslation, ApiLogs, ImageModerationLog};
-use Illuminate\Support\Str;
 use DB;
+use Illuminate\Support\Str;
+use App\Classes\ImageDetectionClass;
+use App\Http\Controllers\Controller;
+use App\Http\Resources\OTPLessResource;
+use Illuminate\Http\{Request, Response};
+use Illuminate\Support\Facades\{Storage, Auth, Hash};
+use Illuminate\Database\Eloquent\{ModelNotFoundException};
+use App\Http\Resources\v1\{UserProfile, LoginResource, SignUpResource};
+use App\Http\Requests\Api\Authentication\{LoginRequest, OTPLessRequest, RegisterRequest, SocialLoginRequest};
+use App\Models\{User, Country, UserDetail, Location, Interest, UserInterest, Language, ProfileDetail, DeviceToken, Subscription, SubscriptionPlan, LocationTranslation, ApiLogs, ImageModerationLog};
 
 class AuthenticationController extends Controller
 {
@@ -72,7 +73,7 @@ class AuthenticationController extends Controller
         $registerRequest = new RegisterRequest();
         if ($this->apiValidator($request->all(), $registerRequest->rules())) {
             try {
-                
+
                 $user = $this->getAuthUser();
 
                 $country_id = $location_id = $language_id = $device_type = $device_app_version = NULL;
@@ -124,8 +125,8 @@ class AuthenticationController extends Controller
                     $user->discover_location_id = isset($location_id) ? $location_id : null;
                     $user->language_id = $language_id;
                     $user->otp_less_id = $request->otp_less_id ?? null;
-                } else { 
-                // echo "<pre>"; print_r($request->all()); die();
+                } else {
+                    // echo "<pre>"; print_r($request->all()); die();
                     $user = User::create([
                         'custom_id'             =>  getUniqueString('users'),
                         'account_id'            =>  Str::slug(substr($full_name, 0, 4), "_") . '_' . time(),
@@ -176,10 +177,46 @@ class AuthenticationController extends Controller
                     $user->contact_verified_at = \Carbon\Carbon::now();  // Set Contact Number As Verified
                     $user->sendWelcomeSms(); // Send Welcome SMS
                 }
-                
-                
-                $safe_image = "true"; 
 
+
+                $safe_image = "true";
+                $awsImgResultArr = [];
+
+                if ($request->hasFile('profile_photo')) {
+                    if (!empty($user->profile_photo) && Storage::exists($user->profile_photo)) {
+                        Storage::delete($user->profile_photo);
+                    }
+                    ///CHECK FOR AWS REKOGNIZTION START
+                    $image_detection = new ImageDetectionClass($request->file('profile_photo'), $user);
+                    $awsImgResultArr = $image_detection->checkConstraints();
+
+                    $safe_image = $awsImgResultArr["is_safe_image"];
+                    $user->profile_photo = null;
+                    $user->is_media_checked = 'n';
+
+                    if ($awsImgResultArr["is_safe_image"]) {
+                        $user->profile_photo = $request->file('profile_photo')->store('users/profile_photo');
+                        $user->save();
+                    }
+
+                    $message = $awsImgResultArr["log_message"];
+                    $total_face_detected = $awsImgResultArr["total_face_detected"];
+                    $response_data = $awsImgResultArr["image_moderation_response"];
+                    $request_data = $awsImgResultArr["image_moderation_request"];
+                    $endpoint_url = url()->current();
+
+                    ImageModerationLog::Create([
+                        'user_id'             => $user->id,
+                        'is_approved'         => $awsImgResultArr["is_safe_image"] ? 1  : 0,
+                        'request'             => $request_data,
+                        'response'            => $response_data,
+                        'total_face_detected' => $total_face_detected,
+                        'message'             => $message,
+                        'image_type'          => "profile_photo",
+                        'endpoint_url'        => $endpoint_url,
+                    ]);
+                    //CHECK FOR AWS REKOGNIZTION END
+                }
                 // if (!empty($request->profile_photo)) {
 
                 //     if (!empty($user->profile_photo)) {
@@ -265,6 +302,7 @@ class AuthenticationController extends Controller
                                 'message'       =>  trans('api.profile_setuped'),
                                 'auth_token'    =>  $user->createToken(config('utility.token'))->plainTextToken,
                                 'safe_image'    =>  $safe_image,
+                                'image_description' => $awsImgResultArr
                             ]
                         ]);
                 } else {
@@ -588,7 +626,7 @@ class AuthenticationController extends Controller
                 $verifiedOTPLessAuth = verifyOTPLessAuth($request->wa_id);
                 if (is_array($verifiedOTPLessAuth)) {
                     $verifiedOTPLessAuth['otp_less_id'] = $request->wa_id;
-                    
+
                     $this->status = Response::HTTP_UNPROCESSABLE_ENTITY;
                     $this->response['meta']['otp_less_data']  = $verifiedOTPLessAuth;
                     try {
