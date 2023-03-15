@@ -139,10 +139,10 @@ class ImageDetectionClass
             return $this->response;
         }
 
-        // $this->followTextConstraint();
-        // if (!$this->response['is_safe_image']) {
-        //     return $this->response;
-        // }
+        $this->followTextConstraint();
+        if (!$this->response['is_safe_image']) {
+            return $this->response;
+        }
 
         $this->followModerationConstraint();
 
