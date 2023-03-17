@@ -41,13 +41,13 @@
                     <i class="far fa-trash-alt"></i> Delete Selected
                 </a>
                 @endif
-                @if (in_array('add', $permissions))
+                {{-- @if (in_array('add', $permissions))
                 <a href="{{ route('admin.users.create') }}"
                     class="btn btn-sm btn-primary font-weight-bolder text-uppercase">
                     <i class="fas fa-plus"></i>
                     Add {{ $custom_title }}
                 </a>
-                @endif
+                @endif --}}
 
                 {{-- 
                 <a href="{{ route('admin.users.csv-download') }}"
