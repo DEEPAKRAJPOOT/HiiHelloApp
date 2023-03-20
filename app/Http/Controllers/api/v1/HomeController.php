@@ -37,16 +37,16 @@ class HomeController extends Controller
                     $latitude = $user->current_latitude;
                     $longitude = $user->current_longitude;
 
-                    $last15thDate = (new Carbon)->subDays(15)->startOfDay();
+                    $last7thDate = (new Carbon)->subDays(7)->startOfDay();
                     $last30thDate = (new Carbon)->subDays(30)->startOfDay();
                     $currentDate = (new Carbon)->now()->endOfDay();
 
                     // $blocked    =   BlockUser::whereBlockBy($auth_id)->whereNotNull('blocked_to')->distinct()->pluck('blocked_to')->toArray();
                     $languages  =   UserSetting::whereUserId($auth_id)->whereNotNull('language_id')->distinct()->pluck('language_id')->toArray();
-                    $disLikes   =   DisLike::whereDisLikerId($auth_id)->whereBetween('updated_at', [$last15thDate, $currentDate])
+                    $disLikes   =   DisLike::whereDisLikerId($auth_id)->whereBetween('updated_at', [$last7thDate, $currentDate])
                         ->whereNotNull('user_id')->distinct()->pluck('user_id')->toArray();
                     $likes   =   Like::whereLikerId($auth_id)
-                        ->whereBetween('updated_at', [$last15thDate, $currentDate])
+                        ->whereBetween('updated_at', [$last7thDate, $currentDate])
                         ->whereNotNull('user_id')->distinct()->pluck('user_id')->toArray();
 
                     $reported = ProfileReport::where('user_id', $auth_id)
