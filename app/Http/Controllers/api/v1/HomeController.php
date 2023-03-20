@@ -82,10 +82,11 @@ class HomeController extends Controller
                             + sin(radians(" . $latitude . ")) 
                             * sin(radians(users.latitude))) AS distance")
                         );
-                            // ->having("distance", "<=", $radius);
-                        if ($user->location_id == $user->discover_location_id) {
-                            $users = $users->having("distance", "<=", $radius)->orderBy('distance');
+                        // ->having("distance", "<=", $radius);
+                        if ($radius != 100) {
+                            $users = $users->having("distance", "<=", $radius);
                         }
+                        $users = $users->orderBy('distance');
                     } else {
                         $users = User::select(
                             'users.id',
