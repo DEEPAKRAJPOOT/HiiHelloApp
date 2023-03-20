@@ -38,7 +38,7 @@ class FilterController extends Controller
                     $latitude = $user->latitude;
                     $longitude = $user->longitude;
 
-                    $last15thDate = (new Carbon)->subDays(15)->startOfDay();
+                    $last7thDate = (new Carbon)->subDays(7)->startOfDay();
                     $last30thDate = (new Carbon)->subDays(30)->startOfDay();
                     $currentDate = (new Carbon)->now()->endOfDay();
 
@@ -132,11 +132,11 @@ class FilterController extends Controller
                         }
                     });
 
-                    $disLikes   =   DisLike::whereDisLikerId($auth_id)->whereBetween('updated_at', [$last15thDate, $currentDate])
+                    $disLikes   =   DisLike::whereDisLikerId($auth_id)->whereBetween('updated_at', [$last7thDate, $currentDate])
                         ->whereNotNull('user_id')->distinct()->pluck('user_id')
                         ->toArray();
                     $likes   =   Like::whereLikerId($auth_id)
-                        ->whereBetween('updated_at', [$last15thDate, $currentDate])
+                        ->whereBetween('updated_at', [$last7thDate, $currentDate])
                         ->whereNotNull('user_id')->distinct()->pluck('user_id')
                         ->toArray();
 
