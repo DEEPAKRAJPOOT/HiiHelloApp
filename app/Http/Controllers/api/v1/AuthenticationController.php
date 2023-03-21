@@ -187,39 +187,39 @@ class AuthenticationController extends Controller
                     if (!empty($user->profile_photo) && Storage::exists($user->profile_photo)) {
                         Storage::delete($user->profile_photo);
                     }
-                    $user->is_media_checked = 'n';
-                    $user->profile_photo = $request->file('profile_photo')->store('users/profile_photo');
-                    $user->save();
+                    // $user->is_media_checked = 'n';
+                    // $user->profile_photo = $request->file('profile_photo')->store('users/profile_photo');
+                    // $user->save();
 
                     ///CHECK FOR AWS REKOGNIZTION START
-                    // $image_detection = new ImageDetectionClass($request->file('profile_photo'), $user);
-                    // $awsImgResultArr = $image_detection->checkConstraints();
+                    $image_detection = new ImageDetectionClass($request->file('profile_photo'), $user);
+                    $awsImgResultArr = $image_detection->checkConstraints();
 
-                    // $safe_image = $awsImgResultArr["is_safe_image"];
-                    // $user->profile_photo = null;
-                    // $user->is_media_checked = 'n';
+                    $safe_image = $awsImgResultArr["is_safe_image"];
+                    $user->profile_photo = null;
+                    $user->is_media_checked = 'n';
 
-                    // if ($awsImgResultArr["is_safe_image"]) {
-                    //     $user->profile_photo = $request->file('profile_photo')->store('users/profile_photo');
-                    //     $user->save();
-                    // }
+                    if ($awsImgResultArr["is_safe_image"]) {
+                        $user->profile_photo = $request->file('profile_photo')->store('users/profile_photo');
+                        $user->save();
+                    }
 
-                    // $message = $awsImgResultArr["log_message"];
-                    // $total_face_detected = $awsImgResultArr["total_face_detected"];
-                    // $response_data = $awsImgResultArr["image_moderation_response"];
-                    // $request_data = $awsImgResultArr["image_moderation_request"];
-                    // $endpoint_url = url()->current();
+                    $message = $awsImgResultArr["log_message"];
+                    $total_face_detected = $awsImgResultArr["total_face_detected"];
+                    $response_data = $awsImgResultArr["image_moderation_response"];
+                    $request_data = $awsImgResultArr["image_moderation_request"];
+                    $endpoint_url = url()->current();
 
-                    // ImageModerationLog::Create([
-                    //     'user_id'             => $user->id,
-                    //     'is_approved'         => $awsImgResultArr["is_safe_image"] ? 1  : 0,
-                    //     'request'             => $request_data,
-                    //     'response'            => $response_data,
-                    //     'total_face_detected' => $total_face_detected,
-                    //     'message'             => $message,
-                    //     'image_type'          => "profile_photo",
-                    //     'endpoint_url'        => $endpoint_url,
-                    // ]);
+                    ImageModerationLog::Create([
+                        'user_id'             => $user->id,
+                        'is_approved'         => $awsImgResultArr["is_safe_image"] ? 1  : 0,
+                        'request'             => $request_data,
+                        'response'            => $response_data,
+                        'total_face_detected' => $total_face_detected,
+                        'message'             => $message,
+                        'image_type'          => "profile_photo",
+                        'endpoint_url'        => $endpoint_url,
+                    ]);
                     //CHECK FOR AWS REKOGNIZTION END
                 }
                 // if (!empty($request->profile_photo)) {
