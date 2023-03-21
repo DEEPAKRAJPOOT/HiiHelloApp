@@ -5,10 +5,14 @@ namespace App\Http\Middleware;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+
 class CheckApiUser
 {
     private $version = "v.1.0";
-    public function getVersion(){ return $this->version; }
+    public function getVersion()
+    {
+        return $this->version;
+    }
 
     /**
      * Handle an incoming request.
@@ -21,10 +25,11 @@ class CheckApiUser
     {
         $user = Auth::user();
 
-        if(!empty($user)){
-            if($user->is_active == 'y'){
+        if (!empty($user)) {
+            if ($user->is_active == 'y' && $user->user_status == 'active') {
                 return $next($request);
             }
+
             return response()->json([
                 // 'data'  =>  [
                 //     'max_date'  =>  array(),
@@ -34,10 +39,12 @@ class CheckApiUser
                     'api'       =>  $this->getVersion(),
                     'url'       =>  url()->current(),
                     'language'  =>  app()->getLocale(),
-                    'message'   =>  trans('api.in_active'),
-                    'is_ban'    => true
-                ] ]);
+                    'message'   =>  $user->is_active === 'n' ? trans('api.in_active') : trans('api.self_inactive'),
+                    'is_ban'    => $user->is_active === 'n',
+                    'user_status'    => $user->user_status,
+                ]
+            ]);
         }
-        return response()->json(['msg'=>'Login data not found.', 'status' =>'0']);
+        return response()->json(['msg' => 'Login data not found.', 'status' => '0']);
     }
 }

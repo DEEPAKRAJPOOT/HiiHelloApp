@@ -112,6 +112,13 @@
                         </select>
                     </td>
                     <td>
+                        <select name="status_filter" id="status_filter" class="form-control">
+                            <option value="">Select Status</option>
+                            <option value="active">Active</option>
+                            <option value="inactive">Inactive</option>
+                        </select>
+                    </td>
+                    <td>
                         <input type='button' class="btn btn-primary mr-1 ml-1" id="btn_search_filter" value="Search">
                     </td>
                     <td>
@@ -153,12 +160,14 @@
                     var gender_filter   = $("select[name=gender_filter] :selected").val();
                     var profile_percentage = $("#profile_percentage").val();
                     var city_filter = $("#city_filter").val();
+                    var status_filter = $("#status_filter").val();
                     // EN - Filter Params
                     data.from_date         = from_date;
                     data.to_date           = to_date;
                     data.gender_filter     = gender_filter;
                     data.profile_percentage= profile_percentage;
                     data.city_filter       = city_filter;
+                    data.status_filter     = status_filter;
                     data.state_filter = $('#state_filter').val();
                     data.flgPendingProfile = $(".getpendingprofile").is(':checked') ? 1 : 0;
                }                
@@ -178,6 +187,7 @@
                 { data: 'device_app_version' },
                 { data: 'lat_long' },
                 { data: 'active' },
+                { data: 'user_status' },
                 { data: 'action'},
             ],
             columnDefs: [
@@ -196,8 +206,9 @@
                 { targets: 11, title: 'Device/version', orderable: true },                
                 { targets: 12, title: 'Lat/Long', orderable: false },
                 { targets: 13, title: 'Ban', orderable: false },
+                { targets: 14, title: 'User Status', orderable: false },
                 // Action buttons
-                { targets: 14, title: 'Action',orderable: false },
+                { targets: 15, title: 'Action',orderable: false },
             ],
             order: [
                 [6, 'DESC']

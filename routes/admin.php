@@ -123,6 +123,14 @@ Route::group(['namespace' => 'Admin', 'middleware' => ['check_permit', 'revalida
 	Route::get('transaction/filters', 'TrasactionListController@filters')->name('transaction.filters');
 	Route::resource('transaction-lists', 'TrasactionListController');
 
+	/* Coupon Vendors */
+	Route::get('coupon-vendors/listing', 'CouponVendorController@listing')->name('coupon-vendors.listing');
+	Route::resource('coupon-vendors', 'CouponVendorController');
+
+	/* Coupons */
+	Route::get('coupons/listing', 'CouponController@listing')->name('coupons.listing');
+	Route::resource('coupons', 'CouponController');
+
 	/* App Details */
 	Route::resource('app-details', 'AppDetailController');
 

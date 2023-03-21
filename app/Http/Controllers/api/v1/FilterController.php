@@ -53,7 +53,7 @@ class FilterController extends Controller
                         'language_id',
                         'verify_status',
                         'is_active',
-                        // 'trusted_score',
+                        'trusted_score',
                         DB::raw("3959 * 1.609344 * acos(cos(radians(" . $latitude . ")) 
                                     * cos(radians(users.latitude)) 
                                     * cos(radians(users.longitude) - radians(" . $longitude . ")) 

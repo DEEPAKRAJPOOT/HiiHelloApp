@@ -72,6 +72,7 @@ Route::get('location/user-not-location-csv-download', 'Admin\LocationController@
   Route::get('terms-and-conditions/{device?}', 'FrontendPagesController@terms')->name('terms');
   Route::get('privacy-policy/{device?}', 'FrontendPagesController@privacy')->name('privacy.policy');
   Route::get('community-and-safety/{device?}', 'FrontendPagesController@communityAndSafety')->name('community.safety');
+  Route::get('safety-tips/{device?}', 'FrontendPagesController@safetyTips')->name('safety.tips');
     
 Route::get('/{device?}','FrontendPagesController@index')->name('home');
 

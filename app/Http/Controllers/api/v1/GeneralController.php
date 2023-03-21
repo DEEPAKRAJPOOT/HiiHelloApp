@@ -86,8 +86,11 @@ class GeneralController extends Controller
                 'community_safety'     =>  [
                     'en'    =>  route('community.safety', ['device' => 'mobile']),
                 ],
+                'safety_tips'     =>  [
+                    'en'    =>  route('safety.tips', ['device' => 'mobile']),
+                ],
             ],
-            'verification_details'  =>  $verification_data,
+            'verification_details'  =>  $verification_data
         ];
         $this->status = Response::HTTP_OK;
         $this->response['meta']['message'] = trans('api.list', ['entity' => __('App details')]);

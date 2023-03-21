@@ -19,15 +19,15 @@ class Controller extends BaseController
 
     //add for api
     public $response = [
-                'data'  =>  null,
-                'meta'  =>  [
-                    'url'   =>  "",
-                    'api'   =>  "",
-                    'message'   =>  "",
-                    'is_subscribed' =>  false,
-                    'subscription_end_date' =>  "",
-                ],
-            ];
+        'data'  =>  null,
+        'meta'  =>  [
+            'url'   =>  "",
+            'api'   =>  "",
+            'message'   =>  "",
+            'is_subscribed' =>  false,
+            'subscription_end_date' =>  "",
+        ],
+    ];
 
     // protected $response = array('data' => null, 'message' => '');
     // protected $status = 422;
@@ -80,57 +80,60 @@ class Controller extends BaseController
         Validator::make($fields, $rules)->validate();
     }
 
-    public function getLangCodeFromField($field){
+    public function getLangCodeFromField($field)
+    {
         $lang_code = 'en';
-        if (str_contains($field, '_')) { 
+        if (str_contains($field, '_')) {
             $position = strpos($field, '_');
-            $lang_code = substr($field,0,$position);
+            $lang_code = substr($field, 0, $position);
         }
         return $lang_code;
     }
 
-    public function getColumnNameFromField($field){
+    public function getColumnNameFromField($field)
+    {
         $column = '';
-        if (str_contains($field, '_')) { 
+        if (str_contains($field, '_')) {
             $position = strpos($field, '_') + 1;
-            $column = substr($field,$position);
+            $column = substr($field, $position);
         }
         return $column;
     }
 
-    public function getLangStoreData($request){
+    public function getLangStoreData($request)
+    {
         $actual_data = $data = $lang_codes = $columns = [];
         $default_lang_code = config('utility.default_lang_code');
-        $language_alloweds = ['en', 'hi', 'ta', 'mr', 'bn', 'gu', 'kn', 'ml', 'or', 'pa', 'te','as'];
+        $language_alloweds = ['en', 'hi', 'ta', 'mr', 'bn', 'gu', 'kn', 'ml', 'or', 'pa', 'te', 'as'];
 
-        foreach($request->all() as $key => $req_data){
-            if($req_data){
+        foreach ($request->all() as $key => $req_data) {
+            if ($req_data) {
                 $lang_code = $this->getLangCodeFromField($key);
 
-                if(!in_array($lang_code,$lang_codes)){
+                if (!in_array($lang_code, $lang_codes)) {
                     array_push($lang_codes, $lang_code);
                 }
                 $column = $this->getColumnNameFromField($key);
 
-                if($column){
-                    if(!in_array($column,$columns)){
+                if ($column) {
+                    if (!in_array($column, $columns)) {
                         array_push($columns, $column);
                     }
-                    $data[$lang_code][$column] = $req_data; 
+                    $data[$lang_code][$column] = $req_data;
                 }
             }
         }
 
-        if(count($data) > 0){
-            foreach($language_alloweds as $language_allowed){
-                foreach($columns as $column){
-                    if(array_key_exists($language_allowed,$data)){
-                        if(array_key_exists($column,$data[$language_allowed])){
+        if (count($data) > 0) {
+            foreach ($language_alloweds as $language_allowed) {
+                foreach ($columns as $column) {
+                    if (array_key_exists($language_allowed, $data)) {
+                        if (array_key_exists($column, $data[$language_allowed])) {
                             $actual_data[$language_allowed][$column] = $data[$language_allowed][$column];
-                        }else{
+                        } else {
                             $actual_data[$language_allowed][$column] = NULL;
                         }
-                    }else{
+                    } else {
                         $actual_data[$language_allowed] = $data[$default_lang_code];
                     }
                 }
@@ -191,12 +194,12 @@ class Controller extends BaseController
     public function apiValidator($fields, $rules, $version = "v.0.0", $message = array())
     {
         $validator = Validator::make($fields, $rules, $message);
-        if($validator->fails()){
+        if ($validator->fails()) {
             $errors = $validator->errors();
             $r_message  = '';
-            $i=1;
-            foreach($errors->messages() as $key => $message){
-                if($i==1){
+            $i = 1;
+            foreach ($errors->messages() as $key => $message) {
+                if ($i == 1) {
                     $r_message = $message[0];
                 } else {
                     break;
@@ -206,10 +209,10 @@ class Controller extends BaseController
 
             $is_subscribed = false;
             $subscription_end_date = "";
-            if( !Auth::guest() ) {
-                if( Auth::user()->is_subscribed == 'y' && Auth::user()->subscription_end_date >= \Carbon\Carbon::today()->format('Y-m-d') ){
+            if (!Auth::guest()) {
+                if (Auth::user()->is_subscribed == 'y' && Auth::user()->subscription_end_date >= \Carbon\Carbon::today()->format('Y-m-d')) {
                     $is_subscribed = true;
-                } elseif (Auth::user()->gender == 'Female'){
+                } elseif (Auth::user()->gender == 'Female') {
                     $is_subscribed = true;
                 }
                 $subscription_end_date = Auth::user()->subscription_end_date;
@@ -240,10 +243,11 @@ class Controller extends BaseController
     {
         $is_subscribed = false;
         $subscription_end_date = "";
-        if( !Auth::guest() ) {
-            if( Auth::user()->is_subscribed == 'y' && Auth::user()->subscription_end_date >= \Carbon\Carbon::today()->format('Y-m-d') ){
+        if (!Auth::guest()) {
+            $this->response['meta']['user_status'] = Auth::user()->user_status;
+            if (Auth::user()->is_subscribed == 'y' && Auth::user()->subscription_end_date >= \Carbon\Carbon::today()->format('Y-m-d')) {
                 $is_subscribed = true;
-            } elseif (Auth::user()->gender == 'Female'){
+            } elseif (Auth::user()->gender == 'Female') {
                 $is_subscribed = true;
             }
             $subscription_end_date = Auth::user()->subscription_end_date;
@@ -257,15 +261,29 @@ class Controller extends BaseController
     }
 
     // Store Error Log
-    public function storeErrorLog($error,$filename = 'laravel',$message = null)
+    public function storeErrorLog($error, $filename = 'laravel', $message = null)
     {
-        if(empty($message)){ $message = trans('api.went_wrong'); }
+        if (empty($message)) {
+            $message = trans('api.went_wrong');
+        }
         $this->response['meta']['message'] = $message;
 
         // Add error log
         $iqTrackingLog = new Logger($filename);
         $iqTrackingLog->pushHandler(new StreamHandler(storage_path('logs/' . $filename . '.log')), Logger::ERROR);
         $iqTrackingLog->error($filename, ['error' => $error->getMessage()]);
+    }
+
+    // Custom Logs
+    public function customLogger($data, $filename = 'laravel')
+    {
+        if (empty($data)) {
+            $data = trans('api.went_wrong');
+        }
+        // Add error log
+        $iqTrackingLog = new Logger($filename);
+        $iqTrackingLog->pushHandler(new StreamHandler(storage_path('logs/' . $filename . '.log')), Logger::INFO);
+        $iqTrackingLog->info(json_encode($data));
     }
 
     public function validateCheckSum($checksum, $contact)
@@ -277,11 +295,11 @@ class Controller extends BaseController
         ];
         try {
             $details = $this->decodeCheckSum($checksum)->details;
-            if( !empty($details) ) {
+            if (!empty($details)) {
                 $details = json_decode($details);
-                if( !empty($details->contact_no) && !empty($details->time) ) {
+                if (!empty($details->contact_no) && !empty($details->time)) {
                     $requestTime = \Carbon\Carbon::parse($details->time);
-                    if( $contact == $details->contact_no && $requestTime->addMinutes(config('utility.checksum.timelimit')) >= \Carbon\Carbon::now() ) {
+                    if ($contact == $details->contact_no && $requestTime->addMinutes(config('utility.checksum.timelimit')) >= \Carbon\Carbon::now()) {
                         $data = [
                             'validate'  =>  true,
                             'contact'   =>  $contact,
@@ -312,10 +330,13 @@ class Controller extends BaseController
         $pData = json_decode(base64_decode($checksum));
 
         $details = NULL;
-        if( !empty($pData) ) {
+        if (!empty($pData)) {
             $details = openssl_decrypt(
-                $pData->value, $algorithm, $key,
-                0, base64_decode($pData->iv)
+                $pData->value,
+                $algorithm,
+                $key,
+                0,
+                base64_decode($pData->iv)
             );
         }
         return (object) [

@@ -440,6 +440,7 @@ class UsersController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
+
     public function update(UserRequest $request, User $user)
     {
 
@@ -450,6 +451,17 @@ class UsersController extends Controller
                 $content = ['status' => 204, 'message' => "something went wrong"];
                 if ($user) {
                     $user->is_active = $request->value;
+                    if ($user->save()) {
+                        DB::commit();
+                        $content['status'] = 200;
+                        $content['message'] = "Status updated successfully.";
+                    }
+                }
+                return response()->json($content);
+            }elseif (!empty($request->action) && $request->action == 'change_user_status') {
+                $content = ['status' => 204, 'message' => "something went wrong"];
+                if ($user) {
+                    $user->user_status = ($request->value == 'y' ? 'active' : 'inactive');
                     if ($user->save()) {
                         DB::commit();
                         $content['status'] = 200;
@@ -1012,6 +1024,7 @@ class UsersController extends Controller
         $from_date         = ($request->from_date) ? $request->from_date . " 00:00:00" : "";
         $to_date           = ($request->to_date) ? $request->to_date . " 23:59:59" : "";
         $gender_filter     = ($request->gender_filter) ? $request->gender_filter : "";
+        $status_filter     = ($request->status_filter) ? $request->status_filter : "";
         $profile_percentage = ($request->profile_percentage) ? $request->profile_percentage : "";
         // $city_filter       = ($request->city_filter) ? $request->city_filter : "";
 
@@ -1050,6 +1063,9 @@ class UsersController extends Controller
         }
         if ($gender_filter != "") {
             $users = $users->where('gender', $gender_filter);
+        }
+        if ($status_filter != "") {
+            $users = $users->where('user_status',$status_filter);
         }
         if ($profile_percentage != "") {
             $users = $users->where('profile_percentage', $profile_percentage);
@@ -1146,6 +1162,10 @@ class UsersController extends Controller
                     'active' => view('admin.layouts.includes.switch', compact('params'))->render(),
                     'action' => view('admin.layouts.includes.actions')->with(['custom_title' => 'User', 'id' => $user->custom_id], $user)->render(),
                     'checkbox' => view('admin.layouts.includes.checkbox', compact('params'))->with('id', $user->custom_id)->render(),
+                    'user_status' => view('admin.layouts.includes.switch',['params'=>array_merge($params,[
+                        'checked'=>($user->user_status == 'active' ? 'checked' : ''),
+                        'custom_action'=>'change_user_status',
+                    ])])->render(),
                 ];
             } else {
 
@@ -1167,6 +1187,10 @@ class UsersController extends Controller
                     'active' => view('admin.layouts.includes.switch', compact('params'))->render(),
                     'action' => view('admin.layouts.includes.actions')->with(['custom_title' => 'User', 'id' => $user->custom_id], $user)->render(),
                     'checkbox' => view('admin.layouts.includes.checkbox', compact('params'))->with('id', $user->custom_id)->render(),
+                    'user_status' => view('admin.layouts.includes.switch',['params'=>array_merge($params,[
+                        'checked'=>($user->user_status == 'active' ? 'checked' : ''),
+                        'custom_action'=>'change_user_status',
+                    ])])->render(),
                 ];
             }
         }

@@ -52,5 +52,12 @@ class FrontendPagesController extends Controller
         $page = CmsPage::with('cmsPageTranslations')->whereSlug('community-and-safety')->firstOrFail();
         return view('frontend.pages.cms-page', compact('page','footer_text','device'))->withTitle($page->getTitle());
     }
+
+    public function safetyTips($device = false){
+        $setting = Setting::select('value')->whereConstant('footer_text')->firstOrFail();
+        $footer_text = $setting->value;
+        $page = CmsPage::with('cmsPageTranslations')->whereSlug('safety-tips')->firstOrFail();
+        return view('frontend.pages.cms-page',compact('page','footer_text','device'))->withTitle($page->getTitle());
+    }
     
 }

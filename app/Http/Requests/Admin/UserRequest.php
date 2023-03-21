@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Admin;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Route;
 use App\Models\Location;
 use App\Models\Language;
@@ -28,7 +29,10 @@ class UserRequest extends FormRequest
      */
     public function rules()
     {
-        $unless = "change_status";
+        $unless_actions = [
+            'change_status',
+            'change_user_status'
+        ];
         $id = (!empty(Route::current()->parameters()['user']->id) ? Route::current()->parameters()['user']->id : NULL);
         $min_birth_date = now()->subYears(config('utility.minimum_age'))->format('m/d/Y');
 
@@ -39,16 +43,44 @@ class UserRequest extends FormRequest
 
         return [
             // Sort Profile
-            'full_name'                 =>  'required_unless:action,'.$unless.'|min:4|max:100',
+            'full_name'                 =>  [
+                Rule::requiredIf(!in_array($this->action,$unless_actions)),
+                'min:4',
+                'max:100'
+            ],
             'email'                     =>  'nullable|max:150|unique:users,email,'.$id.',id,deleted_at,NULL',
-            /*'country_code'              =>  'required_unless:action,'.$unless.'|in:'.implode(',', $phone_codes),
-            'contact_no'                =>  'required_unless:action,'.$unless.'|digits_between:6,16|unique:users,contact_no,'.$id.',id,deleted_at,NULL',*/
-            'birth_date'                =>  'required_unless:action,'.$unless.'|date|before:'.$min_birth_date,
-            'gender'                    =>  'required_unless:action,'.$unless.'|in:'.implode(',', ['Male','Female']),
-            'interest'                  =>  'required_unless:action,'.$unless.'|in:'.implode(',', ['Male','Female', 'Both']),
-            // 'location'                  =>  'required_unless:action,'.$unless.'|in:'.implode(',', $location_ids),
+            /*'country_code'              => [
+                Rule::requiredIf(!in_array($this->action,$unless_actions)),
+                Rule::in($phone_codes)
+            ],
+            'contact_no'                => [
+                Rule::requiredIf(!in_array($this->action,$unless_actions)),
+                'digits_between:6,16',
+                'unique:users,contact_no,'.$id.',id,deleted_at,NULL'
+
+            ],*/
+            'birth_date'                =>  [
+                Rule::requiredIf(!in_array($this->action,$unless_actions)),
+                'date',
+                'before:'.$min_birth_date
+            ],
+            'gender'                    =>  [
+                Rule::requiredIf(!in_array($this->action,$unless_actions)),
+                Rule::in(['Male','Female'])
+            ],
+            'interest'                    =>  [
+                Rule::requiredIf(!in_array($this->action,$unless_actions)),
+                Rule::in(['Male','Female','Both'])
+            ],
+            /*'location'                  => [
+                Rule::requiredIf(!in_array($this->action,$unless_actions)),
+                Rule::in($location_ids)
+            ],*/
             'location'                  =>  'nullable',
-            'language'                  =>  'required_unless:action,'.$unless.'|in:'.implode(',', $language_ids),
+            'language'                  =>  [
+                Rule::requiredIf(!in_array($this->action,$unless_actions)),
+                Rule::in($language_ids)
+            ],
             'profile_photo'             =>  'nullable|mimes:jpg,jpeg,png',
 
             // Full Profile

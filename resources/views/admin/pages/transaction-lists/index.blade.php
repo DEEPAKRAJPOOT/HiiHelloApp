@@ -82,6 +82,29 @@
               </div>
            </div>
         </div>
+        <div class="col-lg-3">
+            <div class="card card-custom rounded-xl gutter-b bg-dark card-stretch">
+               <div class="d-flex align-items-center mr-2">
+                  <div class="symbol-label px-6 py-8 rounded-xl mr-7">
+                     <span class="svg-icon svg-icon-4x svg-icon-white d-block my-2">
+                        <!--begin::Svg Icon | path:/metronic/theme/html/demo1/dist/assets/media/svg/icons/Communication/Group.svg-->
+                        <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="24px" height="24px" viewBox="0 0 24 24" version="1.1">
+                             <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+                                 <rect x="0" y="0" width="24" height="24"/>
+                                 <path d="M2,6 L21,6 C21.5522847,6 22,6.44771525 22,7 L22,17 C22,17.5522847 21.5522847,18 21,18 L2,18 C1.44771525,18 1,17.5522847 1,17 L1,7 C1,6.44771525 1.44771525,6 2,6 Z M11.5,16 C13.709139,16 15.5,14.209139 15.5,12 C15.5,9.790861 13.709139,8 11.5,8 C9.290861,8 7.5,9.790861 7.5,12 C7.5,14.209139 9.290861,16 11.5,16 Z" fill="#000000" opacity="0.3" transform="translate(11.500000, 12.000000) rotate(-345.000000) translate(-11.500000, -12.000000) "/>
+                                 <path d="M2,6 L21,6 C21.5522847,6 22,6.44771525 22,7 L22,17 C22,17.5522847 21.5522847,18 21,18 L2,18 C1.44771525,18 1,17.5522847 1,17 L1,7 C1,6.44771525 1.44771525,6 2,6 Z M11.5,16 C13.709139,16 15.5,14.209139 15.5,12 C15.5,9.790861 13.709139,8 11.5,8 C9.290861,8 7.5,9.790861 7.5,12 C7.5,14.209139 9.290861,16 11.5,16 Z M11.5,14 C12.6045695,14 13.5,13.1045695 13.5,12 C13.5,10.8954305 12.6045695,10 11.5,10 C10.3954305,10 9.5,10.8954305 9.5,12 C9.5,13.1045695 10.3954305,14 11.5,14 Z" fill="#000000"/>
+                             </g>
+                         </svg>
+                        <!--end::Svg Icon-->
+                     </span>
+                     <span class="font-size-h6 text-muted font-weight-bold">Coupon</span>
+                  </div>
+                  <div>
+                     <div class="font-size-h1 text-white font-weight-bolder" id="total_coupon"></div>
+                  </div>
+               </div>
+            </div>
+         </div>
 
         <div class="col-lg-3"></div>
 
@@ -140,8 +163,7 @@
                         Add {{ $custom_title }}
                     </a>
                 @endif --}}
-                <a href="{{ route('admin.transactions.csv-download') }}"
-                class="btn btn-sm btn-primary font-weight-bolder text-uppercase ml-2">
+                <a id="transactions-csv-button" href="javascript:void(0)" class="btn btn-sm btn-primary font-weight-bolder text-uppercase ml-2">
                 <i class="fas fa-arrow-down"></i>
                 Download CSV
             </a>
@@ -171,6 +193,16 @@
                            <option value="Google Play">Google Play</option>
                            <option value="UPI">UPI</option>
                            <option value="IOS">IOS</option>
+                           <option value="COUPON">Coupon</option>
+                       </select>
+                    </td>
+
+                    <td id="search_vendor_container" class="d-none">
+                       <select class="form-control" name="search_vendor" id="search_vendor">
+                           <option value="">-- Select Vendor --</option>
+                           @foreach ($coupon_vendors as $coupon_vendor)
+                               <option value="{{ $coupon_vendor->id }}">{{ $coupon_vendor->name }}</option>
+                           @endforeach
                        </select>
                     </td>
 
@@ -221,14 +253,16 @@
                     var from_date       = $("#search_fromdate").val();
                     var to_date         = $("#search_todate").val();  
                     var search_status   = $("#search_status").val();  
-                    var search_plan     = $("#search_plan").val();  
+                    var search_plan     = $("#search_plan").val();
+                    var search_vendor   = $("#search_vendor").val();
                         
                     // EN - Filter Params
 
                     data.from_date         = from_date;
                     data.to_date           = to_date;                    
                     data.search_status     = search_status; 
-                    data.search_plan       = search_plan;                    
+                    data.search_plan       = search_plan;
+                    data.search_vendor     = search_vendor;
                     //data.flgPendingProfile = $(".getpendingprofile").is(':checked') ? 1 : 0;
                 },           
             },
@@ -240,7 +274,12 @@
                 { data: 'amount' },
                 { data: 'purchase_date' },
                 { data: 'subscription_end_date' },
+                { data: 'coupon_name' },
                 { data: 'payment_type' },
+                { data: 'state' },
+                { data: 'city' },
+                { data: 'email' },
+                { data: 'phone' },
                 { data: 'action', responsivePriority: -1 },
             ],
             columnDefs: [
@@ -252,7 +291,12 @@
                 { targets: 4, title: 'Amount', orderable: true },
                 { targets: 5, title: 'Start Date', orderable: true },
                 { targets: 6, title: 'End Date', orderable: true },
-                { targets: 7, title: 'Mode', orderable: true },
+                { targets: 7, title: 'Coupon', orderable: true },
+                { targets: 8, title: 'Mode', orderable: true },
+                { targets: 9, title: 'State', orderable: false },
+                { targets: 10, title: 'City', orderable: false },
+                { targets: 11, title: 'E-mail', orderable: false },
+                { targets: 12, title: 'Phone', orderable: false },
                 // Action buttons
                 { targets: -1, title: 'Action',
                 orderable: false },
@@ -274,9 +318,42 @@
     });
 
     $(document).on("click", "#btn_reset_filter", function () {
-        $("#search_fromdate,#search_todate,#search_status,#search_plan").val('');
+        $("#search_fromdate,#search_todate,#search_status,#search_plan,#search_vendor").val('');
         oTable.draw();
     });
+
+    $('#search_status').change(function(){
+        $('#search_vendor_container').toggleClass('d-none',!$(this).val() || ($(this).val() != 'COUPON'));
+    });
+    var base_transactions_csv_url = '{{ route("admin.transactions.csv-download") }}';
+    $('#transactions-csv-button').attr('href',base_transactions_csv_url);
+    $('#search_fromdate,#search_todate,#search_status,#search_plan,#search_vendor,#subscription_pan_table_filter input').change(function(){
+        var transactions_csv_url = base_transactions_csv_url;
+        var values = [];
+        if($('#search_fromdate').val() && $('#search_fromdate').val() != ''){
+            values.push('from_date='+$('#search_fromdate').val());
+        }
+        if($('#search_todate').val() && $('#search_todate').val() != ''){
+            values.push('to_date='+$('#search_todate').val());
+        }
+        if($('#search_status').val() && $('#search_status').val() != ''){
+            values.push('search_status='+$('#search_status').val());
+        }
+        if($('#search_plan').val() && $('#search_plan').val() != ''){
+            values.push('search_plan='+$('#search_plan').val());
+        }
+        if($('#search_vendor').val() && $('#search_vendor').val() != ''){
+            values.push('search_vendor='+$('#search_vendor').val());
+        }
+        if($('#subscription_pan_table_filter input').val() && $('#subscription_pan_table_filter input').val() != ''){
+            values.push('search_keyword='+$('#subscription_pan_table_filter input').val());
+        }
+        if(values.length > 0){
+            transactions_csv_url += '?'+values.join('&');
+        }
+        $('#transactions-csv-button').attr('href',transactions_csv_url);
+    });
+
 </script>
 
 <script type="text/javascript">
@@ -296,6 +373,7 @@
                     $("#total_upi").html("<p style='font-size: 18px;'>processing..</p>");
                     $("#total_android").html("<p style='font-size: 18px;'>processing..</p>");
                     $("#total_ios").html("<p style='font-size: 18px;'>processing..</p>");
+                    $("#total_coupon").html("<p style='font-size: 18px;'>processing..</p>");
                     $(".planCountTotal").html("<p style='font-size: 18px;'>processing..</p>");
                 },
                 complete: function(){
@@ -311,6 +389,7 @@
                         $("#total_upi").html(result.total_upi);
                         $("#total_android").html(result.total_android);
                         $("#total_ios").html(result.total_ios); 
+                        $("#total_coupon").html(result.total_coupon); 
                         //$("#planCountTotal_").html(result.total_ios);
 
                         console.log(result.plan);

@@ -158,6 +158,7 @@ class ProfileController extends Controller
                     ->additional(['meta'  => [
                         'message'       =>  trans('api.profile_setuped'),
                         'is_ban'        =>  false,
+                        'user_status'  =>  $user->user_status
                     ]]);
             } catch (ModelNotFoundException $exception) {
                 switch ($exception->getModel()) {

@@ -50,6 +50,7 @@ return [
     /* Login Messages */
     'login_fail' => 'These credentials do not match our records',
     'in_active' => 'You are blocked. please contact administrative',
+    'self_inactive' => 'Please activate you account',
     'account_deleted' => 'Your account has been deleted by administrator',
     'not_registered' => 'You are not registered with us',
     'login' => 'You are succesfully login to your account',
@@ -236,4 +237,10 @@ return [
             'birthday'    =>  "Hi :entity We wish you Happy Bday from the entire Hi Hello community. Have a fun filled day and awesome year ahead.",
         ],
     ],   
+    'coupon' => [
+        'expired' => 'Expired Coupon',
+        'used' => "Coupon already used",
+        'invalid' => "Invalid Coupon",
+        'already_subscribed' => "Already Subscribed!"
+    ]
 ];

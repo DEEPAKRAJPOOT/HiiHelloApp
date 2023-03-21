@@ -285,6 +285,56 @@ Breadcrumbs::register('dashboard', function ($breadcrumbs) {
 		$breadcrumbs->push('Subscription View', route('admin.subscription-lists.show', $id));
 	});
 
+	// Coupons ------------------------------------------------------------------
+	Breadcrumbs::register('coupons_list', function($breadcrumbs)
+	{
+		$breadcrumbs->parent('dashboard');
+	    $breadcrumbs->push('Coupons', route(Auth::getDefaultDriver().'.coupons.index'));
+	});
+
+	Breadcrumbs::register('coupon_view', function($breadcrumbs,$id)
+	{
+		$breadcrumbs->parent('coupons_list');
+		$breadcrumbs->push('Coupon Details', route('admin.coupons.show', $id));
+	});
+
+	Breadcrumbs::register('coupon_create', function($breadcrumbs)
+	{
+		$breadcrumbs->parent('coupons_list');
+	    $breadcrumbs->push('Add New Coupon', route(Auth::getDefaultDriver().'.coupons.create'));
+	});
+
+	Breadcrumbs::register('coupon_update', function($breadcrumbs, $id)
+	{
+		$breadcrumbs->parent('coupons_list');
+	    $breadcrumbs->push('Edit Coupon', route(Auth::getDefaultDriver().'.coupons.edit', $id));
+	});
+
+	// Coupon Vendors------------------------------------------------------------------
+	Breadcrumbs::register('coupon_vendors_list', function($breadcrumbs)
+	{
+		$breadcrumbs->parent('dashboard');
+	    $breadcrumbs->push('Coupon Vendors', route(Auth::getDefaultDriver().'.coupon-vendors.index'));
+	});
+
+	Breadcrumbs::register('coupon_vendor_view', function($breadcrumbs,$id)
+	{
+		$breadcrumbs->parent('coupon_vendors_list');
+		$breadcrumbs->push('Vendor Details', route('admin.coupon-vendors.show', $id));
+	});
+
+	Breadcrumbs::register('coupon_vendor_create', function($breadcrumbs)
+	{
+		$breadcrumbs->parent('coupon_vendors_list');
+	    $breadcrumbs->push('Add New Coupon Vendor', route(Auth::getDefaultDriver().'.coupon-vendors.create'));
+	});
+
+	Breadcrumbs::register('coupon_vendor_update', function($breadcrumbs, $id)
+	{
+		$breadcrumbs->parent('coupon_vendors_list');
+	    $breadcrumbs->push('Edit Coupon Vendor', route(Auth::getDefaultDriver().'.coupon-vendors.edit', $id));
+	});
+
 	// Call Logs ------------------------------------------------------------------
 	Breadcrumbs::register('call_log_list', function($breadcrumbs)
 	{

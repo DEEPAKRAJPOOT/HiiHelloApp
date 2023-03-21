@@ -30,6 +30,7 @@ class SubscriptionResource extends JsonResource
                                 : "",
             'android_product'       =>  $this->subscriptionPlan ? $this->subscriptionPlan->android_product : "",
             'ios_product'           =>  $this->subscriptionPlan ? $this->subscriptionPlan->ios_product : "",
+            'coupon_used' => $this->coupon_id ? true : false
         ];
     }
 

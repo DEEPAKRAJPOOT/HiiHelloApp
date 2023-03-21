@@ -4,7 +4,8 @@
         <div class="d-flex align-item-center w-60px">
             <span class="switch switch-outline switch-icon switch-success switch-sm">
                 <label>
-                    <input type="checkbox" class="toggleSwitch" {{ $params["checked"] }} data-id="{{ $params['id'] }}" data-url="{{ route($routeName.'.update', $params['id']) }}" />
+                    <input type="checkbox" class="toggleSwitch" {{ $params["checked"] }} data-id="{{ $params['id'] }}" data-url="{{ route($routeName.'.update', $params['id']) }}"
+                    @if(!empty($params['custom_action'])) data-getaction="{{ $params['custom_action'] }}" @endif/>
                     <span></span>
                 </label>
             </span>

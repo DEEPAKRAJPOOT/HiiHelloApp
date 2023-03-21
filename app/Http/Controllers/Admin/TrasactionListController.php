@@ -3,8 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Transaction;
-use App\Models\SubscriptionPlan;
+use App\Models\{SubscriptionPlan,CouponVendor,Transaction};
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
@@ -20,9 +19,10 @@ class TrasactionListController extends Controller
     public function index()
     {
         $SubscriptionPlans = SubscriptionPlan::all();
+        $coupon_vendors = CouponVendor::orderBy('name','asc')->get();
         // echo "<pre>"; print_r($SubscriptionPlans->toArray()); exit();
 
-        return view('admin.pages.transaction-lists.index')->with(['custom_title' => 'Transactions', 'subscription_plans' => $SubscriptionPlans]);
+        return view('admin.pages.transaction-lists.index')->with(['custom_title' => 'Transactions', 'subscription_plans' => $SubscriptionPlans,'coupon_vendors'=>$coupon_vendors]);
     }
 
     /**
@@ -46,6 +46,7 @@ class TrasactionListController extends Controller
         $to_date           = ($request->to_date) ? $request->to_date." 23:59:59" : "";
         $search_status     = ($request->search_status) ? $request->search_status : "";
         $search_plan       = ($request->search_plan) ? $request->search_plan : "";
+        $search_vendor     = ($request->search_vendor) ? $request->search_vendor : "";
 
 
         $records = [];
@@ -58,9 +59,15 @@ class TrasactionListController extends Controller
                     ->orWhere('razorpay_order_id', 'like', "%{$search}%")
                     ->orWhereHas('user', function ($query) use ($search) {
                         $query->where('account_id', 'like', "%{$search}%");
+                        $query->orWhere('email', 'like', "%{$search}%");
+                        $query->orWhere('contact_no', 'like', "%{$search}%");
                     })
                     ->orWhereHas('user.userTranslations', function ($query) use ($search) {
                         $query->where('full_name', 'like', "%{$search}%");
+                    })
+                    ->orWhereHas('user.location.locationTranslations', function ($query) use ($search) {
+                        $query->where('name', 'like', "%{$search}%");
+                        $query->orWhere('state', 'like', "%{$search}%");
                     })
                     ->orWhereHas('subscriptionPlan.subscriptionPlanTranslations', function ($query) use ($search) {
                         $query->where('name', 'like', "%{$search}%");
@@ -75,6 +82,9 @@ class TrasactionListController extends Controller
 
         if($request->search_status != '') {
             $transactions = $transactions->where('transactions.payment_type',$request->search_status);
+            if($request->search_status == 'COUPON' && $request->search_vendor != '') {
+                $transactions = $transactions->where('transactions.coupon_vendor_id',$request->search_vendor);
+            }
         }
 
         if($request->search_plan != '') {
@@ -101,9 +111,14 @@ class TrasactionListController extends Controller
                 'razorpay_order_id' => $transaction->razorpay_order_id,
                 'amount' => $transaction->amount,
                 'status' => $transaction->status,
+                'coupon_name' => $transaction->coupon_name,
                 'payment_type' => isset($transaction->payment_type) && !empty($transaction->payment_type) ? $transaction->payment_type : "N/A",
                 'purchase_date' => isset($transaction->purchase_date) && !empty($transaction->purchase_date) ? date("d-m-Y",strtotime($transaction->purchase_date)) : "N/A",
                 'subscription_end_date' => isset($transaction->subscription_end_date) && !empty($transaction->subscription_end_date) ? date("d-m-Y",strtotime($transaction->subscription_end_date)) : "N/A",
+                'state' => !empty($transaction->user->location->locationTransDefault) ? ($transaction->user->location->locationTransDefault->state ?? 'N/A') :  'N/A',
+                'city' => !empty($transaction->user->location->locationTransDefault) ? ($transaction->user->location->locationTransDefault->name ?? 'N/A') :  'N/A',
+                'email' =>  $transaction->user ? ($transaction->user->email ?? 'N/A') :  'N/A',
+                'phone' =>  $transaction->user ? ($transaction->user->contact_no ?? 'N/A') :  'N/A',
                 'action' => view('admin.layouts.includes.actions')->with(['custom_title' => 'Subscriptions', 'id' => $transaction->custom_id], $transaction)->render(),
 
             ];
@@ -117,10 +132,12 @@ class TrasactionListController extends Controller
         $google_play = 'Google Play';
         $upi = 'UPI';
         $IOS = 'IOS';
+        $coupon = 'COUPON';
 
         $total_google_play = Transaction::where("payment_type","LIKE","%{$google_play}%")->count();
         $total_upi = Transaction::where("payment_type","LIKE","%{$upi}%")->count();
         $total_ios = Transaction::where("payment_type","LIKE","%{$IOS}%")->count();
+        $total_coupon = Transaction::where("payment_type","LIKE","%{$coupon}%")->count();
 
         $SubscriptionPlans = SubscriptionPlan::all();
 
@@ -136,6 +153,7 @@ class TrasactionListController extends Controller
         $records['total_google_play'] = number_format($total_google_play);
         $records['total_upi'] = number_format($total_upi);
         $records['total_ios'] = number_format($total_ios);
+        $records['total_coupon'] = number_format($total_coupon);
 
         return $records;
 
@@ -143,63 +161,107 @@ class TrasactionListController extends Controller
 
     public function csvDownload(Request $request)
     {
+        $from_date         = ($request->from_date) ? $request->from_date : '';
+        $to_date           = ($request->to_date) ? now()->create($request->to_date)->addDay()->format('Y-m-d') : '';
+        $search_status     = ($request->search_status) ? $request->search_status : '';
+        $search_plan       = ($request->search_plan) ? $request->search_plan : '';
+        $search_vendor     = ($request->search_vendor) ? $request->search_vendor : '';
+        $search_keyword     = ($request->search_keyword) ? $request->search_keyword : '';
+
         $down_file_name = 'Transactions';
-        $transactions = Transaction::with(['subscriptionPlan', 'user', 'user.userTransDefault', 'subscriptionPlan.subscriptionPlanTranslation'])->get();
+        $transactions = Transaction::with(['subscriptionPlan', 'user', 'user.userTransDefault', 'subscriptionPlan.subscriptionPlanTranslation']);
+
+        if ($search_keyword != ''){
+            $transactions->where(function($query)use($search_keyword,$transactions){
+                $query->where('amount','like',"%{$search_keyword}%")
+                    ->orWhere('payment_type','like',"%{$search_keyword}%")
+                    ->orWhere('razorpay_order_id','like',"%{$search_keyword}%")
+                    ->orWhereHas('user',function($query)use($search_keyword){
+                        $query->where('account_id','like',"%{$search_keyword}%");
+                    })
+                    ->orWhereHas('user.userTranslations',function($query)use($search_keyword){
+                        $query->where('full_name','like',"%{$search_keyword}%");
+                    })
+                    ->orWhereHas('subscriptionPlan.subscriptionPlanTranslations',function($query)use($search_keyword){
+                        $query->where('name','like',"%{$search_keyword}%");
+                    });
+            });
+        }
+        if(empty($from_date) && empty($to_date)){
+            $transactions = $transactions->where('transactions.purchase_date','>=',now()->subMonth());
+        }else{
+            if($from_date != ''){
+                $transactions = $transactions->where('transactions.purchase_date','>=',$from_date);
+            }
+            if($to_date != ''){
+                $transactions = $transactions->where('transactions.purchase_date','<',$to_date);
+            }
+        }
+        if($search_status != ''){
+            $transactions = $transactions->where('transactions.payment_type',$search_status);
+            if($search_status == 'COUPON' && $search_vendor != '') {
+                $transactions = $transactions->where('transactions.coupon_vendor_id',$search_vendor);
+            }
+        }
+        if($search_plan != '') {
+            $transactions = $transactions->where('transactions.plan_id',$search_plan);
+        }
+
+        $transactions = $transactions->get();
         if (!$transactions->isEmpty()) {
-            
             foreach ($transactions as $transaction) {
                 $data[] = [
-                    'Account Id'                =>  $transaction->user ? ($transaction->user->account_id ?? "") :  "",
-                    'Name'                      =>  $transaction->user ? ($transaction->user->userTransDefault ? $transaction->user->userTransDefault->full_name : "") : "",
-                    'Email'                     =>  $transaction->email ?? "--",
-                    'Plan Name'                 =>  $transaction->subscriptionPlan ? ($transaction->subscriptionPlan->subscriptionPlanTranslation ? $transaction->subscriptionPlan->subscriptionPlanTranslation->name : "N/A") : "",
-                    'Months'                    =>  $transaction->subscriptionPlan ? ($transaction->subscriptionPlan ? $transaction->subscriptionPlan->months : "N/A") : "",
-                    'Amount'                    =>  $transaction->subscriptionPlan ? ($transaction->subscriptionPlan ? $transaction->subscriptionPlan->amount : "N/A") : "",                    
-                    'Payment Type'              =>  $transaction->payment_type ?? "",
-                    'Razorpay Order Id'         =>  $transaction->razorpay_order_id ?? "",
-                    'Razorpay Payment Id'              =>  $transaction->razorpay_payment_id ?? "",
-                    'Razorpay Signature'              =>  $transaction->razorpay_signature ?? "",
-                    'Transaction Id'              =>  $transaction->transaction_id ?? "",
-                    'Original Transaction Id'              =>  $transaction->original_transaction_id ?? "",
-                    'Web Order Line Item Id'              =>  $transaction->web_order_line_item_id ?? "",
-                    'Purchase Date'              =>  $transaction->purchase_date ?? "",
-                    'Original Purchase Date'              =>  $transaction->original_purchase_date ?? "",
-                    'Subscription End DAte'              =>  $transaction->subscription_end_date ?? "",
-                    'Receipt Data'              =>  $transaction->receipt_data ?? "",
-                    'In App Ownership Type'              =>  $transaction->in_app_ownership_type ?? "",
-                    'Subscription Group Identifier'              =>  $transaction->subscription_group_identifier ?? "",
-                    'Status'                    =>  $transaction->status ?? "",
-                    'Created at'                =>  $transaction->created_at ? Carbon::parse($transaction->created_at)->format('Y-m-d') : ""
+                    'Account Id'                    =>  $transaction->user ? ($transaction->user->account_id ?? "") :  "",
+                    'Name'                          =>  $transaction->user ? ($transaction->user->userTransDefault ? $transaction->user->userTransDefault->full_name : "") : "",
+                    'Email'                         =>  $transaction->user ? ($transaction->user->email ?? '') :  '',
+                    'Phone'                         =>  $transaction->user ? ($transaction->user->contact_no ?? '') :  '',
+                    'Plan Name'                     =>  $transaction->subscriptionPlan ? ($transaction->subscriptionPlan->subscriptionPlanTranslation ? $transaction->subscriptionPlan->subscriptionPlanTranslation->name : "N/A") : "",
+                    'Months'                        =>  $transaction->subscriptionPlan ? ($transaction->subscriptionPlan ? $transaction->subscriptionPlan->months : "N/A") : "",
+                    'Amount'                        =>  $transaction->subscriptionPlan ? ($transaction->subscriptionPlan ? $transaction->subscriptionPlan->amount : "N/A") : "",                    
+                    'Payment Type'                  =>  $transaction->payment_type ?? "",
+                    'Razorpay Order Id'             =>  $transaction->razorpay_order_id ?? "",
+                    'Razorpay Payment Id'           =>  $transaction->razorpay_payment_id ?? "",
+                    'Razorpay Signature'            =>  $transaction->razorpay_signature ?? "",
+                    'Transaction Id'                =>  $transaction->transaction_id ?? "",
+                    'Original Transaction Id'       =>  $transaction->original_transaction_id ?? "",
+                    'Web Order Line Item Id'        =>  $transaction->web_order_line_item_id ?? "",
+                    'Purchase Date'                 =>  $transaction->purchase_date ?? "",
+                    'Original Purchase Date'        =>  $transaction->original_purchase_date ?? "",
+                    'Subscription End Date'         =>  $transaction->subscription_end_date ?? "",
+                    'Receipt Data'                  =>  $transaction->receipt_data ?? "",
+                    'In App Ownership Type'         =>  $transaction->in_app_ownership_type ?? "",
+                    'Subscription Group Identifier' =>  $transaction->subscription_group_identifier ?? "",
+                    'City'                          =>  !empty($transaction->user->location->locationTransDefault) ? ($transaction->user->location->locationTransDefault->name ?? '') :  '',
+                    'State'                         =>  !empty($transaction->user->location->locationTransDefault) ? ($transaction->user->location->locationTransDefault->state ?? '') :  '',
+                    'Status'                        =>  $transaction->status ?? "",
+                    'Created at'                    =>  $transaction->created_at ? Carbon::parse($transaction->created_at)->format('Y-m-d') : ""
                 ];
-                
             }
-
-            if (!File::exists(public_path() . "/files")) {
-                File::makeDirectory(public_path() . "/files");
+            if(!File::exists(public_path()."/files")){
+                File::makeDirectory(public_path()."/files");
             }
-
             $filename = public_path('files/' . $down_file_name . ".csv");
             $handle   = fopen($filename, 'w+');
             fputcsv($handle, array(
-                'Account Id', 'Name', 'Email', 'Plan Name', 'Months', 'Amount', 'Payment Type', 'Razorpay Order Id','Razorpay Paymentb Id','Transaction Id',
-                'Original Transaction Id','Web Order Line Item Id','Purchase Date','Original Purchase Date','Subscription End DAte','Payment Date', 'Receipt Data',
-                'In App Ownership Type','Subscription Group Identifier','Status','Created at'  
+                'Account Id','Name','Email','Phone','Plan Name',
+                'Months','Amount','Payment Type','Razorpay Order Id','Razorpay Payment Id',
+                'Razorpay Signature','Transaction Id','Original Transaction Id','Web Order Line Item Id','Purchase Date',
+                'Original Purchase Date','Subscription End Date','Receipt Data','In App Ownership Type','Subscription Group Identifier',
+                'City','State','Status','Created at'
             ));
-
-            foreach ($data as $row) {
-                fputcsv($handle, array(
-                    $row['Account Id'], $row['Name'], $row['Email'], $row['Plan Name'], $row['Months'], $row['Amount'],
-                    $row['Payment Type'], $row['Razorpay Order Id'], $row['Razorpay Payment Id'], $row['Razorpay Signature'], $row['Transaction Id'],
-                    $row['Original Transaction Id'],$row['Subscription End DAte'], $row['Receipt Data'],$row['In App Ownership Type'],
-                    $row['Subscription Group Identifier'], $row['Status'], $row['Created at']
+            foreach ($data as $row){
+                fputcsv($handle,array(
+                    $row['Account Id'],$row['Name'],$row['Email'],$row['Phone'],$row['Plan Name'],
+                    $row['Months'],$row['Amount'],$row['Payment Type'],$row['Razorpay Order Id'],$row['Razorpay Payment Id'],
+                    $row['Razorpay Signature'],$row['Transaction Id'],$row['Original Transaction Id'],$row['Web Order Line Item Id'],$row['Purchase Date'],
+                    $row['Original Purchase Date'],$row['Subscription End Date'],$row['Receipt Data'],$row['In App Ownership Type'],$row['Subscription Group Identifier'],
+                    $row['City'],$row['State'],$row['Status'],$row['Created at']
                 ));
             }
             fclose($handle);
-
             $headers = array(
                 'Content-Type' => 'text/csv',
             );
-
             return Response::download($filename, $down_file_name . ".csv", $headers);
         } else {
             flash('Unable to generate transaction csv file. Try again later')->error();

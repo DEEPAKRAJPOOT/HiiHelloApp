@@ -24,6 +24,14 @@ if (!function_exists('verifyOTPLessAuth')) {
     }
 }
 
+if (!function_exists('generateTransactionId')) {
+    function generateTransactionId()
+    {
+        return Str::upper("HH" . Str::random(5) . time());
+    }
+}
+
+
 // Permission for admin panel
 function getPermissions($user_type = 'normal')
 {
