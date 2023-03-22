@@ -113,7 +113,9 @@ class HomeController extends Controller
                         ->withCount('interests')
                         ->where('users.id', '!=', $auth_id)
                         ->whereNotNull('profile_photo')
-                        ->whereIsActive('y');
+                        ->whereNotNull('location_id')
+                        ->whereIsActive('y')
+                        ->whereUserStatus('active');
                     if ($auth_interest != 'Both') {
                         $users->where('gender', $auth_interest);
                     }     // Interested in Gender

@@ -67,6 +67,7 @@ class FilterController extends Controller
                         ->withCount('interests')
                         ->whereNotNull('profile_photo')
                         ->whereNotNull('location_id')
+                        ->whereUserStatus('active')
                         ->where(function ($query)  use ($auth_id, $auth_interest) {
                             $query->where('id', '!=', $auth_id)->whereIsActive('y');
 
