@@ -51,7 +51,8 @@ class UserDetailResource extends JsonResource
                 ],
             ],
             'flags'            =>  [
-                'verified_staus'        =>  $this->verify_status,
+                'verified_staus'        =>  ($this->emailVerifyStatus()=='verified' && $this->contactVerifyStatus()=='verified' && $this->verify_photo_status=='verified') ? 'verified' : 'under_review',
+                'verified_status'        =>  $this->verify_status,
                 'is_blocked'            =>  $this->blocked_tos_count ? $this->blocked_tos_count > 0 ? true : false : false,
             ],
         ];
