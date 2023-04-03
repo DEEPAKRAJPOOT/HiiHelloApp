@@ -25,6 +25,7 @@ class UserDetailResource extends JsonResource
             'location'          =>  new LocationResource($this->location),
             'interests'         =>  UserInterestResource::collection($this->interests),
             'profile_photo'     =>  generateURL($this->profile_photo) ?? "",
+            'isProfileVerified' =>  ($this->emailVerifyStatus()=='verified' && $this->contactVerifyStatus()=='verified' && $this->verify_photo_status=='verified') ? true : false,
             'my_things'         =>  [
                 'relationship_status'   =>  new ProfileDetailResource($this->relationshipStatus),
                 'i_am_here'             =>  new ProfileDetailResource($this->youAreHere),
