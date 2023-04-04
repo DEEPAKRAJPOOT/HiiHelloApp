@@ -18,6 +18,9 @@ class Transaction extends Model
         'amount', 'status',
         "coupon_id",
         "coupon_name",
+        'revoked_at',
+        'refunded_at',
+        'refunded_amount'
     ];
 
     public function getRouteKeyName()
@@ -36,5 +39,13 @@ class Transaction extends Model
     public function user()
     {
         return $this->belongsTo('App\Models\User');
+    }
+    public function coupon()
+    {
+        return $this->belongsTo('App\Models\Coupon');
+    }
+    public function couponVendor()
+    {
+        return $this->belongsTo('App\Models\CouponVendor');
     }
 }

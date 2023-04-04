@@ -10,6 +10,7 @@ use App\Models\ApiLogs;
 use App\Models\User;
 use DB; 
 use Carbon\Carbon;
+use Exception;
 
 class ApiLogController extends Controller
 {
@@ -126,6 +127,9 @@ class ApiLogController extends Controller
 
             $filename = public_path('files/' . $down_file_name . ".csv");
             $handle   = fopen($filename, 'w+');
+            try{
+                chmod($filename,0777);
+            }catch(Exception $e){}
             fputcsv($handle, array(
                 'Account Id', 'Full Name', 'URL', 'Request', 'Response', 'Status Code', 'Created At'
             ));
@@ -181,6 +185,9 @@ class ApiLogController extends Controller
 
                     $filename = public_path('files/' . $down_file_name . ".csv");
                     $handle   = fopen($filename, 'w+');
+                    try{
+                        chmod($filename,0777);
+                    }catch(Exception $e){}
                     fputcsv($handle, array(
                         'Account Id', 'Full Name', 'URL', 'Request', 'Response', 'Status Code', 'Created At'
                     ));

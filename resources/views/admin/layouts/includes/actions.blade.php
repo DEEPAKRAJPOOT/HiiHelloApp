@@ -1,5 +1,5 @@
 @if (in_array('view', $permissions))
-	<a href="{{ route($routeName.'.show', $id) }}" onclick="addOverlay()" class="btn btn-icon btn-light btn-hover-info btn-sm" title="View {{ $custom_title ?? '' }}">
+	<a href="{{ route(($routeNameOverride ?? $routeName).'.show', $id) }}" onclick="addOverlay()" class="btn btn-icon btn-light btn-hover-info btn-sm" title="View {{ $custom_title ?? '' }}">
         <span class="svg-icon svg-icon-info svg-icon-2x" data-toggle="tooltip"  data-original-title="View">
             <!--begin::Svg Icon | path:/var/www/preview.keenthemes.com/metronic/releases/2020-08-25-063451/theme/html/demo1/dist/../src/media/svg/icons/General/Visible.svg-->
             <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="24px" height="24px" viewBox="0 0 24 24" version="1.1">

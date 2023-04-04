@@ -8,6 +8,7 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Response;
+use Exception;
 
 class CallController extends Controller
 {
@@ -98,6 +99,9 @@ class CallController extends Controller
 
             $filename = public_path('files/' . $down_file_name . ".csv");
             $handle   = fopen($filename, 'w+');
+            try{
+                chmod($filename,0777);
+            }catch(Exception $e){}
             fputcsv($handle, array('Creator name', 'Participator name', 'Date', 'Start time', 'End time', 'Remaining time','Created at'));
 
             foreach ($data as $row) {

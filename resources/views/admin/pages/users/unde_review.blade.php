@@ -21,7 +21,7 @@
             </div>
             <div class="card-toolbar">
                 <a href="javascript:;" id="photo_verification" class="btn btn-sm btn-primary font-weight-bolder text-uppercase mr-2">
-                    <i class="fa fa-check"></i> Photo Verification
+                    <i class="fa fa-check"></i> Verify Photo
                 </a>
                 <a href="javascript:;" id="update_gender" class="btn btn-sm btn-primary font-weight-bolder text-uppercase mr-2">
                     <i class="far fa-edit"></i> Update Gender

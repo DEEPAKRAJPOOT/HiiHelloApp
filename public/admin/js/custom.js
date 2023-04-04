@@ -353,6 +353,33 @@ $(function () {
             $("#myModalPhotoVerification").modal('show');
         }
     });
+    
+    $(document).on("click", "#email_verification", function (e) {
+
+        e.preventDefault();
+        
+        var searchIDs       = [];
+
+        $(".dataTable tbody input[class='small-chk']:checked").each(
+            function () {
+                searchIDs.push($(this).val());
+            }
+        );
+
+        if (searchIDs.length == 0) {
+
+            Swal.fire({                
+                text: "Please select at least one checkbox.",
+                icon: "warning",
+                showConfirmButton: true,
+            });
+
+        } else {
+
+            $("#myModalEmailVerification #multi_user_email_id").val(searchIDs);
+            $("#myModalEmailVerification").modal('show');
+        }
+    });
 
     $(document).on("click", ".save_frm_photo_verification", function (e) {
 
@@ -374,6 +401,34 @@ $(function () {
 
                 $("#myModalPhotoVerification").modal('hide');
                 $(".save_frm_photo_verification").attr("disabled", false);
+                $(".processing").hide();
+
+                var table = $('#users_table').DataTable();
+                table.ajax.reload(null, false);
+            },
+        });
+    });
+
+    $(document).on("click", ".save_frm_email_verification", function (e) {
+
+        e.preventDefault();
+        $(".processing").show();
+        $(this).attr("disabled", true);
+        var data    = $('#frm_email_verification').serializeArray();
+        var url     = $('#frm_email_verification').attr('action');
+
+        $.ajax({
+            url: url,
+            type: "post",
+            dataType: "json",
+            data: data,
+            cache: false,
+            success: function (success) {                
+                
+                toastr.success("Email verification done!");
+
+                $("#myModalEmailVerification").modal('hide');
+                $(".save_frm_email_verification").attr("disabled", false);
                 $(".processing").hide();
 
                 var table = $('#users_table').DataTable();

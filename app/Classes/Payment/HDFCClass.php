@@ -12,12 +12,14 @@ class HDFCClass
     private $base_url;
     private $end_points = [
         "payment_intent" => "hupi/mePayInetentReq",
-        "payment_status" => "hupi/transactionStatusQuery"
+        "payment_status" => "hupi/transactionStatusQuery",
+        "refund_intent" => "hupi/refundReqSvc"
     ];
 
     private $trans_status = [
         'SUCCESS' => 'success',
         'FAILED' => 'fail',
+        'FAILURE' => 'fail',
         'PENDING' => 'pending',
         'EXPIRED' => 'fail',
         'REJECTED' => 'fail',
@@ -53,6 +55,7 @@ class HDFCClass
     private $merchant_name = null;
     private $merchant_vpa = null;
     private $merchant_mcc = null;
+    private $currency = null;
     private $isProd = false;
 
     public function  __construct()
@@ -62,7 +65,8 @@ class HDFCClass
         if ($this->isProd) {
             $this->end_points = [
                 "payment_intent" => "upi/mePayInetentReq",
-                "payment_status" => "upi/transactionStatusQuery"
+                "payment_status" => "upi/transactionStatusQuery",
+                "refund_intent" => "upi/refundReqSvc"
             ];
         }
 
@@ -72,6 +76,7 @@ class HDFCClass
         $this->merchant_name = config('utility.hdfc.merchant_name');
         $this->merchant_vpa = config('utility.hdfc.merchant_vpa');
         $this->merchant_mcc = config('utility.hdfc.merchant_mcc');
+        $this->currency = config('utility.hdfc.currency');
     }
 
     public function createTransactionRequest($data)
@@ -147,6 +152,43 @@ class HDFCClass
         ];
     }
 
+    public function createRefundRequest($data){
+        $request_data = [
+            'pg_merchant_id'              => $this->merchant_id,
+            'new_transaction_id'          => 'REF-'.substr($data['transaction_id'],-15).'-'.time(),
+            'original_transaction_id'     => $data['transaction_id'],
+            'original_transaction_ref_no' => '',
+            'original_customer_refno'     => $data['customer_reference_no'],
+            'remarks'                     => 'refund for user '.($data['user_id'] ?? 'unknown').' with plan '.($data['plan_id'] ?? 'unknown'),
+            'refund_amount'               => number_format($data['amount'],2),
+            'currency'                    => $this->currency,
+            'transaction_type'            => 'P2P',
+            'payment_type'                => 'PAY',
+            'AF1'                         => '',
+            'AF2'                         => '',
+            'AF3'                         => '',
+            'AF4'                         => '',
+            'AF5'                         => '',
+            'AF6'                         => '',
+            'AF7'                         => '',
+            'AF8'                         => '',
+            'AF9'                         => 'NA',
+            'AF10'                        => 'NA',
+        ];
+        $body = [
+            'pgMerchantId' => $this->merchant_id,
+            'requestMsg' => $this->encrypt(join('|',$request_data))
+        ];
+        $response_data = $this->postRequest('refund_intent', $body);
+        $decrypted_str = $this->decrypt($response_data);
+        return [
+            'mapped_request' => $request_data,
+            'raw_request' => $body,
+            'raw_response' => $response_data,
+            'mapped_response' => $this->mapCallbackResponse($decrypted_str)
+        ];
+    }
+
     public function parseHDFCCallback($key)
     {
         $decrypted_str = $this->decrypt($key);
@@ -165,10 +207,19 @@ class HDFCClass
             'upi_transaction_id' => $trans_arr['upi_transaction_id'],
             'transaction_id' => $trans_arr['merchant_transaction_id'],
             'amount' => $trans_arr['amount'],
-            'status' => $this->trans_status[$trans_arr['status']],
+            'status' => $this->trans_status[$trans_arr['status']] ?? $trans_arr['status'],
+            'status_description' => $trans_arr['status_description'] ?? '',
             'user_id' => $trans_arr['AF1'],
-            'plan_id' => $trans_arr['AF2']
+            'plan_id' => $trans_arr['AF2'],
+            'customer_reference_no' => $trans_arr['customer_reference_no']
         ];
+    }
+
+    private function mapOriginalCallbackResponse($decrypted_str)
+    {
+        $callBackBody = $this->cb_response_body;
+        $arr_data = explode('|',$decrypted_str);
+        return array_combine(array_keys($callBackBody),$arr_data);
     }
 
     private function postRequest($end_point, $request_data)

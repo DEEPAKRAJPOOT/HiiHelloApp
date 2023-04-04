@@ -188,7 +188,7 @@
                     </td>
 
                     <td>
-                       <select class="form-control" name="search_status" id="search_status">
+                       <select class="form-control" name="search_mode" id="search_mode">
                            <option value="">-- Select mode --</option>
                            <option value="Google Play">Google Play</option>
                            <option value="UPI">UPI</option>
@@ -203,6 +203,15 @@
                            @foreach ($coupon_vendors as $coupon_vendor)
                                <option value="{{ $coupon_vendor->id }}">{{ $coupon_vendor->name }}</option>
                            @endforeach
+                       </select>
+                    </td>
+
+                    <td>
+                       <select class="form-control" name="search_status" id="search_status">
+                           <option value="">-- Select Status --</option>
+                           <option value="success">Successful</option>
+                           <option value="pending">Pending</option>
+                           <option value="fail">Failed</option>
                        </select>
                     </td>
 
@@ -245,24 +254,26 @@
             ajax: {
                 url: "{{ route('admin.transaction-lists.listing') }}",
                 data: {
-                    columnsDef: ['account_id','user_id', 'plan_id', 'razorpay_order_id','amount', 'status','action'],
+                    columnsDef: ['account_id','user_id','plan_id','razorpay_order_id','amount','purchase_date','subscription_end_date','created_at','coupon_name','payment_type','status','state','city','email','phone','action'],
                 },
                 data: function(data) {                    
 
                     // ST - Filter Params
                     var from_date       = $("#search_fromdate").val();
                     var to_date         = $("#search_todate").val();  
-                    var search_status   = $("#search_status").val();  
+                    var search_mode     = $("#search_mode").val();
+                    var search_status   = $("#search_status").val();
                     var search_plan     = $("#search_plan").val();
                     var search_vendor   = $("#search_vendor").val();
                         
                     // EN - Filter Params
 
-                    data.from_date         = from_date;
-                    data.to_date           = to_date;                    
-                    data.search_status     = search_status; 
-                    data.search_plan       = search_plan;
-                    data.search_vendor     = search_vendor;
+                    data.from_date      = from_date;
+                    data.to_date        = to_date;
+                    data.search_mode    = search_mode;
+                    data.search_status  = search_status;
+                    data.search_plan    = search_plan;
+                    data.search_vendor  = search_vendor;
                     //data.flgPendingProfile = $(".getpendingprofile").is(':checked') ? 1 : 0;
                 },           
             },
@@ -274,8 +285,10 @@
                 { data: 'amount' },
                 { data: 'purchase_date' },
                 { data: 'subscription_end_date' },
+                { data: 'created_at' },
                 { data: 'coupon_name' },
                 { data: 'payment_type' },
+                { data: 'status' },
                 { data: 'state' },
                 { data: 'city' },
                 { data: 'email' },
@@ -284,19 +297,21 @@
             ],
             columnDefs: [
                 // Specify columns titles here...
-                { targets: 0, title: "Account Id", orderable: false },
-                { targets: 1, title: "User Name", orderable: false },
+                { targets: 0, title: 'Account Id', orderable: false },
+                { targets: 1, title: 'User Name', orderable: false },
                 { targets: 2, title: 'Plan Name', orderable: true },
                 { targets: 3, title: 'Order Id', orderable: false },
                 { targets: 4, title: 'Amount', orderable: true },
                 { targets: 5, title: 'Start Date', orderable: true },
                 { targets: 6, title: 'End Date', orderable: true },
-                { targets: 7, title: 'Coupon', orderable: true },
-                { targets: 8, title: 'Mode', orderable: true },
-                { targets: 9, title: 'State', orderable: false },
-                { targets: 10, title: 'City', orderable: false },
-                { targets: 11, title: 'E-mail', orderable: false },
-                { targets: 12, title: 'Phone', orderable: false },
+                { targets: 7, title: 'Created At', orderable: true },
+                { targets: 8, title: 'Coupon', orderable: true },
+                { targets: 9, title: 'Mode', orderable: true },
+                { targets: 10,title: 'Status', orderable: true },
+                { targets: 11,title: 'State', orderable: false },
+                { targets: 12,title: 'City', orderable: false },
+                { targets: 13,title: 'E-mail', orderable: false },
+                { targets: 14,title: 'Phone', orderable: false },
                 // Action buttons
                 { targets: -1, title: 'Action',
                 orderable: false },
@@ -318,16 +333,16 @@
     });
 
     $(document).on("click", "#btn_reset_filter", function () {
-        $("#search_fromdate,#search_todate,#search_status,#search_plan,#search_vendor").val('');
+        $("#search_fromdate,#search_todate,#search_mode,#search_status,#search_plan,#search_vendor").val('');
         oTable.draw();
     });
 
-    $('#search_status').change(function(){
+    $('#search_mode').change(function(){
         $('#search_vendor_container').toggleClass('d-none',!$(this).val() || ($(this).val() != 'COUPON'));
     });
     var base_transactions_csv_url = '{{ route("admin.transactions.csv-download") }}';
     $('#transactions-csv-button').attr('href',base_transactions_csv_url);
-    $('#search_fromdate,#search_todate,#search_status,#search_plan,#search_vendor,#subscription_pan_table_filter input').change(function(){
+    $('#search_fromdate,#search_todate,#search_mode,#search_status,#search_plan,#search_vendor,#subscription_pan_table_filter input').change(function(){
         var transactions_csv_url = base_transactions_csv_url;
         var values = [];
         if($('#search_fromdate').val() && $('#search_fromdate').val() != ''){
@@ -335,6 +350,9 @@
         }
         if($('#search_todate').val() && $('#search_todate').val() != ''){
             values.push('to_date='+$('#search_todate').val());
+        }
+        if($('#search_mode').val() && $('#search_mode').val() != ''){
+            values.push('search_mode='+$('#search_mode').val());
         }
         if($('#search_status').val() && $('#search_status').val() != ''){
             values.push('search_status='+$('#search_status').val());

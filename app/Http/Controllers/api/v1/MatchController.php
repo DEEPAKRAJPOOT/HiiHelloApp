@@ -114,8 +114,10 @@ class MatchController extends Controller
                 $array_system_user_id = array();
 
                 if ($backup_logic == true) {                    
-                    //$this->addSystemGeneratedUserForToday($auth_id); 
-                    $this->addSystemGeneratedUserForToday($auth_id,$auth_interest,$restricted_ids,$max_limit_apply,$max_limit);
+                    //if($user->is_subscribed == 'y' && ($user->subscription_end_date >= now()->format('Y-m-d'))){
+                        //$this->addSystemGeneratedUserForToday($auth_id);
+                        $this->addSystemGeneratedUserForToday($auth_id,$auth_interest,$restricted_ids,$max_limit_apply,$max_limit);
+                    //}
                     //FETCH ALL SYSTEM USER WHICH IS NOT CONNECTED START                    
                     $system_data = SystemMatch::select('custom_id','match_id','is_connected','match_date')->where('is_connected',0)->where('user_id', $auth_id)->orderBy('created_at','DESC')->get();        
 

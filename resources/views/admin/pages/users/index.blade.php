@@ -17,54 +17,86 @@
                 <span class="card-icon">
                     <i class="fas fa-users text-primary"></i>
                 </span>
-                <h3 class="card-label">{{ $custom_title }}</h3>
+                <h3 class="card-label">
+                    @if(request()->get('user_filter') == 'deleted')
+                    Deleted
+                    @endif
+                    @if(empty(request()->get('user_filter')))
+                    All
+                    @endif
+                    {{ $custom_title }}
+                    @if(request()->get('user_filter') == 'photo_under_review')
+                    with Photo Under Review
+                    @endif
+                    @if(request()->get('user_filter') == 'email_under_review')
+                    with Email Under Review
+                    @endif
+                </h3>
             </div>
 
             <div class="card-toolbar">
-                <div class="form-check form-switch">
-                  <input class="form-check-input getpendingprofile"  type="checkbox" role="switch" id="is_profile_under_review" >
-                  <label class="form-check-label" for="is_profile_under_review">Profile Under Review&nbsp;&nbsp;</label>
-                </div>
-                {{-- 
-                <a href="javascript:;" id="photo_verification"
-                    class="btn btn-sm btn-primary font-weight-bolder text-uppercase mr-2">
-                    <i class="fa fa-check"></i> Photo Verification
-                </a>
-                --}}
-                <a href="javascript:;" id="update_gender"
-                    class="btn btn-sm btn-primary font-weight-bolder text-uppercase mr-2">
+
+                @if(request()->get('user_filter') == 'photo_under_review')
+                    <a href="javascript:void(0);" id="photo_verification" class="btn btn-sm btn-primary font-weight-bolder text-uppercase mr-2">
+                        <i class="fa fa-check"></i> Verify Photo
+                    </a>
+                @endif
+                @if(request()->get('user_filter') == 'email_under_review')
+                    <a href="javascript:void(0);" id="email_verification" class="btn btn-sm btn-primary font-weight-bolder text-uppercase mr-2">
+                        <i class="fa fa-check"></i> Verify Email
+                    </a>
+                @endif
+                <a id="update_gender" href="javascript:void(0)" class="btn btn-sm btn-primary font-weight-bolder text-uppercase mr-2">
                     <i class="far fa-edit"></i> Update Gender
                 </a>
-                @if (in_array('delete', $permissions))
-                <a href="{{ route('admin.users.destroy', 0) }}" name="del_select" id="del_select"
-                    class="btn btn-sm btn-light-danger font-weight-bolder text-uppercase mr-2 delete_all_link">
-                    <i class="far fa-trash-alt"></i> Delete Selected
-                </a>
+                @if(request()->get('user_filter') != 'deleted')
+                    @if (in_array('delete', $permissions))
+                    <a href="{{ route('admin.users.destroy', 0) }}" name="del_select" id="del_select"
+                        class="btn btn-sm btn-light-danger font-weight-bolder text-uppercase mr-2 delete_all_link">
+                        <i class="far fa-trash-alt"></i> Delete Selected
+                    </a>
+                    @endif
                 @endif
+
+                @if(!empty(request()->get('user_filter')))
+                    <a href="{{ route('admin.users.index') }}" class="btn btn-sm btn-success font-weight-bolder text-uppercase ml-2">
+                        <i class="menu-icon icon-users"></i>
+                        All Users
+                    </a>
+                @endif
+
+                @if(request()->get('user_filter') != 'photo_under_review')
+                    <a href="{{ route('admin.users.index').'?user_filter=photo_under_review' }}" class="btn btn-sm btn-warning font-weight-bolder text-uppercase ml-2">
+                        <i class="menu-icon icon-users"></i>
+                        Photo Under Review
+                    </a>
+                @endif
+                @if(request()->get('user_filter') != 'email_under_review')
+                    <a href="{{ route('admin.users.index').'?user_filter=email_under_review' }}" class="btn btn-sm btn-warning font-weight-bolder text-uppercase ml-2">
+                        <i class="menu-icon icon-users"></i>
+                        Email Under Review
+                    </a>
+                @endif
+
+                @if(request()->get('user_filter') != 'deleted')
+                    <a href="{{ route('admin.users.index').'?user_filter=deleted' }}" class="btn btn-sm btn-danger font-weight-bolder text-uppercase ml-2">
+                        <i class="menu-icon icon-users"></i>
+                        Deleted Users
+                    </a>
+                @endif
+
                 {{-- @if (in_array('add', $permissions))
-                <a href="{{ route('admin.users.create') }}"
-                    class="btn btn-sm btn-primary font-weight-bolder text-uppercase">
+                <a href="{{ route('admin.users.create') }}" class="btn btn-sm btn-primary font-weight-bolder text-uppercase">
                     <i class="fas fa-plus"></i>
                     Add {{ $custom_title }}
                 </a>
                 @endif --}}
 
-                {{-- 
-                <a href="{{ route('admin.users.csv-download') }}"
+                {{-- <a href="{{ route('admin.users.csv-download') }}"
                     class="btn btn-sm btn-primary font-weight-bolder text-uppercase ml-2">
                     <i class="fas fa-arrow-down"></i>
                     Download CSV
-                </a>
-                --}}
-                <a href="{{ route('admin.users.deleted') }}" name="deleted" id="deleted"
-                    class="btn btn-sm btn-light-danger font-weight-bolder text-uppercase ml-2 mr-1 deleted_all_users">
-                    <i class="far fa-trash-alt"></i> Deleted Users
-                </a>
-                <a href="{{ route('admin.users.unde-review') }}"
-                    class="btn btn-sm btn-warning font-weight-bolder text-uppercase ml-2">
-                    <i class="menu-icon icon-users"></i>
-                    Profile Under Review
-                </a>
+                </a> --}}
             </div>
         </div>
 
@@ -148,7 +180,7 @@
             processing: true,
             serverSide: true,
             ajax: {
-                url: "{{ route('admin.users.listing') }}",
+                url: "{{ route('admin.users.listing') }}?{!! http_build_query(request()->query()) !!}",
                 data: {
                     columnsDef: ['checkbox', 'country_code', 'contact_no', 'gender','Created At', 'active', 'action'],                    
                 },
@@ -169,7 +201,6 @@
                     data.city_filter       = city_filter;
                     data.status_filter     = status_filter;
                     data.state_filter = $('#state_filter').val();
-                    data.flgPendingProfile = $(".getpendingprofile").is(':checked') ? 1 : 0;
                }                
             },
             columns: [
@@ -221,10 +252,6 @@
         });
     });
 
-    $(document).on("click", ".getpendingprofile", function () {
-        oTable.draw();
-    });
-
     $(document).on("click", "#btn_search_filter", function () {
         oTable.draw();
     });
@@ -264,6 +291,72 @@
             <div class="modal-footer">
                 <span class="processing" style="display: none;">Processing...</span>
                 <button type="button" class="btn btn-primary save_frm_gender">Submit</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            </div>
+        </div>      
+    </div>
+</div>
+
+
+<!-- Modal For Photo Verification -->
+<div class="modal fade" id="myModalPhotoVerification" role="dialog" style="display: none;">
+    <div class="modal-dialog">
+    
+        <!-- Modal content-->
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">Photo Verification</h4>
+            </div>
+            <div class="modal-body">
+                <form method="POST" name="frm_photo_verification" id="frm_photo_verification" action="{{ route('admin.users.bulk_photo_verification') }}">
+                    <input type="hidden" name="multi_user_id" id="multi_user_id">
+                    <input type="hidden" name="_token" value="{{ csrf_token() }}">
+                    <div class="form-group">
+                        <label for="exampleFormControlSelect2">Photo Verification Status</label>
+                        <select name="verify_photo_status" id="verify_photo_status" class="form-control">
+                            <option value="under_review">Under Review</option>
+                            <option value="verified">Verified</option>
+                            <option value="unverified" selected>UnVerified</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <span class="processing" style="display: none;">Processing...</span>
+                <button type="button" class="btn btn-primary save_frm_photo_verification">Submit</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            </div>
+        </div>      
+    </div>
+</div>
+
+<!-- Modal For Email Verification -->
+<div class="modal fade" id="myModalEmailVerification" role="dialog" style="display:none">
+    <div class="modal-dialog">
+    
+        <!-- Modal content-->
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">Email Verification</h4>
+            </div>
+            <div class="modal-body">
+                <form method="POST" name="frm_email_verification" id="frm_email_verification" action="{{ route('admin.users.bulk_email_verification') }}">
+                    <input type="hidden" name="multi_user_email_id" id="multi_user_email_id">
+                    <input type="hidden" name="_token" value="{{ csrf_token() }}">
+                    <div class="form-group">
+                        <label>Email Verification Status</label>
+                        <select name="verify_email_status" id="verify_email_status" class="form-control">
+                            <option value="verified">Verified</option>
+                            <option value="unverified" selected="selected">UnVerified</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <span class="processing" style="display: none;">Processing...</span>
+                <button type="button" class="btn btn-primary save_frm_email_verification">Submit</button>
                 <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
             </div>
         </div>      

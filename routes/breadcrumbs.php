@@ -335,6 +335,13 @@ Breadcrumbs::register('dashboard', function ($breadcrumbs) {
 	    $breadcrumbs->push('Edit Coupon Vendor', route(Auth::getDefaultDriver().'.coupon-vendors.edit', $id));
 	});
 
+	//Coupon Users -------------------------------------------------------------------------------------
+	Breadcrumbs::register('coupon_users_list', function($breadcrumbs)
+	{
+		$breadcrumbs->parent('dashboard');
+	    $breadcrumbs->push('Coupon Users', route(Auth::getDefaultDriver().'.coupon-users.index'));
+	});
+
 	// Call Logs ------------------------------------------------------------------
 	Breadcrumbs::register('call_log_list', function($breadcrumbs)
 	{

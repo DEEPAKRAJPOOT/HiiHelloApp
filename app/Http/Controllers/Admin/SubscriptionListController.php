@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Response;
+use Exception;
 
 class SubscriptionListController extends Controller
 {
@@ -130,6 +131,9 @@ class SubscriptionListController extends Controller
 
             $filename = public_path('files/' . $down_file_name . ".csv");
             $handle   = fopen($filename, 'w+');
+            try{
+                chmod($filename,0777);
+            }catch(Exception $e){}
             fputcsv($handle, array(
                 'Account Id', 'Name', 'Email', 'Subscription Plan Name', 'Months', 'Day', 'Amount', 'Start date', 'End date', 'Payment Type', 'Payment Date', 'Receipt Data', 'Original Transaction Id', 'Status', 'Created at'
             ));

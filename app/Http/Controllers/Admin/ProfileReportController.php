@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Carbon;
+use Exception;
 class ProfileReportController extends Controller
 {
     /**
@@ -210,6 +211,9 @@ class ProfileReportController extends Controller
 
             $filename = public_path('files/' . $down_file_name . ".csv");
             $handle   = fopen($filename, 'w+');
+            try{
+                chmod($filename,0777);
+            }catch(Exception $e){}
             fputcsv($handle, array(
                 'Account Id', 'User name', 'Gender', 'Contact No','Total Block Users','Total Reports'  
             ));

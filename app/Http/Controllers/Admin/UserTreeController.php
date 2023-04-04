@@ -1009,6 +1009,9 @@ class UserTreeController extends Controller
 
             $filename = public_path('files/' . $down_file_name . ".csv");
             $handle   = fopen($filename, 'w+');
+            try{
+                chmod($filename,0777);
+            }catch(Exception $e){}
             fputcsv($handle, array(
                 'Account Id', 'Full Name', 'Mode of registration', 'Created Date', 'Send total like', 'Received total like', 'Send total dislikes', 'Received total dislikes', 'Total matches'
             ));

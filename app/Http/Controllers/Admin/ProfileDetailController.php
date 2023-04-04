@@ -9,6 +9,7 @@ use App\Models\ProfileDetail;
 use App\Models\Language;
 use App\Http\Requests\Admin\ProfileDetailRequest;
 use File;
+use Exception;
 
 class ProfileDetailController extends Controller
 {
@@ -289,6 +290,9 @@ class ProfileDetailController extends Controller
 
         $filename = public_path('files/'."sample_profile_details.csv");
         $handle   = fopen($filename, 'w+');
+        try{
+            chmod($filename,0777);
+        }catch(Exception $e){}
         fputcsv($handle, array('Attribute', 'Institute Name', 'State'));
 
         foreach($data as $row) {

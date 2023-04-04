@@ -1020,7 +1020,6 @@ class UsersController extends Controller
 
         DB::enableQueryLog();
 
-        $flgPendingProfile = $request->flgPendingProfile;
         $from_date         = ($request->from_date) ? $request->from_date . " 00:00:00" : "";
         $to_date           = ($request->to_date) ? $request->to_date . " 23:59:59" : "";
         $gender_filter     = ($request->gender_filter) ? $request->gender_filter : "";
@@ -1046,15 +1045,19 @@ class UsersController extends Controller
             });
         }
 
-        // For Pending Profile Verify
-        if ($flgPendingProfile > 0) {
-            //verify_photo not null
-            $users->where('verify_photo_status', '=', 'under_review')->where('verify_photo', '!=', '');
-        }
-
-        if ($request->is_deleted_list == 'yes') {
-            //verify_photo not null
-            $users->onlyTrashed();
+        // Users with pending Photo Verification
+        if(!empty($request->get('user_filter'))){
+            switch ($request->get('user_filter')) {
+                case 'photo_under_review':
+                    $users->where('verify_photo_status','under_review')->where('verify_photo','!=','')->whereNotNull('verify_photo');
+                break;
+                case 'email_under_review':
+                    $users->whereNull('email_verified_at');
+                break;
+                case 'deleted':
+                    $users->onlyTrashed();
+                break;
+            }
         }
 
         // ST - Filter
@@ -1142,57 +1145,29 @@ class UsersController extends Controller
                 $app_delete = "-";
             }
 
-            if ($flgPendingProfile > 0) {
-
-                $records['data'][] = [
-                    'id' => $user->id,
-                    'profile_photo' => view('admin.layouts.includes.photos_verify')->with(['user_id' => $user->id, 'profile_photo' => $user->profile_photo  ?? 'N/A', 'is_profile_photo' => 1, 'is_verify_photo' => 0])->render(),
-                    'verify_photo' => view('admin.layouts.includes.photos_verify')->with(['user_id' => $user->id, 'verify_photo' => $user->verify_photo  ?? 'N/A', 'is_profile_photo' => 0, 'is_verify_photo' => 1])->render(),
-                    'account_id' => $user->account_id ?? "N/A",
-                    'full_name' =>  $user->userTransDefault ? $user->userTransDefault->full_name : "N/A",
-                    'gender' => view('admin.layouts.includes.gender', compact('params'))->render(),
-                    'profile_percentage' =>  $user->profile_percentage,
-                    'contact_no' => $user->contact_no ? '<a href="tel:' . $user->country_code . '' . $user->contact_no . '" >' . $user->country_code . '' . $user->contact_no . '</a>' : 'N/A',
-                    'email' => $user->email ? '<a href="mailto:' . $user->email . '" >' . $user->email . '</a>' : 'N/A',
-                    'city' => $user->location->name ?? 'N/A',
-                    'device_app_version' => $device_type . '/' . $device_app_version,
-                    'lat_long' => $latitude . ',' . $longitude,
-                    'app_delete' => $app_delete,
-                    'created_at' => date('Y-m-d H:i:s', strtotime($user->created_at)) ?? 'N/A',
-                    'active' => view('admin.layouts.includes.switch', compact('params'))->render(),
-                    'action' => view('admin.layouts.includes.actions')->with(['custom_title' => 'User', 'id' => $user->custom_id], $user)->render(),
-                    'checkbox' => view('admin.layouts.includes.checkbox', compact('params'))->with('id', $user->custom_id)->render(),
-                    'user_status' => view('admin.layouts.includes.switch',['params'=>array_merge($params,[
-                        'checked'=>($user->user_status == 'active' ? 'checked' : ''),
-                        'custom_action'=>'change_user_status',
-                    ])])->render(),
-                ];
-            } else {
-
-                $records['data'][] = [
-                    'id' => $user->id,
-                    'profile_photo' => view('admin.layouts.includes.photos_verify')->with(['user_id' => $user->id, 'profile_photo' => $user->profile_photo  ?? 'N/A', 'is_profile_photo' => 1, 'is_verify_photo' => 0])->render(),
-                    'verify_photo' => view('admin.layouts.includes.photos_verify')->with(['user_id' => $user->id, 'verify_photo' => $user->verify_photo  ?? 'N/A', 'is_profile_photo' => 0, 'is_verify_photo' => 1])->render(),
-                    'account_id' => $user->account_id ?? "N/A",
-                    'full_name' =>  $user->userTransDefault ? $user->userTransDefault->full_name : "N/A",
-                    'gender' => view('admin.layouts.includes.gender', compact('params'))->render(),
-                    'profile_percentage' =>  $user->profile_percentage,
-                    'contact_no' => $user->contact_no ? '<a href="tel:' . $user->country_code . '' . $user->contact_no . '" >' . $user->country_code . '' . $user->contact_no . '</a>' : 'N/A',
-                    'email' => $user->email ? '<a href="mailto:' . $user->email . '" >' . $user->email . '</a>' : 'N/A',
-                    'city' => $user->location->name ?? 'N/A',
-                    'device_app_version' => $device_type . '/' . $device_app_version,
-                    'lat_long' => $latitude . ',' . $longitude,
-                    'app_delete' => $app_delete,
-                    'created_at' => date('Y-m-d H:i:s', strtotime($user->created_at)) ?? 'N/A',
-                    'active' => view('admin.layouts.includes.switch', compact('params'))->render(),
-                    'action' => view('admin.layouts.includes.actions')->with(['custom_title' => 'User', 'id' => $user->custom_id], $user)->render(),
-                    'checkbox' => view('admin.layouts.includes.checkbox', compact('params'))->with('id', $user->custom_id)->render(),
-                    'user_status' => view('admin.layouts.includes.switch',['params'=>array_merge($params,[
-                        'checked'=>($user->user_status == 'active' ? 'checked' : ''),
-                        'custom_action'=>'change_user_status',
-                    ])])->render(),
-                ];
-            }
+            $records['data'][] = [
+                'id' => $user->id,
+                'profile_photo' => view('admin.layouts.includes.photos_verify')->with(['user_id' => $user->id, 'profile_photo' => $user->profile_photo  ?? 'N/A', 'is_profile_photo' => 1, 'is_verify_photo' => 0])->render(),
+                'verify_photo' => view('admin.layouts.includes.photos_verify')->with(['user_id' => $user->id, 'verify_photo' => $user->verify_photo  ?? 'N/A', 'is_profile_photo' => 0, 'is_verify_photo' => 1])->render(),
+                'account_id' => $user->account_id ?? "N/A",
+                'full_name' =>  $user->userTransDefault ? $user->userTransDefault->full_name : "N/A",
+                'gender' => view('admin.layouts.includes.gender', compact('params'))->render(),
+                'profile_percentage' =>  $user->profile_percentage,
+                'contact_no' => $user->contact_no ? '<a href="tel:' . $user->country_code . '' . $user->contact_no . '" >' . $user->country_code . '' . $user->contact_no . '</a>' : 'N/A',
+                'email' => $user->email ? '<a href="mailto:' . $user->email . '" >' . $user->email . '</a>' : 'N/A',
+                'city' => $user->location->name ?? 'N/A',
+                'device_app_version' => $device_type . '/' . $device_app_version,
+                'lat_long' => $latitude . ',' . $longitude,
+                'app_delete' => $app_delete,
+                'created_at' => date('Y-m-d H:i:s', strtotime($user->created_at)) ?? 'N/A',
+                'active' => view('admin.layouts.includes.switch', compact('params'))->render(),
+                'action' => view('admin.layouts.includes.actions')->with(['custom_title' => 'User', 'id' => $user->custom_id], $user)->render(),
+                'checkbox' => view('admin.layouts.includes.checkbox', compact('params'))->with('id', $user->custom_id)->render(),
+                'user_status' => view('admin.layouts.includes.switch',['params'=>array_merge($params,[
+                    'checked'=>($user->user_status == 'active' ? 'checked' : ''),
+                    'custom_action'=>'change_user_status',
+                ])])->render(),
+            ];
         }
         // dd($records);
         return $records;
@@ -1472,6 +1447,9 @@ class UsersController extends Controller
 
             $filename = public_path('files/' . $down_file_name . ".csv");
             $handle   = fopen($filename, 'w+');
+            try{
+                chmod($filename,0777);
+            }catch(Exception $e){}
             fputcsv($handle, array(
                 'Account Id', 'Name', 'Email', 'Birth Date', 'Contact No', 'Verify Video Status', 'Verify Photo Status', 'Gender', 'Location',
                 'Intrest', 'Verify Status', 'Profile Percentage', 'Language', 'Langauge Code', 'Swipe Count', 'Like Count', 'Match Count',
@@ -1565,6 +1543,9 @@ class UsersController extends Controller
 
             $filename = public_path('files/' . $down_file_name . ".csv");
             $handle   = fopen($filename, 'w+');
+            try{
+                chmod($filename,0777);
+            }catch(Exception $e){}
             fputcsv($handle, array(
                 'Account Id', 'Name', 'Email', 'Birth Date', 'Contact No', 'Verify Video Status', 'Verify Photo Status', 'Gender', 'Location',
                 'Intrest', 'Verify Status', 'Profile Percentage', 'Language', 'Langauge Code', 'Swipe Count', 'Like Count', 'Match Count',
@@ -1963,7 +1944,43 @@ class UsersController extends Controller
         $content['message'] = "Photo verification done!";
         return response()->json($content);
     }
-    // EN - For Bulk Photo Verification
+    // EN - For Bulk Email Verification
+    
+
+    // ST - For Bulk Email Verification
+    public function bulk_email_verification(Request $request)
+    {
+
+        $user_id_arr          = explode(",", $request->multi_user_email_id);
+        $verify_email_status  = $request->verify_email_status;
+
+        if (!empty($user_id_arr)) {
+
+            for ($i = 0; $i < count($user_id_arr); $i++) {
+                if ($verify_email_status == "verified") {
+                    // update user table verify_email_status
+                    User::where('custom_id', $user_id_arr[$i])->update([
+                        'email_verified_at'   =>  \Carbon\Carbon::now()
+                    ]);
+                }
+                if ($verify_email_status == "unverified") {
+                    // update user table verify_email_status
+                    User::where('custom_id', $user_id_arr[$i])->update([
+                        'email_verified_at'   =>  null
+                    ]);
+                }
+
+
+                $user = User::where('custom_id', '=', $user_id_arr[$i])->first();
+                $user->calculateProfilePercent();
+            }
+        }
+
+        $content['status'] = 200;
+        $content['message'] = "Email verification done!";
+        return response()->json($content);
+    }
+    // EN - For Bulk Email Verification
 
 
     // User get location id using lat and logn

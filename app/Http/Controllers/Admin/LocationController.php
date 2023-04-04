@@ -11,6 +11,7 @@ use App\Http\Requests\Admin\LocationRequest;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Response;
 use DB;
+use Exception;
 
 class LocationController extends Controller
 {
@@ -222,6 +223,9 @@ class LocationController extends Controller
 
             $filename = public_path('files/' . $down_file_name . ".csv");
             $handle   = fopen($filename, 'w+');
+            try{
+                chmod($filename,0777);
+            }catch(Exception $e){}
             fputcsv($handle, array(
                 'City Id','City name','State name', 'Total Users', 'Percentage'  
             ));
@@ -281,6 +285,9 @@ class LocationController extends Controller
 
             $filename = public_path('files/' . $down_file_name . ".csv");
             $handle   = fopen($filename, 'w+');
+            try{
+                chmod($filename,0777);
+            }catch(Exception $e){}
             fputcsv($handle, array(
                 'User Id', 'Account Id', 'User name', 'Location Id', 'City name', 'State name'  
             ));
@@ -349,6 +356,9 @@ class LocationController extends Controller
 
             $filename = public_path('files/' . $down_file_name . ".csv");
             $handle   = fopen($filename, 'w+');
+            try{
+                chmod($filename,0777);
+            }catch(Exception $e){}
             fputcsv($handle, array(
                 'User Id', 'Account Id', 'User name', 'Location Id', 'City name', 'State name'  
             ));

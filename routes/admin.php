@@ -56,10 +56,11 @@ Route::group(['namespace' => 'Admin', 'middleware' => ['check_permit', 'revalida
 	Route::post('users/bulk_gender_update', 'UsersController@bulk_gender_update')->name('users.bulk_gender_update');
 	Route::post('users/single_gender_update', 'UsersController@single_gender_update')->name('users.single_gender_update');
 	Route::post('users/bulk_photo_verification', 'UsersController@bulk_photo_verification')->name('users.bulk_photo_verification');
+	Route::post('users/bulk_email_verification', 'UsersController@bulk_email_verification')->name('users.bulk_email_verification');
 	
-	Route::get('unde_review/listing', 'UsersController@under_review_listing')->name('users.under-review-listing');
+	/*Route::get('unde_review/listing', 'UsersController@under_review_listing')->name('users.under-review-listing');
 	Route::get('users/unde_review', 'UsersController@unde_review')->name('users.unde-review');
-	Route::get('users/deleted', 'UsersController@deleted')->name('users.deleted');
+	Route::get('users/deleted', 'UsersController@deleted')->name('users.deleted');*/
 	Route::resource('users', 'UsersController');
 
 
@@ -120,6 +121,7 @@ Route::group(['namespace' => 'Admin', 'middleware' => ['check_permit', 'revalida
 
 	/* transaction */
 	Route::get('transaction-lists/listing', 'TrasactionListController@listing')->name('transaction-lists.listing');
+	Route::post('transaction-lists/refund-transaction', 'TrasactionListController@refundTransaction')->name('transaction-lists.refund-transaction');
 	Route::get('transaction/filters', 'TrasactionListController@filters')->name('transaction.filters');
 	Route::resource('transaction-lists', 'TrasactionListController');
 
@@ -130,6 +132,10 @@ Route::group(['namespace' => 'Admin', 'middleware' => ['check_permit', 'revalida
 	/* Coupons */
 	Route::get('coupons/listing', 'CouponController@listing')->name('coupons.listing');
 	Route::resource('coupons', 'CouponController');
+
+	/* Coupon Users */
+	Route::get('coupon-users/listing', 'CouponUsersController@listing')->name('coupon-users.listing');
+	Route::resource('coupon-users', 'CouponUsersController');
 
 	/* App Details */
 	Route::resource('app-details', 'AppDetailController');

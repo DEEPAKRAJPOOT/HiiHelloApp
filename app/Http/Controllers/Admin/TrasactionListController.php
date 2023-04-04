@@ -8,6 +8,10 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Response;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
+use App\Classes\Payment\HDFCClass;
+use Illuminate\Support\Facades\DB;
+use Exception;
 
 class TrasactionListController extends Controller
 {
@@ -33,7 +37,7 @@ class TrasactionListController extends Controller
      */
     public function show($custom_id)
     {
-        $transaction = Transaction::with(['user','user.userTransDefault','subscriptionPlan.subscriptionPlanTransDefault'])
+        $transaction = Transaction::with(['user','user.userTransDefault','subscriptionPlan.subscriptionPlanTransDefault','couponVendor'])
                     ->whereCustomId($custom_id)->firstOrFail();
         return view('admin.pages.transaction-lists.view', ["tran" => $transaction])->with(['custom_title' => 'Trasaction']);
     }
@@ -44,6 +48,7 @@ class TrasactionListController extends Controller
 
         $from_date         = ($request->from_date) ? $request->from_date." 00:00:00" : "";
         $to_date           = ($request->to_date) ? $request->to_date." 23:59:59" : "";
+        $search_mode       = ($request->search_mode) ? $request->search_mode : "";
         $search_status     = ($request->search_status) ? $request->search_status : "";
         $search_plan       = ($request->search_plan) ? $request->search_plan : "";
         $search_vendor     = ($request->search_vendor) ? $request->search_vendor : "";
@@ -80,9 +85,13 @@ class TrasactionListController extends Controller
             $transactions = $transactions->whereBetween('transactions.purchase_date', [$from_date, $to_date]);
         }
 
-        if($request->search_status != '') {
-            $transactions = $transactions->where('transactions.payment_type',$request->search_status);
-            if($request->search_status == 'COUPON' && $request->search_vendor != '') {
+        if($search_status != '') {
+            $transactions = $transactions->where('transactions.status',$search_status);
+        }
+
+        if($search_mode != '') {
+            $transactions = $transactions->where('transactions.payment_type',$search_mode);
+            if($search_mode == 'COUPON' && $request->search_vendor != '') {
                 $transactions = $transactions->where('transactions.coupon_vendor_id',$request->search_vendor);
             }
         }
@@ -90,8 +99,6 @@ class TrasactionListController extends Controller
         if($request->search_plan != '') {
             $transactions = $transactions->where('transactions.plan_id',$request->search_plan);
         }
-
-        $transactions = $transactions->where('transactions.status','success');
 
         $count = $transactions->count();
         $records['recordsTotal'] = $count;
@@ -110,11 +117,12 @@ class TrasactionListController extends Controller
                 'plan_id' => $transaction->subscriptionPlan ? ($transaction->subscriptionPlan->subscriptionPlanTranslation ? $transaction->subscriptionPlan->subscriptionPlanTranslation->name : "N/A") : "",
                 'razorpay_order_id' => $transaction->razorpay_order_id,
                 'amount' => $transaction->amount,
-                'status' => $transaction->status,
+                'status' => view('admin.layouts.includes.status-badge')->with('status',$transaction->status)->render(),
                 'coupon_name' => $transaction->coupon_name,
                 'payment_type' => isset($transaction->payment_type) && !empty($transaction->payment_type) ? $transaction->payment_type : "N/A",
                 'purchase_date' => isset($transaction->purchase_date) && !empty($transaction->purchase_date) ? date("d-m-Y",strtotime($transaction->purchase_date)) : "N/A",
                 'subscription_end_date' => isset($transaction->subscription_end_date) && !empty($transaction->subscription_end_date) ? date("d-m-Y",strtotime($transaction->subscription_end_date)) : "N/A",
+                'created_at' => !empty($transaction->created_at) ? date('d-m-Y H:i:s',strtotime($transaction->created_at)) : 'N/A',
                 'state' => !empty($transaction->user->location->locationTransDefault) ? ($transaction->user->location->locationTransDefault->state ?? 'N/A') :  'N/A',
                 'city' => !empty($transaction->user->location->locationTransDefault) ? ($transaction->user->location->locationTransDefault->name ?? 'N/A') :  'N/A',
                 'email' =>  $transaction->user ? ($transaction->user->email ?? 'N/A') :  'N/A',
@@ -159,14 +167,50 @@ class TrasactionListController extends Controller
 
     }
 
+    public function refundTransaction(Request $request){
+        try{
+            $transaction = Transaction::whereCustomId($request->custom_transaction_id)->wherePaymentType('UPI')->whereStatus('success')->firstOrFail();
+            DB::beginTransaction();
+            $transaction->refunded_at = now();
+            $transaction->refunded_amount = floatval($transaction->refunded_amount ?? 0) + $request->amount_to_refund;
+            $transaction->save();
+            $hdfc = new HDFCClass();
+            $trans_status = $hdfc->getTransactionStatus([
+                'transaction_id' => $transaction->razorpay_order_id
+            ]);
+            $refundData = $trans_status['mapped_response'];
+            $refundData['amount'] = $request->amount_to_refund;
+            $refund_request = $hdfc->createRefundRequest($refundData);
+            if(!empty($refund_request['mapped_response']['status']) && $refund_request['mapped_response']['status'] == 'success'){
+                flash('Refund initiated successfully')->success();
+                DB::commit();
+            }else{
+                flash('Unable to initiate refund. Error: '.$refund_request['mapped_response']['status_description'])->error();
+                DB::rollback();
+            }
+            return redirect()->route('admin.transaction-lists.show',$request->custom_transaction_id);
+        }catch(ModelNotFoundException $e){
+            flash('Trasaction not found or not refundable.')->error();
+        }catch(Exception $e){
+            $this->customLogger([
+                'file'=>$e->getFile(),
+                'line'=>$e->getLine(),
+                'message'=>$e->getMessage(),
+            ], 'hdfc_refund');
+            flash('Some Unknown error occured. Try again later')->error();
+        }
+        return redirect()->route('admin.transaction-lists.index');
+    }
+
     public function csvDownload(Request $request)
     {
         $from_date         = ($request->from_date) ? $request->from_date : '';
         $to_date           = ($request->to_date) ? now()->create($request->to_date)->addDay()->format('Y-m-d') : '';
         $search_status     = ($request->search_status) ? $request->search_status : '';
+        $search_mode       = ($request->search_mode) ? $request->search_mode : '';
         $search_plan       = ($request->search_plan) ? $request->search_plan : '';
         $search_vendor     = ($request->search_vendor) ? $request->search_vendor : '';
-        $search_keyword     = ($request->search_keyword) ? $request->search_keyword : '';
+        $search_keyword    = ($request->search_keyword) ? $request->search_keyword : '';
 
         $down_file_name = 'Transactions';
         $transactions = Transaction::with(['subscriptionPlan', 'user', 'user.userTransDefault', 'subscriptionPlan.subscriptionPlanTranslation']);
@@ -197,11 +241,14 @@ class TrasactionListController extends Controller
                 $transactions = $transactions->where('transactions.purchase_date','<',$to_date);
             }
         }
-        if($search_status != ''){
-            $transactions = $transactions->where('transactions.payment_type',$search_status);
-            if($search_status == 'COUPON' && $search_vendor != '') {
+        if($search_mode != ''){
+            $transactions = $transactions->where('transactions.payment_type',$search_mode);
+            if($search_mode == 'COUPON' && $search_vendor != '') {
                 $transactions = $transactions->where('transactions.coupon_vendor_id',$search_vendor);
             }
+        }
+        if($search_status != '') {
+            $transactions = $transactions->where('transactions.status',$search_status);
         }
         if($search_plan != '') {
             $transactions = $transactions->where('transactions.plan_id',$search_plan);
@@ -242,6 +289,9 @@ class TrasactionListController extends Controller
             }
             $filename = public_path('files/' . $down_file_name . ".csv");
             $handle   = fopen($filename, 'w+');
+            try{
+                chmod($filename,0777);
+            }catch(Exception $e){}
             fputcsv($handle, array(
                 'Account Id','Name','Email','Phone','Plan Name',
                 'Months','Amount','Payment Type','Razorpay Order Id','Razorpay Payment Id',
