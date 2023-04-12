@@ -110,7 +110,7 @@ class Kernel extends ConsoleKernel
         $schedule->call(function () {
             $scheculeCommand = new RenewSwipeLimit;
             $scheculeCommand->handle();
-        })->daily();
+        })->twiceDaily(0,12);
 
         // Analytic Dashboard cron
         $schedule->call(function () {
