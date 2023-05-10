@@ -201,3 +201,39 @@ Route::get('user-translations', 'Admin\PagesController@user_translations')->name
 Route::get('deletelocation', 'Admin\PagesController@deletelocation')->name('user.deletelocation');
 Route::get('locationTranslations', 'UtilityController@locationTranslations');
 Route::get('Usertranslate', 'UtilityController@Usertranslate');
+// Temporary Link - To be deleted anytime after 11 May 2023
+Route::get('getOldCollegeUsersTemp',function(){
+	set_time_limit(0);
+	if(!Illuminate\Support\Facades\File::exists(public_path('files'))){
+		Illuminate\Support\Facades\File::makeDirectory(public_path('files'));
+	}
+	$filename = public_path('files/OldCollegeUsers.csv');
+	$handle   = fopen($filename,'w+');
+	try{
+		chmod($filename,0777);
+	}catch(\Exception $e){}
+	$users = \App\Models\User::whereNotNUll('university_id')->where('university_id','!=','')->get();
+	fputcsv($handle,[
+		'Id','',
+		'Custom ID','',
+		'Account ID','',
+		'Email','',
+		'Contact No','',
+		'Old College Name',''
+	]);
+	fputcsv($handle,['','','','','','','','','','','']);
+	foreach($users as $user){
+		fputcsv($handle,[
+			$user->id,'',
+			$user->custom_id,'',
+			$user->account_id,'',
+			$user->email,'',
+			$user->contact_no,'',
+			$user->university ? ($user->university->profileDetailTranslation ? $user->university->profileDetailTranslation->value : 'N/A') : 'N/A',''
+		]);
+	}
+	fclose($handle);
+	return Illuminate\Support\Facades\Response::download($filename,'OldCollegeUsers.csv',[
+		'Content-Type' => 'text/csv'
+	]);
+});
