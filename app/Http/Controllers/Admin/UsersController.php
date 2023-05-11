@@ -2095,4 +2095,52 @@ class UsersController extends Controller
             ]);
         }
     }
+
+    public function selectionListing(Request $request){
+        ignore_user_abort(false);
+        $offset = 0;
+        $length = 100;
+        $search = $request->get('search');
+        if(!empty($request->get('page'))){
+            $offset = (intval($request->get('page')) - 1) * $length;
+        }
+        $data = [];
+        $users = User::whereIsActive('y')->with('userTransDefault','location')->orderBy('created_at','desc');
+        if(!empty($search)){
+            $users->where(function($query)use($search){
+                $query->where('account_id','like',"%{$search}%")
+                    ->orWhere('profile_percentage','like',"%{$search}%")
+                    ->orWhere('country_code','like',"%{$search}%")
+                    ->orWhere('contact_no','like',"%{$search}%")
+                    ->orWhere('gender','like',"%{$search}%")
+                    ->orWhere('interest','like',"%{$search}%")
+                    ->orWhere('email','like',"%{$search}%")
+                    ->orWhereHas('userTransDefault',function($q)use($search){
+                        $q->where('full_name','like',"%{$search}%");
+                    });
+            });
+        }
+        $filtered_records = (clone $users)->count();
+        $users = $users->skip($offset)->take($length)->get();
+        foreach($users as $user){
+            $userdata = [];
+            $userdata['id'] = $user['custom_id'];
+            $usertext = '<p class="mb-0 mr-1">';
+            $usertext .= $user->userTransDefault ? '<b>'.$user->userTransDefault->full_name.'</b> ' : 'N/A ';
+            if(!empty($user->account_id)){
+                $usertext .= '('.$user->account_id.') ';
+            }
+            $usertext .= '</p>';
+            $userdata['selection'] = $usertext;
+            if(!empty($user->email)){
+                $usertext .= '<p class="mb-0 mr-1">'.$user->email.'</p> ';
+            }
+            if(!empty($user->location->name)){
+                $usertext .= '<p class="mb-0 mr-1">'.$user->location->name.'</p> ';
+            }
+            $userdata['text'] = $usertext;
+            $data[] = $userdata;
+        }
+        return response()->json(['results'=>$data,'pagination'=>['more'=>($filtered_records > ($length + $offset))]]);
+    }
 }

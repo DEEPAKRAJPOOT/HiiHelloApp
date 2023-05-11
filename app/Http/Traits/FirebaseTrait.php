@@ -60,44 +60,36 @@ trait FirebaseTrait {
 		return $result;
 	}
 
-	// Send push notifications to all users
+	// Send push notifications to all selected users
     public function sendPushNotificationToAll($notification, $users)
-    {        
-        $dbNotification = Notification::create($notification);
-        $status = [];
+    {
         $tokens = [];
         foreach ($users as $user) {
-            $status[] = [
-                'user_id'           =>  $user->id,
-                'notification_id'   =>  $dbNotification->id,
-                'is_read'           =>  'n',
-                'created_at'        =>  \Carbon\Carbon::now(),
-                'updated_at'        =>  \Carbon\Carbon::now(),
-            ];
-            if( !empty($user->deviceToken) && !empty($user->deviceToken->token) ) {
-                $tokens[$user->deviceToken->type][] = $user->deviceToken->token;
+            if(!empty($user['device_token']) && !empty($user['device_token']['token'])){
+                $tokens[$user['device_token']['type']][] = $user['device_token']['token'];
             }
         }
-        NotificationStatus::insert($status);
+
         $data = [
-            'key'           =>  $dbNotification->key ?? "",
-            'value'         =>  $dbNotification->value ?? "",
-            'type'  		=>  $dbNotification->type,
-            'user_id'       =>  $dbNotification->user_id,
-            'image_url'     =>  $dbNotification->image ? generateURL($dbNotification->image) : "",
+            'key'           =>  $notification['key'] ?? '',
+            'value'         =>  $notification['value'] ?? '',
+            'type'  		=>  $notification['type'],
+            'user_id'       =>  $notification['user_id'],
+            'image_url'     =>  $notification['image'] ? generateURL($notification['image']) : '',
         ];
-        $url = "https://fcm.googleapis.com/fcm/send";
-        $header = ['Content-Type:application/json', 'Authorization:key='.config('utility.google.fcm') ];
-        if( !empty($tokens['ios']) ) {            
+
+        $url = 'https://fcm.googleapis.com/fcm/send';
+        $header = ['Content-Type:application/json','Authorization:key='.config('utility.google.fcm')];
+        if( !empty($tokens['ios']) ) {
             $iosNotification = [
                 'priority'          => 'high',
                 'registration_ids'  => $tokens['ios'],
                 'content_available' =>  false,
                 'mutable_content'   =>  true,
                 'notification'      =>  [
-                    'title' =>  $dbNotification->title,
-                    'body'  =>  str_limit($dbNotification->message, 50),
-                    // 'badge' =>  0,
+                    'title' =>  $notification['title'],
+                    'body'  =>  str_limit($notification['message'],50),
+                    //'badge' =>  0,
                     'sound' =>  'default'
                 ],
             ];
@@ -109,19 +101,19 @@ trait FirebaseTrait {
 
         if( !empty($tokens['android']) ) {
             $mData = array_merge($data, [
-                        'title' =>  $dbNotification->title,
-                        'body'  =>  str_limit($dbNotification->message, 50)]
-                    );
+                'title' =>  $notification['title'],
+                'body'  =>  str_limit($notification['message'], 50)
+            ]);
             $androidNotification = [
                 'priority'          =>  'high',
                 'registration_ids'  =>  $tokens['android'],
                 'data'              =>  $mData,
                 'notification'      =>  [
-                    'title'     =>  $dbNotification->title,
-                    'body'      =>  str_limit($dbNotification->message, 50),
-            		'type'  	=>  $dbNotification->type,
+                    'title'     =>  $notification['title'],
+                    'body'      =>  str_limit($notification['message'], 50),
+            		'type'  	=>  $notification['type'],
                     // 'badge'     =>  0,
-                    'image'     =>  $dbNotification->image ? generateURL($dbNotification->image) : "",
+                    'image'     =>  $notification['image'] ? generateURL($notification['image']) : '',
                 ],
             ];
             $data = json_encode($androidNotification);

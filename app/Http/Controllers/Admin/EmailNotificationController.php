@@ -4,11 +4,11 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Http\Requests\Admin\PushNotificationRequest;
+use App\Http\Requests\Admin\EmailNotificationRequest;
 use App\Models\User;
-use App\Jobs\BulkNotificationJob;
+use App\Jobs\BulkEmailJob;
 
-class PushNotificationController extends Controller
+class EmailNotificationController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -17,7 +17,7 @@ class PushNotificationController extends Controller
      */
     public function index()
     {
-        return view('admin.pages.push-notification.create')->with(['custom_title'=>'Push Notification']);
+        return view('admin.pages.email-notification.create')->with(['custom_title'=>'Email Notification']);
     }
 
     /**
@@ -26,14 +26,14 @@ class PushNotificationController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(PushNotificationRequest $request)
+    public function store(EmailNotificationRequest $request)
     {
         ini_set('max_execution_time',3600);
         set_time_limit(3600);
-        if( $request->has('user_type') && $request->has('subject') && $request->has('message') && $request->has('action_type') ) {
+        if( $request->has('user_type') && $request->has('subject') && $request->has('message') ) {
             
             $today_date = date('Y-m-d');
-            $users = User::with('deviceToken')->whereIsActive('y');
+            $users = User::whereIsActive('y')->whereNotNull('email')->with('userTransDefault');
 
             if(!empty($request->user_type) && $request->user_type != 'send_all'){
                 if ($request->user_type == "send_male") {
@@ -65,33 +65,28 @@ class PushNotificationController extends Controller
                     if(!empty($request->users) && is_array($request->users)){
                         $users = $users->whereIn('custom_id',$request->users);
                     }else{
-                        flash('Unable to send push notification. Please select some users.')->error();
-                        return redirect()->route('admin.push-notification.index');
+                        flash('Unable to send email. Please select some users.')->error();
+                        return redirect()->route('admin.email-notification.index');
                     }
                 }else if($request->user_type == "send_test_users") {
                     $users = $users->where('is_test_user','y');
                 }else{
-                    flash('Unable to send push notification. Please select valid type.')->error();
-                    return redirect()->route('admin.push-notification.index');
+                    flash('Unable to send email. Please select valid type.')->error();
+                    return redirect()->route('admin.email-notification.index');
                 }
             }
-            $notification = [
-                'key'      =>  'push_notification',
-                'value'    =>  'Push Notification Sent By Admin',
-                'user_id'  =>  $request->user_type,
-                'title'    =>  $request->subject,
-                'message'  =>  $request->message,
-                'image'    =>  '',
-                'type'     =>  config('utility.notification.type.'.$request->action_type,'admin-notification'),
+            $email = [
+                'subject'  =>  $request->subject,
+                'message'  =>  $request->message
             ];
-            $users->chunk(500,function($user_chunk)use($notification){
-                dispatch(new BulkNotificationJob($notification,$user_chunk->toArray()));
+            $users->chunk(500,function($user_chunk)use($email){
+                dispatch(new BulkEmailJob($email,$user_chunk->toArray()));
             });
         
-            flash('Push Notification Sent successfully!')->success();
+            flash('Email Notification Sent successfully!')->success();
         } else {
-            flash('Unable to send push notification. Please try again later.')->error();
+            flash('Unable to send email notification. Please try again later.')->error();
         }
-        return redirect()->route('admin.push-notification.index');
+        return redirect()->route('admin.email-notification.index');
     }
 }

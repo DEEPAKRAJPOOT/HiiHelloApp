@@ -254,6 +254,14 @@ Breadcrumbs::register('dashboard', function ($breadcrumbs) {
 	});
 
 
+	// Email Notification -------------------------------------------------------------------------------------------------------------------------------------------------------
+	Breadcrumbs::register('email_notification_create', function($breadcrumbs)
+	{
+		$breadcrumbs->parent('dashboard');
+	    $breadcrumbs->push('Send Email Notifiaction', route(Auth::getDefaultDriver().'.email-notification.create'));
+	});
+
+
 	// Subscription Plans -------------------------------------------------------------------------------------------------------------------------------------------------------
 	Breadcrumbs::register('subscription_plans_list', function($breadcrumbs)
 	{

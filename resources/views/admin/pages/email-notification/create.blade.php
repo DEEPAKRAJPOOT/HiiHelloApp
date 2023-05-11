@@ -1,7 +1,7 @@
 @extends('admin.layouts.app')
 
 @push('breadcrumb')
-    {!! Breadcrumbs::render('push_notification_create') !!}
+    {!! Breadcrumbs::render('email_notification_create') !!}
 @endpush
 
 @section('content')
@@ -16,7 +16,7 @@
             </div>
         </div>
 
-        <form id="formSendPushNotification" name="formSendPushNotification" method="POST" action="{{ route('admin.push-notification.store') }}" enctype="multipart/form-data">
+        <form id="formSendEmailNotification" name="formSendEmailNotification" method="POST" action="{{ route('admin.email-notification.store') }}" enctype="multipart/form-data">
             @csrf
             <div class="row">
                 <div class="col-md-12">
@@ -24,31 +24,9 @@
                         <div class="profile-content">
                             <div class="col-md-12">
 
-                                {{-- Subject --}}
-                                <div class="form-group {{ $errors->has('subject') ? 'has-error' : '' }}">
-                                    <label for="subject">{!! $mend_sign !!}Subject</label>
-                                    <input type="text" placeholder="Enter Subject" class="form-control" id="subject" name="subject" maxlength="500" autocomplete="off" value="{{ old('subject') }}" />
-                                    @if($errors->has('subject'))
-                                        <span class="help-block">
-                                            {{ $errors->first('subject') }}
-                                        </span>
-                                    @endif
-                                </div>
-
-                                {{-- Message --}}
-                                <div class="form-group {{ $errors->has('message') ? 'has-error' : '' }}">
-                                    <label for="message">{!! $mend_sign !!}Message</label>
-                                    <textarea type="text" placeholder="Enter message" class="form-control" id="message" name="message"></textarea>
-                                    @if($errors->has('message'))
-                                        <span class="help-block">
-                                            {{ $errors->first('message') }}
-                                        </span>
-                                    @endif
-                                </div>
-
                                 {{-- User Type --}}
                                 <div class="form-group" {{ $errors->has('user_type') ? 'has-error' : '' }}>
-                                    <label for="user_type">{!!$mend_sign!!}Notification User Type:</label>
+                                    <label for="user_type">{!!$mend_sign!!}User Type:</label>
                                     <div class="custom-file">
                                         <div class="row">
                                             <div class="col-md-12">
@@ -82,12 +60,11 @@
 
                                 {{-- Select Users --}}
                                 <div id="select_users_section" class="form-group d-none" {{ $errors->has('users') ? 'has-error' : '' }}>
-                                    <label for="users">{!!$mend_sign!!}Selected Users :</label>
+                                    <label for="users">{!!$mend_sign!!}Select Users :</label>
                                     <div class="custom-file">
                                         <div class="row">
                                             <div class="col-md-12">
                                                 <select id="users" class="form-control" name="users[]" multiple="multiple">
-                                                    <option></option>
                                                 </select>
                                             </div>
                                         </div>
@@ -99,33 +76,26 @@
                                     </div>
                                 </div>
 
-                                {{-- User Type --}}
-                                <div class="form-group" {{ $errors->has('action_type') ? 'has-error' : '' }}>
-                                    <label for="action_type">{!!$mend_sign!!}Notification Action:</label>
-                                    <div class="custom-file">
-                                        <div class="row">
-                                            <div class="col-md-12">
-                                                <select id="action_type" class="form-control" name="action_type">
-                                                    <option value="">-- Select Action --</option>
-                                                    <option value="open_profile_image" data-autoselectfor="send_empty_profile_image">Open Profile Image</option>
-                                                    <option value="open_location" data-autoselectfor="send_empty_location">Open Location Page</option>
-                                                    <option value="open_profile" data-autoselectfor="send_less_then_20_pr">Open Profile Page</option>
-                                                    <option value="profile_not_verified" data-autoselectfor="">Verify Profile</option>
-                                                    <option value="email_not_verified" data-autoselectfor="send_unverified_email">Verify Email</option>
-                                                    <option value="photo_not_verified" data-autoselectfor="send_unverified_photo">Verify Photo</option>
-                                                    <option value="phone_not_verified" data-autoselectfor="send_unverified_phone">Verify Phone</option>
-                                                    <option value="subscription_expire" data-autoselectfor="send_paid_male_subscription_not_expired">Subscription not yet Expired</option>
-                                                    <option value="subscription_already_expire" data-autoselectfor="send_paid_male_subscription_expired">Subscription Expired</option>
-                                                    <option value="send_by_admin" data-autoselectfor="send_selected_users">General Admin Notification</option>
-                                                </select>
-                                            </div>
-                                        </div>
-                                        @if ($errors->has('action_type'))
-                                            <span class="help-block">
-                                                <strong class="form-text">{{ $errors->first('action_type') }}</strong>
-                                            </span>
-                                        @endif
-                                    </div>
+                                {{-- Email Subject --}}
+                                <div class="form-group {{ $errors->has('subject') ? 'has-error' : '' }}">
+                                    <label for="subject">{!! $mend_sign !!}Email Subject</label>
+                                    <input type="text" placeholder="Enter Subject" class="form-control" id="subject" name="subject" maxlength="500" autocomplete="off" value="{{ old('subject') }}" />
+                                    @if($errors->has('subject'))
+                                        <span class="help-block">
+                                            {{ $errors->first('subject') }}
+                                        </span>
+                                    @endif
+                                </div>
+
+                                {{-- Email Body --}}
+                                <div class="form-group {{ $errors->has('message') ? 'has-error' : '' }}">
+                                    <label for="message">{!! $mend_sign !!}Email Body</label>
+                                    <textarea id="message" class="form-control" placeholder="Enter your message" name="message" rows="5"></textarea>
+                                    @if($errors->has('message'))
+                                        <span class="help-block">
+                                            {{ $errors->first('message') }}
+                                        </span>
+                                    @endif
                                 </div>
                                 
                             </div>
@@ -145,13 +115,9 @@
 @push('extra-js-scripts')
 <script type="text/javascript">
     $(document).ready(function () {
-        $("#formSendPushNotification").validate({
+        $("#formSendEmailNotification").validate({
             rules: {
                 user_type: {
-                    required: true,
-                    not_empty: true,
-                },
-                action_type: {
                     required: true,
                     not_empty: true,
                 },
@@ -160,12 +126,7 @@
                     not_empty: true,
                     minlength: 3,
                     maxlength: 500,
-                },
-                message: {
-                    required: true,
-                    not_empty: true,
-                    minlength: 3,
-                },
+                }
             },
             messages: {
                 user_type: {
@@ -177,12 +138,7 @@
                     not_empty:"@lang('validation.not_empty',['attribute'=>'subject'])",
                     minlength:"@lang('validation.min.string',['attribute'=>'subject','min'=>3])",
                     maxlength:"@lang('validation.max.string',['attribute'=>'subject','max'=>500])",
-                },
-                message:{
-                    required:"@lang('validation.required',['attribute'=>'message'])",
-                    not_empty:"@lang('validation.not_empty',['attribute'=>'message'])",
-                    minlength:"@lang('validation.min.string',['attribute'=>'message','min'=>3])",
-                },
+                }
             },
             errorClass: 'invalid-feedback',
             errorElement: 'span',
@@ -202,22 +158,23 @@
                 }
             }
         });
-        $('#formSendPushNotification').submit(function () {
+        $('#formSendEmailNotification').submit(function(){
             if($(this).valid()){
                 addOverlay();
-                $('input[type=submit],input[type=button],button[type=submit]').prop("disabled", "disabled");
+                $('input[type="submit"],input[type="button"],button[type="submit"]').prop('disabled',true);
                 return true;
-            } else {
+            }else{
                 return false;
             }
         });
         $('[name="user_type"]').change(function(){
-            $('#select_users_section').toggleClass('d-none',$(this).val() != 'send_selected_users');
-            $('#action_type').find('option[data-autoselectfor="'+$(this).val()+'"]').prop('selected',true);
-            if($('#action_type option[data-autoselectfor="'+$(this).val()+'"]').length == 0){
-                $('#action_type option[value="send_by_admin"]').prop('selected',true);
-            }
+            $('#select_users_section').toggleClass('d-none',$('[name="user_type"]').val() != 'send_selected_users');
         });
+        function convertToShortcode(html){
+            html = html.toLowerCase().replace(/ /g,'_');
+            html = '#('+html+')';
+            return html;
+        }
         $('#users').select2({
             'tags':false,
             'width':'100%',
@@ -241,6 +198,51 @@
             },
             'templateSelection':function(a){
                 return a.selection;
+            }
+        });
+        $('#message').summernote({
+            'toolbar':[
+                ['style',['style']],
+                ['font',['bold','italic','underline','clear']],
+                ['fontname',['fontname']],
+                ['color',['color']],
+                ['para',['ul','ol','paragraph']],
+                ['height',['height']],
+                ['table',['table']],
+                ['insert',['template','link','picture','hr']],
+                ['view',['fullscreen','codeview']],
+                ['help',['help']],
+                ['shortcodes',['shortcodes']]
+            ],
+            'height':250,
+            'inheritPlaceholder':true,
+            'spellCheck':true,
+            'disableGrammar':true,
+            'shortcuts':false,
+            'disableDragAndDrop':true,
+            'buttons':{
+                'shortcodes':function(context){
+                    var ui = $.summernote.ui;
+                    return (ui.buttonGroup([
+                        ui.button({
+                            'contents':'Insert Dynamic Data',
+                            'data':{
+                                'toggle':'dropdown'
+                            }
+                        }),
+                        ui.dropdown({
+                            'items':[
+                                'User Name','User Email'
+                            ],
+                            callback:function(items){
+                                $(items).find('a').on('click',function(e){
+                                    context.invoke('editor.pasteHTML',convertToShortcode($(this).html()));
+                                    e.preventDefault();
+                                });
+                            }
+                        })
+                    ])).render();
+                }
             }
         });
     });

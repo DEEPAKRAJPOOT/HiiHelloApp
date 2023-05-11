@@ -52,6 +52,7 @@ Route::group(['namespace' => 'Admin', 'middleware' => ['check_permit', 'revalida
 	
 	/* User */
 	Route::get('users/listing', 'UsersController@listing')->name('users.listing');
+	Route::get('users/selection-listing', 'UsersController@selectionListing')->name('users.selection-listing');
 	Route::post('users/genderupdate', 'UsersController@gender_update')->name('users.genderupdate');
 	Route::post('users/bulk_gender_update', 'UsersController@bulk_gender_update')->name('users.bulk_gender_update');
 	Route::post('users/single_gender_update', 'UsersController@single_gender_update')->name('users.single_gender_update');
@@ -110,6 +111,9 @@ Route::group(['namespace' => 'Admin', 'middleware' => ['check_permit', 'revalida
 
 	/* Push Notification */
 	Route::resource('push-notification', 'PushNotificationController');
+
+	/* Email Notification */
+	Route::resource('email-notification', 'EmailNotificationController');
 
 	/* Colleges */
 	Route::get('colleges/listing', 'CollegesController@listing')->name('colleges.listing');
