@@ -9,7 +9,7 @@ use App\Http\Requests\Api\General\{PaginationRequest};
 use Illuminate\Support\Facades\{Auth};
 use App\Models\{ChatRoom, ChatMessage, User, CallLog};
 use App\Http\Resources\v1\{ChatRoomResource, ChatMessageResource};
-use App\Http\Requests\Api\Chat\{CreateRoomRequest, ChatMessagesRequest, DeleteRoomRequest, GetRoomRequest};
+use App\Http\Requests\Api\Chat\{CreateRoomRequest, ChatMessagesRequest, ClearRoomRequest, DeleteRoomRequest, GetRoomRequest};
 
 class ChatController extends Controller
 {
@@ -102,8 +102,15 @@ class ChatController extends Controller
                         $query->where('status', '!=', 'read');
                     }])
                     ->withCount('blockBy')
-                    ->where(function ($query) use ($auth_id) {
-                        $query->whereCreatorId($auth_id)->orWhere('participate_id', $auth_id);
+                    ->where(function($query)use($auth_id){
+                        $query->where(function($q)use($auth_id){
+                            $q->whereCreatorId($auth_id)
+                            ->whereNull('creator_deleted_at');
+                        });
+                        $query->orWhere(function($q)use($auth_id){
+                            $q->whereParticipateId($auth_id)
+                            ->whereNull('participate_deleted_at');
+                        });
                     });
 
                 if (!empty($search)) {
@@ -169,7 +176,23 @@ class ChatController extends Controller
         $chatMessagesRequest = new ChatMessagesRequest();
         if ($this->apiValidator($request->all(), $chatMessagesRequest->rules())) {
             try {
-                $messages   =   ChatMessage::withTrashed()->select('id', 'custom_id', 'room_id', 'sender_id', 'message', 'status', 'created_at', 'updated_at', 'deleted_at')->with(['sender:id,custom_id'])
+                $cleared_time = '';
+                $auth_id = $request->user() ? $request->user()->id : NULL;
+                $room = ChatRoom::whereCustomId($request->room)->whereIsActive('y')->first();
+                if(!empty($room)){
+                    if($room->creator_id == $auth_id){
+                        $cleared_time  = $room->creator_cleared_at;
+                    }
+
+                    if($room->participate_id == $auth_id){
+                        $cleared_time = $room->participate_cleared_at;
+                    }
+                }
+                $messages = ChatMessage::withTrashed()->select('id', 'custom_id', 'room_id', 'sender_id', 'message', 'status', 'created_at', 'updated_at', 'deleted_at');
+                if(!empty($cleared_time)){
+                    $messages->where('created_at','>',$cleared_time);
+                }
+                $messages = $messages->with(['sender:id,custom_id'])
                     ->whereHas('room', function ($q) use ($request) {
                         $q->whereCustomId($request->room)->whereIsActive('y');
                     })->latest();
@@ -230,6 +253,58 @@ class ChatController extends Controller
         return $this->returnResponse();
     }
 
+    // Delete only the messages from the Chat Room
+    public function clearChatRoom(Request $request)
+    {
+        $clearRoomRequest = new ClearRoomRequest();
+        if ($this->apiValidator($request->all(), $clearRoomRequest->rules())) {
+            try {
+                $auth_id = $request->user() ? $request->user()->id : NULL;
+                $room = ChatRoom::whereCustomId($request->room_id)
+                    ->where(function ($query) use ($auth_id) {
+                        $query->where('creator_id', $auth_id)
+                            ->orWhere('participate_id', $auth_id);
+                    })->firstOrFail();
+
+                if($room->creator_id == $auth_id){
+                    $room->creator_cleared_at = now();
+                }
+
+                if($room->participate_id == $auth_id){
+                    $room->participate_cleared_at = now();
+                }
+
+                $room->save();
+
+                $this->status = Response::HTTP_OK;
+                return ([
+                    'data'  =>  NULL,
+                    'meta' => [
+                        'url'       =>  url()->current(),
+                        'api'       =>  $this->getVersion(),
+                        'language'  =>  app()->getLocale(),
+                        'is_ban'    =>  false,
+                        'message'   =>  trans('api.chat_room.delete'),
+                    ]
+                ]);
+            } catch (ModelNotFoundException $exception) {
+                switch ($exception->getModel()) {
+                    case 'App\Models\ChatRoom':
+                        $this->response['meta']['message'] = trans('api.chat_room.not_found');
+                        $this->response['meta']['is_ban'] = false;
+                        break;
+                    default:
+                        $this->response['meta']['message'] = trans('api.went_wrong');
+                        $this->response['meta']['is_ban'] = false;
+                        break;
+                };
+            } catch (\Exception $e) {
+                $this->storeErrorLog($e, 'delete_chat_room');
+            }
+        }
+        return $this->returnResponse();
+    }
+
     // Delete Chat Room
     public function deleteChatRoom(Request $request)
     {
@@ -243,8 +318,16 @@ class ChatController extends Controller
                             ->orWhere('participate_id', $auth_id);
                     })->firstOrFail();
 
-                ChatMessage::whereRoomId($room->id)->delete(); // Delete All Chat Messages
-                $room->delete(); // Delete Chat Room
+                
+                if($room->creator_id == $auth_id){
+                    $room->creator_deleted_at = now();
+                }
+
+                if($room->participate_id == $auth_id){
+                    $room->participate_deleted_at = now();
+                }
+
+                $room->save();
 
                 $this->status = Response::HTTP_OK;
                 return ([

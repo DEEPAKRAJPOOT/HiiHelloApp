@@ -870,6 +870,12 @@ class GeneralController extends Controller
         return $this->returnResponse();
     }
 
+    public function pingRequest(Request $request){
+        $this->status = Response::HTTP_OK;
+        $this->response['meta']['message'] = trans('api.save',['entity' => __('Ping')]);
+        return $this->returnResponse();
+    }
+
 
     // Check Image Moderation Things
     public function checkAwsRekognitionImageModeration(Request $request)

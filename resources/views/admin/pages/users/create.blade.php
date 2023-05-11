@@ -34,7 +34,7 @@
                 {{-- Country Code --}}
                 <div class="form-group">
                     <label for="country_code">{!!$mend_sign!!}Country Code</label>
-                    <select type="text" class="form-control @error('country_code') is-invalid @enderror" id="country_code" name="country_code" spellcheck="false" tabindex="0" />
+                    <select type="text" class="form-control @error('country_code') is-invalid @enderror" id="country_code" name="country_code" spellcheck="false" tabindex="0">
                         <option value="">Select Country Code</option>
                         @foreach($countries as $country)
                             <option value="{{ $country->phonecode }}">{{ $country->phonecode }}</option> 
@@ -98,7 +98,7 @@
                 {{-- Interest --}}
                 <div class="form-group">
                     <label for="interest">{!!$mend_sign!!}Interest</label>
-                    <select type="text" class="form-control @error('interest') is-invalid @enderror" id="interest" name="interest" spellcheck="false" tabindex="0" />
+                    <select type="text" class="form-control @error('interest') is-invalid @enderror" id="interest" name="interest" spellcheck="false" tabindex="0">
                         <option value="">Select Interest</option>
                         <option value="Male">Male</option>
                         <option value="Female">Female</option>
@@ -114,7 +114,7 @@
                     {{-- Location --}}
                     <div class="form-group col-md-4">
                         <label for="location">Location</label>
-                        <select type="text" class="form-control @error('location') is-invalid @enderror" id="location" name="location" spellcheck="false" tabindex="0" disabled />
+                        <select type="text" class="form-control @error('location') is-invalid @enderror" id="location" name="location" spellcheck="false" tabindex="0" disabled>
                             <option value="">Select Location</option>
                             @foreach($locations as $location)
                                 @if($location->locationTransDefault)
@@ -144,7 +144,7 @@
                 {{-- Language --}}
                 <div class="form-group">
                     <label for="language">{!!$mend_sign!!}Language</label>
-                    <select type="text" class="form-control @error('language') is-invalid @enderror" id="language" name="language" spellcheck="false" tabindex="0" />
+                    <select type="text" class="form-control @error('language') is-invalid @enderror" id="language" name="language" spellcheck="false" tabindex="0">
                         <option value="">Select Language</option>
                         @foreach($languages as $language)
                             <option value="{{ $language->lang_code }}">{{ $language->lang_code }} ({{ $language->hint }})</option> 
@@ -153,6 +153,20 @@
                     @if ($errors->has('language'))
                         <span class="text-danger">
                             <strong class="form-text">{{ $errors->first('language') }}</strong>
+                        </span>
+                    @endif
+                </div>
+
+                {{-- Test User --}}
+                <div class="form-group">
+                    <label for="test_user_select">Test User:</label>
+                    <select id="test_user_select" type="text"class="form-control" name="is_test_user" placeholder="Select Test User" spellcheck="false" autocapitalize="sentences" tabindex="0" autofocus>
+                            <option value="y">Yes</option>
+                            <option value="n" selected="selected">No</option>
+                    </select>
+                    @if ($errors->has('is_test_user'))
+                        <span class="help-block">
+                            <strong class="form-text">{{ $errors->first('is_test_user') }}</strong>
                         </span>
                     @endif
                 </div>
@@ -197,7 +211,6 @@
                         </span>
                     @endif
                 </div>
-
             </div>
             
         <!--end::Form-->
@@ -488,7 +501,7 @@
             {{-- Idea Of Travelling --}}
             <div class="form-group">
                 <label for="traveling_id[]">Idea Of Travelling</label>
-                <select type="text" class="form-control @error('traveling_id[]') is-invalid @enderror" id="traveling_id" name="traveling_id[]" spellcheck="false" tabindex="0"  multiple="multiple" />
+                <select type="text" class="form-control @error('traveling_id[]') is-invalid @enderror" id="traveling_id" name="traveling_id[]" spellcheck="false" tabindex="0"  multiple="multiple">
                     <option value="">Select Idea of Travelling</option>
                     @foreach($interests as $travel)
                         @if($travel->slug == 'traveling')
@@ -510,7 +523,7 @@
             {{-- My Kind Of Music --}}
             <div class="form-group">
                 <label for="music_id[]">My Kind Of Music</label>
-                <select type="text" class="form-control @error('music_id[]') is-invalid @enderror" id="music_id" name="music_id[]" spellcheck="false" tabindex="0"  multiple="multiple" />
+                <select type="text" class="form-control @error('music_id[]') is-invalid @enderror" id="music_id" name="music_id[]" spellcheck="false" tabindex="0"  multiple="multiple">
                     <option value="">Select My Kind Of Music</option>
                     @foreach($interests as $music)
                         @if($music->slug == 'music')
@@ -532,7 +545,7 @@
             {{-- Hobbies & Pass Time --}}
             <div class="form-group">
                 <label for="hobbie_id[]">Hobbies & Pass Time</label>
-                <select type="text" class="form-control @error('hobbie_id[]') is-invalid @enderror" id="hobbie_id" name="hobbie_id[]" spellcheck="false" tabindex="0"  multiple="multiple" />
+                <select type="text" class="form-control @error('hobbie_id[]') is-invalid @enderror" id="hobbie_id" name="hobbie_id[]" spellcheck="false" tabindex="0"  multiple="multiple">
                     <option value="">Select Hobbies & Pass Time</option>
                     @foreach($interests as $hobbie)
                         @if($hobbie->slug == 'hobbies')
@@ -554,7 +567,7 @@
             {{-- Favourite Childhood Game --}}
             <div class="form-group">
                 <label for="game_id[]">Favourite Childhood Game</label>
-                <select type="text" class="form-control @error('game_id[]') is-invalid @enderror" id="game_id" name="game_id[]" spellcheck="false" tabindex="0"  multiple="multiple" />
+                <select type="text" class="form-control @error('game_id[]') is-invalid @enderror" id="game_id" name="game_id[]" spellcheck="false" tabindex="0"  multiple="multiple">
                     <option value="">Select Favourite Childhood Game</option>
                     @foreach($interests as $game)
                         @if($game->slug == 'childhood-game')
@@ -576,7 +589,7 @@
             {{-- Favourite Sports --}}
             <div class="form-group">
                 <label for="sport_id[]">Favourite Sports</label>
-                <select type="text" class="form-control @error('sport_id[]') is-invalid @enderror" id="sport_id" name="sport_id[]" spellcheck="false" tabindex="0"  multiple="multiple" />
+                <select type="text" class="form-control @error('sport_id[]') is-invalid @enderror" id="sport_id" name="sport_id[]" spellcheck="false" tabindex="0"  multiple="multiple">
                     <option value="">Select Favourite Sports</option>
                     @foreach($interests as $sport)
                         @if($sport->slug == 'sports')
@@ -598,7 +611,7 @@
             {{-- Food I Love To Eat --}}
             <div class="form-group">
                 <label for="food_id[]">Food I Love To Eat</label>
-                <select type="text" class="form-control @error('food_id[]') is-invalid @enderror" id="food_id" name="food_id[]" spellcheck="false" tabindex="0"  multiple="multiple" />
+                <select type="text" class="form-control @error('food_id[]') is-invalid @enderror" id="food_id" name="food_id[]" spellcheck="false" tabindex="0"  multiple="multiple">
                     <option value="">Select Food I Love To Eat</option>
                     @foreach($interests as $food)
                         @if($food->slug == 'food')
@@ -620,7 +633,7 @@
             {{-- Fav Actors --}}
             <div class="form-group">
                 <label for="actor_id[]">Favourite Actors/Actress</label>
-                <select type="text" class="form-control @error('actor_id[]') is-invalid @enderror" id="actor_id" name="actor_id[]" spellcheck="false" tabindex="0" multiple="multiple" />
+                <select type="text" class="form-control @error('actor_id[]') is-invalid @enderror" id="actor_id" name="actor_id[]" spellcheck="false" tabindex="0" multiple="multiple">
                     <option value="">Select Favourite Actors/Actress</option>
                     @foreach($interests as $actor)
                         @if($actor->slug == 'actors')
@@ -644,7 +657,7 @@
             {{-- Select Singer (Male/Female) --}}
             <div class="form-group">
                 <label for="singer_id[]">Select Singer (Male/Female)</label>
-                <select type="text" class="form-control @error('singer_id[]') is-invalid @enderror" id="singer_id" name="singer_id[]" spellcheck="false" tabindex="0" multiple="multiple" />
+                <select type="text" class="form-control @error('singer_id[]') is-invalid @enderror" id="singer_id" name="singer_id[]" spellcheck="false" tabindex="0" multiple="multiple">
                     <option value="">Select Singer (Male/Female)</option>
                     @foreach($interests as $singer)
                         @if($singer->slug == 'singers')

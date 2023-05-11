@@ -41,6 +41,9 @@ class HomeResource extends JsonResource
                 'verified_staus'   =>  ($this->emailVerifyStatus()=='verified' && $this->contactVerifyStatus()=='verified' && $this->verify_photo_status=='verified') ? 'verified' : 'under_review',
                 'verified_status'  =>  $this->verify_status,
                 'distance'         =>  $this->distance ?? 0,
+                'online_status'    =>  $this->onlineStatus(),
+                'new_account'      =>  $this->isNewAccount(),
+                'last_seen'        =>  strtotime($this->last_online) * 1000
             ],
         ];
     }

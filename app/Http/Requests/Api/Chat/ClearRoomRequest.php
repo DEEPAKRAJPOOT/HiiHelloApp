@@ -1,10 +1,12 @@
 <?php
 
-namespace App\Http\Requests\Api\User;
+namespace App\Http\Requests\Api\Chat;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\Auth;
+use App\Models\ChatRoom;
 
-class BlockUnblockRequest extends FormRequest
+class ClearRoomRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -23,9 +25,8 @@ class BlockUnblockRequest extends FormRequest
      */
     public function rules()
     {
-        return  [
-            'user_id'       =>  'required|max:100',
-            'status'        =>  'required|in:block,unblock,hide,unhide',
+        return [
+            'room_id'      =>  'required|max:100',
         ];
     }
 }

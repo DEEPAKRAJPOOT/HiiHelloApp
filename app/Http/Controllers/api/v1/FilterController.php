@@ -76,10 +76,14 @@ class FilterController extends Controller
                             }    // Interested in Gender
                         });
 
-                        
+                    // No of fields in advanced search
+                    $filter_limit = 8;
+                    $filters_applied = 0;
+
                     if (!empty($user->discover_location_id)) {
                         if ($user->location_id != $user->discover_location_id) {
                             $users->where('location_id', $user->discover_location_id);  // Location
+                            $filter_limit = 1;
                         }
                     }
 
@@ -93,41 +97,54 @@ class FilterController extends Controller
                     }
 
 
-                    $users = $users->where(function ($query_filter)  use ($request) {
-                        if (!empty($request->relationship_status)) {
-                            $query_filter->orWhereHas('relationshipStatus', function ($query_relation) use ($request) {
+                    $users = $users->where(function ($query_filter)  use ($request,$filter_limit,$filters_applied) {
+                        if (!empty($request->college) && $filters_applied < $filter_limit) {
+                            $filters_applied++;
+                            $query_filter->whereHas('college', function ($query_relation) use ($request) {
+                                $query_relation->where('custom_id',$request->college)->whereNotNull('approved_at');
+                            });
+                        }
+                        if (!empty($request->relationship_status) && $filters_applied < $filter_limit) {
+                            $filters_applied++;
+                            $query_filter->whereHas('relationshipStatus', function ($query_relation) use ($request) {
                                 $query_relation->whereSlug($request->relationship_status)->whereIsActive('y');
                             });
                         }
-                        if (!empty($request->personalities)) {
-                            $query_filter->orWhereHas('personalities.personality', function ($query_personality) use ($request) {
+                        if (!empty($request->personalities) && $filters_applied < $filter_limit) {
+                            $filters_applied++;
+                            $query_filter->whereHas('personalities.personality', function ($query_personality) use ($request) {
                                 $query_personality->whereIn('custom_id', $request->personalities)->whereIsActive('y');
                             });
                         }
-                        if (!empty($request->star_sign)) {
-                            $query_filter->orWhereHas('starSign', function ($query_star_sign) use ($request) {
+                        if (!empty($request->star_sign) && $filters_applied < $filter_limit) {
+                            $filters_applied++;
+                            $query_filter->whereHas('starSign', function ($query_star_sign) use ($request) {
                                 $query_star_sign->whereSlug($request->star_sign)->whereIsActive('y');
                             });
                         }
 
-                        if (!empty($request->community)) {
-                            $query_filter->orWhereHas('community', function ($query_community) use ($request) {
+                        if (!empty($request->community) && $filters_applied < $filter_limit) {
+                            $filters_applied++;
+                            $query_filter->whereHas('community', function ($query_community) use ($request) {
                                 $query_community->whereSlug($request->community)->whereIsActive('y');
                             });
                         }
-                        if (!empty($request->religion)) {
-                            $query_filter->orWhereHas('religion', function ($query_religion) use ($request) {
+                        if (!empty($request->religion) && $filters_applied < $filter_limit) {
+                            $filters_applied++;
+                            $query_filter->whereHas('religion', function ($query_religion) use ($request) {
                                 $query_religion->whereSlug($request->religion)->whereIsActive('y');
                             });
                         }
-                        if (!empty($request->fav_movie)) {
+                        if (!empty($request->fav_movie) && $filters_applied < $filter_limit) {
+                            $filters_applied++;
                             $fav_movie = $request->fav_movie;
-                            $query_filter->orWhereHas('userTranslations', function ($query_fav_movie) use ($fav_movie) {
+                            $query_filter->whereHas('userTranslations', function ($query_fav_movie) use ($fav_movie) {
                                 $query_fav_movie->where('fav_movie', 'like', "%{$fav_movie}%");
                             });
                         }
-                        if (!empty($request->interests)) {
-                            $query_filter->orWhereHas('interests.interest', function ($query_interests) use ($request) {
+                        if (!empty($request->interests) && $filters_applied < $filter_limit) {
+                            $filters_applied++;
+                            $query_filter->whereHas('interests.interest', function ($query_interests) use ($request) {
                                 $query_interests->whereIn('custom_id', $request->interests)->whereIsActive('y');
                             });
                         }
@@ -157,9 +174,17 @@ class FilterController extends Controller
                     if (count($reported) > 0) {
                         $users->whereNotIn('users.id', $reported);    // Restrict Reported Profile
                     }
-                    $users->doesnthave('blockedTos');
+
+                    $users->whereDoesntHave('blockedTos',function($query)use($auth_id){
+                        $query->where('block_by',$auth_id);
+                    });
+
+                    $users->whereDoesntHave('hiddenTos',function($query)use($auth_id){
+                        $query->where('block_by',$auth_id);
+                    });
 
                     $users = $users->orderBy('distance')
+                        ->orderBy('last_online','DESC')
                         ->orderBy('email_verified_at', "DESC")
                         ->orderBy('contact_verified_at', "DESC")
                         ->orderBy('photo_verified_at', "DESC")

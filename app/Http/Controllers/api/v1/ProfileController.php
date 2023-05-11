@@ -7,9 +7,9 @@ use Illuminate\Http\{Request, Response};
 use Illuminate\Support\Facades\{Storage, Auth};
 use App\Classes\ImageDetectionClass;
 use Illuminate\Database\Eloquent\{ModelNotFoundException};
-use App\Http\Resources\v1\{UserFullProfile, UserInterestResource, MediaResource};
-use App\Http\Requests\Api\User\{FullProfileRequest, SetInterestRequest, SetMediaRequest};
-use App\Models\{User, UserDetail, Interest, UserInterest, ProfileDetail, Personality, Language, UserPersonality, ImageModerationLog};
+use App\Http\Resources\v1\{UserFullProfile, UserInterestResource, MediaResource, CollegeResource};
+use App\Http\Requests\Api\User\{FullProfileRequest, SetInterestRequest, SetMediaRequest, SetCollegeRequest};
+use App\Models\{User, UserDetail, Interest, UserInterest, ProfileDetail, Personality, Language, UserPersonality, ImageModerationLog, College};
 
 class ProfileController extends Controller
 {
@@ -521,6 +521,42 @@ class ProfileController extends Controller
             }
         }
 
+        return $this->returnResponse();
+    }
+    public function setCollege(Request $request){
+        $setCollegeRequest = new SetCollegeRequest();
+        if($this->apiValidator($request->all(),$setCollegeRequest->rules())){
+            try {
+                $user = $request->user();
+                $college = College::whereCustomId($request->college_id)->whereNotNull('approved_at')->firstOrFail();
+                $user->college_id = $college->id;
+                $user->save();
+                return (new CollegeResource($college))
+                ->additional([
+                    'meta' => [
+                        'is_ban'    =>  false,
+                        'message'   =>  trans('api.profile_setuped'),
+                    ]
+                ]);
+            }catch (ModelNotFoundException $exception) {
+                switch ($exception->getModel()) {
+                    case 'App\Models\College':
+                        $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("College")]);
+                        $this->response['meta']['is_ban'] = false;
+                        break;
+                    case 'App\Models\User':
+                        $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("User")]);
+                        $this->response['meta']['is_ban'] = false;
+                        break;
+                    default:
+                        $this->response['meta']['message'] = trans('api.went_wrong');
+                        $this->response['meta']['is_ban'] = false;
+                        break;
+                };
+            } catch (\Exception $e) {
+                $this->storeErrorLog($e, 'set_users_college');
+            }
+        }
         return $this->returnResponse();
     }
 }

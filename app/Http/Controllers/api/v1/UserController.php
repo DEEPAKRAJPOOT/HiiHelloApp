@@ -53,7 +53,9 @@ class UserController extends Controller
                     'pet_id',
                     'star_sign_id',
                     'community_id',
-                    'is_active'
+                    'is_active',
+                    'last_online',
+                    'created_at'
                 )
                     ->with([
                         // 'interests' => function($query) use ($max_interest) {

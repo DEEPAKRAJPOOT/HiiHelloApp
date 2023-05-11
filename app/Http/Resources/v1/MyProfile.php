@@ -50,6 +50,7 @@ class MyProfile extends JsonResource
                 //'personalities'         =>  UserPersonalityResource::collection($this->personalities),
                 'education'             =>  new ProfileDetailResource($this->education),
                 'university_college'    =>  new ProfileDetailResource($this->university),
+                'college'               =>  new CollegeResource($this->college),
                 'profession'            =>  new ProfileDetailResource($this->profession),
                 'religion'              =>  new ProfileDetailResource($this->religion),
             ],

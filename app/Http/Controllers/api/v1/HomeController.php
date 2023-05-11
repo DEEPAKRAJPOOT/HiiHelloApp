@@ -65,6 +65,8 @@ class HomeController extends Controller
                             'verify_status',
                             'verify_photo_status',
                             'verify_email_send',
+                            'last_online',
+                            'created_at',
 
                             'trusted_score',
                             'email_verified_at',
@@ -138,7 +140,13 @@ class HomeController extends Controller
                         $users->whereNotIn('users.id', $reported);    // Restrict Reported Profile
                     }
 
-                    $users->doesnthave('blockedTos');
+                    $users->whereDoesntHave('blockedTos',function($query)use($auth_id){
+                        $query->where('block_by',$auth_id);
+                    });
+
+                    $users->whereDoesntHave('hiddenTos',function($query)use($auth_id){
+                        $query->where('block_by',$auth_id);
+                    });
 
                     // if (count($blocked) > 0) {
                     //     $users->whereNotIn('id', $blocked);     // Restrict Blocked Profile
@@ -157,7 +165,8 @@ class HomeController extends Controller
                         }
                     });
 
-                    $users = $users->orderBy('email_verified_at', "DESC")
+                    $users = $users->orderBy('last_online','DESC')
+                        ->orderBy('email_verified_at', "DESC")
                         ->orderBy('contact_verified_at', "DESC")
                         ->orderBy('photo_verified_at', "DESC")
                         ->orderBy('interests_count', "DESC")

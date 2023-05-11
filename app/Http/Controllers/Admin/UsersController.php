@@ -1057,6 +1057,9 @@ class UsersController extends Controller
                 case 'deleted':
                     $users->onlyTrashed();
                 break;
+                case 'test_users':
+                    $users->where('is_test_user','y');
+                break;
             }
         }
 
@@ -2037,6 +2040,59 @@ class UsersController extends Controller
                 }
             }
             return $location_id;
+        }
+    }
+
+    private function fakeUsers(){
+        ini_set('max_execution_time',0);
+        set_time_limit(0);
+        $iteration = 5000;
+        $faker = \Faker\Factory::create();
+        for($i=519; $i <= $iteration; $i++){
+            $name = $faker->name();
+            $email = $faker->unique()->safeEmail();
+            $phone = substr(preg_replace('/[^0-9]/','',$faker->phoneNumber()),-10);
+            $user = User::create([
+                'custom_id'            => getUniqueString('users'),
+                'email'                => $email,
+                'account_id'           => Str::slug(substr($name,0,4),'_').'_'.substr(time().$i, -10),
+                'country_code'         => '91',
+                'contact_no'           => $phone,
+                'birth_date'           => date('Y-m-d',mt_rand(0,1114021800)),
+                'gender'               => ['Male','Female'][mt_rand(0,1)],
+                'interest'             => ['Male','Female','Both'][mt_rand(0,2)],
+                'country_id'           => 101,
+                'location_id'          => 1143,
+                'discover_location_id' => 1143,
+                'language_id'          => 2,
+                'new_location_id'      => 'y',
+                'profile_percentage'   => 20,
+                'latitude'             => 30.1318279,
+                'current_latitude'     => 30.1318279,
+                'longitude'            => 77.2883342,
+                'current_longitude'    => 77.2883342,
+                'password'             => Hash::make(config('utility.default_password')),
+                'is_active'            => 'y',
+                'email_verified_at'    => now(),
+                'contact_verified_at'  => now(),
+                'is_test_user'         => 'y'
+            ]);
+            \App\Models\UserTranslation::create([
+                'locale' => 'en',
+                'user_id' => $user->id,
+                'full_name' => $name
+            ]);
+            $user->createToken(config('utility.token'))->plainTextToken;
+            \App\Models\DeviceToken::updateOrCreate([
+                'user_id'       =>  $user->id,
+            ], [
+                'token'         =>  'dY2Wj9ePSLGTduRvtXxY4G:APA91bGhOnMSe3emob6_NqMi5sfHOdHU9cCmVnUUL94l6PA2dUHumi7rYl4meoyVL8cNGC_zWyv1n7LCmqgvt4hy_1VMI3mAvQx3bJw7TAJUmnzmTWUxLcTvCBVtFai82'.Str::random(11),
+                'type'          =>  'android',
+                'device_name'   =>  'Hmd global',
+                'os_name'       =>  '29',
+                'os_version'    =>  'v1',
+                'app_version'   =>  'v : 101035',
+            ]);
         }
     }
 }

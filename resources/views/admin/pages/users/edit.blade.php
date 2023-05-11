@@ -187,6 +187,20 @@
                     @endif
                 </div>
 
+                {{-- Test User --}}
+                <div class="form-group">
+                    <label for="test_user_select">Test User:</label>
+                    <select id="test_user_select" type="text"class="form-control" name="is_test_user" placeholder="Select Test User" spellcheck="false" autocapitalize="sentences" tabindex="0" autofocus>
+                            <option value="y" @if(($user->is_test_user ?? '') == 'y') selected @endif>Yes</option>
+                            <option value="n" @if(($user->is_test_user ?? 'n') == 'n') selected @endif>No</option>
+                    </select>
+                    @if ($errors->has('is_test_user'))
+                        <span class="help-block">
+                            <strong class="form-text">{{ $errors->first('is_test_user') }}</strong>
+                        </span>
+                    @endif
+                </div>
+
                 {{-- Profile Photo --}}
                 <div class="form-group">
                     <label for="profile_photo">Profile Photo</label>
@@ -210,6 +224,7 @@
                     </div>
                  </div>
                  @endif
+
             </div>
         <!--end::Form-->
     </div>

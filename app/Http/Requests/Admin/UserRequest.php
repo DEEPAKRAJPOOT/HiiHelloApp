@@ -81,6 +81,7 @@ class UserRequest extends FormRequest
                 Rule::requiredIf(!in_array($this->action,$unless_actions)),
                 Rule::in($language_ids)
             ],
+            'is_test_user'              =>  'nullable|in:y,n',
             'profile_photo'             =>  'nullable|mimes:jpg,jpeg,png',
 
             // Full Profile

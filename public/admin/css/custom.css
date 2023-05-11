@@ -94,3 +94,4 @@ form > .card-header .card-toolbar {
 .custom-checkbox {  display: flex; align-items: center; justify-content: flex-start; }
 .custom-checkbox input{ width: 25px; margin-right: 10px; }
 .custom-checkbox label{ margin-bottom: 0px; }
+a + a + button { margin-top:0.75rem }

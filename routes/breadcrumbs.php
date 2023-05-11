@@ -342,6 +342,30 @@ Breadcrumbs::register('dashboard', function ($breadcrumbs) {
 	    $breadcrumbs->push('Coupon Users', route(Auth::getDefaultDriver().'.coupon-users.index'));
 	});
 
+	//Colleges
+	Breadcrumbs::register('colleges_list',function($breadcrumbs){
+		$breadcrumbs->parent('dashboard');
+	    $breadcrumbs->push('Colleges',route(Auth::getDefaultDriver().'.colleges.index'));
+	});
+
+	Breadcrumbs::register('colleges_view', function ($breadcrumbs, $id)
+	{
+		$breadcrumbs->parent('colleges_list');
+		$breadcrumbs->push('View College', route('admin.colleges.edit', $id));
+	});
+
+	Breadcrumbs::register('college_create', function($breadcrumbs)
+	{
+		$breadcrumbs->parent('colleges_list');
+	    $breadcrumbs->push('Add New College', route(Auth::getDefaultDriver().'.colleges.create'));
+	});
+
+	Breadcrumbs::register('college_update', function($breadcrumbs, $id)
+	{
+		$breadcrumbs->parent('colleges_list');
+	    $breadcrumbs->push('Edit College', route(Auth::getDefaultDriver().'.colleges.edit', $id));
+	});
+
 	// Call Logs ------------------------------------------------------------------
 	Breadcrumbs::register('call_log_list', function($breadcrumbs)
 	{

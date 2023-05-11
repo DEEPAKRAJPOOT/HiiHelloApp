@@ -61,7 +61,8 @@ class MatchController extends Controller
                 $age_to     =   $auth_age + $age_max_diff;
 
                 $unmatched      =   UnMatch::whereUnmatchBy($auth_id)->whereNotNull('unmatch_to')->distinct()->pluck('unmatch_to')->toArray();
-                $blocked        =   BlockUser::whereBlockBy($auth_id)->whereNotNull('blocked_to')->distinct()->pluck('blocked_to')->toArray();
+                $blocked        =   BlockUser::blockedOnly()->whereBlockBy($auth_id)->whereNotNull('blocked_to')->distinct()->pluck('blocked_to')->toArray();
+                $hidden         =   BlockUser::hiddenOnly()->whereBlockBy($auth_id)->whereNotNull('blocked_to')->distinct()->pluck('blocked_to')->toArray();
                 $interests      =   UserInterest::whereUserId($auth_id)->whereNotNull('interest_id')->distinct()->pluck('interest_id')->toArray();
                 $personalities  =   UserPersonality::whereUserId($auth_id)->whereNotNull('personality_id')->distinct()->pluck('personality_id')->toArray();
 
@@ -73,7 +74,7 @@ class MatchController extends Controller
                 $creators = $rooms->whereNotNull('creator_id')->pluck('creator_id')->toArray();
                 $participants = $rooms->whereNotNull('participate_id')->pluck('participate_id')->toArray();
 
-                $restricted_ids = array_unique(array_merge($unmatched, $blocked, $creators, $participants));
+                $restricted_ids = array_unique(array_merge($unmatched, $blocked, $hidden, $creators, $participants));
                 if (($key = array_search($auth_id, $restricted_ids)) !== false) {
                     unset($restricted_ids[$key]);
                 }

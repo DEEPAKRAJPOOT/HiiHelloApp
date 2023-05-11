@@ -27,8 +27,12 @@
                             </a>
                         </div>
                         @endif
-
-                        <br><br><br>
+                        {{-- For spacing do not remove below h5 --}}
+                        <h5 class="mb-4">
+                            @if(($user->is_test_user ?? '') == 'y')
+                                <span class="badge bg-primary text-white">Test User</span>
+                            @endif
+                        </h5>
                         <label class="control-label"><span class="mendatory" style="font-size: 20px;"></span>
                             <h1>Basic Information</h1>
                         </label>    

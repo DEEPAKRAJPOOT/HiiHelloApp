@@ -45,7 +45,7 @@ class User extends Authenticatable implements MustVerifyEmail, TranslatableContr
         'verify_photo_status', 'verify_video_status',
         'verify_status', 'email_verified_at', 'contact_verified_at', 'photo_verified_at', 'video_verified_at',
         'reason_of_delete','app_delete','device_type','device_app_version',
-        'otp_less_id','user_status'
+        'otp_less_id','user_status','last_online','college_id','is_test_user'
     ];
     
     protected $translatedAttributes = ['full_name', 'about_me', 'fav_movie'];
@@ -85,8 +85,11 @@ class User extends Authenticatable implements MustVerifyEmail, TranslatableContr
     public function location(){ return $this->belongsTo('App\Models\Location'); }
     public function language(){ return $this->belongsTo('App\Models\Language'); }
 
-    public function blockBys(){ return $this->hasMany('App\Models\BlockUser','block_by','id'); }
-    public function blockedTos(){ return $this->hasMany('App\Models\BlockUser','blocked_to','id'); }
+    public function blockBys(){ return $this->hasMany('App\Models\BlockUser','block_by','id')->where('block_type','block'); }
+    public function blockedTos(){ return $this->hasMany('App\Models\BlockUser','blocked_to','id')->where('block_type','block'); }
+
+    public function hiddenBys(){ return $this->hasMany('App\Models\BlockUser','block_by','id')->where('block_type','hide'); }
+    public function hiddenTos(){ return $this->hasMany('App\Models\BlockUser','blocked_to','id')->where('block_type','hide'); }
 
     public function userSettings(){ return $this->hasMany('App\Models\UserSetting','user_id','id'); }
     public function discoveryLocation(){ return $this->belongsTo('App\Models\Location','discover_location_id'); }
@@ -102,6 +105,7 @@ class User extends Authenticatable implements MustVerifyEmail, TranslatableContr
     public function personalities(){ return $this->hasMany('App\Models\UserPersonality'); }
     public function education(){ return $this->hasOne('App\Models\ProfileDetail','id','education_id'); }
     public function university(){ return $this->hasOne('App\Models\ProfileDetail','id','university_id'); }
+    public function college(){ return $this->hasOne('App\Models\College','id','college_id'); }
     public function profession(){ return $this->hasOne('App\Models\ProfileDetail','id','profession_id'); }
     public function religion(){ return $this->hasOne('App\Models\ProfileDetail','id','religion_id'); }
 
@@ -178,6 +182,27 @@ class User extends Authenticatable implements MustVerifyEmail, TranslatableContr
         if(!empty($this->email_verified_at)){ $status = "verified"; }
         
         return $status;
+    }
+
+    public function onlineStatus(){
+        if(!empty($this->last_online)){
+            $online_time_limit = config('utility.profile.durations.online_time');
+            $recent_time_limit = config('utility.profile.durations.recent_online_time');
+            $time_difference = time() - strtotime($this->last_online);
+            if($time_difference < ($online_time_limit * 60)){
+                return 'online';
+            }
+            if($time_difference < ($recent_time_limit * 60)){
+                return 'recent';
+            }
+        }
+        return 'offline';
+    }
+
+    public function isNewAccount(){
+        $new_account_limit = config('utility.profile.durations.new_profile_time'); // in days
+        $time_in_seconds = intval($new_account_limit) * 86400;
+        return ((time() - strtotime($this->created_at)) < $time_in_seconds);
     }
 
     public function contactVerifyStatus(){
@@ -358,6 +383,7 @@ class User extends Authenticatable implements MustVerifyEmail, TranslatableContr
         $pet                   =  !empty($this->pet_id) ? config('utility.profile.percent.pet') : 0;
         $education             =  !empty($this->education_id) ? config('utility.profile.percent.education') : 0;
         $university            =  !empty($this->university_id) ? config('utility.profile.percent.university') : 0;
+        $college               =  !empty($this->college_id) ? config('utility.profile.percent.university') : 0;
         $profession            =  !empty($this->profession_id) ? config('utility.profile.percent.profession') : 0;
         $star_sign             =  !empty($this->star_sign_id) ? config('utility.profile.percent.star_sign') : 0;
         $religion              =  !empty($this->religion_id) ? config('utility.profile.percent.religion') : 0;
@@ -370,7 +396,7 @@ class User extends Authenticatable implements MustVerifyEmail, TranslatableContr
         if($photo > $photo_max_point){ $photo = $photo_max_point; }
         if($interest_percent > $interests_max_point){ $interest_percent = $interests_max_point; }
 
-        $percentage = intval(round(($language+$full_name+$birth_date+$location+$interest+$photo_verified+$email_verified+$video_verified+$contact_verified+$main_photo+$photo+$video+$about_me+$voice_prompt+$personality+$relationship_status+$you_are_here+$food_preference+$drinking+$smoking+$pet+$education+$university+$profession+$star_sign+$religion+$community+$fav_movie+$interest_percent)
+        $percentage = intval(round(($language+$full_name+$birth_date+$location+$interest+$photo_verified+$email_verified+$video_verified+$contact_verified+$main_photo+$photo+$video+$about_me+$voice_prompt+$personality+$relationship_status+$you_are_here+$food_preference+$drinking+$smoking+$pet+$education+$college+$profession+$star_sign+$religion+$community+$fav_movie+$interest_percent)
             *$maximum_points/100));
             
         if($percentage != $this->profile_percentage){

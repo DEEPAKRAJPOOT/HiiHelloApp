@@ -4,8 +4,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Middleware\CheckApiLanguage;
 
-use App\Http\Controllers\api\v1\{AuthenticationController, GeneralController, UserController, LikeController, TwillioController, ChatController, MatchController, SearchController, BlockController, VerificationController, ProfileController, DiscoveryController, FilterController, HomeController, PaymentController, PaymentHDFCController, SubscriptionController,QueryController,CouponController};
-use App\Http\Controllers\api\v2\Authenticationv2Controller;
+use App\Http\Controllers\api\v1\{AuthenticationController, GeneralController,CollegeController, UserController, LikeController, TwillioController, ChatController, MatchController, SearchController, BlockController, VerificationController, ProfileController, DiscoveryController, FilterController, HomeController, PaymentController, PaymentHDFCController, SubscriptionController,QueryController,CouponController};
+use App\Http\Controllers\api\v2\{Authenticationv2Controller,Chatv2Controller};
 use App\Http\Middleware\CheckApiUser;
 /*
 |--------------------------------------------------------------------------
@@ -62,6 +62,11 @@ Route::group(['namespace' => 'v1', 'prefix' => 'v1'], function () {
     // General Profile Listing
     Route::post('profile/get-details', [GeneralController::class, 'getProfileDetails'])->name('api.profile.get-details');
 
+    // Colleges
+    Route::post('colleges/get-states', [CollegeController::class, 'getStatesList'])->name('api.colleges.get-states');
+    Route::post('colleges/get-cities', [CollegeController::class, 'getCitiesList'])->name('api.colleges.get-cities');
+    Route::post('colleges/get-list', [CollegeController::class, 'getCollegesList'])->name('api.colleges.get-list');
+
     // User
     Route::post('user/common-age', [UserController::class, 'getCommonAge'])->name('api.user.common-age');
     Route::post('user/get-device-token', [GeneralController::class, 'getDeviceToken'])->name('api.user.get-device-token');
@@ -77,7 +82,7 @@ Route::group(['namespace' => 'v1', 'prefix' => 'v1'], function () {
 
 });
 
-Route::group(['namespace' => 'v1', 'prefix' => 'v1', 'middleware' => ['auth:sanctum', 'checkapiuser']], function () {
+Route::group(['namespace' => 'v1', 'prefix' => 'v1', 'middleware' => ['auth:sanctum', 'checkapiuser','apiuseronline']], function () {
     Route::post('logout', [AuthenticationController::class, 'logout'])->name('api.user.logout');
 
     Route::post('submit-user-query', [QueryController::class,'submitUserQuery'])->name('api.submit_user_query');
@@ -88,6 +93,7 @@ Route::group(['namespace' => 'v1', 'prefix' => 'v1', 'middleware' => ['auth:sanc
     Route::post('user/set-full-profile', [ProfileController::class,'setFullProfile'])->name('api.user.set-fill-profile');
     Route::post('user/set-interest', [ProfileController::class,'setInterest'])->name('api.user.set-interest');
     Route::post('user/set-media', [ProfileController::class,'setMedia'])->name('api.user.set-media');
+    Route::post('user/set-college', [ProfileController::class,'setCollege'])->name('api.user.set-college');
     Route::post('user/profile-report',[UserController::class,'storeProfileReport'])->name('api.user.profile-report');
     Route::post('user/set-latlong',[UserController::class,'storeLatLong'])->name('api.user.set-latlong');
     Route::post('user/change-user-status',[UserController::class,'activateDeactivateUser'])
@@ -137,6 +143,9 @@ Route::group(['namespace' => 'v1', 'prefix' => 'v1', 'middleware' => ['auth:sanc
     Route::post('payment/hdfc/status-transaction', [PaymentHDFCController::class, 'transactionStatus'])->name('api.hdfc.status_transaction');
     // End HDFC
 
+    // Colleges
+    Route::post('colleges/add-new', [CollegeController::class, 'addNew'])->name('api.colleges.add-new');
+
     // Razorpay Android
     Route::post('get/subscription-plans', [PaymentController::class, 'getSubscriptionPlans'])->name('api.get-subscription-plans');
     Route::post('payment/create-order', [PaymentController::class, 'createOrder'])->name('api.payment.create-order');
@@ -158,11 +167,13 @@ Route::group(['namespace' => 'v1', 'prefix' => 'v1', 'middleware' => ['auth:sanc
     // Socket Chat
     Route::post('chat/create-room', [ChatController::class, 'createChatRoom'])->name('chat.create-room');
     Route::post('chat/get-rooms', [ChatController::class, 'getChatRooms'])->name('chat.get-rooms');
+    Route::post('chat/clear-room', [ChatController::class, 'clearChatRoom'])->name('chat.clear-room');
     Route::post('chat/delete-room', [ChatController::class, 'deleteChatRoom'])->name('chat.delete-room');
     Route::post('chat/get-messages', [ChatController::class, 'getChatMessages'])->name('chat.get-messages');
 
     // Device Token
     Route::post('user/add-device-token', [GeneralController::class, 'storeDeviceToken'])->name('api.user.add-device-token');
+    Route::get('ping', [GeneralController::class, 'pingRequest'])->name('api.ping');
     Route::post('notification/update-status', [UserController::class, 'readNotifications'])->name('api.notification.update-status');
 
     // AWS S3 STORAGE
@@ -195,4 +206,9 @@ Route::group(['namespace' => 'v1', 'prefix' => 'v1', 'middleware' => ['auth:sanc
 Route::group(['namespace' => 'v2', 'prefix' => 'v2'], function () {
     // Authentication
     Route::post('social/login', [Authenticationv2Controller::class, 'social_login'])->name('api.social_login');
+});
+
+// // v2 auth apis
+Route::group(['namespace' => 'v2', 'prefix' => 'v2', 'middleware' => ['auth:sanctum', 'checkapiuser','apiuseronline']], function () {
+    Route::post('chat/get-rooms', [Chatv2Controller::class, 'getChatRooms'])->name('chat.get-rooms-v2');
 });

@@ -21,6 +21,9 @@
                     @if(request()->get('user_filter') == 'deleted')
                     Deleted
                     @endif
+                    @if(request()->get('user_filter') == 'test_users')
+                    Test
+                    @endif
                     @if(empty(request()->get('user_filter')))
                     All
                     @endif
@@ -82,6 +85,13 @@
                     <a href="{{ route('admin.users.index').'?user_filter=deleted' }}" class="btn btn-sm btn-danger font-weight-bolder text-uppercase ml-2">
                         <i class="menu-icon icon-users"></i>
                         Deleted Users
+                    </a>
+                @endif
+
+                @if(request()->get('user_filter') != 'test_users')
+                    <a href="{{ route('admin.users.index').'?user_filter=test_users' }}" class="btn btn-sm btn-primary font-weight-bolder text-uppercase ml-2">
+                        <i class="menu-icon icon-users"></i>
+                        Test Users
                     </a>
                 @endif
 

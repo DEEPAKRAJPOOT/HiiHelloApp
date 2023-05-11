@@ -111,6 +111,11 @@ Route::group(['namespace' => 'Admin', 'middleware' => ['check_permit', 'revalida
 	/* Push Notification */
 	Route::resource('push-notification', 'PushNotificationController');
 
+	/* Colleges */
+	Route::get('colleges/listing', 'CollegesController@listing')->name('colleges.listing');
+	Route::post('colleges/bulk-approve', 'CollegesController@bulkApprove')->name('colleges.bulk-approve');
+	Route::resource('colleges', 'CollegesController');
+
 	/* Subscription Plans*/
 	Route::get('subscription-plans/listing', 'SubscriptionPlanController@listing')->name('subscription-plans.listing');
 	Route::resource('subscription-plans', 'SubscriptionPlanController');

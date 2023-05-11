@@ -15,6 +15,7 @@ class UserDetailResource extends JsonResource
      */
     public function toArray($request)
     {
+        $auth_id = !empty(request()->user()->id) ? request()->user()->id : 0;
         return [
             'id'                =>  $this->custom_id ?? "",
             'full_name'         =>  $this->userTranslation ? $this->userTranslation->full_name : "",
@@ -40,6 +41,7 @@ class UserDetailResource extends JsonResource
                 'personalities'         =>  UserPersonalityResource::collection($this->personalities),
                 'education'             =>  new ProfileDetailResource($this->education),
                 'university_college'    =>  new ProfileDetailResource($this->university),
+                'college'               =>  new CollegeResource($this->college),
                 'profession'            =>  new ProfileDetailResource($this->profession),
                 'religion'              =>  new ProfileDetailResource($this->religion),
             ],
@@ -54,7 +56,10 @@ class UserDetailResource extends JsonResource
             'flags'            =>  [
                 'verified_staus'        =>  ($this->emailVerifyStatus()=='verified' && $this->contactVerifyStatus()=='verified' && $this->verify_photo_status=='verified') ? 'verified' : 'under_review',
                 'verified_status'        =>  $this->verify_status,
-                'is_blocked'            =>  $this->blocked_tos_count ? $this->blocked_tos_count > 0 ? true : false : false,
+                'is_blocked'            =>  $this->blockedTos()->where('block_by',$auth_id)->exists(),
+                'online_status'    =>  $this->onlineStatus(),
+                'new_account'      =>  $this->isNewAccount(),
+                'last_seen'        =>  strtotime($this->last_online) * 1000
             ],
         ];
     }

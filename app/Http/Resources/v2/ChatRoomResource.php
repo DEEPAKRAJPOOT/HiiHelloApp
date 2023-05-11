@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Resources\v1;
+namespace App\Http\Resources\v2;
 
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -14,6 +14,14 @@ class ChatRoomResource extends JsonResource
      */
     public function toArray($request)
     {
+        $this->authLatestMessage = null;
+        $auth_id = $request->user() ? $request->user()->id : NULL;
+        if($this->participate_id == $auth_id){
+            $this->authLatestMessage = $this->chatMessages->where('created_at','>',$this->participate_cleared_at ?? '')->sortByDesc('id')->first();
+        }
+        if($this->creator_id == $auth_id){
+            $this->authLatestMessage = $this->chatMessages->where('created_at','>',$this->creator_cleared_at ?? '')->sortByDesc('id')->first();
+        }
         return [
             'id'            =>  $this->custom_id,
             'is_active'     =>  $this->is_active ? $this->is_active == 'y' ? true : false : false,
@@ -38,17 +46,17 @@ class ChatRoomResource extends JsonResource
                     'lang_code' =>  $this->participator ? $this->participator->language ? $this->participator->language->lang_code : "": "",
                 ],
             ],
-            'latest_message'    =>  [
-                'id'        =>  $this->latestMessage->custom_id ?? '',
-                'message'   =>  $this->latestMessage ? ($this->latestMessage->getMessage() ?? null) : null,
-                'status'    =>  $this->latestMessage->status ?? '',
+            'latest_message'    =>  $this->authLatestMessage ? [
+                'id'        =>  $this->authLatestMessage->custom_id ?? '',
+                'message'   =>  $this->authLatestMessage->getMessage() ?? null,
+                'status'    =>  $this->authLatestMessage->status ?? '',
                 'sender'  =>  [
-                    'id'    =>  $this->latestMessage ? ($this->latestMessage->sender ? $this->latestMessage->sender->custom_id : '') : '',
+                    'id'    =>  $this->authLatestMessage->sender ? $this->authLatestMessage->sender->custom_id : '',
                 ],
                 'chat_messages_count'   =>  $this->chat_messages_count ?? 0,
-                'created_at'  =>  $this->latestMessage->created_at ?? '',
-                'updated_at'  =>  $this->latestMessage->updated_at ?? '',
-            ],
+                'created_at'  =>  $this->authLatestMessage->created_at ?? '',
+                'updated_at'  =>  $this->authLatestMessage->updated_at ?? '',
+            ] : null,
         ];
         return parent::toArray($request);
     }

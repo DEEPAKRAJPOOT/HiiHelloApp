@@ -75,6 +75,7 @@ class Kernel extends HttpKernel
         'check_subscriptions' => \App\Http\Middleware\CheckSubscriptions::class,
         'change_language' => \App\Http\Middleware\ChangeLanguage::class,
         'checkapiuser' => \App\Http\Middleware\CheckApiUser::class,
+        'apiuseronline' => \App\Http\Middleware\ApiUserOnline::class,
         
     ];
 }

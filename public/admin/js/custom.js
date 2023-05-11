@@ -165,10 +165,10 @@ $(function () {
             var ids = searchIDs.join();
             Swal.fire({
                 title: "Are you sure?",
-                text: "You won't to delete this records!",
+                text: "You want to delete these records!",
                 icon: "warning",
                 showCancelButton: true,
-                confirmButtonText: "Yes, delete it!",
+                confirmButtonText: "Yes, delete them!",
             }).then(function (result) {
                 if (result.value) {
                     $.ajax({
@@ -197,7 +197,7 @@ $(function () {
                     Swal.fire({
                         title: "Deleted!",
                         icon: "success",
-                        text: "Records was deleted.",
+                        text: "Records were deleted.",
                         showConfirmButton: false,
                         timer: 1500,
                     });
@@ -206,6 +206,63 @@ $(function () {
         } else {
             $(".all_select").prop("indeterminate", false);
             $(".delete_all_link").removeAttr("disabled");
+        }
+    });
+
+    $(document).on('click','.approve_all_link',function(e){
+        $('.approve_all_link').attr('disabled','disabled');
+        e.preventDefault();
+        var url = $(this).attr('href');
+        var searchIDs = [];
+        $('.dataTable tbody input[class="small-chk"]:checked').each(
+            function () {
+                searchIDs.push($(this).val());
+            }
+        );
+        if (searchIDs.length > 0) {
+            var ids = searchIDs.join();
+            Swal.fire({
+                title: "Are you sure?",
+                text: "You want to approve these records!",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonText: "Yes, approve them!",
+            }).then(function (result) {
+                if (result.value) {
+                    $.ajax({
+                        url:url,
+                        type:'post',
+                        dataType:'json',
+                        data: {
+                            _token:$('meta[name="csrf_token"]').attr('content'),
+                            ids:ids,
+                        },
+                        success: function (success) {
+                            $(".all_select").prop('indeterminate',false);
+                            $(".all_select").prop('checked',false);
+                            if($('.all_select').hasClass('allChecked')){
+                                $('.all_select').removeClass('allChecked');
+                            }
+                            $('.all_select').prop('indeterminate',false);
+                            oTable.ajax.reload();
+                        },
+                        complete: function(){
+                            $('.approve_all_link').removeAttr("disabled");
+                        }
+                    });
+
+                    Swal.fire({
+                        title: "Approved!",
+                        icon: "success",
+                        text: "Records were approved.",
+                        showConfirmButton: false,
+                        timer: 1500,
+                    });
+                }
+            });
+        } else {
+            $('.all_select').prop('indeterminate',false);
+            $('.approve_all_link').removeAttr("disabled");
         }
     });
 

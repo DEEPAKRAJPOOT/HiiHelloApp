@@ -28,6 +28,7 @@ class ProfileFilterRequest extends FormRequest
             'offset'                    =>  'nullable|numeric',
 
             'relationship_status'       =>  'nullable|max:100',
+            'college'                   =>  'nullable|max:100',
             'star_sign'                 =>  'nullable|max:100',
             'fav_movie'                 =>  'nullable|min:1|max:250',
 

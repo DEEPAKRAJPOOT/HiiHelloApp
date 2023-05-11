@@ -41,6 +41,7 @@ class BlockController extends Controller
                     $block_profile = BlockUser::firstOrCreate([
                         'block_by'      =>  $auth_id,
                         'blocked_to'    =>  $block_user->id ?? NULL,
+                        'block_type'    =>  'block'
                     ], [
                         'custom_id'     =>  getUniqueString('block_users'),
                     ]);
@@ -67,13 +68,14 @@ class BlockController extends Controller
                             ]
                         ]);
                     } else {
-                        $this->response['meta']['message']  =   rans('api.block.fail');
+                        $this->response['meta']['message']  =  trans('api.block.fail');
                         $this->response['meta']['is_ban'] = false;
                         $this->status = Response::HTTP_NOT_FOUND;
                     }
                 }
-                /* Unblock Profile */ elseif ($request->status == 'unblock') {
-                    $block_profile = BlockUser::whereBlockBy($auth_id)->whereBlockedTo($block_user->id)->firstOrFail();
+                /* Unblock Profile */
+                elseif ($request->status == 'unblock') {
+                    $block_profile = BlockUser::blockedOnly()->whereBlockBy($auth_id)->whereBlockedTo($block_user->id)->firstOrFail();
                     $unblock = $block_profile->delete();
 
                     // Unblock Chat
@@ -98,7 +100,58 @@ class BlockController extends Controller
                             ]
                         ]);
                     } else {
-                        $this->response['meta']['message']  =   rans('api.unblock.fail');
+                        $this->response['meta']['message']  =   trans('api.unblock.fail');
+                        $this->response['meta']['is_ban'] = false;
+                        $this->status = Response::HTTP_NOT_FOUND;
+                    }
+                }
+                elseif ($request->status == 'hide') {
+                    $hide_profile = BlockUser::firstOrCreate([
+                        'block_by'      =>  $auth_id,
+                        'blocked_to'    =>  $block_user->id ?? NULL,
+                        'block_type'    =>  'hide'
+                    ], [
+                        'custom_id'     =>  getUniqueString('block_users'),
+                    ]);
+
+                    DB::commit();
+                    if ($hide_profile->save()) {
+                        $this->status = Response::HTTP_OK;
+                        return ([
+                            'data'  =>  NULL,
+                            'meta' => [
+                                'url'       =>  url()->current(),
+                                'api'       =>  $this->getVersion(),
+                                'language'  =>  app()->getLocale(),
+                                'is_ban'    =>  false,
+                                'message'   =>  trans('api.hide.success'),
+                            ]
+                        ]);
+                    } else {
+                        $this->response['meta']['message']  =   trans('api.hide.fail');
+                        $this->response['meta']['is_ban'] = false;
+                        $this->status = Response::HTTP_NOT_FOUND;
+                    }
+                }
+                elseif ($request->status == 'unhide') {
+                    $hide_profile = BlockUser::hiddenOnly()->whereBlockBy($auth_id)->whereBlockedTo($block_user->id)->firstOrFail();
+                    $unhide = $hide_profile->delete();
+
+                    DB::commit();
+                    if ($unhide) {
+                        $this->status = Response::HTTP_OK;
+                        return ([
+                            'data'  =>  NULL,
+                            'meta' => [
+                                'url'       =>  url()->current(),
+                                'api'       =>  $this->getVersion(),
+                                'language'  =>  app()->getLocale(),
+                                'is_ban'    =>  false,
+                                'message'   =>  trans('api.unhide.success'),
+                            ]
+                        ]);
+                    } else {
+                        $this->response['meta']['message']  =  trans('api.unhide.fail');
                         $this->response['meta']['is_ban'] = false;
                         $this->status = Response::HTTP_NOT_FOUND;
                     }

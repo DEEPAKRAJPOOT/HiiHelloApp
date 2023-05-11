@@ -128,19 +128,29 @@ return [
     'thanks'    =>  'Thanks for :entity :type.',
 
     'report'    =>  [
-        'success'   =>  'Profile repoted succesfully',
-        'fail'      =>  'Profile repoted unsuccesfully',
+        'success'   =>  'Profile reported succesfully',
+        'fail'      =>  'Profile reported unsuccesfully',
     ],
 
     'block' =>  [
-        'no_action'     =>  'Unbale to add :entity your profile is blocked',
-        'not_able'      =>  'Unbale to block profile',
+        'no_action'     =>  'Unable to add :entity your profile is blocked',
+        'not_able'      =>  'Unable to block profile',
         'success'       =>  'Profile blocked succesfully',
         'fail'          =>  'Profile blocked unsuccesfully',
     ],
     'unblock' =>  [
         'success'   =>  'Profile unblocked succesfully',
         'fail'      =>  'Profile unblocked unsuccesfully',
+    ],
+
+    'hide' =>  [
+        'not_able'      =>  'Unable to hide profile',
+        'success'       =>  'Profile hidden succesfully',
+        'fail'          =>  'Profile hidden unsuccesfully',
+    ],
+    'unhide' =>  [
+        'success'   =>  'Profile unhidden succesfully',
+        'fail'      =>  'Profile unhidden unsuccesfully',
     ],
     'verification'    =>  [
         'success'   =>  ':entity verified succesfully',
