@@ -69,7 +69,7 @@ class ImageDetectionClass
             return $this->response;
         }
 
-        $celeb = $this->aws_instance->recognizeCelebrities([
+        /*$celeb = $this->aws_instance->recognizeCelebrities([
             'Image' => [ // REQUIRED
                 //'Bytes' => file_get_contents("1.jpg"),
                 'Bytes' => $this->bytes,
@@ -83,7 +83,7 @@ class ImageDetectionClass
             $this->response['is_safe_image'] = false;
             $this->response['face_detected_message'] = $message->getMessage();
             $this->response['log_message'] = $message->getMessage();
-        }
+        }*/
 
         return $this->response;
     }
@@ -139,10 +139,10 @@ class ImageDetectionClass
             return $this->response;
         }
 
-        $this->followTextConstraint();
+        /*$this->followTextConstraint();
         if (!$this->response['is_safe_image']) {
             return $this->response;
-        }
+        }*/
 
         $this->followModerationConstraint();
 
