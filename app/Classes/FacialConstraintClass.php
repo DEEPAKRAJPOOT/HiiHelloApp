@@ -27,7 +27,7 @@ class FaceConstraintClass
     {
         if (count($this->face['FaceDetails']) === 0) {
             $this->isFace = false;
-            $this->message = "No Face detected, ";
+            //$this->message = "No Face detected, ";
         }
         return $this;
     }
