@@ -58,6 +58,14 @@ Route::group(['namespace' => 'Admin', 'middleware' => ['check_permit', 'revalida
 	Route::post('users/single_gender_update', 'UsersController@single_gender_update')->name('users.single_gender_update');
 	Route::post('users/bulk_photo_verification', 'UsersController@bulk_photo_verification')->name('users.bulk_photo_verification');
 	Route::post('users/bulk_email_verification', 'UsersController@bulk_email_verification')->name('users.bulk_email_verification');
+	Route::post('users/{id}/restore', 'UsersController@restore')->name('users.restore');
+
+	/* Controlled Dashboard Data */
+	Route::get('dashboard/edit', 'DashboardController@edit')->name('dashboard.edit');
+	Route::post('dashboard/update', 'DashboardController@update')->name('dashboard.update');
+	Route::get('dashboard/preview', 'DashboardController@preview')->name('dashboard.preview');
+	Route::get('dashboard/publish', 'DashboardController@publish')->name('dashboard.publish');
+	Route::post('dashboard/get-fields', 'DashboardController@getFields')->name('dashboard.get-fields');
 	
 	/*Route::get('unde_review/listing', 'UsersController@under_review_listing')->name('users.under-review-listing');
 	Route::get('users/unde_review', 'UsersController@unde_review')->name('users.unde-review');

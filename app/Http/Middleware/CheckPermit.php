@@ -41,14 +41,16 @@ class CheckPermit
         // Permissions 
         $access = ['index', 'listing', 'selection-listing', 'showSetting', 'change-setting', 'trashed', 'trasheddata','actor-list','singer-list','unde-review','genderupdate','bulk_gender_update','bulk-approve','dashboardupdate','bulk_photo_verification','bulk_email_verification','deleted','filters','under-review-listing','refund-transaction'];
         $add = ['store', 'create'];
-        $update = ['edit', 'update'];
+        $update = ['edit', 'update','get-fields','preview','publish'];
         $view = ['show'];
         $delete = ['destroy'];
+        $restore = ['restore'];
 
         if (in_array($method, $access)) $permission = 'access';
         elseif (in_array($method, $add)) $permission = 'add';
         elseif (in_array($method, $update)) $permission = 'edit';
         elseif (in_array($method, $delete)) $permission = 'delete';
+        elseif (in_array($method, $restore)) $permission = 'restore';
         elseif (in_array($method, $view)) $permission = 'view';
 
         if (!empty($permission)) {

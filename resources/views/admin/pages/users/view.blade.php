@@ -455,6 +455,17 @@
                             </div>
                         </div>
                     </div>
+                    @if($user->trashed())
+                    <div class="form-group col-md-12">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <label class="control-label"><span class="mendatory" style="font-size: 20px;"></span>
+                                    <h4>Deleted By : {{ (($user->app_delete ?? 'n') == 'y') ? 'User' : 'Admin' }}</h4>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    @endif
 
                 </div>
                 <br><br>

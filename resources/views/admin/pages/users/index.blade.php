@@ -61,6 +61,14 @@
                     @endif
                 @endif
 
+                @if(request()->get('user_filter') == 'deleted')
+                    @if (in_array('restore', $permissions))
+                    <a href="{{ route('admin.users.restore', 0) }}" name="restore_select" id="restore_select" class="btn btn-sm btn-light-primary font-weight-bolder text-uppercase mr-2 restore_all_link">
+                        <i class="fa fa-reply"></i> Restore Selected
+                    </a>
+                    @endif
+                @endif
+
                 @if(!empty(request()->get('user_filter')))
                     <a href="{{ route('admin.users.index') }}" class="btn btn-sm btn-success font-weight-bolder text-uppercase ml-2">
                         <i class="menu-icon icon-users"></i>
@@ -229,6 +237,9 @@
                 { data: 'lat_long' },
                 { data: 'active' },
                 { data: 'user_status' },
+                @if(request()->get('user_filter') == 'deleted')
+                { data: 'deleted_by' },
+                @endif
                 { data: 'action'},
             ],
             columnDefs: [
@@ -248,15 +259,18 @@
                 { targets: 12, title: 'Lat/Long', orderable: false },
                 { targets: 13, title: 'Ban', orderable: false },
                 { targets: 14, title: 'User Status', orderable: false },
+                @if(request()->get('user_filter') == 'deleted')
+                { targets: 15, title: 'Deleted By', orderable: false },
+                @endif
                 // Action buttons
-                { targets: 15, title: 'Action',orderable: false },
+                { targets: -1, title: 'Action',orderable: false },
             ],
             order: [
                 [6, 'DESC']
             ],
             lengthMenu: [
-                [10, 20, 50, 100,250,500],
-                [10, 20, 50, 100,250,500]
+                [10, 20, 50, 100, 250, 500],
+                [10, 20, 50, 100, 250, 500]
             ],
             pageLength: 10
         });

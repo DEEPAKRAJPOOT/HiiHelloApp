@@ -7,6 +7,14 @@ Breadcrumbs::register('dashboard', function ($breadcrumbs) {
 	$breadcrumbs->push('Dashboard', route(Auth::getDefaultDriver() . '.dashboard.index'));
 });
 
+
+
+	Breadcrumbs::register('dashboard_update', function($breadcrumbs)
+	{
+		$breadcrumbs->parent('dashboard');
+	    $breadcrumbs->push('Edit dashboard data',route(Auth::getDefaultDriver().'.dashboard.edit'));
+	});
+
 // Users -------------------------------------------------------------------------------------------------------------------------------------------------------
 	Breadcrumbs::register('users_list', function($breadcrumbs)
 	{

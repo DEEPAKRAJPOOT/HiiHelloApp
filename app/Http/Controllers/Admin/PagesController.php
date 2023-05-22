@@ -23,6 +23,7 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
+use App\Models\DashboardData;
 use DB;
 use Artisan;
 
@@ -30,7 +31,11 @@ class PagesController extends Controller
 {
 
     public function dashboard()
-    {   
+    {
+        $user = Auth::user();
+        if(($user->dashboard_type ?? '') == 'controlled'){
+            return $this->controlledDashboard();
+        }
         $location_result = array();
         $city_result = array(); 
         $subscription_result = array(); 
@@ -131,6 +136,62 @@ class PagesController extends Controller
 
         // echo "<pre>"; print_r($subscription_result); die();
         return view('admin.pages.general.dashboard', compact('user'))->with(['custom_title' => __('Dashboard')]);
+    }
+
+    public function controlledDashboard(){
+        $dashboard_data['total_downloads'] = DashboardData::where('name','like','users_downloads_%')->sum('value');
+        $dashboard_data['total_uninstalls'] = DashboardData::where('name','like','users_uninstalls_%')->sum('value');
+        $dashboard_data['downloads_this_month'] = DashboardData::where('name','like','users_downloads_'.strtolower(date('Y_M')).'%')->sum('value');
+        $dashboard_data['uninstalls_this_month'] = DashboardData::where('name','like','users_uninstalls_'.strtolower(date('Y_M')).'%')->sum('value');
+        $dashboard_data['total_downloads_males'] = DashboardData::where('name','like','males_users_downloads_%')->sum('value');
+        $dashboard_data['total_downloads_females'] = DashboardData::where('name','like','females_users_downloads_%')->sum('value');
+        $dashboard_data['last_twelve_months_data'] = [];
+        $current_date = now();
+        for($i=0;$i<12;$i++){
+            $year_month_string = strtolower($current_date->format('Y_M'));
+            $dashboard_data['last_twelve_months_data'][$current_date->format('M Y')] = [
+                'total_downloads' => DashboardData::where('name','like','users_downloads_'.$year_month_string.'%')->sum('value'),
+                'male_downloads' => DashboardData::where('name','like','males_users_downloads_'.$year_month_string.'%')->sum('value'),
+                'female_downloads' => DashboardData::where('name','like','females_users_downloads_'.$year_month_string.'%')->sum('value'),
+                'organic_downloads' => DashboardData::where('name','users_downloads_'.$year_month_string.'_organic')->first()->value ?? 0,
+                'paid_downloads' => DashboardData::where('name','users_downloads_'.$year_month_string.'_paid')->first()->value ?? 0,
+                'referral_downloads' => DashboardData::where('name','users_downloads_'.$year_month_string.'_referrals')->first()->value ?? 0,
+                'male_percentage' => DashboardData::where('name','users_percentages_'.$year_month_string.'_male')->first()->value ?? 0,
+                'female_percentage' => DashboardData::where('name','users_percentages_'.$year_month_string.'_female')->first()->value ?? 0,
+                'total_uninstalls' => DashboardData::where('name','users_uninstalls_'.$year_month_string)->first()->value ?? 0,
+                'daily_time_male_subscribers' => DashboardData::where('name','users_daily_time_'.$year_month_string.'_male_subscribers')->first()->value ?? 'N/A',
+                'daily_time_male_non_subscribers' => DashboardData::where('name','users_daily_time_'.$year_month_string.'_male_non_subscribers')->first()->value ?? 'N/A',
+                'daily_time_female_users' => DashboardData::where('name','users_daily_time_'.$year_month_string.'_female_users')->first()->value ?? 'N/A',
+                'logins_male_subscribers' => DashboardData::where('name','users_logins_'.$year_month_string.'_male_subscribers')->first()->value ?? 'N/A',
+                'logins_male_non_subscribers' => DashboardData::where('name','users_logins_'.$year_month_string.'_male_non_subscribers')->first()->value ?? 'N/A',
+                'logins_female_users' => DashboardData::where('name','users_logins_'.$year_month_string.'_female_users')->first()->value ?? 'N/A',
+                'active_daily' => DashboardData::where('name','users_active_'.$year_month_string.'_daily')->first()->value ?? 0,
+                'active_monthly' => DashboardData::where('name','users_active_'.$year_month_string.'_monthly')->first()->value ?? 0,
+                'notifications_sent_email' => DashboardData::where('name','notifications_sent_'.$year_month_string.'_email')->first()->value ?? 0,
+                'notifications_sent_sms' => DashboardData::where('name','notifications_sent_'.$year_month_string.'_sms')->first()->value ?? 0,
+                'notifications_sent_in_app' => DashboardData::where('name','notifications_sent_'.$year_month_string.'_in_app')->first()->value ?? 0,
+                'notifications_clicked_percentages_email' => DashboardData::where('name','notifications_clicked_percentages_'.$year_month_string.'_email')->first()->value ?? 0,
+                'notifications_clicked_percentages_sms' => DashboardData::where('name','notifications_clicked_percentages_'.$year_month_string.'_sms')->first()->value ?? 0,
+                'notifications_clicked_percentages_in_app' => DashboardData::where('name','notifications_clicked_percentages_'.$year_month_string.'_in_app')->first()->value ?? 0,
+                'users_retention_d1' => DashboardData::where('name','notifications_clicked_percentages_'.$year_month_string.'_email')->first()->value ?? 0,
+                'users_retention_d7' => DashboardData::where('name','notifications_clicked_percentages_'.$year_month_string.'_sms')->first()->value ?? 0,
+                'users_retention_d30' => DashboardData::where('name','notifications_clicked_percentages_'.$year_month_string.'_in_app')->first()->value ?? 0,
+                'paid_users_weekly' => DashboardData::where('name','paid_users_'.$year_month_string.'_weekly')->first()->value ?? 0,
+                'paid_users_monthly' => DashboardData::where('name','paid_users_'.$year_month_string.'_monthly')->first()->value ?? 0,
+                'paid_users_half_yearly' => DashboardData::where('name','paid_users_'.$year_month_string.'_half_yearly')->first()->value ?? 0,
+                'paid_users_yearly' => DashboardData::where('name','paid_users_'.$year_month_string.'_yearly')->first()->value ?? 0,
+                'revenue_by_weekly' => intval(DashboardData::where('name','paid_users_'.$year_month_string.'_weekly')->first()->value ?? 0) * 49,
+                'revenue_by_monthly' => intval(DashboardData::where('name','paid_users_'.$year_month_string.'_monthly')->first()->value ?? 0) * 99,
+                'revenue_by_half_yearly' => intval(DashboardData::where('name','paid_users_'.$year_month_string.'_half_yearly')->first()->value ?? 0) * 299,
+                'revenue_by_yearly' => intval(DashboardData::where('name','paid_users_'.$year_month_string.'_yearly')->first()->value ?? 0) * 399,
+            ];
+            $current_date = $current_date->subMonth();
+            if($current_date->format('Ym') == '202209'){
+                break;
+            }
+        }
+        $dashboard_data['last_twelve_months_data'] = array_reverse($dashboard_data['last_twelve_months_data']);
+        return view('admin.pages.dashboard.view-controlled',$dashboard_data)->with(['custom_title'=>__('Dashboard')]);
     }
 
     public function dashboardupdate()

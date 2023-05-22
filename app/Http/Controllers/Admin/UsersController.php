@@ -999,6 +999,28 @@ class UsersController extends Controller
         }
     }
 
+    public function restore(Request $request, $id)
+    {
+        if (!empty($request->action) && $request->action == 'restore_all') {
+            $content = ['status' => 204, 'message' => "Something went wrong"];
+            User::withTrashed()->whereIn('custom_id', explode(',', $request->ids))->restore();
+            $content['status'] = 200;
+            $content['message'] = "User restored successfully.";
+            $content['count'] = User::all()->count();
+            return response()->json($content);
+        } else {
+            $user = User::withTrashed()->where('custom_id',$id)->firstOrFail();
+            $user->restore();
+            if (request()->ajax()) {
+                $content = array('status' => 200, 'message' => "User restored successfully.", 'count' => User::all()->count());
+                return response()->json($content);
+            } else {
+                flash('User restored successfully.')->success();
+                return redirect()->route('admin.users.index');
+            }
+        }
+    }
+
     public function bindDataToQuery($queryItem)
     {
         $query = $queryItem['query'];
@@ -1164,12 +1186,13 @@ class UsersController extends Controller
                 'app_delete' => $app_delete,
                 'created_at' => date('Y-m-d H:i:s', strtotime($user->created_at)) ?? 'N/A',
                 'active' => view('admin.layouts.includes.switch', compact('params'))->render(),
-                'action' => view('admin.layouts.includes.actions')->with(['custom_title' => 'User', 'id' => $user->custom_id], $user)->render(),
+                'action' => view('admin.layouts.includes.actions')->with(['custom_title' => 'User', 'id' => $user->custom_id,'deleted_entry'=>$user->trashed(),'restorable'=>true], $user)->render(),
                 'checkbox' => view('admin.layouts.includes.checkbox', compact('params'))->with('id', $user->custom_id)->render(),
                 'user_status' => view('admin.layouts.includes.switch',['params'=>array_merge($params,[
                     'checked'=>($user->user_status == 'active' ? 'checked' : ''),
                     'custom_action'=>'change_user_status',
                 ])])->render(),
+                'deleted_by' => $user->trashed() ? ((($user->app_delete ?? 'n') == 'y') ? 'User' : 'Admin')  : 'N/A'
             ];
         }
         // dd($records);

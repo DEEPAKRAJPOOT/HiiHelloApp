@@ -53,7 +53,7 @@ $(function () {
         var action = $(this).data("target-href");
         Swal.fire({
             title: "Are you sure?",
-            text: "You won't to delete this record!",
+            text: "You want to delete this record!",
             icon: "warning",
             showCancelButton: true,
             confirmButtonText: "Yes, delete it!",
@@ -71,6 +71,36 @@ $(function () {
                     title: "Deleted!",
                     icon: "success",
                     text: "Record was deleted.",
+                    showConfirmButton: false,
+                    timer: 1500,
+                });
+            }
+        });
+    });
+
+    $(document).on("click", ".action-restore", function (e) {
+        e.preventDefault();
+        var action = $(this).data("target-href");
+        Swal.fire({
+            title: "Are you sure?",
+            text: "You want to restore this record!",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonText: "Yes, restore it!",
+        }).then(function (result) {
+            if (result.value) {
+                $.ajax({
+                    url: action,
+                    type: "POST",
+                    dataType: "json",
+                    success: function (success) {
+                        oTable.ajax.reload();
+                    },
+                });
+                Swal.fire({
+                    title: "Restored!",
+                    icon: "success",
+                    text: "Record was restored.",
                     showConfirmButton: false,
                     timer: 1500,
                 });
@@ -263,6 +293,64 @@ $(function () {
         } else {
             $('.all_select').prop('indeterminate',false);
             $('.approve_all_link').removeAttr("disabled");
+        }
+    });
+
+    $(document).on("click", ".restore_all_link", function (e) {
+        $(".restore_all_link").attr("disabled", "disabled");
+        e.preventDefault();
+        var url = $(this).attr("href");
+        var searchIDs = [];
+        $(".dataTable tbody input[class='small-chk']:checked").each(
+            function () {
+                searchIDs.push($(this).val());
+            }
+        );
+        if (searchIDs.length > 0) {
+            var ids = searchIDs.join();
+            Swal.fire({
+                title: "Are you sure?",
+                text: "You want to restore these records!",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonText: "Yes, restore them!",
+            }).then(function (result) {
+                if (result.value) {
+                    $.ajax({
+                        url: url,
+                        type: "POST",
+                        dataType: "json",
+                        data: {
+                            action: "restore_all",
+                            ids: ids,
+                            _token: $('meta[name="csrf_token"]').attr(
+                                "content"
+                            ),
+                        },
+                        success: function (success) {
+                            $(".all_select").prop("indeterminate", false);
+                            $(".all_select").prop("checked", false);
+                            if ($(".all_select").hasClass("allChecked")) {
+                                $(".all_select").removeClass("allChecked");
+                            }
+                            $(".all_select").prop("indeterminate", false);
+                            $(".restore_all_link").removeAttr("disabled");
+                            oTable.ajax.reload();
+                        },
+                    });
+
+                    Swal.fire({
+                        title: "Restored!",
+                        icon: "success",
+                        text: "Records were restored.",
+                        showConfirmButton: false,
+                        timer: 1500,
+                    });
+                }
+            });
+        } else {
+            $(".all_select").prop("indeterminate", false);
+            $(".restore_all_link").removeAttr("disabled");
         }
     });
 
