@@ -52,6 +52,6 @@ class UserMatchesController extends Controller {
 		$user = User::with('userTransDefault')
 		->withCount('likes','likes_done','dislikes','dislikes_done','unmatches','unmatches_done')
 		->whereCustomId($user_id)->firstOrFail();
-		return view('admin.pages.user-matches.view',compact('user'))->with(['custom_title'=>'User']);
+		return view('admin.pages.user-matches.view',compact('user'))->with(['custom_title'=>'User Match Details']);
 	}
 }

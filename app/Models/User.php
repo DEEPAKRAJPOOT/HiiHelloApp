@@ -104,6 +104,8 @@ class User extends Authenticatable implements MustVerifyEmail, TranslatableContr
     public function dislikes_done(){ return $this->hasMany('App\Models\DisLike','dis_liker_id','id'); }
     public function unmatches(){ return $this->hasMany('App\Models\UnMatch','unmatch_to','id'); }
     public function unmatches_done(){ return $this->hasMany('App\Models\UnMatch','unmatch_by','id'); }
+    public function system_matches_for(){ return $this->hasMany('App\Models\SystemMatch','user_id','id'); }
+    public function system_matches_to(){ return $this->hasMany('App\Models\SystemMatch','match_id','id'); }
     public function interests(){ return $this->hasMany('App\Models\UserInterest'); }
     public function userDetails(){ return $this->hasMany('App\Models\UserDetail')->orderBy('sequence'); }
     public function subAccount(){ return $this->hasOne('App\Models\TwilioSubaccount','user_id','id'); }

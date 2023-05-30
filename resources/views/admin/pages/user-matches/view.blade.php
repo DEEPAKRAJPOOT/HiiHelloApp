@@ -36,11 +36,84 @@
                 </div>
             </div>
             <div class="row">
-                <div class="col-md-12 mb-4 pb-4">
+                <div class="col-md-12">
                     <label class="control-label"><span class="mendatory" style="font-size: 20px;"></span>
-                        <h1>User Matches</h1>
+                        <h1>Profile Information</h1>
                     </label>
                     <div class="row">
+                        @if(!empty($user->userTransDefault))
+                            <div class="col-md-6 mb-2">
+                                <label class="control-label">Full Name : <b>@if($user->userTransDefault) {{ $user->userTransDefault->full_name }} @else - @endif </b></label>
+                            </div>
+                        @endif
+                        @if(!empty($user->account_id))
+                            <div class="col-md-6 mb-2">
+                                <label class="control-label">Account Id : <b>{{ $user->account_id }}</b></label>
+                            </div>
+                        @endif
+                        @if(!empty($user->email))
+                            <div class="col-md-6 mb-2">
+                                <label class="control-label">Email : <b>{{ $user->email }}</b></label>
+                            </div>
+                        @endif
+                        <div class="col-md-6 mb-2">
+                            <label class="control-label">Profile Percentage : <b>{{ $user->profile_percentage }}%</b></label>
+                        </div>
+                        @if(!empty($user->contact_no))
+                            <div class="col-md-6 mb-2">
+                                <label class="control-label">Contact Number : <b>{{ !empty($user->country_code) ? '+'.$user->country_code.'-' : '' }}{{ $user->contact_no }}</b></label>
+                            </div>
+                        @endif
+                        @if(!empty($user->birth_date))
+                            <div class="col-md-6 mb-2">
+                                <label class="control-label">Birth Date : <b>{{ $user->birth_date }}</b></label>
+                            </div>
+                        @endif
+                        @if(!empty($user->gender))
+                            <div class="col-md-6 mb-2">
+                                <label class="control-label">Gender : <b>{{ $user->gender }}</b></label>
+                            </div>
+                        @endif
+                        @if(!empty($user->location) && !empty($user->location->locationTransDefault))
+                            <div class="col-md-6 mb-2">
+                                <label class="control-label">Location : <b>{{ $user->location->locationTransDefault->name }}</b></label>
+                            </div>
+                            <div class="col-md-6 mb-2">
+                                <label class="control-label">State : <b>{{ $user->location->locationTransDefault->state }}</b></label>
+                            </div>
+                        @endif
+                        @if(!empty($user->country) && !empty($user->country->countryTransDefault))
+                            <div class="col-md-6 mb-2">
+                                <label class="control-label">Country : <b>{{ $user->country->countryTransDefault->name }}</b></label>
+                            </div>
+                        @endif
+                    </div>
+                </div>
+                <div class="col-md-12 mt-4 pt-4">
+                    <label class="control-label"><span class="mendatory" style="font-size: 20px;"></span>
+                        <h1>Match Data</h1>
+                    </label>
+                    <div class="row">
+                        <div class="col-md-6 mb-2">
+                            <label class="control-label">
+                                Likes Done : <b>{{ $user->likes_done_count ?? 0 }}</b>
+                            </label>
+                        </div>
+                        <div class="col-md-6 mb-2">
+                            <label class="control-label">
+                                Likes Received : <b>{{ $user->likes_count ?? 0 }}</b>
+                            </label>
+                        </div>
+                        <div class="col-md-6 mb-2">
+                            <label class="control-label">
+                                Dislikes Done : <b>{{ $user->dislikes_done_count ?? 0 }}</b>
+                            </label>
+                        </div>
+                        <div class="col-md-6 mb-2">
+                            <label class="control-label">
+                                Dislikes Received : <b>{{ $user->dislikes_count ?? 0 }}</b>
+                            </label>
+                        </div>
                         <div class="col-md-6 mb-2">
                             <label class="control-label">
                                 Unmatches Done : <b>{{ $user->unmatches_done_count ?? 0 }}</b>
@@ -51,81 +124,76 @@
                                 Unmatches Received : <b>{{ $user->unmatches_count ?? 0 }}</b>
                             </label>
                         </div>
-                        <div class="col-md-6 mb-2">
-                            <label class="control-label">
-                                Likes Done : <b>{{ $user->likes_done_count ?? 0 }}</b>
-                            </label>
-                        </div>
-                        <div class="col-md-6 mb-2">
-                            <label class="control-label">
-                                Dislikes Done : <b>{{ $user->dislikes_done_count ?? 0 }}</b>
-                            </label>
-                        </div>
-                        <div class="col-md-6 mb-2">
-                            <label class="control-label">
-                                Likes Received : <b>{{ $user->likes_count ?? 0 }}</b>
-                            </label>
-                        </div>
-                        <div class="col-md-6 mb-2">
-                            <label class="control-label">
-                                Dislikes Received : <b>{{ $user->dislikes_count ?? 0 }}</b>
-                            </label>
-                        </div>
                     </div>
                 </div>
-                <div class="col-md-12">
-                    <label class="control-label"><span class="mendatory" style="font-size: 20px;"></span>
-                        <h1>Profile Information</h1>
-                    </label>
-                    <div class="row">
-                        <div class="col-md-6 mb-2">
-                            <label class="control-label"><span class="mendatory" style="font-size: 20px;"></span>Full Name : <b>@if($user->userTransDefault) {{ $user->userTransDefault->full_name }} @else - @endif </b></label>
-                        </div>
-                        <div class="col-md-6 mb-2">
-                            <label class="control-label"><span class="mendatory" style="font-size: 20px;"></span>Account Id : <b>@if($user->account_id) {{ $user->account_id }} @else - @endif </b></label>
-                        </div>
-                        <div class="col-md-6 mb-2">
-                            <label class="control-label"><span class="mendatory" style="font-size: 20px;"></span>Email : <b>@if($user->email) {{ $user->email }} @else - @endif </b></label>
-                        </div>
-                        <div class="col-md-6 mb-2">
-                            <label class="control-label"><span class="mendatory" style="font-size: 20px;"></span>Profile Percentage : <b>{{ $user->profile_percentage }}%</b></label>
-                        </div>
-                        <div class="col-md-6 mb-2">
-                            <label class="control-label"><span class="mendatory" style="font-size: 20px;"></span>Contact Number : <b>@if($user->contact_no) {{ $user->country_code }} {{ $user->contact_no }} @else - @endif </b></label>
-                        </div>
-                        <div class="col-md-6 mb-2">
-                            <label class="control-label"><span class="mendatory" style="font-size: 20px;"></span>Birth Date : <b>@if($user->birth_date) {{ $user->birth_date }} @else - @endif </b></label>
-                        </div>
-                        <div class="col-md-6 mb-2">
-                            <label class="control-label"><span class="mendatory" style="font-size: 20px;"></span>Gender : <b>@if($user->gender) {{ $user->gender }} @else - @endif </b></label>
-                        </div>
-                        <div class="col-md-6 mb-2">
-                            <label class="control-label"><span class="mendatory" style="font-size: 20px;"></span>Location : <b>@if($user->location && $user->location->locationTransDefault) 
-                                {{ $user->location->locationTransDefault->name }}
-                            @else
-                                - 
-                            @endif </b>
-                            </label>
-                        </div> 
-                        <div class="col-md-6 mb-2">
-                            <label class="control-label"><span class="mendatory" style="font-size: 20px;"></span>State : <b>@if($user->location && $user->location->locationTransDefault) 
-                                {{ $user->location->locationTransDefault->state }}
-                            @else
-                                - 
-                            @endif </b>
-                            </label>
-                        </div>
-                        <div class="col-md-6 mb-2">
-                            <label class="control-label"><span class="mendatory" style="font-size: 20px;"></span>Country : <b>@if($user->country && $user->country->countryTransDefault) 
-                                {{ $user->country->countryTransDefault->name }}
-                            @else
-                                - 
-                            @endif </b></label>
-                        </div>
+                @if(!$user->system_matches_for->isEmpty() || !$user->system_matches_to->isEmpty())
+                    <div class="col-md-12 mt-4 pt-4">
+                        <label class="control-label"><span class="mendatory" style="font-size: 20px;"></span>
+                            <h1>System Matches</h1>
+                        </label>
+                        <table id="view_user_matches_table" class="table table-bordered table-hover mt-5">
+                            <thead>
+                                <tr>
+                                    <th>Match Shown To</th>
+                                    <th>Match User</th>
+                                    <th>Match Date</th>
+                                    <th>Connected</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach($user->system_matches_for as $user_match)
+                                    @if(!empty($user_match->to_user))
+                                        <tr>
+                                            <td>
+                                                {{ !empty($user_match->for_user->userTransDefault) ? $user_match->for_user->userTransDefault->full_name : '-' }}
+                                                @if($user->custom_id != $user_match->for_user->custom_id)
+                                                    <a href="{{ route('admin.user-matches.show',$user_match->for_user->custom_id) }}" class="ml-2"><i class="fa fa-eye"></i></a>
+                                                @endif
+                                            </td>
+                                            <td>
+                                                {{ !empty($user_match->to_user->userTransDefault) ? $user_match->to_user->userTransDefault->full_name : '-' }}
+                                                @if($user->custom_id != $user_match->to_user->custom_id)
+                                                    <a href="{{ route('admin.user-matches.show',$user_match->to_user->custom_id) }}" class="ml-2"><i class="fa fa-eye"></i></a>
+                                                @endif
+                                            </td>
+                                            <td>{{ now()->create($user_match->match_date)->format('jS M Y') }}</td>
+                                            <td>{{ !empty($user_match->is_connected) ? 'Yes' : 'No' }}</td>
+                                        </tr>
+                                    @endif
+                                @endforeach
+                                @foreach($user->system_matches_to as $user_match)
+                                    @if(!empty($user_match->for_user))
+                                        <tr>
+                                            <td>
+                                                {{ !empty($user_match->for_user->userTransDefault) ? $user_match->for_user->userTransDefault->full_name : '-' }}
+                                                @if($user->custom_id != $user_match->for_user->custom_id)
+                                                    <a href="{{ route('admin.user-matches.show',$user_match->for_user->custom_id) }}" class="ml-2"><i class="fa fa-eye"></i></a>
+                                                @endif
+                                            </td>
+                                            <td>
+                                                {{ !empty($user_match->to_user->userTransDefault) ? $user_match->to_user->userTransDefault->full_name : '-' }}
+                                                @if($user->custom_id != $user_match->to_user->custom_id)
+                                                    <a href="{{ route('admin.user-matches.show',$user_match->to_user->custom_id) }}" class="ml-2"><i class="fa fa-eye"></i></a>
+                                                @endif
+                                            </td>
+                                            <td>{{ now()->create($user_match->match_date)->format('jS M Y') }}</td>
+                                            <td>{{ !empty($user_match->is_connected) ? 'Yes' : 'No' }}</td>
+                                        </tr>
+                                    @endif
+                                @endforeach
+                            </tbody>
+                        </table>
                     </div>
-                </div>
+                @endif
             </div>
         </div>
     </div>
 </div>
 @endsection
+@push('extra-js-scripts')
+<script type="text/javascript">
+    if($('#view_user_matches_table tbody tr').length == 0){
+        $('#view_user_matches_table tbody').append('<tr><td colspan="3" class="text-center">No Data<td></tr>');
+    }
+</script>
+@endpush
