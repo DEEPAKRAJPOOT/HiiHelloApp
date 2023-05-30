@@ -12,6 +12,9 @@ use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Auth;
 use Laravel\Sanctum\HasApiTokens;
 use App\Models\Like;
+use App\Models\DisLike;
+use App\Models\UnMatch;
+use App\Models\SystemMatch;
 use App\Models\Subscription;
 use Carbon\Carbon;
 use App\Jobs\NotificationJob;
@@ -96,6 +99,11 @@ class User extends Authenticatable implements MustVerifyEmail, TranslatableContr
     public function subscription() { return $this->hasOne('App\Models\Subscription')->latest(); }
 
     public function likes(){ return $this->hasMany('App\Models\Like','user_id','id'); }
+    public function likes_done(){ return $this->hasMany('App\Models\Like','liker_id','id'); }
+    public function dislikes(){ return $this->hasMany('App\Models\DisLike','user_id','id'); }
+    public function dislikes_done(){ return $this->hasMany('App\Models\DisLike','dis_liker_id','id'); }
+    public function unmatches(){ return $this->hasMany('App\Models\UnMatch','unmatch_to','id'); }
+    public function unmatches_done(){ return $this->hasMany('App\Models\UnMatch','unmatch_by','id'); }
     public function interests(){ return $this->hasMany('App\Models\UserInterest'); }
     public function userDetails(){ return $this->hasMany('App\Models\UserDetail')->orderBy('sequence'); }
     public function subAccount(){ return $this->hasOne('App\Models\TwilioSubaccount','user_id','id'); }

@@ -169,6 +169,9 @@ Route::group(['namespace' => 'Admin', 'middleware' => ['check_permit', 'revalida
 	Route::get('call-logs/listing', 'CallController@listing')->name('call-logs.listing');
 	Route::resource('call-logs', 'CallController');
 
+	Route::get('user-matches/listing', 'UserMatchesController@listing')->name('user-matches.listing');
+	Route::resource('user-matches', 'UserMatchesController');
+
 });
 
 Route::get('image-logs', 'Admin\ImageModerationController@index')->name('image-logs');

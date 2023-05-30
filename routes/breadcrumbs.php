@@ -358,6 +358,17 @@ Breadcrumbs::register('dashboard', function ($breadcrumbs) {
 	    $breadcrumbs->push('Coupon Users', route(Auth::getDefaultDriver().'.coupon-users.index'));
 	});
 
+	//User matches
+	Breadcrumbs::register('user_matches',function($breadcrumbs){
+		$breadcrumbs->parent('dashboard');
+	    $breadcrumbs->push('User Matches',route(Auth::getDefaultDriver().'.user-matches.index'));
+	});
+
+	Breadcrumbs::register('user_matches_view',function($breadcrumbs,$id){
+		$breadcrumbs->parent('user_matches');
+	    $breadcrumbs->push('User Match Details',route(Auth::getDefaultDriver().'.user-matches.show',$id));
+	});
+
 	//Colleges
 	Breadcrumbs::register('colleges_list',function($breadcrumbs){
 		$breadcrumbs->parent('dashboard');
