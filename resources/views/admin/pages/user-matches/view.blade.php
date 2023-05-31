@@ -4,6 +4,10 @@
     {!! Breadcrumbs::render('user_matches_view', $user->id) !!}
 @endpush
 
+@push('extra-css-styles')
+<link rel="stylesheet" type="text/css" href="{{ asset('assets/plugins/custom/datatables/datatables.bundle.css') }}" />
+@endpush
+
 @section('content')
 <div class="container">
     <div class="card card-custom">
@@ -17,29 +21,35 @@
         </div>
         <div class="card-body">
             <div class="row mb-4 pb-4">
-                <div class="col-auto">
-                    @if($user->profile_photo)
-                    <div class="symbol symbol-120 mr-5">
-                        <a href="{{ generateURL($user->profile_photo) }}" target="_blank">
-                            <div class="symbol-label" style="background-image:url('{{ generateURL($user->profile_photo)}}')"></div>
-                        </a>
+                <div class="col-md-8 d-flex flex-wrap align-content-center">
+                    <div class="row">
+                        <div class="col-auto d-flex flex-wrap align-content-center">
+                            @if($user->profile_photo)
+                            <div class="symbol symbol-120 mr-5">
+                                <a href="{{ generateURL($user->profile_photo) }}" target="_blank">
+                                    <div class="symbol-label" style="background-image:url('{{ generateURL($user->profile_photo)}}')"></div>
+                                </a>
+                            </div>
+                            @endif
+                            <h5 class="mb-4">
+                                @if(($user->is_test_user ?? '') == 'y')
+                                    <span class="badge bg-primary text-white">Test User</span>
+                                @endif
+                            </h5>
+                        </div>
+                        <div class="col-auto d-flex flex-wrap align-content-center">
+                            <h3>{{ $user->userTransDefault ? $user->userTransDefault->full_name : '' }}</h3>
+                        </div>
                     </div>
-                    @endif
-                    <h5 class="mb-4">
-                        @if(($user->is_test_user ?? '') == 'y')
-                            <span class="badge bg-primary text-white">Test User</span>
-                        @endif
-                    </h5>
                 </div>
-                <div class="col-auto d-flex flex-wrap align-content-center">
-                    <h3>{{ $user->userTransDefault ? $user->userTransDefault->full_name : '' }}</h3>
+                <div class="col-md-4 text-center">
+                    <div class="control-label"><h1>System Matches</h1></div>
+                    <div id="user-system-matches-chart"></div>
                 </div>
             </div>
             <div class="row">
                 <div class="col-md-12">
-                    <label class="control-label"><span class="mendatory" style="font-size: 20px;"></span>
-                        <h1>Profile Information</h1>
-                    </label>
+                    <label class="control-label"><h1>Profile Information</h1></label>
                     <div class="row">
                         @if(!empty($user->userTransDefault))
                             <div class="col-md-6 mb-2">
@@ -156,7 +166,7 @@
                                                     <a href="{{ route('admin.user-matches.show',$user_match->to_user->custom_id) }}" class="ml-2"><i class="fa fa-eye"></i></a>
                                                 @endif
                                             </td>
-                                            <td>{{ now()->create($user_match->match_date)->format('jS M Y') }}</td>
+                                            <td data-order="{{ now()->create($user_match->match_date)->timestamp }}">{{ now()->create($user_match->match_date)->format('jS M Y') }}</td>
                                             <td>
                                                 @switch($user_match->is_connected ?? '')
                                                     @case('0')
@@ -188,7 +198,7 @@
                                                     <a href="{{ route('admin.user-matches.show',$user_match->to_user->custom_id) }}" class="ml-2"><i class="fa fa-eye"></i></a>
                                                 @endif
                                             </td>
-                                            <td>{{ now()->create($user_match->match_date)->format('jS M Y') }}</td>
+                                            <td data-order="{{ now()->create($user_match->match_date)->timestamp }}">{{ now()->create($user_match->match_date)->format('jS M Y') }}</td>
                                             <td>
                                                 @switch($user_match->is_connected ?? '')
                                                     @case('0')
@@ -215,9 +225,35 @@
 </div>
 @endsection
 @push('extra-js-scripts')
+<script src="{{ asset('assets/plugins/custom/datatables/datatables.bundle.js') }}"></script>
 <script type="text/javascript">
-    if($('#view_user_matches_table tbody tr').length == 0){
-        $('#view_user_matches_table tbody').append('<tr><td colspan="3" class="text-center">No Data<td></tr>');
-    }
+    $('#view_user_matches_table').DataTable({
+        responsive: true,
+        searchDelay: 500,
+        processing: true,
+        serverSide: false,
+        pageLength: 10,
+        lengthMenu: [
+            [10, 20, 50, 100, 250, 500],
+            [10, 20, 50, 100, 250, 500]
+        ],
+    });
+    new ApexCharts($('#user-system-matches-chart').get(0),{
+        series:[{{ $user->system_matches_for()->whereHas('to_user')->where('is_connected',0)->count() + $user->system_matches_to()->whereHas('for_user')->where('is_connected',0)->count() }},{{ $user->system_matches_for()->whereHas('to_user')->where('is_connected',1)->count() + $user->system_matches_to()->whereHas('for_user')->where('is_connected',1)->count() }},{{ $user->system_matches_for()->whereHas('to_user')->where('is_connected',2)->count() + $user->system_matches_to()->whereHas('for_user')->where('is_connected',2)->count() }}],
+        chart:{
+            height:'200px',
+            type:'pie',
+        },
+        legend:{
+            position:'bottom',
+            formatter:function(seriesName, opts){
+                return [seriesName,' - ', opts.w.globals.series[opts.seriesIndex]]
+            }
+        },
+        stroke:{
+            show:false
+        },
+        labels:[' Active',' Connected',' Expired']
+    }).render();
 </script>
 @endpush

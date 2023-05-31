@@ -100,6 +100,9 @@
 					return [seriesName, " - ", opts.w.globals.series[opts.seriesIndex]]
 				}
 			},
+	        stroke:{
+	            show:false
+	        },
 			labels:[' Active',' Connected',' Expired']
 		}).render();
 	});

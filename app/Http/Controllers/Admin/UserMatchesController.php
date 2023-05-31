@@ -42,8 +42,8 @@ class UserMatchesController extends Controller {
 		->offset($offset)->limit($limit)
 		->get();
 		foreach($users as $user){
-			$total_system_matches = $user->system_matches_for()->count() + $user->system_matches_to()->count();
-			$connected_system_matches = $user->system_matches_for()->where('is_connected',1)->count() + $user->system_matches_to()->where('is_connected',1)->count();
+			$total_system_matches = $user->system_matches_for()->whereHas('to_user')->count() + $user->system_matches_to()->whereHas('for_user')->count();
+			$connected_system_matches = $user->system_matches_for()->whereHas('to_user')->where('is_connected',1)->count() + $user->system_matches_to()->whereHas('for_user')->where('is_connected',1)->count();
 			$records['data'][] = [
 				'name'                     => $user->userTransDefault ? $user->userTransDefault->full_name : 'N/A',
 				'unmatches_done'           => $user->unmatches_done_count,
