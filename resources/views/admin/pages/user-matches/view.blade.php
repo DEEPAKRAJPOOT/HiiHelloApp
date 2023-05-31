@@ -137,7 +137,7 @@
                                     <th>Match Shown To</th>
                                     <th>Match User</th>
                                     <th>Match Date</th>
-                                    <th>Connected</th>
+                                    <th>Match Status</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -157,7 +157,19 @@
                                                 @endif
                                             </td>
                                             <td>{{ now()->create($user_match->match_date)->format('jS M Y') }}</td>
-                                            <td>{{ !empty($user_match->is_connected) ? 'Yes' : 'No' }}</td>
+                                            <td>
+                                                @switch($user_match->is_connected ?? '')
+                                                    @case('0')
+                                                        Pending
+                                                    @break
+                                                    @case('1')
+                                                        Connected
+                                                    @break
+                                                    @case('2')
+                                                        Expired
+                                                    @break
+                                                @endswitch
+                                            </td>
                                         </tr>
                                     @endif
                                 @endforeach
@@ -177,7 +189,19 @@
                                                 @endif
                                             </td>
                                             <td>{{ now()->create($user_match->match_date)->format('jS M Y') }}</td>
-                                            <td>{{ !empty($user_match->is_connected) ? 'Yes' : 'No' }}</td>
+                                            <td>
+                                                @switch($user_match->is_connected ?? '')
+                                                    @case('0')
+                                                        Pending
+                                                    @break
+                                                    @case('1')
+                                                        Connected
+                                                    @break
+                                                    @case('2')
+                                                        Expired
+                                                    @break
+                                                @endswitch
+                                            </td>
                                         </tr>
                                     @endif
                                 @endforeach

@@ -10,7 +10,25 @@
 
 @section('content')
 <div class="container">
-
+	<div class="card card-custom mb-8">
+		<div class="card-header">
+			<div class="card-title">
+				<span class="card-icon">
+					<i class="fas fa-users text-primary"></i>
+				</span>
+				<h3 class="card-label">
+					System Matches
+				</h3>
+			</div>
+		</div>
+		<div class="card-body">
+			<div class="row mb-4 pb-4">
+				<div class="col-md-12 text-center">
+					<div id="system-matches-chart"></div>
+				</div>
+			</div>
+		</div>
+	</div>
 	<div class="card card-custom">
 		<div class="card-header">
 			<div class="card-title">
@@ -18,15 +36,12 @@
 					<i class="fas fa-users text-primary"></i>
 				</span>
 				<h3 class="card-label">
-					{{ $custom_title }}
+					Users
 				</h3>
 			</div>
 		</div>
-
 		<div class="card-body">
-			{{-- Datatable Start --}}
 			<table id="user_matches_table" class="table table-bordered table-hover table-checkable mt-5"></table>
-			{{-- Datatable End --}}
 		</div>
 	</div>
 </div>
@@ -51,27 +66,42 @@
 				{ data: 'dislikes_done' },
 				{ data: 'likes_received' },
 				{ data: 'dislikes_received' },
+				{ data: 'system_matches' },
+				{ data: 'system_matches_connected' },
 				{ data: 'action'},
 				],
 			columnDefs: [
 				// Specify columns titles here...
-				{ targets: 0, title: 'Name', orderable: true },
-				{ targets: 1, title: 'Likes Done', orderable: true },
-				{ targets: 2, title: 'Dislikes Done', orderable: true },
-				{ targets: 3, title: 'Likes Received', orderable: true },
-				{ targets: 4, title: 'Dislikes Received', orderable: true },
+				{ targets: 0, title: 'Name', orderable: false },
+				{ targets: 1, title: 'Likes Done', orderable: false },
+				{ targets: 2, title: 'Dislikes Done', orderable: false },
+				{ targets: 3, title: 'Likes Received', orderable: false },
+				{ targets: 4, title: 'Dislikes Received', orderable: false },
+				{ targets: 5, title: 'Total Matches', orderable: false },
+				{ targets: 6, title: 'Matches Connected', orderable: false },
 				// Action buttons
 				{ targets: -1, title: 'Action',orderable: false },
 				],
-			order: [
-				[0, 'DESC']
-			],
 			lengthMenu: [
 				[10, 20, 50, 100, 250, 500],
 				[10, 20, 50, 100, 250, 500]
 				],
 			pageLength: 10
 		});
+		new ApexCharts($('#system-matches-chart').get(0),{
+			series:[{{ $active_system_matches ?? 0 }},{{ $connected_system_matches ?? 0 }},{{ $expired_system_matches ?? 0 }}],
+			chart:{
+				height:'300px',
+				type:'pie',
+			},
+			legend:{
+				position:'bottom',
+				formatter:function(seriesName, opts){
+					return [seriesName, " - ", opts.w.globals.series[opts.seriesIndex]]
+				}
+			},
+			labels:[' Active',' Connected',' Expired']
+		}).render();
 	});
 </script>
 @endpush
