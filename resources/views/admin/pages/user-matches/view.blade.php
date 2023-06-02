@@ -23,15 +23,15 @@
             <div class="row mb-4 pb-4">
                 <div class="col-md-8 d-flex flex-wrap align-content-center">
                     <div class="row">
-                        <div class="col-auto d-flex flex-wrap align-content-center">
+                        <div class="col-auto d-flex flex-column flex-wrap align-content-center">
                             @if($user->profile_photo)
-                            <div class="symbol symbol-120 mr-5">
+                            <div class="symbol symbol-120">
                                 <a href="{{ generateURL($user->profile_photo) }}" target="_blank">
                                     <div class="symbol-label" style="background-image:url('{{ generateURL($user->profile_photo)}}')"></div>
                                 </a>
                             </div>
                             @endif
-                            <h5 class="mb-4">
+                            <h5 class="my-3 text-center">
                                 @if(($user->is_test_user ?? '') == 'y')
                                     <span class="badge bg-primary text-white">Test User</span>
                                 @endif
@@ -95,6 +95,13 @@
                         @if(!empty($user->country) && !empty($user->country->countryTransDefault))
                             <div class="col-md-6 mb-2">
                                 <label class="control-label">Country : <b>{{ $user->country->countryTransDefault->name }}</b></label>
+                            </div>
+                        @endif
+                        @if(!empty($user->created_at))
+                            <div class="col-md-6 mb-2">
+                                <label class="control-label">Created At : 
+                                    <b>{{ now()->create($user->created_at)->format('Y-m-d') }} ({{ now()->create($user->created_at)->diffForHumans() }})</b>
+                                </label>
                             </div>
                         @endif
                     </div>

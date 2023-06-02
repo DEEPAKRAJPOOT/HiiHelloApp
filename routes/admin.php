@@ -170,6 +170,7 @@ Route::group(['namespace' => 'Admin', 'middleware' => ['check_permit', 'revalida
 	Route::resource('call-logs', 'CallController');
 
 	Route::get('user-matches/listing', 'UserMatchesController@listing')->name('user-matches.listing');
+	Route::post('user-matches/chart-data', 'UserMatchesController@chartData')->name('user-matches.chart-data');
 	Route::resource('user-matches', 'UserMatchesController');
 
 });
