@@ -20,4 +20,7 @@ class BlockUser extends Model
     }
     public function blockBy(){ return $this->belongsTo('App\Models\User','block_by','id'); }
     public function blockedTo(){ return $this->belongsTo('App\Models\User','blocked_to','id'); }
+    public function getCreatedAtAttribute($created_at){
+        return date('d/m/Y', strtotime($created_at));
+    }
 }

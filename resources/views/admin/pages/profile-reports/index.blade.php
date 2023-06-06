@@ -153,7 +153,8 @@
                 </button>
             </div>
             <div class="modal-body">
-                <table class="table table-striped table-bordered nowrap" id="user_profile_report_table">
+                <h3 class="my-2">Reports</h3>
+                <table class="table table-striped table-bordered nowrap mb-4" id="user_profile_report_table">
                     <thead>
                         <tr>
                             <th title="Field #1">User name</th>
@@ -163,6 +164,18 @@
                         </tr>
                     </thead>
                     <tbody id="user_profile_report_table_body">
+                    </tbody>
+                </table>
+                <h3 class="my-2">Blocks</h3>
+                <table class="table table-striped table-bordered nowrap" id="user_profile_block_table">
+                    <thead>
+                        <tr>
+                            <th title="User name">User name</th>
+                            <th title="Gender">Gender</th>
+                            <th title="Date">Date</th>
+                        </tr>
+                    </thead>
+                    <tbody id="user_profile_block_table_body">
                     </tbody>
                 </table>
             </div>

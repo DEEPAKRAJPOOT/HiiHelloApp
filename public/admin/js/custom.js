@@ -784,17 +784,29 @@ function user_report_data(user_id){
             cache: false,
             success: function (responce) {
                 // console.log(responce.length);
-                var str =''; 
-                if (responce != '' && responce.length > 0) {
-                    $.each(responce, function(key,value ) {
+                var str ='';
+                if (responce.profile_reports != '' && responce.profile_reports.length > 0) {
+                    $.each(responce.profile_reports, function(key,value ) {
                         str +='<tr><td>'+value.full_name+'</td><td>'+value.gender+'</td><td>'+value.message+'</td><td>'+value.created_at+'</td></tr>';
                     });
                     $("#user_profile_report_table_body").html(str);
                 }
                 else
                 {
-                    var nostr = '<tr>No data found..</tr>';
+                    var nostr = '<tr><td colspan="4" class="text-center">No data found..</td></tr>';
                     $("#user_profile_report_table_body").html(nostr);
+                }
+                str ='';
+                if (responce.profile_blocks != '' && responce.profile_blocks.length > 0) {
+                    $.each(responce.profile_blocks, function(key,value ) {
+                        str +='<tr><td>'+value.full_name+'</td><td>'+value.gender+'</td><td>'+value.created_at+'</td></tr>';
+                    });
+                    $("#user_profile_block_table_body").html(str);
+                }
+                else
+                {
+                    var nostr = '<tr><td colspan="3" class="text-center">No data found..</td></tr>';
+                    $("#user_profile_block_table_body").html(nostr);
                 }
             },
         });
