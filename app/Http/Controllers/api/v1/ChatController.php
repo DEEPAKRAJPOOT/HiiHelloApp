@@ -188,7 +188,7 @@ class ChatController extends Controller
                         $cleared_time = $room->participate_cleared_at;
                     }
                 }
-                $messages = ChatMessage::withTrashed()->select('id', 'custom_id', 'room_id', 'sender_id', 'message', 'status', 'created_at', 'updated_at', 'deleted_at')->where(function($expired_query){
+                $messages = ChatMessage::withTrashed()->select('id', 'custom_id', 'room_id', 'sender_id', 'message', 'status', 'expired_at', 'created_at', 'updated_at', 'deleted_at')->where(function($expired_query){
                     $expired_query->whereNull('expired_at');
                     $expired_query->orWhere('expired_at','>',now());
                 });
