@@ -276,6 +276,10 @@ class ChatController extends Controller
                 if($room->participate_id == $auth_id){
                     $room->participate_cleared_at = now();
                 }
+                if(!empty($request->clear_for_both) && $request->clear_for_both != 'false'){
+                    $room->creator_cleared_at = now();
+                    $room->participate_cleared_at = now();
+                }
 
                 $room->save();
 
@@ -327,6 +331,11 @@ class ChatController extends Controller
                 }
 
                 if($room->participate_id == $auth_id){
+                    $room->participate_deleted_at = now();
+                }
+                
+                if(!empty($request->delete_for_both) && $request->delete_for_both != 'false'){
+                    $room->creator_deleted_at = now();
                     $room->participate_deleted_at = now();
                 }
 

@@ -26,7 +26,8 @@ class DeleteRoomRequest extends FormRequest
     public function rules()
     {
         return [
-            'room_id'      =>  'required|max:100',
+            'room_id'         =>  'required|max:100',
+            'delete_for_both' =>  'nullable',
         ];
     }
 }
