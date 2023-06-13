@@ -134,7 +134,8 @@
 				{ data: 'likes_received' },
 				{ data: 'dislikes_received' },
 				{ data: 'system_matches' },
-				{ data: 'system_matches_connected' },
+				{ data: 'organic_matches' },
+				{ data: 'chat_initiations' },
 				{ data: 'created_at' },
 				{ data: 'action'},
 			],
@@ -145,19 +146,20 @@
 				{ targets: 2, title: 'Dislikes Done', orderable: false },
 				{ targets: 3, title: 'Likes Received', orderable: false },
 				{ targets: 4, title: 'Dislikes Received', orderable: false },
-				{ targets: 5, title: 'Total Matches', orderable: false },
-				{ targets: 6, title: 'Matches Connected', orderable: false },
-				{ targets: 7, title: 'Created At', orderable: true },
+				{ targets: 5, title: 'System Matches', orderable: false },
+				{ targets: 6, title: 'Organic Matches', orderable: true },
+				{ targets: 7, title: 'Chat Initiations', orderable: false },
+				{ targets: 8, title: 'Created At', orderable: true },
 				// Action buttons
 				{ targets: -1, title: 'Action',orderable: false },
 			],
 			order: [
-				[7, 'DESC']
-				],
+				[8, 'DESC']
+			],
 			lengthMenu: [
 				[10, 20, 50, 100, 250, 500],
 				[10, 20, 50, 100, 250, 500]
-				],
+			],
 			pageLength: 10
 		});
 		$(document).on('click','#btn_search_filter',function(){

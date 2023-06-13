@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use App\Models\User;
+use App\Models\ChatRoom;
 use App\Models\SystemMatch;
 
 class UserMatchesController extends Controller {
@@ -21,7 +22,7 @@ class UserMatchesController extends Controller {
 			'data' => []
 		];
 		$users = User::withAggregate('userTransDefault','full_name')
-		->withCount('likes','likes_done','dislikes','dislikes_done','unmatches','unmatches_done');
+		->withCount('likes','likes_done','dislikes','dislikes_done','unmatches','unmatches_done','chat_initiations');
 		$records['recordsTotal'] = $users->count();
 		if($search != ''){
 			$users->where(function($query)use($search){
@@ -35,6 +36,9 @@ class UserMatchesController extends Controller {
         }
         if($sort_column == 'full_name'){
         	$sort_column = 'user_trans_default_full_name';
+        }
+        if($sort_column == 'organic_matches'){
+        	$sort_column = 'match_count';
         }
 		$records['recordsFiltered'] = $users->count();
 		$users = $users
@@ -53,7 +57,8 @@ class UserMatchesController extends Controller {
 				'likes_received'           => $user->likes_count,
 				'dislikes_received'        => $user->dislikes_count,
 				'system_matches'           => $total_system_matches,
-				'system_matches_connected' => (!empty($total_system_matches) && !empty($connected_system_matches)) ? $connected_system_matches.' (~'.round($connected_system_matches / $total_system_matches * 100,2).'%)' : '0',
+				'organic_matches'          => $user->match_count,
+				'chat_initiations'         => $user->chat_initiations_count,
 				'created_at'               => now()->create($user->created_at)->format('Y-m-d').'<br><small>'.now()->create($user->created_at)->diffForHumans().'</small>',
 				'action'                   => view('admin.layouts.includes.actions')->with(['custom_title'=>'User','id'=>$user->custom_id],$user)->render(),
 			];
@@ -62,7 +67,7 @@ class UserMatchesController extends Controller {
 	}
 	public function show($user_id){
 		$user = User::with('userTransDefault')
-		->withCount('likes','likes_done','dislikes','dislikes_done','unmatches','unmatches_done')
+		->withCount('likes','likes_done','dislikes','dislikes_done','unmatches','unmatches_done','chat_initiations')
 		->whereCustomId($user_id)->firstOrFail();
 		return view('admin.pages.user-matches.view',compact('user'))->with(['custom_title'=>'User Match Details']);
 	}

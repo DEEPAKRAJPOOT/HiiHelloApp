@@ -141,14 +141,29 @@
                                 Unmatches Received : <b>{{ $user->unmatches_count ?? 0 }}</b>
                             </label>
                         </div>
+                        <div class="col-md-6 mb-2">
+                            <label class="control-label">
+                                Chat Initiations : <b>{{ $user->chat_initiations_count ?? 0 }}</b>
+                            </label>
+                        </div>
+                        <div class="col-md-6 mb-2">
+                            <label class="control-label">
+                                Organic Matches : <b>{{ $user->match_count ?? 0 }}</b>
+                            </label>
+                        </div>
+                        <div class="col-md-6 mb-2">
+                            <label class="control-label">
+                                System Matches : <b>{{ $user->system_matches_for()->whereHas('to_user')->count() + $user->system_matches_to()->whereHas('for_user')->count() }}</b>
+                            </label>
+                        </div>
                     </div>
                 </div>
                 @if(!$user->system_matches_for->isEmpty() || !$user->system_matches_to->isEmpty())
                     <div class="col-md-12 mt-4 pt-4">
-                        <label class="control-label"><span class="mendatory" style="font-size: 20px;"></span>
+                        <label class="control-label">
                             <h1>System Matches</h1>
                         </label>
-                        <table id="view_user_matches_table" class="table table-bordered table-hover mt-5">
+                        <table id="view_system_matches_table" class="table table-bordered table-hover mt-5">
                             <thead>
                                 <tr>
                                     <th>Match Shown To</th>
@@ -226,6 +241,50 @@
                         </table>
                     </div>
                 @endif
+                @if(!empty($user->match_count))
+                    <div class="col-md-12 mt-4 pt-4">
+                        <label class="control-label">
+                            <h1>Organic Matches</h1>
+                        </label>
+                        <table id="view_organic_matches_table" class="table table-bordered table-hover mt-5">
+                            <thead>
+                                <tr>
+                                    <th>Match User</th>
+                                    <th>Match Date</th>
+                                    <th>Match Initiated By</th>
+                                    <th>Match Initiated On</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach($user->likes_done as $liked_by_user)
+                                @php
+                                    $liked_to_user = $user->likes->where('liker_id',$liked_by_user->user_id)->first();
+                                @endphp
+                                    @if(!empty($liked_to_user))
+                                        <tr>
+                                            <td>
+                                                {{ !empty($liked_by_user->user->userTransDefault) ? $liked_by_user->user->userTransDefault->full_name : '-' }}
+                                            </td>
+                                            <td>
+                                                {{ now()->create(max($liked_by_user->created_at,$liked_to_user->created_at))->format('jS M Y') }}
+                                            </td>
+                                            <td>
+                                                @if($liked_by_user->created_at > $liked_to_user->created_at)
+                                                    {{ !empty($liked_to_user->likerUser->userTransDefault) ? $liked_to_user->likerUser->userTransDefault->full_name : '-' }}
+                                                @else
+                                                    {{ !empty($liked_by_user->likerUser->userTransDefault) ? $liked_by_user->likerUser->userTransDefault->full_name : '-' }}
+                                                @endif
+                                            </td>
+                                            <td>
+                                                {{ now()->create(min($liked_by_user->created_at,$liked_to_user->created_at))->format('jS M Y') }}
+                                            </td>
+                                        </tr>
+                                    @endif
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                @endif
             </div>
         </div>
     </div>
@@ -234,7 +293,18 @@
 @push('extra-js-scripts')
 <script src="{{ asset('assets/plugins/custom/datatables/datatables.bundle.js') }}"></script>
 <script type="text/javascript">
-    $('#view_user_matches_table').DataTable({
+    $('#view_system_matches_table').DataTable({
+        responsive: true,
+        searchDelay: 500,
+        processing: true,
+        serverSide: false,
+        pageLength: 10,
+        lengthMenu: [
+            [10, 20, 50, 100, 250, 500],
+            [10, 20, 50, 100, 250, 500]
+        ],
+    });
+    $('#view_organic_matches_table').DataTable({
         responsive: true,
         searchDelay: 500,
         processing: true,

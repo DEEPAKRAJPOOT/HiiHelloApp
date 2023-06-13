@@ -16,6 +16,7 @@ use App\Models\DisLike;
 use App\Models\UnMatch;
 use App\Models\SystemMatch;
 use App\Models\Subscription;
+use App\Models\ChatRoom;
 use Carbon\Carbon;
 use App\Jobs\NotificationJob;
 use App\Http\Traits\TwillioSmsTrait;
@@ -130,6 +131,7 @@ class User extends Authenticatable implements MustVerifyEmail, TranslatableContr
 
     public function getAge(){ return \Carbon\Carbon::parse($this->birth_date)->diff(\Carbon\Carbon::now())->y; }
 
+    public function chat_initiations(){ return $this->hasMany('App\Models\ChatRoom', 'creator_id', 'id'); }
     public function countChats(){ 
         return ChatRoom::whereHas('chatMessages',  function ($query) {
                 $query->where('status','!=' ,'read')
