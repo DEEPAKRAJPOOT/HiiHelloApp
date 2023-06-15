@@ -195,6 +195,9 @@ class ChatController extends Controller
                 if(!empty($cleared_time)){
                     $messages->where('created_at','>',$cleared_time);
                 }
+                if($room->id == config('utility.chat.system_chat_room')){
+                    $messages->where('receiver_id',$auth_id);
+                }
                 $messages = $messages->with(['sender:id,custom_id'])
                     ->whereHas('room', function ($q) use ($request) {
                         $q->whereCustomId($request->room)->whereIsActive('y');
@@ -221,6 +224,7 @@ class ChatController extends Controller
                             'api'       =>  $this->getVersion(),
                             'language'  =>  app()->getLocale(),
                             'is_ban'    =>  false,
+                            'is_system_room' =>  ($room->id == config('utility.chat.system_chat_room')),
                             'message'   =>  trans('api.list', ['entity' => __('Chat history')])
                         ],
                     ]);

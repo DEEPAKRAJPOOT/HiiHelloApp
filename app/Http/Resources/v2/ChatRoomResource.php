@@ -17,8 +17,11 @@ class ChatRoomResource extends JsonResource
         $this->authLatestMessage = null;
         $auth_id = $request->user() ? $request->user()->id : NULL;
         if($this->participate_id == $auth_id){
-            $this->authLatestMessage = $this->chatMessages->where('created_at','>',$this->participate_cleared_at ?? '')
-            ->filter(function($query){
+            $this->authLatestMessage = $this->chatMessages->where('created_at','>',$this->participate_cleared_at ?? '');
+            if($this->id == config('utility.chat.system_chat_room')){
+                $this->authLatestMessage = $this->authLatestMessage->where('receiver_id',$auth_id);
+            }
+            $this->authLatestMessage = $this->authLatestMessage->filter(function($query){
                 return (empty($query->expired_at) || ($query->expired_at > now()));
             })
             ->sortByDesc('id')->first();
@@ -57,7 +60,7 @@ class ChatRoomResource extends JsonResource
             'latest_message'    =>  $this->authLatestMessage ? [
                 'id'        =>  $this->authLatestMessage->custom_id ?? '',
                 'message'   =>  $this->authLatestMessage->getMessage() ?? null,
-                'status'    =>  $this->authLatestMessage->status ?? '',
+                'status'    =>  strtr($this->authLatestMessage->status ?? '',['send'=>'sent','read'=>'seen']),
                 'sender'  =>  [
                     'id'    =>  $this->authLatestMessage->sender ? $this->authLatestMessage->sender->custom_id : '',
                 ],
@@ -65,6 +68,7 @@ class ChatRoomResource extends JsonResource
                 'created_at'  =>  $this->authLatestMessage->created_at ?? '',
                 'updated_at'  =>  $this->authLatestMessage->updated_at ?? '',
             ] : null,
+            'is_system_room' =>  ($this->id == config('utility.chat.system_chat_room')),
         ];
         return parent::toArray($request);
     }

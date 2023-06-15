@@ -17,7 +17,7 @@ class ChatMessageResource extends JsonResource
         return [
             'id'        =>  $this->custom_id ?? "",
             'message'   =>  $this->getMessage() ?? NULL,
-            'status'    =>  $this->status ?? "",
+            'status'    =>  strtr($this->status ?? "",['send'=>'sent','read'=>'seen']),
             'sender'  =>  [
                 'id'    =>  $this->sender ? $this->sender->custom_id : "",
             ],
