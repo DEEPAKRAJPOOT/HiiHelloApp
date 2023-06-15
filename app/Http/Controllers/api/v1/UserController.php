@@ -76,7 +76,9 @@ class UserController extends Controller
                     ->withCount(['blockedTos' => function ($query) use ($auth_id) {
                         $query->whereBlockBy($auth_id);
                     }])
-                    ->whereCustomId($request->id)->whereIsActive('y')->firstOrFail();
+                    ->whereCustomId($request->id)
+                    ->where('id','!=',config('utility.system.system_user_id'))
+                    ->whereIsActive('y')->firstOrFail();
 
                 return (new UserDetailResource($user))
                     ->additional([
