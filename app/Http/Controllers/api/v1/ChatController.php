@@ -270,22 +270,27 @@ class ChatController extends Controller
                 $room = ChatRoom::whereCustomId($request->room_id)
                     ->where(function ($query) use ($auth_id) {
                         $query->where('creator_id', $auth_id)
-                            ->orWhere('participate_id', $auth_id);
+                            ->orWhere('participate_id', $auth_id)
+                            ->orWhere('id', config('utility.chat.system_chat_room'));
                     })->firstOrFail();
 
-                if($room->creator_id == $auth_id){
-                    $room->creator_cleared_at = now();
-                }
+                if($room->id == config('utility.chat.system_chat_room')){
+                    ChatMessage::where('room_id',$room->id)->where('receiver_id',$auth_id)->delete();
+                }else{
+                    if($room->creator_id == $auth_id){
+                        $room->creator_cleared_at = now();
+                    }
 
-                if($room->participate_id == $auth_id){
-                    $room->participate_cleared_at = now();
-                }
-                if(!empty($request->clear_for_both) && $request->clear_for_both != 'false'){
-                    $room->creator_cleared_at = now();
-                    $room->participate_cleared_at = now();
-                }
+                    if($room->participate_id == $auth_id){
+                        $room->participate_cleared_at = now();
+                    }
+                    if(!empty($request->clear_for_both) && $request->clear_for_both != 'false'){
+                        $room->creator_cleared_at = now();
+                        $room->participate_cleared_at = now();
+                    }
 
-                $room->save();
+                    $room->save();
+                }
 
                 $this->status = Response::HTTP_OK;
                 return ([
@@ -326,24 +331,29 @@ class ChatController extends Controller
                 $room = ChatRoom::whereCustomId($request->room_id)
                     ->where(function ($query) use ($auth_id) {
                         $query->where('creator_id', $auth_id)
-                            ->orWhere('participate_id', $auth_id);
+                            ->orWhere('participate_id', $auth_id)
+                            ->orWhere('id', config('utility.chat.system_chat_room'));
                     })->firstOrFail();
 
+                if($room->id == config('utility.chat.system_chat_room')){
+                    ChatMessage::where('room_id',$room->id)->where('receiver_id',$auth_id)->delete();
+                }else{
                 
-                if($room->creator_id == $auth_id){
-                    $room->creator_deleted_at = now();
-                }
+                    if($room->creator_id == $auth_id){
+                        $room->creator_deleted_at = now();
+                    }
 
-                if($room->participate_id == $auth_id){
-                    $room->participate_deleted_at = now();
-                }
-                
-                if(!empty($request->delete_for_both) && $request->delete_for_both != 'false'){
-                    $room->creator_deleted_at = now();
-                    $room->participate_deleted_at = now();
-                }
+                    if($room->participate_id == $auth_id){
+                        $room->participate_deleted_at = now();
+                    }
+                    
+                    if(!empty($request->delete_for_both) && $request->delete_for_both != 'false'){
+                        $room->creator_deleted_at = now();
+                        $room->participate_deleted_at = now();
+                    }
 
-                $room->save();
+                    $room->save();
+                }
 
                 $this->status = Response::HTTP_OK;
                 return ([
