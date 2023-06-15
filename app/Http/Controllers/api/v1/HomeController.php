@@ -117,6 +117,7 @@ class HomeController extends Controller
                         ->whereNotNull('profile_photo')
                         ->whereNotNull('location_id')
                         ->whereIsActive('y')
+                        ->where('id','!=',config('utility.system.system_user_id'))
                         ->whereUserStatus('active');
                     if ($auth_interest != 'Both') {
                         $users->where('gender', $auth_interest);

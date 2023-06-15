@@ -977,13 +977,13 @@ class UsersController extends Controller
             //       Storage::delete($image);
             //     }
             // }
-            User::whereIn('custom_id', explode(',', $request->ids))->forceDelete();
+            User::whereIn('custom_id', explode(',', $request->ids))->where('id','!=',config('utility.system.system_user_id'))->forceDelete();
             $content['status'] = 200;
             $content['message'] = "User deleted successfully.";
             $content['count'] = User::all()->count();
             return response()->json($content);
         } else {
-            $user = User::where('custom_id', $id)->firstOrFail();
+            $user = User::where('custom_id', $id)->where('id','!=',config('utility.system.system_user_id'))->firstOrFail();
             // if( $user->profile_photo ){
             //     Storage::delete($user->profile_photo);
             // }

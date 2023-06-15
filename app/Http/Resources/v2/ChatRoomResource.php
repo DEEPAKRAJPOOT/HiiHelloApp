@@ -17,17 +17,21 @@ class ChatRoomResource extends JsonResource
         $this->authLatestMessage = null;
         $auth_id = $request->user() ? $request->user()->id : NULL;
         if($this->participate_id == $auth_id){
-            $this->authLatestMessage = $this->chatMessages->where('created_at','>',$this->participate_cleared_at ?? '');
-            if($this->id == config('utility.chat.system_chat_room')){
-                $this->authLatestMessage = $this->authLatestMessage->where('receiver_id',$auth_id);
-            }
-            $this->authLatestMessage = $this->authLatestMessage->filter(function($query){
+            $this->authLatestMessage = $this->chatMessages->where('created_at','>',$this->participate_cleared_at ?? '')
+            ->filter(function($query){
                 return (empty($query->expired_at) || ($query->expired_at > now()));
             })
             ->sortByDesc('id')->first();
         }
         if($this->creator_id == $auth_id){
             $this->authLatestMessage = $this->chatMessages->where('created_at','>',$this->creator_cleared_at ?? '')
+            ->filter(function($query){
+                return (empty($query->expired_at) || ($query->expired_at > now()));
+            })
+            ->sortByDesc('id')->first();
+        }
+        if($this->id == config('utility.chat.system_chat_room')){
+            $this->authLatestMessage = $this->chatMessages->where('receiver_id',$auth_id)
             ->filter(function($query){
                 return (empty($query->expired_at) || ($query->expired_at > now()));
             })

@@ -18,7 +18,7 @@
 
         <div class="profile-content">
             <div class="form-group col-md-12">
-                <div class="form-group col-md-12 row" style="margin:15px;">
+                <div class="form-group col-md-12 row" style="margin:15px">
                     <div class="form-group col-md-6">
                         @if ($user->profile_photo)
                         <div class="symbol symbol-120 mr-5">
@@ -31,6 +31,9 @@
                         <h5 class="mb-4">
                             @if(($user->is_test_user ?? '') == 'y')
                                 <span class="badge bg-primary text-white">Test User</span>
+                            @endif
+                            @if($user->id == config('utility.system.system_user_id'))
+                                <span class="badge bg-primary text-white">System User</span>
                             @endif
                         </h5>
                         <label class="control-label"><span class="mendatory" style="font-size: 20px;"></span>
