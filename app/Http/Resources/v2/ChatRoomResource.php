@@ -17,14 +17,14 @@ class ChatRoomResource extends JsonResource
         $this->authLatestMessage = null;
         $auth_id = $request->user() ? $request->user()->id : NULL;
         if($this->participate_id == $auth_id){
-            $this->authLatestMessage = $this->chatMessages->where('created_at','>',$this->participate_cleared_at ?? '')
+            $this->authLatestMessage = $this->chatMessagesWithTrashed->where('created_at','>',$this->participate_cleared_at ?? '')
             ->filter(function($query){
                 return (empty($query->expired_at) || ($query->expired_at > now()));
             })
             ->sortByDesc('id')->first();
         }
         if($this->creator_id == $auth_id){
-            $this->authLatestMessage = $this->chatMessages->where('created_at','>',$this->creator_cleared_at ?? '')
+            $this->authLatestMessage = $this->chatMessagesWithTrashed->where('created_at','>',$this->creator_cleared_at ?? '')
             ->filter(function($query){
                 return (empty($query->expired_at) || ($query->expired_at > now()));
             })
@@ -71,6 +71,7 @@ class ChatRoomResource extends JsonResource
                 'chat_messages_count'   =>  $this->chat_messages_count ?? 0,
                 'created_at'  =>  $this->authLatestMessage->created_at ?? '',
                 'updated_at'  =>  $this->authLatestMessage->updated_at ?? '',
+                'deleted_at'  =>  $this->authLatestMessage->deleted_at ?? "",
             ] : null,
             'is_system_room' =>  ($this->id == config('utility.chat.system_chat_room')),
             'vanish_mode'    =>  $this->vanish_mode,

@@ -23,6 +23,7 @@ class ChatRoom extends Model
         $query->orWhere('expired_at','>',now());
     })->latest('id'); }
     public function chatMessages() { return $this->hasMany(ChatMessage::class,'room_id','id'); }
+    public function chatMessagesWithTrashed() { return $this->hasMany(ChatMessage::class,'room_id','id')->withTrashed(); }
     public function callLog() { return $this->hasOne(CallLog::class,'room_id','id')->latest(); }
 
     public function nofityCallTimeOut()
