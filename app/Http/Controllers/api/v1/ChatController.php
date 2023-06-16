@@ -225,7 +225,7 @@ class ChatController extends Controller
                             'language'  =>  app()->getLocale(),
                             'is_ban'    =>  false,
                             'is_system_room' =>  ($room->id == config('utility.chat.system_chat_room')),
-                            'vanish_mode' =>  ($room->vanish_mode ?? 'n'),
+                            'vanish_mode' =>  (($room->vanish_mode ?? 'n') == 'y'),
                             'message'   =>  trans('api.list', ['entity' => __('Chat history')])
                         ],
                     ]);
@@ -394,7 +394,11 @@ class ChatController extends Controller
                         $query->where('creator_id', $auth_id)
                             ->orWhere('participate_id', $auth_id);
                     })->firstOrFail();
-                $room->vanish_mode = !empty($request->vanish_mode) ? 'y' : 'n';
+                if(!empty($request->vanish_mode) && $request->vanish_mode != 'false'){
+                    $room->vanish_mode = 'y';
+                }else{
+                    $room->vanish_mode = 'n';
+                }
                 $room->save();
                 $this->status = Response::HTTP_OK;
                 return ([
