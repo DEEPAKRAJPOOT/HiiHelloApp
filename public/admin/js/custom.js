@@ -153,6 +153,12 @@ $(function () {
         $(this).toggleClass("allChecked");
     });
 
+    $(document).on('click','.form-submit-link',function(){
+        if(!$(this).attr('data-submit-confirm') || ($(this).attr('data-submit-confirm') && confirm($(this).attr('data-submit-confirm')))){
+            $(this).closest('form').submit();
+        }
+    });
+
     $(document).on(
         "click",
         ".dataTable tbody input[class=small-chk]",

@@ -70,4 +70,8 @@ class ChatMessage extends Model
         }
         return $message;
     }
+
+    public function getLatest(){
+        return ChatMessage::where('room_id',$this->room_id)->where('receiver_id',$this->receiver_id)->orderBy('created_at','desc')->first();
+    }
 }

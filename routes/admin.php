@@ -125,6 +125,7 @@ Route::group(['namespace' => 'Admin', 'middleware' => ['check_permit', 'revalida
 
 	/* System Chat */
 	Route::get('system-chat/listing', 'SystemChatController@listing')->name('system-chat.listing');
+	Route::post('system-chat/send-bulk', 'SystemChatController@sendBulk')->name('system-chat.send-bulk');
 	Route::resource('system-chat', 'SystemChatController');
 
 	/* Colleges */
