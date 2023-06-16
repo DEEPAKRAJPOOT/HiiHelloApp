@@ -31,12 +31,6 @@
 				</a>
 				@endif
 
-				@if(in_array('delete',$permissions))
-				<a href="{{ route('admin.colleges.destroy',0) }}" name="del_select" id="del_select" class="btn btn-sm btn-light-danger font-weight-bolder text-uppercase mx-1 delete_all_link">
-					<i class="far fa-trash-alt"></i> Delete Selected
-				</a>
-				@endif
-
 			</div>
 		</div>
 

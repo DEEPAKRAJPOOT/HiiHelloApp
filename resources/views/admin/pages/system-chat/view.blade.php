@@ -62,27 +62,29 @@
 				</div>
 				<div class="d-flex flex-column align-items-start scrollable-chat">
 					@foreach($system_chats as $system_chat)
-						<div class="d-flex flex-row align-items-center @if(!empty($system_chat->deleted_at)) deleted-message @endif">
-							<div class="py-5 px-0 rounded bg-light-primary my-3">
-								<div class="system-message-text">
-									{{ $system_chat->getMessage()->value }}
+						<div class="@if(!empty($system_chat->deleted_at)) deleted-message @endif">
+							<div class="d-flex flex-row align-items-center">
+								<div class="py-5 px-0 rounded bg-light-primary my-3">
+									<div class="system-message-text">
+										{{ $system_chat->getMessage()->value }}
+									</div>
+									<div class="system-message-status">
+										<div>Status: {{ strtr($system_chat->status,['send'=>'sent','read'=>'seen']) }}</div>
+										<div>Sent: {{ $system_chat->created_at }}</div>
+										@if(!empty($system_chat->deleted_at))
+											<div class="text-danger">Deleted: {{ $system_chat->deleted_at }}</div>
+										@endif
+									</div>
 								</div>
-								<div class="system-message-status">
-									<div>Status: {{ strtr($system_chat->status,['send'=>'sent','read'=>'seen']) }}</div>
-									<div>Sent: {{ $system_chat->created_at }}</div>
-									@if(!empty($system_chat->deleted_at))
-										<div class="text-danger">Deleted: {{ $system_chat->deleted_at }}</div>
+								<div class="py-5 ml-2 ms-1 system-message-actions">
+									@if(empty($system_chat->deleted_at))
+									<form action="{{ route('admin.system-chat.destroy',$system_chat->custom_id) }}" method="post">
+										@csrf
+										@method('delete')
+										<a href="javascript:void(0)" class="form-submit-link" data-submit-confirm="Are you sure you want to delete this message?"><i class="fa fa-trash pr-0"></i></a>
+									</form>
 									@endif
 								</div>
-							</div>
-							<div class="py-5 ml-2 ms-1 system-message-actions">
-								@if(empty($system_chat->deleted_at))
-								<form action="{{ route('admin.system-chat.destroy',$system_chat->custom_id) }}" method="post">
-									@csrf
-									@method('delete')
-									<a href="javascript:void(0)" class="form-submit-link" data-submit-confirm="Are you sure you want to delete this message?"><i class="fa fa-trash pr-0"></i></a>
-								</form>
-								@endif
 							</div>
 						</div>
 					@endforeach
