@@ -170,6 +170,7 @@ Route::group(['namespace' => 'v1', 'prefix' => 'v1', 'middleware' => ['auth:sanc
     Route::post('chat/clear-room', [ChatController::class, 'clearChatRoom'])->name('chat.clear-room');
     Route::post('chat/delete-room', [ChatController::class, 'deleteChatRoom'])->name('chat.delete-room');
     Route::post('chat/get-messages', [ChatController::class, 'getChatMessages'])->name('chat.get-messages');
+    Route::post('chat/set-vanish-mode', [ChatController::class, 'setVanishMode'])->name('chat.set-vanish-mode');
 
     // Device Token
     Route::post('user/add-device-token', [GeneralController::class, 'storeDeviceToken'])->name('api.user.add-device-token');

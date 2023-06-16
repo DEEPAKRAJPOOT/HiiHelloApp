@@ -73,6 +73,7 @@ class ChatRoomResource extends JsonResource
                 'updated_at'  =>  $this->authLatestMessage->updated_at ?? '',
             ] : null,
             'is_system_room' =>  ($this->id == config('utility.chat.system_chat_room')),
+            'vanish_mode'    =>  $this->vanish_mode,
         ];
         return parent::toArray($request);
     }

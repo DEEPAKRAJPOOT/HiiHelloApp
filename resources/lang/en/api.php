@@ -167,6 +167,7 @@ return [
     'chat_room'  =>  [
         'delete'        =>  'Chat Session Deleted',
         'not_found'     =>  'Chat Session Not Found',
+        'vanish_mode'     =>  'Vanish Mode Changed',
     ],
 
     'notify_message'    =>  [

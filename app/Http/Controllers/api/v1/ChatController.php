@@ -225,6 +225,7 @@ class ChatController extends Controller
                             'language'  =>  app()->getLocale(),
                             'is_ban'    =>  false,
                             'is_system_room' =>  ($room->id == config('utility.chat.system_chat_room')),
+                            'vanish_mode' =>  ($room->vanish_mode ?? 'n'),
                             'message'   =>  trans('api.list', ['entity' => __('Chat history')])
                         ],
                     ]);
@@ -380,6 +381,49 @@ class ChatController extends Controller
             } catch (\Exception $e) {
                 $this->storeErrorLog($e, 'delete_chat_room');
             }
+        }
+        return $this->returnResponse();
+    }
+
+    public function setVanishMode(Request $request){
+        if($request->filled('room_id')){
+            try {
+                $auth_id = $request->user() ? $request->user()->id : NULL;
+                $room = ChatRoom::whereCustomId($request->room_id)
+                    ->where(function ($query) use ($auth_id) {
+                        $query->where('creator_id', $auth_id)
+                            ->orWhere('participate_id', $auth_id);
+                    })->firstOrFail();
+                $room->vanish_mode = !empty($request->vanish_mode) ? 'y' : 'n';
+                $room->save();
+                $this->status = Response::HTTP_OK;
+                return ([
+                    'data'  =>  NULL,
+                    'meta' => [
+                        'url'       =>  url()->current(),
+                        'api'       =>  $this->getVersion(),
+                        'language'  =>  app()->getLocale(),
+                        'is_ban'    =>  false,
+                        'message'   =>  trans('api.chat_room.vanish_mode'),
+                    ]
+                ]);
+            } catch (ModelNotFoundException $exception) {
+                switch ($exception->getModel()) {
+                    case 'App\Models\ChatRoom':
+                        $this->response['meta']['message'] = trans('api.chat_room.not_found');
+                        $this->response['meta']['is_ban'] = false;
+                        break;
+                    default:
+                        $this->response['meta']['message'] = trans('api.went_wrong');
+                        $this->response['meta']['is_ban'] = false;
+                        break;
+                };
+            } catch (\Exception $e) {
+                $this->storeErrorLog($e, 'set_vanish_mode');
+            }
+        }else{
+            $this->response['meta']['message'] = trans('api.went_wrong');
+            $this->response['meta']['is_ban'] = false;
         }
         return $this->returnResponse();
     }
