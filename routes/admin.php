@@ -123,6 +123,10 @@ Route::group(['namespace' => 'Admin', 'middleware' => ['check_permit', 'revalida
 	/* Email Notification */
 	Route::resource('email-notification', 'EmailNotificationController');
 
+	/* System Chat */
+	Route::get('system-chat/listing', 'SystemChatController@listing')->name('system-chat.listing');
+	Route::resource('system-chat', 'SystemChatController');
+
 	/* Colleges */
 	Route::get('colleges/listing', 'CollegesController@listing')->name('colleges.listing');
 	Route::post('colleges/bulk-approve', 'CollegesController@bulkApprove')->name('colleges.bulk-approve');

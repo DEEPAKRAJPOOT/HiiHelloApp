@@ -402,13 +402,16 @@ class ChatController extends Controller
                 $room->save();
                 $this->status = Response::HTTP_OK;
                 return ([
-                    'data'  =>  NULL,
+                    'data'  =>  [
+                        'room_id'     => $request->room_id,
+                        'vanish_mode' => (($room->vanish_mode ?? 'n') == 'y'),
+                    ],
                     'meta' => [
-                        'url'       =>  url()->current(),
-                        'api'       =>  $this->getVersion(),
-                        'language'  =>  app()->getLocale(),
-                        'is_ban'    =>  false,
-                        'message'   =>  trans('api.chat_room.vanish_mode'),
+                        'url'         =>  url()->current(),
+                        'api'         =>  $this->getVersion(),
+                        'language'    =>  app()->getLocale(),
+                        'is_ban'      =>  false,
+                        'message'     =>  trans('api.chat_room.vanish_mode'),
                     ]
                 ]);
             } catch (ModelNotFoundException $exception) {

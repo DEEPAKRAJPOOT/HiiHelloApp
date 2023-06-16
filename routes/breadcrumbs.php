@@ -382,6 +382,24 @@ Breadcrumbs::register('dashboard', function ($breadcrumbs) {
 	    $breadcrumbs->push('Edit College', route(Auth::getDefaultDriver().'.colleges.edit', $id));
 	});
 
+	//System Chat
+	Breadcrumbs::register('system_chats_list',function($breadcrumbs){
+		$breadcrumbs->parent('dashboard');
+	    $breadcrumbs->push('System Chats',route(Auth::getDefaultDriver().'.system-chat.index'));
+	});
+
+	Breadcrumbs::register('system_chats_view', function ($breadcrumbs, $id)
+	{
+		$breadcrumbs->parent('system_chats_list');
+		$breadcrumbs->push('View Chat', route('admin.system-chat.edit', $id));
+	});
+
+	Breadcrumbs::register('system_chat_create', function($breadcrumbs)
+	{
+		$breadcrumbs->parent('system_chats_list');
+	    $breadcrumbs->push('Send New Message', route(Auth::getDefaultDriver().'.system-chat.create'));
+	});
+
 	// Call Logs ------------------------------------------------------------------
 	Breadcrumbs::register('call_log_list', function($breadcrumbs)
 	{
