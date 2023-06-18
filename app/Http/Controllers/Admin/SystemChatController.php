@@ -152,7 +152,9 @@ class SystemChatController extends Controller {
 				            	'type'      =>  'text',
 				            	'value'     =>  $request->message,
 				            	'other'     =>  (object)[]
-				            ])
+				            ]),
+				            'created_at'    =>  now(),
+				            'updated_at'    =>  now()
 	            		];
 	            	}
 	            	ChatMessage::insert($bulk_insert);
