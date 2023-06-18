@@ -6,6 +6,9 @@
 
 @push('extra-css-styles')
 <style type="text/css">
+	body{
+		overflow-y: scroll;
+	}
 	.system-message-text{
 		text-align: left;
 		padding-right: 3.25rem !important;
@@ -22,6 +25,20 @@
 		overflow-x: hidden;
 		overflow-y: auto;
 		padding-right: 20px;
+	}
+	.z-index-2{
+		z-index: 2;
+	}
+	.system-message-actions{
+		z-index:0;
+		transform: translateX(-200%);
+		transition: transform .35s ease-in;
+	}
+	.chat-message-single {
+		cursor: pointer;
+	}
+	.chat-message-single:hover .system-message-actions{
+		transform: translateX(0%);
 	}
 </style>
 @endpush
@@ -62,9 +79,9 @@
 				</div>
 				<div class="d-flex flex-column align-items-start scrollable-chat">
 					@foreach($system_chats as $system_chat)
-						<div class="@if(!empty($system_chat->deleted_at)) deleted-message @endif">
+						<div class="chat-message-single collapse show @if(!empty($system_chat->deleted_at)) deleted-message @endif">
 							<div class="d-flex flex-row align-items-center">
-								<div class="py-5 px-0 rounded bg-light-primary my-3">
+								<div class="py-5 px-0 rounded bg-light-primary my-3 z-index-2">
 									<div class="system-message-text">
 										{{ $system_chat->getMessage()->value }}
 									</div>
@@ -109,7 +126,11 @@
 @push('extra-js-scripts')
 <script type="text/javascript">
 	$('#show-deleted-messages').change(function(){
-		$('.deleted-message').toggleClass('d-none',!$(this).is(':checked'));
+		if($(this).is(':checked')){
+			$('.deleted-message').collapse('show');
+		}else{
+			$('.deleted-message').collapse('hide');
+		}
 	});
 	$('[data-toggle-erase]').click(function(){
 		$($(this).attr('data-toggle-erase')).val('');

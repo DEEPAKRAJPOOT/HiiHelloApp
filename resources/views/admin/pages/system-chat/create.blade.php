@@ -88,7 +88,7 @@
                 </div>
             </div>  
             <div class="card-footer">
-                <button type="button" class="btn btn-primary mr-2 text-uppercase">Send <i class="fa fa-paper-plane"></i></button>
+                <button type="submit" class="btn btn-primary mr-2 text-uppercase">Send <i class="fa fa-paper-plane"></i></button>
                 <a href="{{ route('admin.system-chat.index') }}" class="btn btn-secondary text-uppercase">Cancel</a>
             </div>
         </form>
