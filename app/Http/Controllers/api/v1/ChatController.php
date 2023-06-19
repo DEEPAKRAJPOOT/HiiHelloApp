@@ -191,7 +191,6 @@ class ChatController extends Controller
                 $messages = ChatMessage::select('id', 'custom_id', 'room_id', 'sender_id', 'message', 'status', 'expired_at', 'created_at', 'updated_at', 'deleted_at')
                 ->where(function($expired_query){
                     $expired_query->whereNull('expired_at');
-                    $expired_query->orWhere('expired_at','>',now());
                     $expired_query->orWhere('status','!=','read');
                 })
                 ->where(function($sender_deleted_query)use($auth_id){

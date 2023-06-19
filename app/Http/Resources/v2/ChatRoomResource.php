@@ -19,14 +19,14 @@ class ChatRoomResource extends JsonResource
         if($this->participate_id == $auth_id){
             $this->authLatestMessage = $this->chatMessagesWithTrashed->where('created_at','>',$this->participate_cleared_at ?? '')
             ->filter(function($query){
-                return (empty($query->expired_at) || ($query->expired_at > now()) || ($query->status != 'read')) && (empty($query->sender_deleted_at) || ($query->sender_id != $auth_id));
+                return (empty($query->expired_at) || ($query->status != 'read')) && (empty($query->sender_deleted_at) || ($query->sender_id != $auth_id));
             })
             ->sortByDesc('id')->first();
         }
         if($this->creator_id == $auth_id){
             $this->authLatestMessage = $this->chatMessagesWithTrashed->where('created_at','>',$this->creator_cleared_at ?? '')
             ->filter(function($query){
-                return (empty($query->expired_at) || ($query->expired_at > now()) || ($query->status != 'read')) && (empty($query->sender_deleted_at) || ($query->sender_id != $auth_id));
+                return (empty($query->expired_at) || ($query->status != 'read')) && (empty($query->sender_deleted_at) || ($query->sender_id != $auth_id));
             })
             ->sortByDesc('id')->first();
         }

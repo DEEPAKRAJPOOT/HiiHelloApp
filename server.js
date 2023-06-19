@@ -390,24 +390,6 @@ io.on('connection', (socket)=>{
 					return false;
 				}
 
-				// Update Expiry Time Begin
-
-				let new_expiry_date = new Date(new Date(request.time).getTime() + 300000);
-				let expiry_date_string = [
-					new_date.getFullYear(),
-					('0' + (new_date.getMonth() + 1)).slice(-2),
-					('0' + new_date.getDate()).slice(-2),
-				].join('-');
-				let expiry_time_string = [
-					('0' + new_date.getHours()).slice(-2),
-					('0' + new_date.getMinutes()).slice(-2),
-					('0' + new_date.getSeconds()).slice(-2),
-				].join(':');
-
-				let updateExpiryTime =  "UPDATE chat_messages SET expired_at = ? WHERE room_id = ? AND status != ? AND expired_at IS NOT NULL";
-				let expiry_sql = connection.query(updateExpiryTime, [expiry_date_string + ' ' + expiry_time_string, selectMessage.room_id, 'read'], (read_error, _message) => {});
-				// Update Expiry Time End
-
 				let updateMessage =  "UPDATE chat_messages SET status = ?, updated_at = ? WHERE room_id = ? AND created_at <= ? ";
 				let sql = connection.query(updateMessage, [status, request.time, selectMessage.room_id, selectMessage.created_at], (read_error, _message) => {
 					if( read_error ) throw read_error;
