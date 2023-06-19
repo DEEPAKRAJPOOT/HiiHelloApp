@@ -257,6 +257,8 @@ io.on('connection', (socket)=>{
 										},
 										created_at 	: 	request.time,
 										updated_at 	: 	request.time,
+										expired_at  :   (typeof addMessageData.expired_at != 'undefined') ? addMessageData.expired_at : '',
+										is_disappearing_message  :  (typeof addMessageData.expired_at != 'undefined' && addMessageData.expired_at != null)
 									};
 
 									if(request.message_type == 'location'){

@@ -67,7 +67,9 @@ class ChatRoomResource extends JsonResource
                 'chat_messages_count'   =>  $this->chat_messages_count ?? 0,
                 'created_at'  =>  $this->authLatestMessage->created_at ?? '',
                 'updated_at'  =>  $this->authLatestMessage->updated_at ?? '',
-                'deleted_at'  =>  $this->authLatestMessage->deleted_at ?? "",
+                'deleted_at'  =>  $this->authLatestMessage->deleted_at ?? '',
+                'expired_at'  =>  $this->authLatestMessage->expired_at ?? '',
+                'is_disappearing_message'  =>  !empty($this->authLatestMessage->expired_at)
             ] : null,
             'is_system_room' =>  ($this->id == config('utility.chat.system_chat_room')),
             'vanish_mode'    =>  $this->vanish_mode,

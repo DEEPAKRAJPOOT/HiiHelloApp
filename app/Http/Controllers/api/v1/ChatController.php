@@ -9,7 +9,7 @@ use App\Http\Requests\Api\General\{PaginationRequest};
 use Illuminate\Support\Facades\{Auth};
 use App\Models\{ChatRoom, ChatMessage, User, CallLog};
 use App\Http\Resources\v1\{ChatRoomResource, ChatMessageResource};
-use App\Http\Requests\Api\Chat\{CreateRoomRequest, ChatMessagesRequest, ClearRoomRequest, DeleteRoomRequest, GetRoomRequest};
+use App\Http\Requests\Api\Chat\{CreateRoomRequest, ChatMessagesRequest, ClearRoomRequest, DeleteRoomRequest, GetRoomRequest, DisappearModeRequest, VanishModeRequest};
 
 class ChatController extends Controller
 {
@@ -233,6 +233,7 @@ class ChatController extends Controller
                             'is_ban'    =>  false,
                             'is_system_room' =>  ($room->id == config('utility.chat.system_chat_room')),
                             'vanish_mode' =>  (($room->vanish_mode ?? 'n') == 'y'),
+                            'disappear_mode' =>  $room->disappear_mode ?? 'off',
                             'message'   =>  trans('api.list', ['entity' => __('Chat history')])
                         ],
                     ]);
@@ -393,7 +394,8 @@ class ChatController extends Controller
     }
 
     public function setVanishMode(Request $request){
-        if($request->filled('room_id')){
+        $vanishModeRequest = new VanishModeRequest();
+        if ($this->apiValidator($request->all(), $vanishModeRequest->rules())) {
             try {
                 $auth_id = $request->user() ? $request->user()->id : NULL;
                 $room = ChatRoom::whereCustomId($request->room_id)
@@ -406,12 +408,14 @@ class ChatController extends Controller
                 }else{
                     $room->vanish_mode = 'n';
                 }
+                $room->vanish_mode_by = $auth_id;
                 $room->save();
                 $this->status = Response::HTTP_OK;
                 return ([
                     'data'  =>  [
                         'room_id'     => $request->room_id,
                         'vanish_mode' => (($room->vanish_mode ?? 'n') == 'y'),
+                        'disappear_mode' => $room->disappear_mode ?? 'off',
                     ],
                     'meta' => [
                         'url'         =>  url()->current(),
@@ -434,6 +438,55 @@ class ChatController extends Controller
                 };
             } catch (\Exception $e) {
                 $this->storeErrorLog($e, 'set_vanish_mode');
+            }
+        }else{
+            $this->response['meta']['message'] = trans('api.went_wrong');
+            $this->response['meta']['is_ban'] = false;
+        }
+        return $this->returnResponse();
+    }
+
+    public function setDisappearMode(Request $request){
+        $disappearModeRequest = new DisappearModeRequest();
+        if ($this->apiValidator($request->all(), $disappearModeRequest->rules())) {
+            try {
+                $auth_id = $request->user() ? $request->user()->id : NULL;
+                $room = ChatRoom::whereCustomId($request->room_id)
+                    ->where(function ($query) use ($auth_id) {
+                        $query->where('creator_id', $auth_id)
+                            ->orWhere('participate_id', $auth_id);
+                    })->firstOrFail();
+                $room->disappear_mode = $request->disappear_mode;
+                $room->disappear_mode_by = $auth_id;
+                $room->save();
+                $this->status = Response::HTTP_OK;
+                return ([
+                    'data'  =>  [
+                        'room_id'     => $request->room_id,
+                        'disappear_mode' => $room->disappear_mode,
+                        'vanish_mode' => (($room->vanish_mode ?? 'n') == 'y'),
+                    ],
+                    'meta' => [
+                        'url'         =>  url()->current(),
+                        'api'         =>  $this->getVersion(),
+                        'language'    =>  app()->getLocale(),
+                        'is_ban'      =>  false,
+                        'message'     =>  trans('api.chat_room.disappear_mode'),
+                    ]
+                ]);
+            } catch (ModelNotFoundException $exception) {
+                switch ($exception->getModel()) {
+                    case 'App\Models\ChatRoom':
+                        $this->response['meta']['message'] = trans('api.chat_room.not_found');
+                        $this->response['meta']['is_ban'] = false;
+                        break;
+                    default:
+                        $this->response['meta']['message'] = trans('api.went_wrong');
+                        $this->response['meta']['is_ban'] = false;
+                        break;
+                };
+            } catch (\Exception $e) {
+                $this->storeErrorLog($e, 'set_disappear_mode');
             }
         }else{
             $this->response['meta']['message'] = trans('api.went_wrong');

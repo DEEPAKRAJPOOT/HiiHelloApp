@@ -13,7 +13,7 @@ class ChatRoom extends Model
 
     public function getRouteKeyName(){ return 'custom_id'; }
     
-    protected $fillable = ['custom_id', 'creator_id', 'participate_id', 'block_by', 'creator_cleared_at', 'participate_cleared_at', 'creator_deleted_at', 'participate_deleted_at', 'vanish_mode'];
+    protected $fillable = ['custom_id', 'creator_id', 'participate_id', 'block_by', 'vanish_mode', 'vanish_mode_by', 'disappear_mode', 'disappear_mode_by', 'creator_cleared_at', 'participate_cleared_at', 'creator_deleted_at', 'participate_deleted_at'];
 
     public function creator(){ return $this->belongsTo('App\Models\User','creator_id','id'); }
     public function participator(){ return $this->belongsTo('App\Models\User','participate_id','id'); }
