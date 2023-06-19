@@ -14,7 +14,7 @@ class ChatMessage extends Model
 
     public function getRouteKeyName(){ return 'custom_id'; }
     
-    protected $fillable = ['custom_id', 'room_id', 'sender_id', 'receiver_id', 'message', 'status', 'expired_at', 'is_verified', 'created_at', 'updated_at'];
+    protected $fillable = ['custom_id', 'room_id', 'sender_id', 'receiver_id', 'message', 'status', 'expired_at', 'sender_deleted_at', 'is_verified', 'created_at', 'updated_at'];
 
     public function room(){ return $this->belongsTo('App\Models\ChatRoom','room_id','id'); }
     public function sender(){ return $this->belongsTo('App\Models\User','sender_id','id'); }

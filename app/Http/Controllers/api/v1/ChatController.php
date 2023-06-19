@@ -188,13 +188,15 @@ class ChatController extends Controller
                         $cleared_time = $room->participate_cleared_at;
                     }
                 }
-                $messages = ChatMessage::select('id', 'custom_id', 'room_id', 'sender_id', 'message', 'status', 'expired_at', 'created_at', 'updated_at', 'deleted_at')->where(function($expired_query){
+                $messages = ChatMessage::select('id', 'custom_id', 'room_id', 'sender_id', 'message', 'status', 'expired_at', 'created_at', 'updated_at', 'deleted_at')
+                ->where(function($expired_query){
                     $expired_query->whereNull('expired_at');
                     $expired_query->orWhere('expired_at','>',now());
-                    $expired_query->orWhere(function($expired_s_query){
-                        $expired_s_query->where('expired_at','<=',now());
-                        $expired_s_query->where('status','!=','read');
-                    });
+                    $expired_query->orWhere('status','!=','read');
+                })
+                ->where(function($sender_deleted_query)use($auth_id){
+                    $sender_deleted_query->whereNull('sender_deleted_at');
+                    $sender_deleted_query->orWhere('sender_id','!=',$auth_id);
                 });
                 if(!empty($cleared_time)){
                     $messages->where('created_at','>',$cleared_time);
