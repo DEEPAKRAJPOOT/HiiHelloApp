@@ -241,6 +241,9 @@ io.on('connection', (socket)=>{
 									if( error ) throw error;	
 										
 						            // create return object
+						            let return_msg_status = msg_status;
+						            return_msg_status.replace('send','sent');
+						            return_msg_status.replace('read','seen');
 						            let returnSendMsg = {
 										id   		: 	request.id,
 										message: {
@@ -248,7 +251,7 @@ io.on('connection', (socket)=>{
 						                	value  		: 	request.message_value,
 						                	other 		:  	{},
 							            },
-										status 		:   msg_status,
+										status 		:   return_msg_status,
 										sender 		: 	{
 											id 		: 	sender.custom_id,
 										},
@@ -336,7 +339,7 @@ io.on('connection', (socket)=>{
 								                		value  			: 	request.message_value,
 								                		other  			: 	{},
 													},
-								                	status  		: 	'send',
+								                	status  		: 	'sent',
 								                	created_at 		: 	request.time,
 													updated_at 		: 	request.time,
 									            }
@@ -386,6 +389,24 @@ io.on('connection', (socket)=>{
 					console.log('Message Not Found Of Id :: ',request.id); 
 					return false;
 				}
+
+				// Update Expiry Time Begin
+
+				let new_expiry_date = new Date(new Date(request.time).getTime() + 300000);
+				let expiry_date_string = [
+					new_date.getFullYear(),
+					('0' + (new_date.getMonth() + 1)).slice(-2),
+					('0' + new_date.getDate()).slice(-2),
+				].join('-');
+				let expiry_time_string = [
+					('0' + new_date.getHours()).slice(-2),
+					('0' + new_date.getMinutes()).slice(-2),
+					('0' + new_date.getSeconds()).slice(-2),
+				].join(':');
+
+				let updateExpiryTime =  "UPDATE chat_messages SET expired_at = ? WHERE room_id = ? AND status != ? AND expired_at IS NOT NULL";
+				let expiry_sql = connection.query(updateExpiryTime, [expiry_date_string + ' ' + expiry_time_string, selectMessage.room_id, 'read'], (read_error, _message) => {});
+				// Update Expiry Time End
 
 				let updateMessage =  "UPDATE chat_messages SET status = ?, updated_at = ? WHERE room_id = ? AND created_at <= ? ";
 				let sql = connection.query(updateMessage, [status, request.time, selectMessage.room_id, selectMessage.created_at], (read_error, _message) => {
@@ -462,8 +483,12 @@ io.on('connection', (socket)=>{
 					console.log('Message Not Found Of Id :: ',request.id); 
 					return false;
 				}
-
-				let deleteMessage =  "UPDATE chat_messages SET deleted_at = ?, updated_at = ? WHERE id = ? ";
+				let deleteMessage =  "UPDATE chat_messages SET sender_deleted_at = ?, updated_at = ? WHERE id = ? ";
+				if(typeof request.delete_for_both != 'undefined'){
+					if(request.delete_for_both === true){
+						deleteMessage =  "UPDATE chat_messages SET deleted_at = ?, updated_at = ? WHERE id = ? ";
+					}
+				}
 				let sql = connection.query(deleteMessage, [request.time, request.time, selectMessage.id], (delete_error, _message) => {
 					if( delete_error ) throw delete_error;
 					

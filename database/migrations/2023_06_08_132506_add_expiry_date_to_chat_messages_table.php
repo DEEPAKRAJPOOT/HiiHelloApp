@@ -15,6 +15,7 @@ class AddExpiryDateToChatMessagesTable extends Migration
     {
         Schema::table('chat_messages', function (Blueprint $table) {
             $table->timestamp('expired_at')->nullable()->after('status');
+            $table->timestamp('sender_deleted_at')->nullable()->after('expired_at');
         });
     }
 
@@ -26,7 +27,7 @@ class AddExpiryDateToChatMessagesTable extends Migration
     public function down()
     {
         Schema::table('chat_messages', function (Blueprint $table) {
-            $table->dropColumn(['expired_at']);
+            $table->dropColumn(['expired_at','sender_deleted_at']);
         });
     }
 }
