@@ -229,8 +229,8 @@ io.on('connection', (socket)=>{
 										
 						            // create return object
 						            let return_msg_status = msg_status;
-						            return_msg_status.replace('send','sent');
-						            return_msg_status.replace('read','seen');
+						            return_msg_status = return_msg_status.replace('send','sent');
+						            return_msg_status = return_msg_status.replace('read','seen');
 						            let returnSendMsg = {
 										id   		: 	request.id,
 										message: {

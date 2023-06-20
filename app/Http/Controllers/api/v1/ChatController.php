@@ -176,11 +176,13 @@ class ChatController extends Controller
         $chatMessagesRequest = new ChatMessagesRequest();
         if ($this->apiValidator($request->all(), $chatMessagesRequest->rules())) {
             try {
+                $user_type = 'participant';
                 $cleared_time = '';
                 $auth_id = $request->user() ? $request->user()->id : NULL;
                 $room = ChatRoom::whereCustomId($request->room)->whereIsActive('y')->first();
                 if(!empty($room)){
                     if($room->creator_id == $auth_id){
+                        $user_type = 'creator';
                         $cleared_time  = $room->creator_cleared_at;
                     }
 
@@ -234,6 +236,7 @@ class ChatController extends Controller
                             'is_system_room' =>  ($room->id == config('utility.chat.system_chat_room')),
                             'vanish_mode' =>  (($room->vanish_mode ?? 'n') == 'y'),
                             'disappear_mode' =>  $room->disappear_mode ?? 'off',
+                            'last_online' => (($user_type == 'creator') ? $room->participator : $room->creator)->lastOnlineDiff(),
                             'message'   =>  trans('api.list', ['entity' => __('Chat history')])
                         ],
                     ]);
