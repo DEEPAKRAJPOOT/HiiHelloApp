@@ -151,7 +151,7 @@ io.on('connection', (socket)=>{
 						}
 						emitLastOnline = {
 							user_id: checkUser.custom_id,
-							last_online: checkUser.last_online ? checkUser.last_online : ''
+							last_online: checkUser.last_online ? (new Date(checkUser.last_online)).valueOf() : ''
 						};
 						io.in(request.room_id).emit('online-status', emitLastOnline);	
 						console.log("Online Status Object ::"+JSON.stringify(emitLastOnline));
@@ -184,7 +184,7 @@ io.on('connection', (socket)=>{
 
 				let emitSenderLastOnline = {
 					user_id: sender.custom_id,
-					last_online: sender.last_online ? sender.last_online : ''
+					last_online: sender.last_online ? (new Date(sender.last_online)).valueOf() : ''
 				};
 				io.in(request.room_id).emit('online-status', emitSenderLastOnline);	
 				console.log("Online Status Object ::"+JSON.stringify(emitSenderLastOnline));
@@ -212,7 +212,7 @@ io.on('connection', (socket)=>{
 
 						let emitReceiverLastOnline = {
 							user_id: receiver.custom_id,
-							last_online: receiver.last_online ? receiver.last_online : ''
+							last_online: receiver.last_online ? (new Date(receiver.last_online)).valueOf() : ''
 						};
 						io.in(request.room_id).emit('online-status', emitReceiverLastOnline);	
 						console.log("Online Status Object ::"+JSON.stringify(emitReceiverLastOnline));
@@ -503,7 +503,7 @@ io.on('connection', (socket)=>{
 						}
 						emitLastOnline = {
 							user_id: checkUser.custom_id,
-							last_online: checkUser.last_online ? checkUser.last_online : ''
+							last_online: checkUser.last_online ? (new Date(checkUser.last_online)).valueOf() : ''
 						};
 						io.in(request.room_id).emit('online-status', emitLastOnline);	
 						console.log("Online Status Object ::"+JSON.stringify(emitLastOnline));
@@ -564,6 +564,7 @@ io.on('connection', (socket)=>{
 	* chat_message => For which message you want to send notification
 	* message => send message on notification
 	*/
+
 	function sendNotification(room_id, chat_message, message) {
 		// if( users[room_id] !== undefined && users[room_id].length < 2 )	{
 			message = message.replace(/(\r\n|\n|\r)/gm, "");
