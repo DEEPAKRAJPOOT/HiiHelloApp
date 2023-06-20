@@ -129,7 +129,7 @@ io.on('connection', (socket)=>{
   	});
 
   	socket.on('check-online-status', (request) => {
-  		if(request.room_id && request.user_id){
+  		if(request.room_id){
   			let selectChatRoom = "SELECT * FROM chat_rooms where custom_id = ? and deleted_at is NULL and is_active = 'y'";
   			connection.query(selectChatRoom, [request.room_id],(error, _chatRoom) => {
   				if( error ) throw error;
@@ -139,27 +139,23 @@ io.on('connection', (socket)=>{
 					console.log('Chat Room Not Found'); 
 					return false;
 				}
-				let checkUserId = 0;
-				if(chatRoom.creator_id == request.user_id){
-					checkUserId = chatRoom.participate_id;
-				}
-				if(chatRoom.participate_id == request.user_id){
-					checkUserId = chatRoom.creator_id;
-				}
-				let checkUser = "SELECT * FROM users where id = ? and deleted_at is NULL and is_active = 'y'";
-				connection.query(checkUser, [checkUserId],(error, _checkUsers) => {
+				let checkUsers = "SELECT * FROM users where id IN (?,?) and deleted_at is NULL and is_active = 'y'";
+				connection.query(checkUsers, [chatRoom.creator_id,chatRoom.participate_id],(error, _checkUsers) => {
 					if( error ) throw error;
-					let checkUser = _checkUsers[0];
-					if( checkUser === undefined ) {
-						io.in(request.room_id).emit('went-wrong','User Not Found');
-						console.log('User Not Found'); 
-						return false;
-					}
-					let emitUserData = {
-						last_online: checkUser.last_online ? checkUser.last_online : 'A while ago'
-					};
-					io.in(request.room_id).emit('online-status', emitUserData);	
-					console.log("Check Online Status Object ::"+JSON.stringify(emitUserData));
+					let emitLastOnline = {};
+					_checkUsers.foreach(function(checkUser){
+						if( checkUser === undefined ) {
+							io.in(request.room_id).emit('went-wrong','User Not Found');
+							console.log('User Not Found'); 
+							return false;
+						}
+						emitLastOnline = {
+							user_id: checkUser.custom_id,
+							last_online: checkUser.last_online ? checkUser.last_online : ''
+						};
+						io.in(request.room_id).emit('online-status', emitLastOnline);	
+						console.log("Online Status Object ::"+JSON.stringify(emitLastOnline));
+					});
 				});
   			});
   		}else{
@@ -186,6 +182,13 @@ io.on('connection', (socket)=>{
 					return false;
 				}
 
+				let emitSenderLastOnline = {
+					user_id: sender.custom_id,
+					last_online: sender.last_online ? sender.last_online : ''
+				};
+				io.in(request.room_id).emit('online-status', emitSenderLastOnline);	
+				console.log("Online Status Object ::"+JSON.stringify(emitSenderLastOnline));
+
 				let selectSenderName = "SELECT full_name FROM user_translations where locale = ? and user_id = ?";
 				let sql1 = connection.query(selectSenderName, [receiver_lang_code, sender.id], (error, sender_trans_result) => {
 					if( error ) throw error;
@@ -206,6 +209,13 @@ io.on('connection', (socket)=>{
 							console.log('Receiver Not Found'); 
 							return false;
 						}
+
+						let emitReceiverLastOnline = {
+							user_id: receiver.custom_id,
+							last_online: receiver.last_online ? receiver.last_online : ''
+						};
+						io.in(request.room_id).emit('online-status', emitReceiverLastOnline);	
+						console.log("Online Status Object ::"+JSON.stringify(emitReceiverLastOnline));
 
 						let selectReceiverName = "SELECT full_name FROM user_translations where locale = ? and user_id = ?";
 						let sql1 = connection.query(selectReceiverName,[sender_lang_code, receiver.id], (error, receiver_trans_result) => {
@@ -422,6 +432,10 @@ io.on('connection', (socket)=>{
 					if( read_error ) throw read_error;
 					message_parse =  JSON.parse(selectMessage.message);
 					
+
+					let return_msg_status = status;
+		            return_msg_status = return_msg_status.replace('send','sent');
+		            return_msg_status = return_msg_status.replace('read','seen');
 					// create return object
 					let returnUpdatedMsg = {
 						id   		: 	selectMessage.custom_id,
@@ -429,7 +443,7 @@ io.on('connection', (socket)=>{
 							type 		: 	message_parse.type,
 		                	value  		: 	message_parse.value,
 			            },
-						status 		:   status,
+						status 		:   return_msg_status,
 						sender 		: 	{
 							id 		: 	request.sender_id,
 						},
@@ -468,6 +482,34 @@ io.on('connection', (socket)=>{
 					io.in(request.room_id).emit('updated-message', returnUpdatedMsg);
 				});
 			});
+			let selectChatRoom = "SELECT * FROM chat_rooms where custom_id = ? and deleted_at is NULL and is_active = 'y'";
+  			connection.query(selectChatRoom, [request.room_id],(error, _chatRoom) => {
+  				if( error ) throw error;
+				let chatRoom = _chatRoom[0];
+				if( chatRoom === undefined ) {
+					io.in(request.room_id).emit('went-wrong','Chat Room Not Found');
+					console.log('Chat Room Not Found'); 
+					return false;
+				}
+				let checkUsers = "SELECT * FROM users where id IN (?,?) and deleted_at is NULL and is_active = 'y'";
+				connection.query(checkUsers, [chatRoom.creator_id,chatRoom.participate_id],(error, _checkUsers) => {
+					if( error ) throw error;
+					let emitLastOnline = {};
+					_checkUsers.foreach(function(checkUser){
+						if( checkUser === undefined ) {
+							io.in(request.room_id).emit('went-wrong','User Not Found');
+							console.log('User Not Found'); 
+							return false;
+						}
+						emitLastOnline = {
+							user_id: checkUser.custom_id,
+							last_online: checkUser.last_online ? checkUser.last_online : ''
+						};
+						io.in(request.room_id).emit('online-status', emitLastOnline);	
+						console.log("Online Status Object ::"+JSON.stringify(emitLastOnline));
+					});
+				});
+  			});
 		}else{
 			console.log("Precondition Failed !!!");
 			return false; 

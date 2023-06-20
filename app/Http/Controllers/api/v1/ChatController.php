@@ -236,7 +236,7 @@ class ChatController extends Controller
                             'is_system_room' =>  ($room->id == config('utility.chat.system_chat_room')),
                             'vanish_mode' =>  (($room->vanish_mode ?? 'n') == 'y'),
                             'disappear_mode' =>  $room->disappear_mode ?? 'off',
-                            'last_online' => (($user_type == 'creator') ? $room->participator : $room->creator)->lastOnlineDiff(),
+                            'last_online' => ($user_type == 'creator') ? $room->participator->lastOnlineTime() : $room->creator->lastOnlineTime(),
                             'message'   =>  trans('api.list', ['entity' => __('Chat history')])
                         ],
                     ]);
