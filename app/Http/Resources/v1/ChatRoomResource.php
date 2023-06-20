@@ -51,6 +51,7 @@ class ChatRoomResource extends JsonResource
             ],
             'is_system_room' =>  ($this->id == config('utility.chat.system_chat_room')),
             'vanish_mode'    =>  (($this->vanish_mode ?? 'n') == 'y'),
+            'disappear_mode'    =>  $this->disappear_mode ?? 'off',
         ];
         return parent::toArray($request);
     }

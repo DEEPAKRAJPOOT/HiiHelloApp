@@ -24,7 +24,7 @@ class ChatMessageResource extends JsonResource
             'created_at'  =>  $this->created_at ?? "",
             'updated_at'  =>  $this->updated_at ?? "",
             'deleted_at'  =>  $this->deleted_at ?? "",
-            'is_disappearing_message' => !empty($this->expired_at)
+            'is_vanished' =>  (($this->is_vanished ?? 'n') == 'y')
         ];
         return parent::toArray($request);
     }

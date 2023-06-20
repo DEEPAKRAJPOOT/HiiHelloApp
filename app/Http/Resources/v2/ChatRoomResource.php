@@ -19,14 +19,14 @@ class ChatRoomResource extends JsonResource
         if($this->participate_id == $auth_id){
             $this->authLatestMessage = $this->chatMessagesWithTrashed->where('created_at','>',$this->participate_cleared_at ?? '')
             ->filter(function($query){
-                return (empty($query->expired_at) || ($query->status != 'read')) && (empty($query->sender_deleted_at) || ($query->sender_id != $auth_id));
+                return ($query->is_vanished == 'n' || $query->status != 'read') && (empty($query->sender_deleted_at) || ($query->sender_id != $auth_id));
             })
             ->sortByDesc('id')->first();
         }
         if($this->creator_id == $auth_id){
             $this->authLatestMessage = $this->chatMessagesWithTrashed->where('created_at','>',$this->creator_cleared_at ?? '')
             ->filter(function($query){
-                return (empty($query->expired_at) || ($query->status != 'read')) && (empty($query->sender_deleted_at) || ($query->sender_id != $auth_id));
+                return ($query->is_vanished == 'n' || $query->status != 'read') && (empty($query->sender_deleted_at) || ($query->sender_id != $auth_id));
             })
             ->sortByDesc('id')->first();
         }
@@ -69,10 +69,11 @@ class ChatRoomResource extends JsonResource
                 'updated_at'  =>  $this->authLatestMessage->updated_at ?? '',
                 'deleted_at'  =>  $this->authLatestMessage->deleted_at ?? '',
                 'expired_at'  =>  $this->authLatestMessage->expired_at ?? '',
-                'is_disappearing_message'  =>  !empty($this->authLatestMessage->expired_at)
+                'is_vanished'  =>  (($this->authLatestMessage->is_vanished ?? 'n') == 'y')
             ] : null,
             'is_system_room' =>  ($this->id == config('utility.chat.system_chat_room')),
-            'vanish_mode'    =>  $this->vanish_mode,
+            'vanish_mode'    =>  (($this->vanish_mode ?? 'n') == 'y'),
+            'disappear_mode' =>  $this->disappear_mode ?? 'off',
         ];
         return parent::toArray($request);
     }

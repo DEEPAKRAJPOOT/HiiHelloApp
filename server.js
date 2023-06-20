@@ -219,21 +219,8 @@ io.on('connection', (socket)=>{
 									updated_at 	: 	request.time,
 								};
 
-								if(typeof request.is_disappearing_message != 'undefined'){
-									if(request.is_disappearing_message === true){
-										let new_date = new Date(new Date(request.time).getTime() + 300000);
-										let date_string = [
-											new_date.getFullYear(),
-											('0' + (new_date.getMonth() + 1)).slice(-2),
-											('0' + new_date.getDate()).slice(-2),
-										].join('-');
-										let time_string = [
-											('0' + new_date.getHours()).slice(-2),
-											('0' + new_date.getMinutes()).slice(-2),
-											('0' + new_date.getSeconds()).slice(-2),
-										].join(':');
-										addMessageData.expired_at = date_string + ' ' + time_string;
-									}
+								if(typeof chatRoom.vanish_mode != 'undefined'){
+									addMessageData.is_vanished = chatRoom.vanish_mode;
 								}
 
 								let addRecord = "INSERT INTO `chat_messages` SET ?";
@@ -257,8 +244,7 @@ io.on('connection', (socket)=>{
 										},
 										created_at 	: 	request.time,
 										updated_at 	: 	request.time,
-										expired_at  :   (typeof addMessageData.expired_at != 'undefined') ? addMessageData.expired_at : '',
-										is_disappearing_message  :  (typeof addMessageData.expired_at != 'undefined' && addMessageData.expired_at != null)
+										is_vanished  :  (typeof addMessageData.is_vanished != 'undefined' && addMessageData.is_vanished == 'y')
 									};
 
 									if(request.message_type == 'location'){
