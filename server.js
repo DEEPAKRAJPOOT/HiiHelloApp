@@ -128,6 +128,45 @@ io.on('connection', (socket)=>{
 		io.sockets.emit("offline", overallUsers);
   	});
 
+  	socket.on('check-online-status', (request) => {
+  		if(request.room_id && request.user_id){
+  			let selectChatRoom = "SELECT * FROM chat_rooms where custom_id = ? and deleted_at is NULL and is_active = 'y'";
+  			connection.query(selectChatRoom, [request.room_id],(error, _chatRoom) => {
+  				if( error ) throw error;
+				let chatRoom = _chatRoom[0];
+				if( chatRoom === undefined ) {
+					io.in(request.room_id).emit('went-wrong','Chat Room Not Found');
+					console.log('Chat Room Not Found'); 
+					return false;
+				}
+				let checkUserId = 0;
+				if(chatRoom.creator_id == request.user_id){
+					checkUserId = chatRoom.participate_id;
+				}
+				if(chatRoom.participate_id == request.user_id){
+					checkUserId = chatRoom.creator_id;
+				}
+				let checkUser = "SELECT * FROM users where id = ? and deleted_at is NULL and is_active = 'y'";
+				connection.query(checkUser, [checkUserId],(error, _checkUsers) => {
+					if( error ) throw error;
+					let checkUser = _checkUsers[0];
+					if( checkUser === undefined ) {
+						io.in(request.room_id).emit('went-wrong','User Not Found');
+						console.log('User Not Found'); 
+						return false;
+					}
+					let emitUserData = {
+						last_online: checkUser.last_online ? checkUser.last_online : 'A while ago'
+					};
+					io.in(request.room_id).emit('online-status', emitUserData);	
+					console.log("Check Online Status Object ::"+JSON.stringify(emitUserData));
+				});
+  			});
+  		}else{
+			console.log("Precondition Failed !!!");
+			return false; 
+		}
+  	});
 
 	/* Send New Message */
 	socket.on('send-message', (request) => {
