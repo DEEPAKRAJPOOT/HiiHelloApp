@@ -170,7 +170,7 @@ class ChatController extends Controller
         return $this->returnResponse();
     }
 
-    // Get Chat Messages Of The Room
+    // Get Chat Messages O$f The Room
     public function getChatMessages(Request $request)
     {
         $chatMessagesRequest = new ChatMessagesRequest();

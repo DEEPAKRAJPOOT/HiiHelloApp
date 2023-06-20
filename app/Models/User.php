@@ -186,7 +186,7 @@ class User extends Authenticatable implements MustVerifyEmail, TranslatableContr
 
     public function lastOnlineDiff(){
         if(!empty($this->last_online) && strtotime($this->last_online) > 0){
-            return now()->create($user->last_online)->diffForHumans();
+            return now()->create($this->last_online)->diffForHumans();
         }
         return 'A while ago';
     }
