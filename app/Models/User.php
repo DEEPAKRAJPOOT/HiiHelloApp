@@ -12,7 +12,11 @@ use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Auth;
 use Laravel\Sanctum\HasApiTokens;
 use App\Models\Like;
+use App\Models\DisLike;
+use App\Models\UnMatch;
+use App\Models\SystemMatch;
 use App\Models\Subscription;
+use App\Models\ChatRoom;
 use Carbon\Carbon;
 use App\Jobs\NotificationJob;
 use App\Http\Traits\TwillioSmsTrait;
@@ -96,6 +100,13 @@ class User extends Authenticatable implements MustVerifyEmail, TranslatableContr
     public function subscription() { return $this->hasOne('App\Models\Subscription')->latest(); }
 
     public function likes(){ return $this->hasMany('App\Models\Like','user_id','id'); }
+    public function likes_done(){ return $this->hasMany('App\Models\Like','liker_id','id'); }
+    public function dislikes(){ return $this->hasMany('App\Models\DisLike','user_id','id'); }
+    public function dislikes_done(){ return $this->hasMany('App\Models\DisLike','dis_liker_id','id'); }
+    public function unmatches(){ return $this->hasMany('App\Models\UnMatch','unmatch_to','id'); }
+    public function unmatches_done(){ return $this->hasMany('App\Models\UnMatch','unmatch_by','id'); }
+    public function system_matches_for(){ return $this->hasMany('App\Models\SystemMatch','user_id','id'); }
+    public function system_matches_to(){ return $this->hasMany('App\Models\SystemMatch','match_id','id'); }
     public function interests(){ return $this->hasMany('App\Models\UserInterest'); }
     public function userDetails(){ return $this->hasMany('App\Models\UserDetail')->orderBy('sequence'); }
     public function subAccount(){ return $this->hasOne('App\Models\TwilioSubaccount','user_id','id'); }
@@ -120,6 +131,7 @@ class User extends Authenticatable implements MustVerifyEmail, TranslatableContr
 
     public function getAge(){ return \Carbon\Carbon::parse($this->birth_date)->diff(\Carbon\Carbon::now())->y; }
 
+    public function chat_initiations(){ return $this->hasMany('App\Models\ChatRoom', 'creator_id', 'id'); }
     public function countChats(){ 
         return ChatRoom::whereHas('chatMessages',  function ($query) {
                 $query->where('status','!=' ,'read')
@@ -182,6 +194,13 @@ class User extends Authenticatable implements MustVerifyEmail, TranslatableContr
         if(!empty($this->email_verified_at)){ $status = "verified"; }
         
         return $status;
+    }
+
+    public function lastOnlineTimeStamp(){
+        if(!empty($this->last_online) && strtotime($this->last_online) > 0){
+            return strtotime($this->last_online) * 1000;
+        }
+        return '';
     }
 
     public function onlineStatus(){

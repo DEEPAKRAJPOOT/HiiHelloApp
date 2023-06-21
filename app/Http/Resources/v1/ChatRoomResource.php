@@ -41,7 +41,7 @@ class ChatRoomResource extends JsonResource
             'latest_message'    =>  [
                 'id'        =>  $this->latestMessage->custom_id ?? '',
                 'message'   =>  $this->latestMessage ? ($this->latestMessage->getMessage() ?? null) : null,
-                'status'    =>  $this->latestMessage->status ?? '',
+                'status'    =>  strtr($this->latestMessage->status ?? '',['send'=>'sent','read'=>'seen']),
                 'sender'  =>  [
                     'id'    =>  $this->latestMessage ? ($this->latestMessage->sender ? $this->latestMessage->sender->custom_id : '') : '',
                 ],
@@ -49,6 +49,9 @@ class ChatRoomResource extends JsonResource
                 'created_at'  =>  $this->latestMessage->created_at ?? '',
                 'updated_at'  =>  $this->latestMessage->updated_at ?? '',
             ],
+            'is_system_room' =>  ($this->id == config('utility.chat.system_chat_room')),
+            'vanish_mode'    =>  (($this->vanish_mode ?? 'n') == 'y'),
+            'disappear_mode'    =>  $this->disappear_mode ?? 'off',
         ];
         return parent::toArray($request);
     }

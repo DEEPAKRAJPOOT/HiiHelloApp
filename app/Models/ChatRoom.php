@@ -13,13 +13,17 @@ class ChatRoom extends Model
 
     public function getRouteKeyName(){ return 'custom_id'; }
     
-    protected $fillable = ['custom_id', 'creator_id', 'participate_id', 'block_by'];
+    protected $fillable = ['custom_id', 'creator_id', 'participate_id', 'block_by', 'vanish_mode', 'vanish_mode_by', 'disappear_mode', 'disappear_mode_by', 'creator_cleared_at', 'participate_cleared_at', 'creator_deleted_at', 'participate_deleted_at'];
 
     public function creator(){ return $this->belongsTo('App\Models\User','creator_id','id'); }
     public function participator(){ return $this->belongsTo('App\Models\User','participate_id','id'); }
     public function blockBy(){ return $this->belongsTo('App\Models\User','block_by','id'); }
-    public function latestMessage() { return $this->hasOne(ChatMessage::class,'room_id','id')->latest('id'); }
+    public function latestMessage() { return $this->hasOne(ChatMessage::class,'room_id','id')->where(function($query){
+        $query->whereNull('expired_at');
+        $query->orWhere('expired_at','>',now());
+    })->latest('id'); }
     public function chatMessages() { return $this->hasMany(ChatMessage::class,'room_id','id'); }
+    public function chatMessagesWithTrashed() { return $this->hasMany(ChatMessage::class,'room_id','id')->withTrashed(); }
     public function callLog() { return $this->hasOne(CallLog::class,'room_id','id')->latest(); }
 
     public function nofityCallTimeOut()

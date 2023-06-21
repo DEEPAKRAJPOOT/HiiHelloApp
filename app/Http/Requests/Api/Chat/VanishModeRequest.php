@@ -3,10 +3,8 @@
 namespace App\Http\Requests\Api\Chat;
 
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Support\Facades\Auth;
-use App\Models\ChatRoom;
 
-class DeleteRoomRequest extends FormRequest
+class VanishModeRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -26,8 +24,8 @@ class DeleteRoomRequest extends FormRequest
     public function rules()
     {
         return [
-            'room_id'         =>  'required|max:100',
-            'delete_for_both' =>  'nullable',
+            'room_id'      =>  'required|max:100',
+            'vanish_mode'  =>  'nullable'
         ];
     }
 }

@@ -48,6 +48,11 @@ class Chatv2Controller extends Controller
                             $q->whereParticipateId($auth_id)
                             ->whereNull('participate_deleted_at');
                         });
+                        $query->orWhere(function($q)use($auth_id){
+                            $q->whereId(config('utility.chat.system_chat_room'))->whereHas('chatMessages',function($sq)use($auth_id){
+                                $sq->where('receiver_id',$auth_id);
+                            });
+                        });
                     });
 
                 if (!empty($search)) {

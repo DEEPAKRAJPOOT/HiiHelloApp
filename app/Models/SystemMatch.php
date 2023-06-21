@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\User;
 
 class SystemMatch extends Model
 {
@@ -12,5 +13,9 @@ class SystemMatch extends Model
      protected $table = 'system_match';
 
     protected $fillable = ['custom_id', 'user_id', 'match_id', 'is_connected', 'match_date'];
+
+    public function to_user(){ return $this->belongsTo('App\Models\User','match_id','id'); }
+
+    public function for_user(){ return $this->belongsTo('App\Models\User','user_id','id'); }
     
 }

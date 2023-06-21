@@ -135,28 +135,28 @@ class ProfileReportController extends Controller
         foreach ($users as $user) {
             //search filter
             if ($request->filter_types == 1) {
-                $total_block = BlockUser::where("blocked_to",$user->id)->where("created_at","LIKE",'%'.Carbon::now()->format('Y-m-d').'%')->count();
+                $total_block = BlockUser::blockedOnly()->where("blocked_to",$user->id)->where("created_at","LIKE",'%'.Carbon::now()->format('Y-m-d').'%')->count();
                 $total_reports = ProfileReport::where("reported_user_id",$user->id)->where("created_at","LIKE",'%'.Carbon::now()->format('Y-m-d').'%')->count();
             }
             else if ($request->filter_types == 2) {
-                $total_block = BlockUser::where("blocked_to",$user->id)->whereBetween("created_at",[Carbon::now()->startOfWeek()->format('Y-m-d'), Carbon::now()->endOfWeek()->format('Y-m-d')])->count();
+                $total_block = BlockUser::blockedOnly()->where("blocked_to",$user->id)->whereBetween("created_at",[Carbon::now()->startOfWeek()->format('Y-m-d'), Carbon::now()->endOfWeek()->format('Y-m-d')])->count();
                 $total_reports = ProfileReport::where("reported_user_id",$user->id)->whereBetween("created_at",[Carbon::now()->startOfWeek()->format('Y-m-d'), Carbon::now()->endOfWeek()->format('Y-m-d')])->count();
             }
             else if ($request->filter_types == 3) {
-                $total_block = BlockUser::where("blocked_to",$user->id)->where("created_at","LIKE",'%'.Carbon::now()->format('m').'%')->count();
+                $total_block = BlockUser::blockedOnly()->where("blocked_to",$user->id)->where("created_at","LIKE",'%'.Carbon::now()->format('m').'%')->count();
                 $total_reports = ProfileReport::where("reported_user_id",$user->id)->where("created_at","LIKE",'%'.Carbon::now()->format('m').'%')->count();
             }
             else if ($request->filter_types == 4) {
-                $total_block = BlockUser::where("blocked_to",$user->id)->where("created_at","LIKE",'%'.Carbon::now()->format('Y').'%')->count();
+                $total_block = BlockUser::blockedOnly()->where("blocked_to",$user->id)->where("created_at","LIKE",'%'.Carbon::now()->format('Y').'%')->count();
                 $total_reports = ProfileReport::where("reported_user_id",$user->id)->where("created_at","LIKE",'%'.Carbon::now()->format('Y').'%')->count();
             }
             else if ($request->filter_types == 5 && !empty($request->from_date) && !empty($request->to_date)) {
-                $total_block = BlockUser::where("blocked_to",$user->id)->where("created_at",">=",$request->from_date)->where("created_at","<=",$request->to_date)->count();
+                $total_block = BlockUser::blockedOnly()->where("blocked_to",$user->id)->where("created_at",">=",$request->from_date)->where("created_at","<=",$request->to_date)->count();
                 $total_reports = ProfileReport::where("reported_user_id",$user->id)->where("created_at",">=",$request->from_date)->where("created_at","<=",$request->to_date)->count();
             }
             else
             {
-                $total_block = BlockUser::where("blocked_to",$user->id)->count();
+                $total_block = BlockUser::blockedOnly()->where("blocked_to",$user->id)->count();
                 $total_reports = ProfileReport::where("reported_user_id",$user->id)->count();
             }
 
@@ -241,27 +241,27 @@ class ProfileReportController extends Controller
         $total_report_users = 0;
 
         if ($request->filter_type == 1) {
-            $total_block_user = BlockUser::where("created_at","LIKE",'%'.Carbon::now()->format('Y-m-d').'%')->count();
+            $total_block_user = BlockUser::blockedOnly()->where("created_at","LIKE",'%'.Carbon::now()->format('Y-m-d').'%')->count();
             $total_report_users = ProfileReport::where("created_at","LIKE",'%'.Carbon::now()->format('Y-m-d').'%')->count();
         }
         else if ($request->filter_type == 2) {
-            $total_block_user = BlockUser::whereBetween("created_at",[Carbon::now()->startOfWeek()->format('Y-m-d'), Carbon::now()->endOfWeek()->format('Y-m-d')])->count();
+            $total_block_user = BlockUser::blockedOnly()->whereBetween("created_at",[Carbon::now()->startOfWeek()->format('Y-m-d'), Carbon::now()->endOfWeek()->format('Y-m-d')])->count();
             $total_report_users = ProfileReport::whereBetween("created_at",[Carbon::now()->startOfWeek()->format('Y-m-d'), Carbon::now()->endOfWeek()->format('Y-m-d')])->count();
         }
         else if ($request->filter_type == 3) {
-            $total_block_user = BlockUser::where("created_at","LIKE",'%'.Carbon::now()->format('m').'%')->count();
+            $total_block_user = BlockUser::blockedOnly()->where("created_at","LIKE",'%'.Carbon::now()->format('m').'%')->count();
             $total_report_users = ProfileReport::where("created_at","LIKE",'%'.Carbon::now()->format('m').'%')->count();
         }
         else if ($request->filter_type == 4) {
-            $total_block_user = BlockUser::where("created_at","LIKE",'%'.Carbon::now()->format('Y').'%')->count();
+            $total_block_user = BlockUser::blockedOnly()->where("created_at","LIKE",'%'.Carbon::now()->format('Y').'%')->count();
             $total_report_users = ProfileReport::where("created_at","LIKE",'%'.Carbon::now()->format('Y').'%')->count();
         }
         else if ($request->filter_type == 5) {
-            $total_block_user = BlockUser::where("created_at",">=",$request->fromdate_search)->where("created_at","<=",$request->todate_search)->count();
+            $total_block_user = BlockUser::blockedOnly()->where("created_at",">=",$request->fromdate_search)->where("created_at","<=",$request->todate_search)->count();
             $total_report_users = ProfileReport::where("created_at",">=",$request->fromdate_search)->where("created_at","<=",$request->todate_search)->count();
         }
         else {
-            $total_block_user = BlockUser::count();
+            $total_block_user = BlockUser::blockedOnly()->count();
             $total_report_users = ProfileReport::count();
         }
 
@@ -275,6 +275,7 @@ class ProfileReportController extends Controller
     {
         $auth_id = $request->user_id;
         $profile_reports = array();
+        $profile_blocks = array();
         if (!empty($auth_id)) {
             $profile_reports = ProfileReport::select("users.id as id","users.gender as gender","user_translations.full_name as full_name","profile_reports.message as message",DB::raw("DATE_FORMAT(profile_reports.created_at, '%d-%m-%Y %h:%i:%s') as created_at"))
                     ->leftJoin("users","users.id","=","profile_reports.user_id")
@@ -283,7 +284,14 @@ class ProfileReportController extends Controller
                     ->where("profile_reports.reported_user_id",$auth_id)
                     ->groupBy('profile_reports.id')
                     ->get();
+            $profile_blocks = BlockUser::blockedOnly()->select("users.id as id","users.gender as gender","user_translations.full_name as full_name","block_users.created_at")
+                    ->leftJoin("users","users.id","=","block_users.block_by")
+                    ->leftJoin("user_translations","user_translations.user_id","=","users.id")
+                    ->where("user_translations.locale","en")
+                    ->where("block_users.blocked_to",$auth_id)
+                    ->groupBy('block_users.id')
+                    ->get();
         }
-        return $profile_reports;
+        return compact('profile_reports','profile_blocks');
     }
 }

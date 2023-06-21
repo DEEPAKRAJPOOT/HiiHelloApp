@@ -26,7 +26,8 @@ class ClearRoomRequest extends FormRequest
     public function rules()
     {
         return [
-            'room_id'      =>  'required|max:100',
+            'room_id'        =>  'required|max:100',
+            'clear_for_both' =>  'nullable',
         ];
     }
 }

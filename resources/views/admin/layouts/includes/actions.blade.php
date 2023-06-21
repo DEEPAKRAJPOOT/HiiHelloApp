@@ -29,7 +29,7 @@
             </span>
     	</a>
     @endif
-    @if (in_array('delete', $permissions))
+    @if (in_array('delete', $permissions) && empty($forbid_delete))
     	<button data-target-href="{{ route($routeName.'.destroy', $id) }}" class="btn btn-icon btn-light btn-hover-danger btn-sm action-delete" title="Delete {{ $custom_title ?? '' }}">
             <span class="svg-icon svg-icon-md svg-icon-danger">
                 <!--begin::Svg Icon | path:/metronic/theme/html/demo1/dist/assets/media/svg/icons/General/Trash.svg-->

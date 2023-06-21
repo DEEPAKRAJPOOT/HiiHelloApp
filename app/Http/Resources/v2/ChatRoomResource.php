@@ -17,10 +17,21 @@ class ChatRoomResource extends JsonResource
         $this->authLatestMessage = null;
         $auth_id = $request->user() ? $request->user()->id : NULL;
         if($this->participate_id == $auth_id){
-            $this->authLatestMessage = $this->chatMessages->where('created_at','>',$this->participate_cleared_at ?? '')->sortByDesc('id')->first();
+            $this->authLatestMessage = $this->chatMessagesWithTrashed->where('created_at','>',$this->participate_cleared_at ?? '')
+            ->filter(function($query){
+                return ($query->is_vanished == 'n' || $query->status != 'read') && (empty($query->sender_deleted_at) || ($query->sender_id != $auth_id));
+            })
+            ->sortByDesc('id')->first();
         }
         if($this->creator_id == $auth_id){
-            $this->authLatestMessage = $this->chatMessages->where('created_at','>',$this->creator_cleared_at ?? '')->sortByDesc('id')->first();
+            $this->authLatestMessage = $this->chatMessagesWithTrashed->where('created_at','>',$this->creator_cleared_at ?? '')
+            ->filter(function($query){
+                return ($query->is_vanished == 'n' || $query->status != 'read') && (empty($query->sender_deleted_at) || ($query->sender_id != $auth_id));
+            })
+            ->sortByDesc('id')->first();
+        }
+        if($this->id == config('utility.chat.system_chat_room')){
+            $this->authLatestMessage = $this->chatMessages->where('receiver_id',$auth_id)->sortByDesc('id')->first();
         }
         return [
             'id'            =>  $this->custom_id,
@@ -49,14 +60,20 @@ class ChatRoomResource extends JsonResource
             'latest_message'    =>  $this->authLatestMessage ? [
                 'id'        =>  $this->authLatestMessage->custom_id ?? '',
                 'message'   =>  $this->authLatestMessage->getMessage() ?? null,
-                'status'    =>  $this->authLatestMessage->status ?? '',
+                'status'    =>  strtr($this->authLatestMessage->status ?? '',['send'=>'sent','read'=>'seen']),
                 'sender'  =>  [
                     'id'    =>  $this->authLatestMessage->sender ? $this->authLatestMessage->sender->custom_id : '',
                 ],
                 'chat_messages_count'   =>  $this->chat_messages_count ?? 0,
                 'created_at'  =>  $this->authLatestMessage->created_at ?? '',
                 'updated_at'  =>  $this->authLatestMessage->updated_at ?? '',
+                'deleted_at'  =>  $this->authLatestMessage->deleted_at ?? '',
+                'expired_at'  =>  $this->authLatestMessage->expired_at ?? '',
+                'is_vanished'  =>  (($this->authLatestMessage->is_vanished ?? 'n') == 'y')
             ] : null,
+            'is_system_room' =>  ($this->id == config('utility.chat.system_chat_room')),
+            'vanish_mode'    =>  (($this->vanish_mode ?? 'n') == 'y'),
+            'disappear_mode' =>  $this->disappear_mode ?? 'off',
         ];
         return parent::toArray($request);
     }

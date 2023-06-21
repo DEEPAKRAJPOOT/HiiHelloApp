@@ -65,6 +65,35 @@ io.on('connection', (socket)=>{
 
 		// Send Online Method
 		io.sockets.emit("online", overallUsers);
+
+		let selectChatRoom = "SELECT * FROM chat_rooms where custom_id = ? and deleted_at is NULL and is_active = 'y'";
+		connection.query(selectChatRoom, [request.room_id],(error, _chatRooms) => {
+			if( error ) throw error;
+			let chatRoom = _chatRooms[0];
+			if( chatRoom === undefined ) {
+				io.in(request.room_id).emit('went-wrong','Chat Room Not Found');
+				console.log('Chat Room Not Found'); 
+				return false;
+			}
+			let checkUsers = "SELECT * FROM users where id IN (?,?) and deleted_at is NULL and is_active = 'y'";
+			connection.query(checkUsers, [chatRoom.creator_id,chatRoom.participate_id],(error, _checkUsers) => {
+				if( error ) throw error;
+				let emitLastOnline = {};
+				_checkUsers.foreach(function(checkUser){
+					if( checkUser === undefined ) {
+						io.in(request.room_id).emit('went-wrong','User Not Found');
+						console.log('User Not Found'); 
+						return false;
+					}
+					emitLastOnline = {
+						user_id: checkUser.custom_id,
+						last_online: checkUser.last_online ? (new Date(checkUser.last_online)).valueOf() : ''
+					};
+					io.in(request.room_id).emit('online-status', emitLastOnline);	
+					console.log("Online Status Object ::"+JSON.stringify(emitLastOnline));
+				});
+			});
+		});
 	});
 
 	/* User Disconnected From Chat Room */
@@ -80,6 +109,38 @@ io.on('connection', (socket)=>{
 					if (value.length == 0) delete users[key]
 			}
 		}
+
+		if(typeof request.room_id != 'undefined'){
+			let selectChatRoom = "SELECT * FROM chat_rooms where custom_id = ? and deleted_at is NULL and is_active = 'y'";
+			connection.query(selectChatRoom, [request.room_id],(error, _chatRoom) => {
+				if( error ) throw error;
+				let chatRoom = _chatRoom[0];
+				if( chatRoom === undefined ) {
+					io.in(request.room_id).emit('went-wrong','Chat Room Not Found');
+					console.log('Chat Room Not Found'); 
+					return false;
+				}
+				let checkUsers = "SELECT * FROM users where id IN (?,?) and deleted_at is NULL and is_active = 'y'";
+				connection.query(checkUsers, [chatRoom.creator_id,chatRoom.participate_id],(error, _checkUsers) => {
+					if( error ) throw error;
+					let emitLastOnline = {};
+					_checkUsers.foreach(function(checkUser){
+						if( checkUser === undefined ) {
+							io.in(request.room_id).emit('went-wrong','User Not Found');
+							console.log('User Not Found'); 
+							return false;
+						}
+						emitLastOnline = {
+							user_id: checkUser.custom_id,
+							last_online: checkUser.last_online ? (new Date(checkUser.last_online)).valueOf() : ''
+						};
+						io.in(request.room_id).emit('online-status', emitLastOnline);	
+						console.log("Online Status Object ::"+JSON.stringify(emitLastOnline));
+					});
+				});
+			});
+		}
+
 	});
 
 	/* User Disconnected From Global Chat (Offline) */
@@ -128,6 +189,41 @@ io.on('connection', (socket)=>{
 		io.sockets.emit("offline", overallUsers);
   	});
 
+  	socket.on('check-online-status', (request) => {
+  		if(request.room_id){
+  			let selectChatRoom = "SELECT * FROM chat_rooms where custom_id = ? and deleted_at is NULL and is_active = 'y'";
+  			connection.query(selectChatRoom, [request.room_id],(error, _chatRoom) => {
+  				if( error ) throw error;
+				let chatRoom = _chatRoom[0];
+				if( chatRoom === undefined ) {
+					io.in(request.room_id).emit('went-wrong','Chat Room Not Found');
+					console.log('Chat Room Not Found'); 
+					return false;
+				}
+				let checkUsers = "SELECT * FROM users where id IN (?,?) and deleted_at is NULL and is_active = 'y'";
+				connection.query(checkUsers, [chatRoom.creator_id,chatRoom.participate_id],(error, _checkUsers) => {
+					if( error ) throw error;
+					let emitLastOnline = {};
+					_checkUsers.foreach(function(checkUser){
+						if( checkUser === undefined ) {
+							io.in(request.room_id).emit('went-wrong','User Not Found');
+							console.log('User Not Found'); 
+							return false;
+						}
+						emitLastOnline = {
+							user_id: checkUser.custom_id,
+							last_online: checkUser.last_online ? (new Date(checkUser.last_online)).valueOf() : ''
+						};
+						io.in(request.room_id).emit('online-status', emitLastOnline);	
+						console.log("Online Status Object ::"+JSON.stringify(emitLastOnline));
+					});
+				});
+  			});
+  		}else{
+			console.log("Precondition Failed !!!");
+			return false; 
+		}
+  	});
 
 	/* Send New Message */
 	socket.on('send-message', (request) => {
@@ -146,6 +242,13 @@ io.on('connection', (socket)=>{
 					console.log('Sender Not Found'); 
 					return false;
 				}
+
+				let emitSenderLastOnline = {
+					user_id: sender.custom_id,
+					last_online: sender.last_online ? (new Date(sender.last_online)).valueOf() : ''
+				};
+				io.in(request.room_id).emit('online-status', emitSenderLastOnline);	
+				console.log("Online Status Object ::"+JSON.stringify(emitSenderLastOnline));
 
 				let selectSenderName = "SELECT full_name FROM user_translations where locale = ? and user_id = ?";
 				let sql1 = connection.query(selectSenderName, [receiver_lang_code, sender.id], (error, sender_trans_result) => {
@@ -167,6 +270,13 @@ io.on('connection', (socket)=>{
 							console.log('Receiver Not Found'); 
 							return false;
 						}
+
+						let emitReceiverLastOnline = {
+							user_id: receiver.custom_id,
+							last_online: receiver.last_online ? (new Date(receiver.last_online)).valueOf() : ''
+						};
+						io.in(request.room_id).emit('online-status', emitReceiverLastOnline);	
+						console.log("Online Status Object ::"+JSON.stringify(emitReceiverLastOnline));
 
 						let selectReceiverName = "SELECT full_name FROM user_translations where locale = ? and user_id = ?";
 						let sql1 = connection.query(selectReceiverName,[sender_lang_code, receiver.id], (error, receiver_trans_result) => {
@@ -219,11 +329,18 @@ io.on('connection', (socket)=>{
 									updated_at 	: 	request.time,
 								};
 
+								if(typeof chatRoom.vanish_mode != 'undefined'){
+									addMessageData.is_vanished = chatRoom.vanish_mode;
+								}
+
 								let addRecord = "INSERT INTO `chat_messages` SET ?";
 								let sql = connection.query(addRecord, addMessageData, (error, _addMessage) => {
 									if( error ) throw error;	
 										
 						            // create return object
+						            let return_msg_status = msg_status;
+						            return_msg_status = return_msg_status.replace('send','sent');
+						            return_msg_status = return_msg_status.replace('read','seen');
 						            let returnSendMsg = {
 										id   		: 	request.id,
 										message: {
@@ -231,12 +348,13 @@ io.on('connection', (socket)=>{
 						                	value  		: 	request.message_value,
 						                	other 		:  	{},
 							            },
-										status 		:   msg_status,
+										status 		:   return_msg_status,
 										sender 		: 	{
 											id 		: 	sender.custom_id,
 										},
 										created_at 	: 	request.time,
 										updated_at 	: 	request.time,
+										is_vanished  :  (typeof addMessageData.is_vanished != 'undefined' && addMessageData.is_vanished == 'y')
 									};
 
 									if(request.message_type == 'location'){
@@ -319,7 +437,7 @@ io.on('connection', (socket)=>{
 								                		value  			: 	request.message_value,
 								                		other  			: 	{},
 													},
-								                	status  		: 	'send',
+								                	status  		: 	'sent',
 								                	created_at 		: 	request.time,
 													updated_at 		: 	request.time,
 									            }
@@ -375,6 +493,10 @@ io.on('connection', (socket)=>{
 					if( read_error ) throw read_error;
 					message_parse =  JSON.parse(selectMessage.message);
 					
+
+					let return_msg_status = status;
+		            return_msg_status = return_msg_status.replace('send','sent');
+		            return_msg_status = return_msg_status.replace('read','seen');
 					// create return object
 					let returnUpdatedMsg = {
 						id   		: 	selectMessage.custom_id,
@@ -382,7 +504,7 @@ io.on('connection', (socket)=>{
 							type 		: 	message_parse.type,
 		                	value  		: 	message_parse.value,
 			            },
-						status 		:   status,
+						status 		:   return_msg_status,
 						sender 		: 	{
 							id 		: 	request.sender_id,
 						},
@@ -421,6 +543,34 @@ io.on('connection', (socket)=>{
 					io.in(request.room_id).emit('updated-message', returnUpdatedMsg);
 				});
 			});
+			let selectChatRoom = "SELECT * FROM chat_rooms where custom_id = ? and deleted_at is NULL and is_active = 'y'";
+  			connection.query(selectChatRoom, [request.room_id],(error, _chatRoom) => {
+  				if( error ) throw error;
+				let chatRoom = _chatRoom[0];
+				if( chatRoom === undefined ) {
+					io.in(request.room_id).emit('went-wrong','Chat Room Not Found');
+					console.log('Chat Room Not Found'); 
+					return false;
+				}
+				let checkUsers = "SELECT * FROM users where id IN (?,?) and deleted_at is NULL and is_active = 'y'";
+				connection.query(checkUsers, [chatRoom.creator_id,chatRoom.participate_id],(error, _checkUsers) => {
+					if( error ) throw error;
+					let emitLastOnline = {};
+					_checkUsers.foreach(function(checkUser){
+						if( checkUser === undefined ) {
+							io.in(request.room_id).emit('went-wrong','User Not Found');
+							console.log('User Not Found'); 
+							return false;
+						}
+						emitLastOnline = {
+							user_id: checkUser.custom_id,
+							last_online: checkUser.last_online ? (new Date(checkUser.last_online)).valueOf() : ''
+						};
+						io.in(request.room_id).emit('online-status', emitLastOnline);	
+						console.log("Online Status Object ::"+JSON.stringify(emitLastOnline));
+					});
+				});
+  			});
 		}else{
 			console.log("Precondition Failed !!!");
 			return false; 
@@ -445,8 +595,12 @@ io.on('connection', (socket)=>{
 					console.log('Message Not Found Of Id :: ',request.id); 
 					return false;
 				}
-
-				let deleteMessage =  "UPDATE chat_messages SET deleted_at = ?, updated_at = ? WHERE id = ? ";
+				let deleteMessage =  "UPDATE chat_messages SET sender_deleted_at = ?, updated_at = ? WHERE id = ? ";
+				if(typeof request.delete_for_both != 'undefined'){
+					if(request.delete_for_both === true){
+						deleteMessage =  "UPDATE chat_messages SET deleted_at = ?, updated_at = ? WHERE id = ? ";
+					}
+				}
 				let sql = connection.query(deleteMessage, [request.time, request.time, selectMessage.id], (delete_error, _message) => {
 					if( delete_error ) throw delete_error;
 					
@@ -471,6 +625,7 @@ io.on('connection', (socket)=>{
 	* chat_message => For which message you want to send notification
 	* message => send message on notification
 	*/
+
 	function sendNotification(room_id, chat_message, message) {
 		// if( users[room_id] !== undefined && users[room_id].length < 2 )	{
 			message = message.replace(/(\r\n|\n|\r)/gm, "");

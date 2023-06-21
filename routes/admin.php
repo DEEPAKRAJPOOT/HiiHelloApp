@@ -123,6 +123,11 @@ Route::group(['namespace' => 'Admin', 'middleware' => ['check_permit', 'revalida
 	/* Email Notification */
 	Route::resource('email-notification', 'EmailNotificationController');
 
+	/* System Chat */
+	Route::get('system-chat/listing', 'SystemChatController@listing')->name('system-chat.listing');
+	Route::post('system-chat/send-bulk', 'SystemChatController@sendBulk')->name('system-chat.send-bulk');
+	Route::resource('system-chat', 'SystemChatController');
+
 	/* Colleges */
 	Route::get('colleges/listing', 'CollegesController@listing')->name('colleges.listing');
 	Route::post('colleges/bulk-approve', 'CollegesController@bulkApprove')->name('colleges.bulk-approve');
@@ -168,6 +173,10 @@ Route::group(['namespace' => 'Admin', 'middleware' => ['check_permit', 'revalida
 	// call logs
 	Route::get('call-logs/listing', 'CallController@listing')->name('call-logs.listing');
 	Route::resource('call-logs', 'CallController');
+
+	Route::get('user-matches/listing', 'UserMatchesController@listing')->name('user-matches.listing');
+	Route::post('user-matches/chart-data', 'UserMatchesController@chartData')->name('user-matches.chart-data');
+	Route::resource('user-matches', 'UserMatchesController');
 
 });
 

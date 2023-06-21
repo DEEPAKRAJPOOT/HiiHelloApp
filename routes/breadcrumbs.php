@@ -358,6 +358,17 @@ Breadcrumbs::register('dashboard', function ($breadcrumbs) {
 	    $breadcrumbs->push('Coupon Users', route(Auth::getDefaultDriver().'.coupon-users.index'));
 	});
 
+	//User matches
+	Breadcrumbs::register('user_matches',function($breadcrumbs){
+		$breadcrumbs->parent('dashboard');
+	    $breadcrumbs->push('User Matches',route(Auth::getDefaultDriver().'.user-matches.index'));
+	});
+
+	Breadcrumbs::register('user_matches_view',function($breadcrumbs,$id){
+		$breadcrumbs->parent('user_matches');
+	    $breadcrumbs->push('User Match Details',route(Auth::getDefaultDriver().'.user-matches.show',$id));
+	});
+
 	//Colleges
 	Breadcrumbs::register('colleges_list',function($breadcrumbs){
 		$breadcrumbs->parent('dashboard');
@@ -380,6 +391,24 @@ Breadcrumbs::register('dashboard', function ($breadcrumbs) {
 	{
 		$breadcrumbs->parent('colleges_list');
 	    $breadcrumbs->push('Edit College', route(Auth::getDefaultDriver().'.colleges.edit', $id));
+	});
+
+	//System Chat
+	Breadcrumbs::register('system_chats_list',function($breadcrumbs){
+		$breadcrumbs->parent('dashboard');
+	    $breadcrumbs->push('System Chats',route(Auth::getDefaultDriver().'.system-chat.index'));
+	});
+
+	Breadcrumbs::register('system_chats_view', function ($breadcrumbs, $id)
+	{
+		$breadcrumbs->parent('system_chats_list');
+		$breadcrumbs->push('View Chat', route('admin.system-chat.edit', $id));
+	});
+
+	Breadcrumbs::register('system_chat_create', function($breadcrumbs)
+	{
+		$breadcrumbs->parent('system_chats_list');
+	    $breadcrumbs->push('Send New Message', route(Auth::getDefaultDriver().'.system-chat.create'));
 	});
 
 	// Call Logs ------------------------------------------------------------------

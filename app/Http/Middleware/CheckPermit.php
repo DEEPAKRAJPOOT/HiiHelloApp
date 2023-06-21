@@ -40,9 +40,9 @@ class CheckPermit
 
         // Permissions 
         $access = ['index', 'listing', 'selection-listing', 'showSetting', 'change-setting', 'trashed', 'trasheddata','actor-list','singer-list','unde-review','genderupdate','bulk_gender_update','bulk-approve','dashboardupdate','bulk_photo_verification','bulk_email_verification','deleted','filters','under-review-listing','refund-transaction'];
-        $add = ['store', 'create'];
+        $add = ['store', 'create', 'send-bulk'];
         $update = ['edit', 'update','get-fields','preview','publish'];
-        $view = ['show'];
+        $view = ['show','chart-data'];
         $delete = ['destroy'];
         $restore = ['restore'];
 
