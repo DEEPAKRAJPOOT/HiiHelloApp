@@ -67,9 +67,9 @@ io.on('connection', (socket)=>{
 		io.sockets.emit("online", overallUsers);
 
 		let selectChatRoom = "SELECT * FROM chat_rooms where custom_id = ? and deleted_at is NULL and is_active = 'y'";
-		connection.query(selectChatRoom, [request.room_id],(error, _chatRoom) => {
+		connection.query(selectChatRoom, [request.room_id],(error, _chatRooms) => {
 			if( error ) throw error;
-			let chatRoom = _chatRoom[0];
+			let chatRoom = _chatRooms[0];
 			if( chatRoom === undefined ) {
 				io.in(request.room_id).emit('went-wrong','Chat Room Not Found');
 				console.log('Chat Room Not Found'); 
@@ -109,6 +109,38 @@ io.on('connection', (socket)=>{
 					if (value.length == 0) delete users[key]
 			}
 		}
+
+		if(typeof request.room_id != 'undefined'){
+			let selectChatRoom = "SELECT * FROM chat_rooms where custom_id = ? and deleted_at is NULL and is_active = 'y'";
+			connection.query(selectChatRoom, [request.room_id],(error, _chatRoom) => {
+				if( error ) throw error;
+				let chatRoom = _chatRoom[0];
+				if( chatRoom === undefined ) {
+					io.in(request.room_id).emit('went-wrong','Chat Room Not Found');
+					console.log('Chat Room Not Found'); 
+					return false;
+				}
+				let checkUsers = "SELECT * FROM users where id IN (?,?) and deleted_at is NULL and is_active = 'y'";
+				connection.query(checkUsers, [chatRoom.creator_id,chatRoom.participate_id],(error, _checkUsers) => {
+					if( error ) throw error;
+					let emitLastOnline = {};
+					_checkUsers.foreach(function(checkUser){
+						if( checkUser === undefined ) {
+							io.in(request.room_id).emit('went-wrong','User Not Found');
+							console.log('User Not Found'); 
+							return false;
+						}
+						emitLastOnline = {
+							user_id: checkUser.custom_id,
+							last_online: checkUser.last_online ? (new Date(checkUser.last_online)).valueOf() : ''
+						};
+						io.in(request.room_id).emit('online-status', emitLastOnline);	
+						console.log("Online Status Object ::"+JSON.stringify(emitLastOnline));
+					});
+				});
+			});
+		}
+
 	});
 
 	/* User Disconnected From Global Chat (Offline) */
