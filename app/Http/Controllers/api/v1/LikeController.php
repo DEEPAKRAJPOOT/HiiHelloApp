@@ -25,7 +25,7 @@ class LikeController extends Controller
             try {
                 $auth_user = $request->user();
                 $is_matched = false;
-                $user = User::select('id')->whereCustomId($request->user_id)->where('id', '!=', $auth_user->id)->whereIsActive('y')->firstOrFail();
+                $user = User::select('id')->whereCustomId($request->user_id)->where('id', '!=', $auth_user->id)->where('id', '!=', config('utility.system.system_user_id'))->whereIsActive('y')->firstOrFail();
                 $auth_id = $auth_user->id;
                 $user_id = $user->id;
 
@@ -144,7 +144,7 @@ class LikeController extends Controller
         if ($this->apiValidator($request->all(), $addDislikeRequest->rules())) {
             try {
                 $auth_user = $request->user();
-                $user = User::select('id')->whereCustomId($request->user_id)->whereIsActive('y')->firstOrFail();
+                $user = User::select('id')->whereCustomId($request->user_id)->where('id', '!=', config('utility.system.system_user_id'))->whereIsActive('y')->firstOrFail();
                 $auth_id = $auth_user->id;
                 $user_id = $user->id;
 

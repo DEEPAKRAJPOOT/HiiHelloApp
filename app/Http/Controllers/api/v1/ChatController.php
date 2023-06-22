@@ -25,7 +25,7 @@ class ChatController extends Controller
                 $user = $request->user();
                 $auth_id = $user ? $user->id : NULL;
                 $participant = User::whereCustomId($request->participant_id)
-                    ->where('id', '!=', $auth_id)->whereIsActive('y')->firstOrFail();
+                    ->where('id', '!=', $auth_id)->where('id', '!=', config('utility.system.system_user_id'))->whereIsActive('y')->firstOrFail();
                 $participant_id = $participant ? $participant->id : NULL;
 
                 $chat_room = ChatRoom::with([

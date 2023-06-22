@@ -99,9 +99,9 @@ class MatchController extends Controller
                     ->whereNotNull('profile_photo')                         // Must Have Main Photo
                     ->whereIsActive('y');
 
-                if ($auth_interest != 'Both') {
-                    $matches = $matches->where('gender', $auth_interest);   // Interested in Gender
-                }                                           
+                /*if ($auth_interest != 'Both') {
+                    $matches = $matches->where('gender', $auth_interest);   // Interested in Gender // Removed 22-06-2023
+                }*/                                        
                 if (count($restricted_ids) > 0) {
                     $matches = $matches->whereNotIn('id', $restricted_ids);
                 }
@@ -280,7 +280,8 @@ class MatchController extends Controller
                          } 
                         //FIND USER AS PER IT WORKS AS IT IS NO CHANGE       
                         $matches_system = User::with('userTranslation:id,locale,user_id,full_name,full_name')
-                            ->where('id', '!=', $auth_id)->whereNotNull('profile_photo')->whereIsActive('y');
+                            ->where('id', '!=', $auth_id)->whereNotNull('profile_photo')->whereIsActive('y')
+                            ->where('id', '!=', config('utility.system.system_user_id'));
                         if ($auth_interest != 'Both') {
                             $matches_system = $matches_system->where('gender', $auth_interest);
                         }
