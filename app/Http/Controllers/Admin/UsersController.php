@@ -2128,7 +2128,7 @@ class UsersController extends Controller
             $offset = (intval($request->get('page')) - 1) * $length;
         }
         $data = [];
-        $users = User::whereIsActive('y')->with('userTransDefault','location')->orderBy('created_at','desc');
+        $users = User::whereIsActive('y')->where('id','!=',config('utility.system.system_user_id'))->with('userTransDefault','location')->orderBy('created_at','desc');
         if(!empty($search)){
             $users->where(function($query)use($search){
                 $query->where('account_id','like',"%{$search}%")

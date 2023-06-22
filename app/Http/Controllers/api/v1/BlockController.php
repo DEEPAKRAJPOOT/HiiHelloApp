@@ -29,7 +29,7 @@ class BlockController extends Controller
             try {
                 /* Block Profile */
                 $auth_id = $request->user() ? $request->user()->id : NULL;
-                $block_user = User::select('id')->whereCustomId($request->user_id)->firstOrFail();
+                $block_user = User::select('id')->whereCustomId($request->user_id)->where('id','!=',config('utility.system.system_user_id'))->firstOrFail();
 
                 $chat_room = ChatRoom::where(function ($query) use ($auth_id, $block_user) {
                     $query->whereCreatorId($auth_id)->where('participate_id', $block_user->id);
