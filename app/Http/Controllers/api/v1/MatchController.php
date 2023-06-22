@@ -99,9 +99,10 @@ class MatchController extends Controller
                     ->whereNotNull('profile_photo')                         // Must Have Main Photo
                     ->whereIsActive('y');
 
-                /*if ($auth_interest != 'Both') {
-                    $matches = $matches->where('gender', $auth_interest);   // Interested in Gender // Removed 22-06-2023
-                }*/                                        
+                if ($auth_interest != 'Both') {
+                    $matches = $matches->where('gender', $auth_interest);   // Interested in Gender
+                }
+                
                 if (count($restricted_ids) > 0) {
                     $matches = $matches->whereNotIn('id', $restricted_ids);
                 }
@@ -117,7 +118,8 @@ class MatchController extends Controller
                 if ($backup_logic == true) {                    
                     //if($user->is_subscribed == 'y' && ($user->subscription_end_date >= now()->format('Y-m-d'))){
                         //$this->addSystemGeneratedUserForToday($auth_id);
-                        $this->addSystemGeneratedUserForToday($auth_id,$auth_interest,$restricted_ids,$max_limit_apply,$max_limit);
+                        //$this->addSystemGeneratedUserForToday($auth_id,$auth_interest,$restricted_ids,$max_limit_apply,$max_limit);
+                        // Removed on 22-06-2023
                     //}
                     //FETCH ALL SYSTEM USER WHICH IS NOT CONNECTED START                    
                     $system_data = SystemMatch::select('custom_id','match_id','is_connected','match_date')->where('is_connected',0)->where('user_id', $auth_id)->orderBy('created_at','DESC')->get();        

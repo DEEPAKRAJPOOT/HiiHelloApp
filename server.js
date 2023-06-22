@@ -79,7 +79,7 @@ io.on('connection', (socket)=>{
 			connection.query(checkUsers, [chatRoom.creator_id,chatRoom.participate_id],(error, _checkUsers) => {
 				if( error ) throw error;
 				let emitLastOnline = {};
-				_checkUsers.foreach(function(checkUser){
+				_checkUsers.forEach(function(checkUser){
 					if( checkUser === undefined ) {
 						io.in(request.room_id).emit('went-wrong','User Not Found');
 						console.log('User Not Found'); 
@@ -124,7 +124,7 @@ io.on('connection', (socket)=>{
 				connection.query(checkUsers, [chatRoom.creator_id,chatRoom.participate_id],(error, _checkUsers) => {
 					if( error ) throw error;
 					let emitLastOnline = {};
-					_checkUsers.foreach(function(checkUser){
+					_checkUsers.forEach(function(checkUser){
 						if( checkUser === undefined ) {
 							io.in(request.room_id).emit('went-wrong','User Not Found');
 							console.log('User Not Found'); 
@@ -204,7 +204,7 @@ io.on('connection', (socket)=>{
 				connection.query(checkUsers, [chatRoom.creator_id,chatRoom.participate_id],(error, _checkUsers) => {
 					if( error ) throw error;
 					let emitLastOnline = {};
-					_checkUsers.foreach(function(checkUser){
+					_checkUsers.forEach(function(checkUser){
 						if( checkUser === undefined ) {
 							io.in(request.room_id).emit('went-wrong','User Not Found');
 							console.log('User Not Found'); 
@@ -556,7 +556,7 @@ io.on('connection', (socket)=>{
 				connection.query(checkUsers, [chatRoom.creator_id,chatRoom.participate_id],(error, _checkUsers) => {
 					if( error ) throw error;
 					let emitLastOnline = {};
-					_checkUsers.foreach(function(checkUser){
+					_checkUsers.forEach(function(checkUser){
 						if( checkUser === undefined ) {
 							io.in(request.room_id).emit('went-wrong','User Not Found');
 							console.log('User Not Found'); 
