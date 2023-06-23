@@ -42,6 +42,27 @@
                 @endif
         </div>
         @break
+    @case('select')
+        <?php $options = json_decode($setting->options ?? '',true); ?>
+            @if(!empty($options))
+            <div class="form-group">
+                <label for="setting-{{$setting->constant}}"> {{$setting->label}}<span class="text-danger">*</span></label>
+                <div class="input-icon">
+                    <select id="setting-{{$setting->constant}}" class="form-control" name="{{$setting->id}}" {{$required}}>
+                        @if(!empty($setting->hint))
+                            <option value="" disabled="" selected="">{{ $setting->hint }}</option>
+                        @endif
+                        @foreach($options as $key=>$value)
+                            <option value="{{ $key }}" {{ (($setting->value ?? '') == $key) ? 'selected' : '' }}>{{ $value }}</option>
+                        @endforeach
+                    </select>
+                    <span>
+                        <i class="{{$setting->icon}}"></i>
+                    </span>
+                </div>
+            </div>
+            @endif
+        @break
     @default
         <div class="form-group">
             <label for="{{$setting->id}}"> {{$setting->label}}<span class="text-danger">*</span></label>
