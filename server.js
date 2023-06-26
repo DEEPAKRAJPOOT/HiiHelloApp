@@ -448,6 +448,20 @@ io.on('connection', (socket)=>{
 										}
 									}
 
+									let emitSenderLastOnline = {
+										user_id: sender.custom_id,
+										last_online: sender.last_online ? (new Date(sender.last_online)).valueOf() : ''
+									};
+									io.in(request.room_id).emit('online-status', emitSenderLastOnline);	
+									console.log("Online Status Object ::"+JSON.stringify(emitSenderLastOnline));
+
+									let emitReceiverLastOnline = {
+										user_id: receiver.custom_id,
+										last_online: receiver.last_online ? (new Date(receiver.last_online)).valueOf() : ''
+									};
+									io.in(request.room_id).emit('online-status', emitReceiverLastOnline);	
+									console.log("Online Status Object ::"+JSON.stringify(emitReceiverLastOnline));
+
 									// Send Push Notification
 									if(msg_status != 'read'){
 										push_message = request.message_value; 

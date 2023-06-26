@@ -116,8 +116,7 @@ class Kernel extends ConsoleKernel
         $schedule->call(function () {
             $scheculeCommand = new AdminDashboard;
             $scheculeCommand->handle();
-        })->name('AdminDashboardUpdate')->everyFifteenMinutes()->withoutOverlapping();
-        
+        })->name('AdminDashboardUpdate')->everyFifteenMinutes()->withoutOverlapping();        
 
         // Calculate Trust Scroe on the first day of every month at 2:00
         $schedule->call(function () {

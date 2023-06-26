@@ -2,6 +2,24 @@
 @push('breadcrumb')
 {!! Breadcrumbs::render('site_setting') !!}
 @endpush
+@push('extra-css-styles')
+<style type="text/css">
+    .scroll-highlight{
+        background: transparent;
+        animation: flash 1s ease-in;
+        border-radius: 5px;
+    }
+    .scroll-highlight [name]{
+        background: transparent !important;
+    }
+    @keyframes flash{
+        0%{background:#c0c0c0}
+        33%{background:transparent}
+        66%{background:#c0c0c0}
+        100%{background:transparent}
+    }
+</style>
+@endpush
 @section('content')
 <div class="container">
 	<form  id="form_settings" role="form" method="POST" action="{{ route('admin.settings.change-setting') }}" enctype="multipart/form-data">
@@ -18,7 +36,7 @@
 			<div class="card-body">
 				<div class="row">
 				@foreach ($settings as $setting)
-				<div class="col-lg-6">
+				<div class="flash-div col-lg-6">
                     @include('admin.layouts.includes.setting',compact('setting'))
                    </div>
                 @endforeach
@@ -34,3 +52,10 @@
 	</form>
 </div>
 @endsection
+@push('extra-js-scripts')
+<script type="text/javascript">
+    @if(!empty(request()->query('setting_name')))
+    $('#setting-{{ request()->query("setting_name") }}').closest('.flash-div').addClass('scroll-highlight');
+    @endif
+</script>
+@endpush

@@ -39,6 +39,11 @@
 					System Matches
 				</h3>
 			</div>
+			<div class="card-toolbar">
+				<small>
+					<a href="{{ route('admin.settings.index').'?setting_name=system_matches' }}" target="_blank">Change Settings</a>
+				</small>
+			</div>
 		</div>
 		<div class="card-body">
 			<div class="row mb-4 pb-4">

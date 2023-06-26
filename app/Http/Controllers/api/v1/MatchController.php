@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\{ModelNotFoundException};
 use App\Http\Requests\Api\General\{PaginationRequest};
 use App\Http\Requests\Api\Match\{DeleteMatchRequest, GetMatchRequest,SystemMatchRequest};
 use App\Http\Resources\v1\{MatchResource};
-use App\Models\{User, Like, ChatRoom, UserInterest, BlockUser, UnMatch, UserPersonality,SystemMatch};
+use App\Models\{User, Like, ChatRoom, UserInterest, BlockUser, UnMatch, UserPersonality,SystemMatch, Setting};
 use Carbon\Carbon;
 
 class MatchController extends Controller
@@ -98,10 +98,6 @@ class MatchController extends Controller
                     ->where('id', '!=', $auth_id)                           // Not Own Profile
                     ->whereNotNull('profile_photo')                         // Must Have Main Photo
                     ->whereIsActive('y');
-
-                if ($auth_interest != 'Both') {
-                    $matches = $matches->where('gender', $auth_interest);   // Interested in Gender
-                }
                 
                 if (count($restricted_ids) > 0) {
                     $matches = $matches->whereNotIn('id', $restricted_ids);
@@ -114,15 +110,26 @@ class MatchController extends Controller
                 
                 $array_system_match_user_custome_id = array();
                 $array_system_user_id = array();
+                if ($backup_logic == true) {
+                    $system_setting_data = Setting::where('constant','system_matches')->first();
+                    if(!empty($system_setting_data)){
+                        $system_match_setting = $system_setting_data->value;
+                        if(!empty($system_match_setting)){
 
-                if ($backup_logic == true) {                    
-                    //if($user->is_subscribed == 'y' && ($user->subscription_end_date >= now()->format('Y-m-d'))){
-                        //$this->addSystemGeneratedUserForToday($auth_id);
-                        //$this->addSystemGeneratedUserForToday($auth_id,$auth_interest,$restricted_ids,$max_limit_apply,$max_limit);
-                        // Removed on 22-06-2023
-                    //}
+                            if($this->checkSystemMatchCondition($system_match_setting,$user)){
+                                $this->addSystemGeneratedUserForToday($auth_id,$auth_interest,$restricted_ids,$max_limit_apply,$max_limit);
+                            }
+                        }
+                    }
+                    
                     //FETCH ALL SYSTEM USER WHICH IS NOT CONNECTED START                    
-                    $system_data = SystemMatch::select('custom_id','match_id','is_connected','match_date')->where('is_connected',0)->where('user_id', $auth_id)->orderBy('created_at','DESC')->get();        
+                    $system_data = SystemMatch::select('custom_id','match_id','is_connected','match_date')->where('is_connected',0)->where('user_id', $auth_id);
+                    if ($auth_interest != 'Both') {
+                        $system_data = $system_data->whereHas('matchUser',function($query)use($auth_interest){
+                            $query->where('gender', $auth_interest);
+                        });
+                    }
+                    $system_data = $system_data->orderBy('created_at','DESC')->get();        
 
                      if($system_data)
                      {
@@ -476,6 +483,30 @@ class MatchController extends Controller
             }
         }
         return $this->returnResponse();
+    }
+
+    private function checkSystemMatchCondition($setting_value,$user){
+        switch($setting_value){
+            case 'off':
+                return false;
+            break;
+            case 'all_users':
+                return true;
+            break;
+            case 'male_subscribers_and_all_females':
+                return ($user->gender == 'Female' || ($user->is_subscribed == 'y' && $user->subscription_end_date >= now()->format('Y-m-d')));
+            break;
+            case 'all_subscribers':
+                return ($user->is_subscribed == 'y' && $user->subscription_end_date >= now()->format('Y-m-d'));
+            break;
+            case 'females_only':
+                return ($user->gender == 'Female');
+            break;
+            case 'males_only':
+                return ($user->gender == 'Male');
+            break;
+        }
+        return false;
     }
 
 }
