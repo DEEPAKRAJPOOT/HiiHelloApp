@@ -243,13 +243,6 @@ io.on('connection', (socket)=>{
 					return false;
 				}
 
-				let emitSenderLastOnline = {
-					user_id: sender.custom_id,
-					last_online: sender.last_online ? (new Date(sender.last_online)).valueOf() : ''
-				};
-				io.in(request.room_id).emit('online-status', emitSenderLastOnline);	
-				console.log("Online Status Object ::"+JSON.stringify(emitSenderLastOnline));
-
 				let selectSenderName = "SELECT full_name FROM user_translations where locale = ? and user_id = ?";
 				let sql1 = connection.query(selectSenderName, [receiver_lang_code, sender.id], (error, sender_trans_result) => {
 					if( error ) throw error;
@@ -270,13 +263,6 @@ io.on('connection', (socket)=>{
 							console.log('Receiver Not Found'); 
 							return false;
 						}
-
-						let emitReceiverLastOnline = {
-							user_id: receiver.custom_id,
-							last_online: receiver.last_online ? (new Date(receiver.last_online)).valueOf() : ''
-						};
-						io.in(request.room_id).emit('online-status', emitReceiverLastOnline);	
-						console.log("Online Status Object ::"+JSON.stringify(emitReceiverLastOnline));
 
 						let selectReceiverName = "SELECT full_name FROM user_translations where locale = ? and user_id = ?";
 						let sql1 = connection.query(selectReceiverName,[sender_lang_code, receiver.id], (error, receiver_trans_result) => {
@@ -447,6 +433,20 @@ io.on('connection', (socket)=>{
 											console.log("New Message Object ::"+JSON.stringify(returnNewMsg));
 										}
 									}
+
+									let emitSenderLastOnline = {
+										user_id: sender.custom_id,
+										last_online: sender.last_online ? (new Date(sender.last_online)).valueOf() : ''
+									};
+									io.in(request.room_id).emit('online-status', emitSenderLastOnline);	
+									console.log("Online Status Object ::"+JSON.stringify(emitSenderLastOnline));
+
+									let emitReceiverLastOnline = {
+										user_id: receiver.custom_id,
+										last_online: receiver.last_online ? (new Date(receiver.last_online)).valueOf() : ''
+									};
+									io.in(request.room_id).emit('online-status', emitReceiverLastOnline);	
+									console.log("Online Status Object ::"+JSON.stringify(emitReceiverLastOnline));
 
 									// Send Push Notification
 									if(msg_status != 'read'){
