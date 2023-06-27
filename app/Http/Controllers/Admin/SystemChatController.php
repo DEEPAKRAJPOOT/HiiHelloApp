@@ -62,13 +62,14 @@ class SystemChatController extends Controller {
 			ChatMessage::create([
 				'custom_id'     =>  getUniqueString('chat_messages'),
 				'room_id'       =>  $system_chat_room_id,
-	            'sender_id'     =>  $system_user_id,
-	            'receiver_id'   =>  $user->id,
-	            'message'       =>  json_encode([
-	            	'type'      =>  'text',
-	            	'value'     =>  $request->message,
-	            	'other'     =>  (object)[]
-	            ])
+				'sender_id'     =>  $system_user_id,
+				'receiver_id'   =>  $user->id,
+				'message'       =>  json_encode([
+					'type'      =>  'text',
+					'value'     =>  $request->message,
+					'other'     =>  (object)[],
+					'system_message_type'  => 'custom_message_single'
+				])
 			]);
 			flash('Message sent successfully!')->success();
 		}else{
@@ -92,85 +93,86 @@ class SystemChatController extends Controller {
 
 	public function sendBulk(Request $request){
 		ini_set('max_execution_time',3600);
-        set_time_limit(3600);
-        if($request->has('user_type') && $request->has('message')){
-        	$today_date = date('Y-m-d');
-        	$users = User::whereIsActive('y');
-        	if($request->user_type != 'send_all'){
-        		if ($request->user_type == "send_male") {
-                    $users = $users->where('gender','Male');
-                }else if ($request->user_type == "send_female") {
-                    $users = $users->where('gender','Female');
-                }else if ($request->user_type == "send_empty_profile_image") {
-                    $users = $users->whereNull("profile_photo");
-                }else if ($request->user_type == "send_empty_location") {
-                    $users = $users->whereNull("location_id");
-                }else if ($request->user_type == "send_empty_college") {
-                    $users = $users->whereNull('college_id');
-                }else if ($request->user_type == "send_less_then_20_pr") {
-                    $users = $users->where("profile_percentage","<","20");
-                }else if ($request->user_type == "send_unverified_photo") {
-                    $users = $users->whereNull("photo_verified_at");
-                }else if ($request->user_type == "send_unverified_email") {
-                    $users = $users->whereNull("email_verified_at");
-                }else if ($request->user_type == "send_unverified_phone") {
-                    $users = $users->whereNull("contact_verified_at");
-                }else if ($request->user_type == "send_paid_male_subscription_not_expired") {
-                    $users = $users->where('gender','Male')->where('is_subscribed','y')->where('subscription_end_date','>',$today_date);
-                }else if ($request->user_type == "send_paid_male_subscription_expired") {
-                    $users = $users->where('gender','Male')->where(function($query){
-                        $query->where('is_subscribed','n');
-                        $query->orWhere('subscription_end_date','<=',$today_date);
-                    });
-                }else if($request->user_type == "send_selected_users") {
-                    if(!empty($request->users) && is_array($request->users)){
-                        $users = $users->whereIn('custom_id',$request->users);
-                    }else{
-                        flash('Unable to send message. Please select some users.')->error();
-                        return redirect()->route('admin.system-chat.create');
-                    }
-                }else if($request->user_type == "send_test_users") {
-                    $users = $users->where('is_test_user','y');
-                }else{
-                    flash('Unable to send message. Please select valid type.')->error();
-                    return redirect()->route('admin.system-chat.create');
-                }
-        	}
-        	$system_chat_room_id = config('utility.chat.system_chat_room');
+		set_time_limit(3600);
+		if($request->has('user_type') && $request->has('message')){
+			$today_date = date('Y-m-d');
+			$users = User::whereIsActive('y');
+			if($request->user_type != 'send_all'){
+				if ($request->user_type == "send_male") {
+					$users = $users->where('gender','Male');
+				}else if ($request->user_type == "send_female") {
+					$users = $users->where('gender','Female');
+				}else if ($request->user_type == "send_empty_profile_image") {
+					$users = $users->whereNull("profile_photo");
+				}else if ($request->user_type == "send_empty_location") {
+					$users = $users->whereNull("location_id");
+				}else if ($request->user_type == "send_empty_college") {
+					$users = $users->whereNull('college_id');
+				}else if ($request->user_type == "send_less_then_20_pr") {
+					$users = $users->where("profile_percentage","<","20");
+				}else if ($request->user_type == "send_unverified_photo") {
+					$users = $users->whereNull("photo_verified_at");
+				}else if ($request->user_type == "send_unverified_email") {
+					$users = $users->whereNull("email_verified_at");
+				}else if ($request->user_type == "send_unverified_phone") {
+					$users = $users->whereNull("contact_verified_at");
+				}else if ($request->user_type == "send_paid_male_subscription_not_expired") {
+					$users = $users->where('gender','Male')->where('is_subscribed','y')->where('subscription_end_date','>',$today_date);
+				}else if ($request->user_type == "send_paid_male_subscription_expired") {
+					$users = $users->where('gender','Male')->where(function($query){
+						$query->where('is_subscribed','n');
+						$query->orWhere('subscription_end_date','<=',$today_date);
+					});
+				}else if($request->user_type == "send_selected_users") {
+					if(!empty($request->users) && is_array($request->users)){
+						$users = $users->whereIn('custom_id',$request->users);
+					}else{
+						flash('Unable to send message. Please select some users.')->error();
+						return redirect()->route('admin.system-chat.create');
+					}
+				}else if($request->user_type == "send_test_users") {
+					$users = $users->where('is_test_user','y');
+				}else{
+					flash('Unable to send message. Please select valid type.')->error();
+					return redirect()->route('admin.system-chat.create');
+				}
+			}
+			$system_chat_room_id = config('utility.chat.system_chat_room');
 			$system_user_id = config('utility.system.system_user_id');
 			DB::beginTransaction();
 			try{
-	            $users->chunk(1000,function($user_chunk)use($system_chat_room_id,$system_user_id,$request){
-	            	$bulk_insert = [];
-	            	foreach($user_chunk as $user){
-	            		$bulk_insert[] = [
-	            			'custom_id'     =>  getUniqueString('chat_messages'),
+				$users->chunk(1000,function($user_chunk)use($system_chat_room_id,$system_user_id,$request){
+					$bulk_insert = [];
+					foreach($user_chunk as $user){
+						$bulk_insert[] = [
+							'custom_id'     =>  getUniqueString('chat_messages'),
 							'room_id'       =>  $system_chat_room_id,
-				            'sender_id'     =>  $system_user_id,
-				            'receiver_id'   =>  $user->id,
-				            'message'       =>  json_encode([
-				            	'type'      =>  'text',
-				            	'value'     =>  $request->message,
-				            	'other'     =>  (object)[]
-				            ]),
-				            'created_at'    =>  now(),
-				            'updated_at'    =>  now()
-	            		];
-	            	}
-	            	ChatMessage::insert($bulk_insert);
-	            });
-	            DB::commit();
-        		flash('Message Sent successfully!')->success();
+							'sender_id'     =>  $system_user_id,
+							'receiver_id'   =>  $user->id,
+							'message'       =>  json_encode([
+								'type'      =>  'text',
+								'value'     =>  $request->message,
+								'other'     =>  (object)[],
+								'system_message_type'  => 'custom_message_bulk'
+							]),
+							'created_at'    =>  now(),
+							'updated_at'    =>  now()
+						];
+					}
+					ChatMessage::insert($bulk_insert);
+				});
+				DB::commit();
+				flash('Message Sent successfully!')->success();
 			}catch (\Exception $e) {
 				DB::rollback();
 				flash('Unable to send message. Please try again later.')->error();
-        		return redirect()->route('admin.system-chat.create');
+				return redirect()->route('admin.system-chat.create');
 			}
-        } else {
-            flash('Unable to send message. Please try again later.')->error();
-        	return redirect()->route('admin.system-chat.create');
-        }
-        return redirect()->route('admin.system-chat.index');
+		} else {
+			flash('Unable to send message. Please try again later.')->error();
+			return redirect()->route('admin.system-chat.create');
+		}
+		return redirect()->route('admin.system-chat.index');
 	}
 
 }
