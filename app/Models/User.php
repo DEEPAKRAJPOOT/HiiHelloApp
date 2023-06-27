@@ -52,7 +52,7 @@ class User extends Authenticatable implements MustVerifyEmail, TranslatableContr
     public static function boot(){
         parent::boot();
         // Send System Message to new users
-        static::creating(function($user){
+        static::created(function($user){
             $system_chat_room_id = config('utility.chat.system_chat_room');
             $system_user_id = config('utility.system.system_user_id');
             ChatMessage::create([
