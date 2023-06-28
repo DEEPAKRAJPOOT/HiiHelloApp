@@ -83,7 +83,7 @@
 							<div class="d-flex flex-row align-items-center">
 								<div class="py-5 px-0 rounded bg-light-primary my-3 z-index-2">
 									<div class="system-message-text">
-										{{ $system_chat->getMessage()->value }}
+										{!! nl2br(e($system_chat->getMessage()->value)) !!}
 									</div>
 									<div class="system-message-status">
 										<div>Status: {{ strtr($system_chat->status,['send'=>'sent','read'=>'seen']) }}</div>

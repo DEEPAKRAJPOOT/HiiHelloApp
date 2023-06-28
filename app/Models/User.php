@@ -15,6 +15,7 @@ use App\Models\Like;
 use App\Models\DisLike;
 use App\Models\UnMatch;
 use App\Models\SystemMatch;
+use App\Models\ChatMessage;
 use App\Models\Subscription;
 use App\Models\ChatRoom;
 use Carbon\Carbon;
@@ -51,6 +52,27 @@ class User extends Authenticatable implements MustVerifyEmail, TranslatableContr
         'reason_of_delete','app_delete','device_type','device_app_version',
         'otp_less_id','user_status','last_online','college_id','is_test_user'
     ];
+
+    public static function boot(){
+        parent::boot();
+        // Send System Message to new users
+        static::created(function($user){
+            $system_chat_room_id = config('utility.chat.system_chat_room');
+            $system_user_id = config('utility.system.system_user_id');
+            ChatMessage::create([
+                'custom_id'     =>  getUniqueString('chat_messages'),
+                'room_id'       =>  $system_chat_room_id,
+                'sender_id'     =>  $system_user_id,
+                'receiver_id'   =>  $user->id,
+                'message'       =>  json_encode([
+                    'type'      =>  'text',
+                    'value'     =>  "Welcome to Hi Hello, the safe and secure new age dating app designed to connect you with like-minded individuals seeking meaningful connections in the digital realm. In a world where likes and superficiality often dominate the dating landscape, we aim to create a refreshing space where authenticity and genuine interactions thrive. ".PHP_EOL.PHP_EOL."Imagine a place where you can be your true self, unapologetically, and connect with others who appreciate and embrace you for who you are with local languages. Hi Hello is that place. Whether you're searching for a lifelong partner, a new friend, or someone to share an adventure with, our app is here to help you discover those special connections that make life brighter. ".PHP_EOL.PHP_EOL."Safety and security are our top priorities at Hi Hello. We understand that entering the world of online dating can be daunting, which is why we've implemented state-of-the-art measures to protect your privacy. Our robust verification process ensures that every user you encounter is a real person, giving you peace of mind and a higher level of trust in the conversations you have. But it's not just about safety; it's about creating a warm and welcoming community. Our dedicated team works tirelessly to maintain a friendly environment where kindness and respect are the norm. We encourage open-mindedness and celebrate diversity, knowing that true connections can be found in the most unexpected places. ".PHP_EOL.PHP_EOL."So, take a leap of faith, say \"Hi\" and let the magic of Hello unfold. Welcome to Hi Hello, where meaningful connections begin! ".PHP_EOL.PHP_EOL."Team Hi Hello",
+                    'other'     =>  (object)[],
+                    'system_message_type' => 'welcome_message',
+                ])
+            ]);
+        });
+    }
     
     protected $translatedAttributes = ['full_name', 'about_me', 'fav_movie'];
 
@@ -143,6 +165,8 @@ class User extends Authenticatable implements MustVerifyEmail, TranslatableContr
                     ->orWhere('participate_id',$this->id);
             })->count();
     }
+
+    public function chatMessagesReceived(){ return $this->hasMany('App\Models\ChatMessage', 'receiver_id', 'id'); }
 
     public function getProfileImages(){
         $imgs = [];

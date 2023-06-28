@@ -115,13 +115,11 @@ class MatchController extends Controller
                     if(!empty($system_setting_data)){
                         $system_match_setting = $system_setting_data->value;
                         if(!empty($system_match_setting)){
-
                             if($this->checkSystemMatchCondition($system_match_setting,$user)){
                                 $this->addSystemGeneratedUserForToday($auth_id,$auth_interest,$restricted_ids,$max_limit_apply,$max_limit);
                             }
                         }
                     }
-                    
                     //FETCH ALL SYSTEM USER WHICH IS NOT CONNECTED START                    
                     $system_data = SystemMatch::select('custom_id','match_id','is_connected','match_date')->where('is_connected',0)->where('user_id', $auth_id);
                     if ($auth_interest != 'Both') {

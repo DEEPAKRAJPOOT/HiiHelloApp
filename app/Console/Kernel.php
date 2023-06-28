@@ -11,6 +11,7 @@ use App\Console\Commands\RenewSwipeLimit;
 use App\Console\Commands\VideoModeration;
 use App\Console\Commands\AutoVerifyProfile;
 use App\Console\Commands\GoogleTranslation;
+use App\Console\Commands\UserReminderMessages;
 use Illuminate\Console\Scheduling\Schedule;
 use App\Console\Commands\LocationTranslations;
 
@@ -36,6 +37,7 @@ class Kernel extends ConsoleKernel
         LocationTranslations::class,
         TrustScore::class,
         AdminDashboard::class,
+        UserReminderMessages::class,
     ];
 
     /**
@@ -116,11 +118,18 @@ class Kernel extends ConsoleKernel
         $schedule->call(function () {
             $scheculeCommand = new AdminDashboard;
             $scheculeCommand->handle();
-        })->name('AdminDashboardUpdate')->everyFifteenMinutes()->withoutOverlapping();        
+        })->name('AdminDashboardUpdate')->everyFifteenMinutes()->withoutOverlapping();
 
         // Calculate Trust Scroe on the first day of every month at 2:00
         $schedule->call(function () {
             $scheculeCommand = new TrustScore;
+            $scheculeCommand->handle();
+        })->daily();
+
+
+        // Send Reminders to Users about Profile, Photos etc
+        $schedule->call(function () {
+            $scheculeCommand = new UserReminderMessages;
             $scheculeCommand->handle();
         })->daily(); 
 
