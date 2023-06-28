@@ -24,7 +24,7 @@ class SystemChatController extends Controller {
 				$query->where('message','like','"value" : "%'.$search.'%"');
 			});
 		}
-		$count = $system_chats->groupBy('receiver_id')->count();
+		$count = (clone $system_chats)->select(DB::raw('COUNT(chat_messages.id) AS user_count'))->groupBy('receiver_id')->first()->user_count ?? 0;
 		$records['recordsTotal'] = $count;
 		$records['recordsFiltered'] = $count;
 		$records['data'] = [];
