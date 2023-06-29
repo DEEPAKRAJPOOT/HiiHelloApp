@@ -32,11 +32,11 @@ class SystemChatController extends Controller {
 		$system_chats = $system_chats->get();
 		foreach($system_chats as $system_chat){
 			$records['data'][] = [
-				'id' => $system_chat->receiver->custom_id,
+				'id' => $system_chat->receiver ? $system_chat->receiver->custom_id : '',
 				'full_name' => $system_chat->receiver ? ($system_chat->receiver->userTransDefault ? $system_chat->receiver->userTransDefault->full_name : 'N/A') : 'N/A',
 				'latest_message' => Str::limit($system_chat->getLatest()->getMessage()->value,30),
 				'created_at' => date('Y-m-d H:i:s',strtotime($system_chat->getLatest()->created_at)),
-				'action' => view('admin.layouts.includes.actions')->with(['custom_title'=>'System Chat','id'=> $system_chat->receiver->custom_id,'forbid_delete'=>true],$system_chat)->render(),
+				'action' => view('admin.layouts.includes.actions')->with(['custom_title'=>'System Chat','id'=> $system_chat->receiver ? $system_chat->receiver->custom_id : '','forbid_delete'=>true],$system_chat)->render(),
 			];
 		}
 		return $records;
