@@ -26,6 +26,7 @@ use Illuminate\Support\Facades\Storage;
 use App\Models\DashboardData;
 use DB;
 use Artisan;
+use Exception;
 
 class PagesController extends Controller
 {
@@ -196,9 +197,15 @@ class PagesController extends Controller
 
     public function dashboardupdate()
     {
-        Artisan::call('admin:dashboard');
-        flash('Dashboard details updated successfully!')->success();
-        return redirect(route('admin.dashboard.index'));
+        ini_set('max_execution_time',3600);
+        set_time_limit(3600);
+        try{
+            (new \App\Console\Commands\AdminDashboard)->handle();
+            flash('Dashboard details updated successfully!')->success();
+        }catch(Exception $e){
+            flash('Unable to update dashboard details. Error: '.$e->getMessage())->error();
+        }
+        return redirect()->route('admin.dashboard.index');
     }
     public function profile()
     {

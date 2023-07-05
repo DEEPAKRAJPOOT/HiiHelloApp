@@ -500,7 +500,7 @@ class UtilityController extends Controller
     }
 
     function get_city_name($lat,$long){
-        $apiKey = 'AIzaSyDInVSLHXa1FXO3p7kgA7B_TK9L71tZbW8';
+        $apiKey = env('GOOGLE_MAPS_API_KEY');
         $latlng = $lat.','.$long;
         $result = [];
 

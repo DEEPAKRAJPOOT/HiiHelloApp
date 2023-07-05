@@ -2012,7 +2012,7 @@ class UsersController extends Controller
     // User get location id using lat and logn
     public function get_user_location($lat, $long)
     {
-        $apiKey = 'AIzaSyDInVSLHXa1FXO3p7kgA7B_TK9L71tZbW8';
+        $apiKey = env('GOOGLE_MAPS_API_KEY');
         $latlng = $lat . ',' . $long;
         $result = [];
         $location_id = '';
