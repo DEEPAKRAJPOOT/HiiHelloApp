@@ -18,6 +18,7 @@ use App\Models\SubscriptionPlan;
 use App\Models\Subscription;
 use App\Models\LocationTranslation;
 use Exception;
+use DataTables;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -1036,7 +1037,77 @@ class UsersController extends Controller
         return $res;
     }
 
-    public function listing(Request $request)
+    public function listing(Request $request){
+        $users = User::query();
+        if(!empty($request->get('user_filter'))){
+            switch ($request->get('user_filter')) {
+                case 'photo_under_review':
+                    $users->where('verify_photo_status','under_review')->where('verify_photo','!=','')->whereNotNull('verify_photo');
+                break;
+                case 'email_under_review':
+                    $users->whereNull('email_verified_at');
+                break;
+                case 'deleted':
+                    $users->onlyTrashed();
+                break;
+                case 'test_users':
+                    $users->where('is_test_user','y');
+                break;
+            }
+        }
+        if(!empty($request->from_date) && !empty($request->to_date)){
+            $users->whereBetween('created_at',[$request->from_date,now()->create($request->to_date)->addDay()->format('Y-m-d')]);
+        }
+        if(!empty($request->gender_filter)){
+            $users->where('gender',$request->gender_filter);
+        }
+        if(!empty($request->status_filter)){
+            $users->where('user_status',$request->status_filter);
+        }
+        if(!empty($request->profile_percentage)){
+            $users->where('profile_percentage',$request->profile_percentage);
+        }elseif(isset($request->profile_percentage) && $request->profile_percentage == 0){
+            $users->where('profile_percentage',0);
+        }
+        if ($request->filled('city_filter')){
+            $users->whereIn('location_id',explode(',',$request->city_filter));
+        }
+        if ($request->filled('state_filter')){
+            $users->whereIn('location_id',explode(',',$request->state_filter));
+        }
+        return DataTables::eloquent($users)
+        ->editColumn('profile_photo','{{ !empty($profile_photo) ? generateURL($profile_photo) : "" }}')
+        ->editColumn('verify_photo','{{ !empty($verify_photo) ? generateURL($verify_photo) : "" }}')
+        ->editColumn('created_at','{{ now()->create($created_at)->format("Y-m-d H:i:s") }}')
+        ->addColumn('checkbox',function(User $user){
+            return view('admin.layouts.includes.checkbox',[
+                'params' => [
+                    'id' => $user->custom_id,
+                    'checked' => ($user->is_active == 'y' ? 'checked' : ''),
+                    'getaction' => $user->is_active,
+                    'user_id' => $user->id,
+                    'male_user' => ($user->gender == 'Male' ? 'selected' : ''),
+                    'female_user' => ($user->gender == 'Female' ? 'selected' : ''),
+                    'na_user' => ($user->gender == '' ? 'selected' : ''),
+                ]
+            ])->with('id',$user->custom_id)->render();
+        })
+        ->addColumn('city',function(User $user){
+            return $user->location->name ?? 'N/A';
+        })
+        ->addColumn('action',function(User $user){
+            return view('admin.layouts.includes.actions')->with([
+                'custom_title' => 'User',
+                'id' => $user->custom_id,
+                'deleted_entry' => $user->trashed(),
+                'restorable' => true
+            ],$user)->render();
+        })
+        ->rawColumns(['checkbox','action'])
+        ->toJson();
+    }
+
+    public function listingOld(Request $request)
     {
         extract($this->DTFilters($request->all()));
 

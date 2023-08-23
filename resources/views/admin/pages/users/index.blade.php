@@ -200,10 +200,9 @@
             ajax: {
                 url: "{{ route('admin.users.listing') }}?{!! http_build_query(request()->query()) !!}",
                 data: {
-                    columnsDef: ['checkbox', 'country_code', 'contact_no', 'gender','Created At', 'active', 'action'],                    
+                    columnsDef: ['checkbox', 'country_code', 'contact_no', 'gender','Created At', 'active', 'action'],
                 },
-                data: function(data) {                    
-
+                data: function(data) {
                     // ST - Filter Params
                     var from_date       = $("#search_fromdate").val();
                     var to_date         = $("#search_todate").val();
@@ -219,7 +218,32 @@
                     data.city_filter       = city_filter;
                     data.status_filter     = status_filter;
                     data.state_filter = $('#state_filter').val();
-               }                
+                },
+                dataSrc: function(response){
+                    var user;
+                    for ( var i=0, ien=response.data.length ; i<ien ; i++ ) {
+                        user = response.data[i];
+                        if(user.profile_photo && user.profile_photo != ''){
+                            response.data[i].profile_photo = '<img src="'+user.profile_photo+'" id="1photo_'+user.id+'" data-id="'+user.id+'" height="50" width="50" class="my_profile_image" style="vertical-align:middle;cursor:pointer">';
+                        }else{
+                            response.data[i].profile_photo = '<div class="symbol symbol-32" style="padding:5;vertical-align:middle"><div class="symbol-label" style="width:50px;height:50px"></div></div>';
+                        }
+                        if(user.verify_photo && user.verify_photo != ''){
+                            response.data[i].verify_photo = '<img src="'+user.verify_photo+'" id="1photo_'+user.id+'" data-id="'+user.id+'" height="50" width="50" class="my_profile_image" style="vertical-align:middle;cursor:pointer">';
+                        }else{
+                            response.data[i].verify_photo = '<div class="symbol symbol-32" style="padding:5;vertical-align:middle"><div class="symbol-label" style="width:50px;height:50px"></div></div>';
+                        }
+                        response.data[i].gender = '<div class="d-flex align-item-center w-65px"><select class="table_gender form-control dynamic_gender_'+user.id+'" data-id="'+user.id+'" data-url="{{ route('admin.users.genderupdate') }}"><option value="">Select</option><option value="Male" '+((user.gender == 'Male') ? 'selected' : '')+'>M</option><option value="Female" '+((user.gender == 'Female') ? 'selected' : '')+'>F</option></select></div>';
+                        response.data[i].contact_no = (user.contact_no && user.contact_no != '') ? '<a href="tel:'+user.country_code+''+user.contact_no+'">+'+user.country_code+'-'+user.contact_no+'</a>' : 'N/A';
+                        response.data[i].email = (user.email && user.email != '') ? '<a href="mailto:'+user.email+'">'+user.email+'</a>' : 'N/A';
+                        response.data[i].lat_long = (user.latitude ? user.latitude : '-')+','+(user.longitude ? user.longitude : '-');
+                        response.data[i].active = '<div class="d-flex align-item-center w-60px"><span class="switch switch-outline switch-icon switch-success switch-sm"><label><input type="checkbox" class="toggleSwitch" data-id="'+user.custom_id+'" data-url="{{ url('admin/users') }}/'+user.custom_id+'" '+((user.is_active == 'y') ? 'checked' : '')+'><span></span></label></span></div>';
+                        response.data[i].user_status = '<div class="d-flex align-item-center w-60px"><span class="switch switch-outline switch-icon switch-success switch-sm"><label><input type="checkbox" class="toggleSwitch" data-id="'+user.custom_id+'" data-url="{{ url('admin/users') }}/'+user.custom_id+'" data-getaction="change_user_status" '+((user.user_status == 'active') ? 'checked' : '')+'><span></span></label></span></div>';
+                        response.data[i].deleted_by = user.deleted_at ? ((user.app_delete == 'y') ? 'User' : 'Admin') : 'N/A';
+                        response.data[i].device_app_version = (user.device_type ? user.device_type : '-')+','+(user.device_app_version ? user.device_app_version : '-');
+                    }
+                    return response.data;
+                }
             },
             columns: [
                 { data: 'checkbox' },
@@ -231,7 +255,7 @@
                 { data: 'created_at' },
                 { data: 'profile_percentage' },
                 { data: 'contact_no' },
-                { data: 'email' },                
+                { data: 'email' },
                 { data: 'city' },
                 { data: 'device_app_version' },
                 { data: 'lat_long' },
@@ -244,26 +268,26 @@
             ],
             columnDefs: [
                 // Specify columns titles here...
-                { targets: 0, title: "<center><input type='checkbox' class='all_select'></center>", orderable: false },
-                { targets: 1, title: 'Photo 1', orderable: false },
-                { targets: 2, title: 'Photo 2', orderable: false },
-                { targets: 3, title: 'Account Id', orderable: true },
-                { targets: 4, title: 'Name', orderable: false },
-                { targets: 5, title: 'Gender', orderable: true },
-                { targets: 6, title: 'Created At', orderable: true },
-                { targets: 7, title: 'Percentage', orderable: true },
-                { targets: 8, title: 'Number', orderable: true },
-                { targets: 9, title: 'E-mail', orderable: true },                
-                { targets: 10, title: 'City', orderable: false },                
-                { targets: 11, title: 'Device/version', orderable: true },                
-                { targets: 12, title: 'Lat/Long', orderable: false },
-                { targets: 13, title: 'Ban', orderable: false },
-                { targets: 14, title: 'User Status', orderable: false },
+                { targets: 0, title: "<center><input type='checkbox' class='all_select'></center>", orderable: false, searchable: false },
+                { targets: 1, title: 'Photo 1', orderable: false, searchable: false },
+                { targets: 2, title: 'Photo 2', orderable: false, searchable: false },
+                { targets: 3, title: 'Account Id', orderable: true, searchable: true },
+                { targets: 4, title: 'Name', orderable: false, searchable: false },
+                { targets: 5, title: 'Gender', orderable: true, searchable: true },
+                { targets: 6, title: 'Created At', orderable: true, searchable: false },
+                { targets: 7, title: 'Percentage', orderable: true, searchable: true },
+                { targets: 8, title: 'Number', orderable: true, searchable: true },
+                { targets: 9, title: 'E-mail', orderable: true, searchable: true },
+                { targets: 10, title: 'City', orderable: false, searchable: false },
+                { targets: 11, title: 'Device/version', orderable: true, searchable: true },
+                { targets: 12, title: 'Lat/Long', orderable: false, searchable: false },
+                { targets: 13, title: 'Ban', orderable: false, searchable: false },
+                { targets: 14, title: 'User Status', orderable: false, searchable: false },
                 @if(request()->get('user_filter') == 'deleted')
-                { targets: 15, title: 'Deleted By', orderable: false },
+                { targets: 15, title: 'Deleted By', orderable: false, searchable: false },
                 @endif
                 // Action buttons
-                { targets: -1, title: 'Action',orderable: false },
+                { targets: -1, title: 'Action',orderable: false, searchable: false },
             ],
             order: [
                 [6, 'DESC']
