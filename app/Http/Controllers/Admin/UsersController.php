@@ -180,7 +180,9 @@ class UsersController extends Controller
 
             // Store Account Id
             if (!empty($request->language) && $request->language == 'en') {
-                $user->account_id = Str::slug(substr($request->full_name, 0, 4), "_") . '_' . time();
+                $user->account_id = Str::slug(mb_substr($request->full_name, 0, 4), "_", null) . '_' . time();
+            }else{
+                $user->account_id = Str::slug(mb_substr($request->full_name, 0, 4), "_", null) . '_' . time();
             }
 
             // Full name
@@ -680,7 +682,9 @@ class UsersController extends Controller
 
                 // Store Account Id
                 if (!empty($request->language) && $request->language == 'en') {
-                    $user->account_id = Str::slug(substr($request->full_name, 0, 4), "_") . '_' . time();
+                    $user->account_id = Str::slug(mb_substr($request->full_name, 0, 4), "_", null) . '_' . time();
+                }else{
+                    $user->account_id = Str::slug(mb_substr($request->full_name, 0, 4), "_", null) . '_' . time();
                 }
 
                 // Full name
