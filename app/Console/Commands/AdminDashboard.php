@@ -6,6 +6,7 @@ use Illuminate\Console\Command;
 use App\Models\User;
 use Illuminate\Support\Carbon;
 use DB;
+use Exception;
 
 class AdminDashboard extends Command
 {
@@ -89,10 +90,12 @@ class AdminDashboard extends Command
 
 
         $created_at = date('Y-m-d H:i:s');
-        cache()->forget('oldest-record');
-        $old_date = cache()->rememberForever('oldest-record',function(){
-            return User::selectRaw('created_at')->orderBy('created_at','asc')->first();
-        });
+        try{
+            cache()->forget('oldest-record');
+            $old_date = cache()->rememberForever('oldest-record',function(){
+                return User::selectRaw('created_at')->orderBy('created_at','asc')->first();
+            });
+        }catch(Exception $e){}
         $insert_data = array(
             'total_users' => $total_users,
             'per_day_users' => $per_day_users,
