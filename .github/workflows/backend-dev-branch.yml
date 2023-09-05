@@ -63,7 +63,7 @@ jobs:
            - name: connect to aws cli
              uses: appleboy/ssh-action@master
              with:
-                  host: 3.109.206.90
+                  host: 3.110.230.52
                   username: ubuntu
                   key: ${{ secrets.BACKEND_SERVER_LARAVEL }}
                   port: 22
