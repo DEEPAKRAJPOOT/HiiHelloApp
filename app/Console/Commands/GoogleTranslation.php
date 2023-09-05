@@ -167,7 +167,7 @@ class GoogleTranslation extends Command
 
                 // Store Account Id
                 if ($column == 'full_name' && $language_allowed == 'en') {
-                    $user->account_id = Str::slug(substr($translatedText, 0, 4), "_") . '_' . time();
+                    $user->account_id = Str::slug(mb_substr($translatedText, 0, 4), "_", null) . '_' . time();
                 }
 
                 $user->save();

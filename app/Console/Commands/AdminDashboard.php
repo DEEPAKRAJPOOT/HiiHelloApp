@@ -6,6 +6,7 @@ use Illuminate\Console\Command;
 use App\Models\User;
 use Illuminate\Support\Carbon;
 use DB;
+use Exception;
 
 class AdminDashboard extends Command
 {
@@ -39,7 +40,109 @@ class AdminDashboard extends Command
      *
      * @return int
      */
-    public function handle()
+
+    public function handle(){
+        $message = 'No Analytic dashboard records found.';
+        $dob_limit_for_18_25 = [$this->getDOBForAge(25),$this->getDOBForAge(18)];
+        $dob_limit_for_26_35 = [$this->getDOBForAge(35),$this->getDOBForAge(26)];
+        $dob_limit_for_36_45 = [$this->getDOBForAge(45),$this->getDOBForAge(36)];
+        $dob_limit_for_45 = $this->getDOBForAge(45);
+
+
+        $total_users = User::count();
+        $per_day_users = User::where('created_at','>=',now()->format('Y-m-d'))->count();
+        $male_users = User::where('gender','Male')->count();
+        $female_users = User::where('gender','Female')->count();
+        $na_users = User::whereNull('gender')->count();
+        $total_subscribed = User::where('gender','Male')->where('is_subscribed','y')->count();
+        $total_unsubscribed = User::where('gender','Male')->where('is_subscribed','!=','y')->count();
+        $per_week_users = User::whereBetween('created_at',[now()->startOfWeek(),now()->endOfWeek()])->count();
+        $per_30_day_users = User::where('created_at','>=',now()->subDays(30)->format('Y-m-d'))->count();
+        $male_age_18_25 = User::where('gender','Male')->whereBetween('birth_date',$dob_limit_for_18_25)->count();
+        $male_age_26_35 = User::where('gender','Male')->whereBetween('birth_date',$dob_limit_for_26_35)->count();
+        $male_age_36_45 = User::where('gender','Male')->whereBetween('birth_date',$dob_limit_for_36_45)->count();
+        $male_age_45 = User::where('gender','Male')->where('birth_date','<',$dob_limit_for_45)->count();
+        $female_age_18_25 = User::where('gender','Female')->whereBetween('birth_date',$dob_limit_for_18_25)->count();
+        $female_age_26_35 = User::where('gender','Female')->whereBetween('birth_date',$dob_limit_for_26_35)->count();
+        $female_age_36_45 = User::where('gender','Female')->whereBetween('birth_date',$dob_limit_for_36_45)->count();
+        $female_age_45 = User::where('gender','Female')->where('birth_date','<',$dob_limit_for_45)->count();
+        $is_phone_user = User::whereNull('facebook_id')->whereNull('google_id')->whereNull('apple_id')->where('is_social_user','n')->count();
+        $is_google_user = User::whereNotNull('google_id')->where('is_social_user','y')->count();
+        $is_facebook_user = User::whereNotNull('facebook_id')->where('is_social_user','y')->count();
+        $is_apple_user = User::whereNotNull('apple_id')->where('is_social_user','y')->count();
+        $is_otp_less_user = User::whereNotNull('otp_less_id')->count();
+        $male_phone_verified = User::where('gender','Male')->whereNotNull('contact_verified_at')->count();
+        $male_phone_unverified = User::where('gender','Male')->whereNull('contact_verified_at')->count();
+        $male_email_verified = User::where('gender','Male')->whereNotNull('email_verified_at')->count();
+        $male_email_unverified = User::where('gender','Male')->whereNull('email_verified_at')->count();
+        $male_photo_verified = User::where('gender','Male')->where('verify_photo_status','verified')->count();
+        $male_photo_unverified = User::where('gender','Male')->where('verify_photo_status','unverified')->count();
+        $male_account_verified = User::where('gender','Male')->where('verify_status','verified')->count();
+        $male_account_unverified = User::where('gender','Male')->where('verify_status','unverified')->count();
+        $female_phone_verified = User::where('gender','Female')->whereNotNull('contact_verified_at')->count();
+        $female_phone_unverified = User::where('gender','Female')->whereNull('contact_verified_at')->count();
+        $female_email_verified = User::where('gender','Female')->whereNotNull('email_verified_at')->count();
+        $female_email_unverified = User::where('gender','Female')->whereNull('email_verified_at')->count();
+        $female_photo_verified = User::where('gender','Female')->where('verify_photo_status','verified')->count();
+        $female_photo_unverified = User::where('gender','Female')->where('verify_photo_status','unverified')->count();
+        $female_account_verified = User::where('gender','Female')->where('verify_status','verified')->count();
+        $female_account_unverified = User::where('gender','Female')->where('verify_status','unverified')->count();
+
+
+        $created_at = date('Y-m-d H:i:s');
+        try{
+            cache()->forget('oldest-record');
+            $old_date = cache()->rememberForever('oldest-record',function(){
+                return User::selectRaw('created_at')->orderBy('created_at','asc')->first();
+            });
+        }catch(Exception $e){}
+        $insert_data = array(
+            'total_users' => $total_users,
+            'per_day_users' => $per_day_users,
+            'per_week_users' => $per_week_users,
+            'per_30_day_users' => $per_30_day_users,
+            'male_users' => $male_users,
+            'female_users' => $female_users,
+            'na_users' => $na_users,
+            'male_18_25' => $male_age_18_25,
+            'male_26_35' => $male_age_26_35,
+            'male_36_45' => $male_age_36_45,
+            'male_45' => $male_age_45,
+            'female_18_25' => $female_age_18_25,
+            'female_26_35' => $female_age_26_35,
+            'female_36_45' => $female_age_36_45,
+            'female_45' => $female_age_45,
+            'paid_users' => $total_subscribed,
+            'non_paid_users' => $total_unsubscribed,
+            'total_phone_users' => $is_phone_user,
+            'total_google_users' => $is_google_user,
+            'total_facebook_users' => $is_facebook_user,
+            'total_apple_users' => $is_apple_user,
+            'total_otp_less_users' => $is_otp_less_user,
+            'male_phone_verified' => $male_phone_verified,
+            'male_phone_unverified' => $male_phone_unverified,
+            'male_email_verified' => $male_email_verified,
+            'male_email_unverified' => $male_email_unverified,
+            'male_photo_verified' => $male_photo_verified,
+            'male_photo_unverified' => $male_photo_unverified,
+            'male_account_verified' => $male_account_verified,
+            'male_account_unverified' => $male_account_unverified,
+            'female_phone_verified' => $female_phone_verified,
+            'female_phone_unverified' => $female_phone_unverified,
+            'female_email_verified' => $female_email_verified,
+            'female_email_unverified' => $female_email_unverified,
+            'female_photo_verified' => $female_photo_verified,
+            'female_photo_unverified' => $female_photo_unverified,
+            'female_account_verified' => $female_account_verified,
+            'female_account_unverified' => $female_account_unverified,
+            'created_at' => $created_at
+        );
+        DB::table('analytic_dashboard')->insert($insert_data);
+        $message = 'Analytic dashboard data update successfully.';
+        return $message;
+    }
+
+    public function handleOld()
     {
         $message            =   "No Analytic dashboard records found.";
         $past_30_day_date   =    Carbon::today()->subDays(30);
@@ -268,6 +371,10 @@ class AdminDashboard extends Command
         DB::table('analytic_dashboard')->insert($insert_data);
         $message            = "Analytic dashboard data update successfully.";
         return $message;
+    }
+
+    public function getDOBForAge($age=0){
+        return now()->subYears($age)->format('Y-m-d H:i:s');
     }
 
     public function age_check($dateOfBirth)

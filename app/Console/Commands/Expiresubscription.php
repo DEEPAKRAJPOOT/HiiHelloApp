@@ -41,6 +41,7 @@ class Expiresubscription extends Command
         $message            =   " No subscription expire records found.";
         $today_date         =   date('Y-m-d');
         $users = User::select('id','is_subscribed','subscription_end_date')
+            ->where('is_subscribed','y')
             ->where('subscription_end_date','<',$today_date)
             ->get();
         if($users->isNotEmpty()){

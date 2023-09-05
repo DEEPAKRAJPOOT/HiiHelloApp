@@ -44,7 +44,7 @@ class UserAccountIdUpdate extends Command
         if(count($all_users) > 0){
             foreach ($all_users as $key => $user) {
                 if (!empty($user->full_name)) {
-                    $user->account_id = Str::slug(substr($user->full_name, 0, 4), "_").'_'.time();
+                    $user->account_id = Str::slug(mb_substr($user->full_name, 0, 4), "_", null).'_'.time();
                     $user->save();
                 }
 

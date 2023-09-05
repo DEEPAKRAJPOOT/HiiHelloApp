@@ -164,7 +164,9 @@ class AuthenticationController extends Controller
 
                     // Store Account Id
                     if (!empty($request->language) && $request->language == 'en') {
-                        $user->account_id = Str::slug(substr($full_name, 0, 4), "_") . '_' . time();
+                        $user->account_id = Str::slug(mb_substr($full_name, 0, 4), "_", null) . '_' . time();
+                    }else{
+                        $user->account_id = Str::slug(mb_substr($full_name, 0, 4), "_", null) . '_' . time();
                     }
                     $user->is_trans_full_name = 'n';
                 }
