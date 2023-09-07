@@ -7,6 +7,8 @@ use App\Models\User;
 use Illuminate\Support\Str;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
+use Monolog\Handler\StreamHandler;
+use Monolog\Logger;
 
 class GoogleTranslation extends Command
 {
@@ -173,6 +175,10 @@ class GoogleTranslation extends Command
                 $user->save();
 
                 $message = 'User Id : ' . $user->id . ' details translated successfully !!!';
+            }else{
+                $debuggingLog = new Logger('translation_debugging');
+                $debuggingLog->pushHandler(new StreamHandler(storage_path('logs/translation_debugging.log')), Logger::ERROR);
+                $debuggingLog->error('translation_debugging',['traslate_url' => $traslate_url, 'responseCode' => $responseCode, 'responseDecoded' => print_r($responseDecoded,true)]);
             }
         }
 
