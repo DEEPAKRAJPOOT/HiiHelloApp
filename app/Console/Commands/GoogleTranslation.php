@@ -56,7 +56,7 @@ class GoogleTranslation extends Command
             ->with('userTranslationOnlyOne')
             ->where('is_trans_full_name', 'n')
             ->orderBy('created_at', "asc")
-            ->limit(10)
+            ->limit(100)
             ->get();
 
         foreach ($users as $user) {
