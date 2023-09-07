@@ -9,6 +9,7 @@ use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
+use Exception;
 
 class GoogleTranslation extends Command
 {
@@ -69,8 +70,12 @@ class GoogleTranslation extends Command
                     // $fav_movie  =   $user->userTranslations[0]->fav_movie;
 
                     if (!empty($full_name) && $user->is_trans_full_name == 'n') {
-                        $message = $this->translateText($apiKey, $language_alloweds, $user, $detected_lang, 'full_name', $full_name);
-                        $user->is_trans_full_name = 'y';
+                        try{
+                            $message = $this->translateText($apiKey, $language_alloweds, $user, $detected_lang, 'full_name', $full_name);
+                            $user->is_trans_full_name = 'y';
+                        }catch(Exception $e){
+                            $this->logError($e->getMessage());
+                        }
                     }
                     $user->save();
                 }
@@ -176,12 +181,20 @@ class GoogleTranslation extends Command
 
                 $message = 'User Id : ' . $user->id . ' details translated successfully !!!';
             }else{
-                $debuggingLog = new Logger('translation_debugging');
-                $debuggingLog->pushHandler(new StreamHandler(storage_path('logs/translation_debugging.log')), Logger::ERROR);
-                $debuggingLog->error('translation_debugging',['traslate_url' => $traslate_url, 'responseCode' => $responseCode, 'responseDecoded' => print_r($responseDecoded,true)]);
+                $this->logError([
+                    'traslate_url' => $traslate_url,
+                    'responseCode' => $responseCode,
+                    'responseDecoded' => $responseDecoded
+                ]);
             }
         }
 
         return $message;
+    }
+
+    private function logError($data){
+        $debuggingLog = new Logger('translation_debugging');
+        $debuggingLog->pushHandler(new StreamHandler(storage_path('logs/translation_debugging.log')), Logger::ERROR);
+        $debuggingLog->error('translation_debugging',print_r($data,true));
     }
 }
