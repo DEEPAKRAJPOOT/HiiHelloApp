@@ -44,7 +44,10 @@ class GoogleTranslation extends Command
      */
     public function handle()
     {
-        $this->logInfo('Handle Function Run at '.date('Y-m-d H:i:s'));
+        $user_order = 'desc';
+        if(date('i') % 5 == 0){
+            $user_order = 'asc';
+        }
         $language_alloweds  =   ['en', 'hi', 'ta', 'mr', 'bn', 'gu', 'kn', 'ml', 'or', 'pa', 'te', 'as'];
         $default_lang_code  =   config('utility.default_lang_code');
         $apiKey             =   config('utility.google.translate.api_key');
@@ -54,14 +57,12 @@ class GoogleTranslation extends Command
         //                         ->where('is_trans_full_name','n')->orWhere('is_trans_about_me','n')
         //                         ->orWhere('is_trans_fav_movie','n')->get();
 
-        $users = User::select('id', 'custom_id', 'is_trans_full_name')
+        $users = User::select('id','custom_id','is_trans_full_name')
             ->with('userTranslationOnlyOne')
-            ->where('is_trans_full_name', 'n')
-            ->orderBy('created_at', "asc")
+            ->where('is_trans_full_name','n')
+            ->orderBy('created_at',$user_order)
             ->limit(100)
             ->get();
-
-        $this->logInfo($users->count().' Users Fetched at '.date('Y-m-d H:i:s'));
 
         foreach ($users as $user) {
             if ($user->userTranslationOnlyOne) {
@@ -127,7 +128,6 @@ class GoogleTranslation extends Command
 
     function translateText($apiKey, $language_alloweds, $user, $detected_lang, $column, $text)
     {
-        $this->logInfo('translateText called at '.date('Y-m-d H:i:s'));
         $message = 'No details found to translate !!!';
 
         // Detect Language

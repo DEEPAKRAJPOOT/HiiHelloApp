@@ -227,6 +227,8 @@ Route::get('user-translations', 'Admin\PagesController@user_translations')->name
 Route::get('deletelocation', 'Admin\PagesController@deletelocation')->name('user.deletelocation');
 Route::get('locationTranslations', 'UtilityController@locationTranslations');
 Route::get('Usertranslate', 'UtilityController@Usertranslate');
+/* Temporary For getting count */
+Route::get('untranslated','Admin\UsersController@untranslated');
 // Temporary Link - To be deleted anytime after 11 May 2023
 Route::get('getOldCollegeUsersTemp',function(){
 	set_time_limit(0);
