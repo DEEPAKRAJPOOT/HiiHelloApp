@@ -91,7 +91,7 @@ class Kernel extends ConsoleKernel
         $schedule->call(function () {
             $scheculeCommand = new GoogleTranslation;
             $scheculeCommand->handle();
-        })->everyMinute();
+        })->name('UserFullNamesTranslation')->everyMinute()->withoutOverlapping();
        
 
         // Location Translations Command
