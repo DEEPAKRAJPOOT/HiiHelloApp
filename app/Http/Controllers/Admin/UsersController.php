@@ -2241,4 +2241,15 @@ class UsersController extends Controller
         }
         return response()->json(['results'=>$data,'pagination'=>['more'=>($filtered_records > ($length + $offset))]]);
     }
+
+    public function untranslated(){
+        $total_users = User::count();
+        $non_translatable = User::whereDoesntHave('userTranslationOnlyOne')->count();
+        $translatable = $total_users - $non_translatable;
+        $translated = User::where('is_trans_full_name','y')->count();
+        $untranslated = $total_users - $translated;
+        $pending = $untranslated - $non_translatable;
+        $data = compact('total_users','non_translatable','translated','untranslated','pending');
+        return str_replace('&','<br><br>',http_build_query($data));
+    }
 }
