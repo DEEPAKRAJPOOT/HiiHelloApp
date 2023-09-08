@@ -44,6 +44,7 @@ class GoogleTranslation extends Command
      */
     public function handle()
     {
+        $this->logInfo('Handle Function Run at '.date('Y-m-d H:i:s'));
         $language_alloweds  =   ['en', 'hi', 'ta', 'mr', 'bn', 'gu', 'kn', 'ml', 'or', 'pa', 'te', 'as'];
         $default_lang_code  =   config('utility.default_lang_code');
         $apiKey             =   config('utility.google.translate.api_key');
@@ -59,6 +60,8 @@ class GoogleTranslation extends Command
             ->orderBy('created_at', "asc")
             ->limit(100)
             ->get();
+
+        $this->logInfo($users->count().' Users Fetched at '.date('Y-m-d H:i:s'));
 
         foreach ($users as $user) {
             if ($user->userTranslationOnlyOne) {
@@ -124,6 +127,7 @@ class GoogleTranslation extends Command
 
     function translateText($apiKey, $language_alloweds, $user, $detected_lang, $column, $text)
     {
+        $this->logInfo('translateText called at '.date('Y-m-d H:i:s'));
         $message = 'No details found to translate !!!';
 
         // Detect Language
@@ -195,6 +199,12 @@ class GoogleTranslation extends Command
     private function logError($data){
         $debuggingLog = new Logger('translation_debugging');
         $debuggingLog->pushHandler(new StreamHandler(storage_path('logs/translation_debugging.log')), Logger::ERROR);
-        $debuggingLog->error('translation_debugging',print_r($data,true));
+        $debuggingLog->error('translation_debugging',['error'=>$data]);
+    }
+
+    private function logInfo($data){
+        $debuggingLog = new Logger('translation_info');
+        $debuggingLog->pushHandler(new StreamHandler(storage_path('logs/translation_info.log')), Logger::INFO);
+        $debuggingLog->error('translation_info',['info'=>$data]);
     }
 }
