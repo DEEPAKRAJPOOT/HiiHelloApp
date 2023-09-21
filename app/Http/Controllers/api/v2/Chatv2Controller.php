@@ -17,7 +17,93 @@ class Chatv2Controller extends Controller
     public function getVersion(){ return $this->version; }
 
     // Get Chat Rooms Details
-    public function getChatRooms(Request $request)
+
+    public function getChatRooms(Request $request){
+        $getRoomRequest = new GetRoomRequest();
+        if($this->apiValidator($request->all(),$getRoomRequest->rules())){
+            try {
+                $limit = !empty($request->limit) ? $request->limit : config('utility.pagination.limit');
+                $offset = !empty($request->offset) ? $request->offset : config('utility.pagination.offset');
+                $auth_id = $request->user() ? $request->user()->id : NULL;
+                $search = $request->search;
+                $system_chat_room_id = config('utility.chat.system_chat_room');
+                $has_system_messages = ChatMessage::where('room_id',$system_chat_room_id)->where('receiver_id',$auth_id)->exists();
+                $rooms = ChatRoom::whereHas('chatMessages')
+                ->withCount(['chatMessages'=>function($query){
+                    $query->where('status','!=','read');
+                }])
+                ->withCount('blockBy')
+                ->where(function($query)use($auth_id,$has_system_messages,$system_chat_room_id){
+                    $query->where(function($q)use($auth_id){
+                        $q->whereCreatorId($auth_id)->whereNull('creator_deleted_at');
+                    });
+                    $query->orWhere(function($q)use($auth_id){
+                        $q->whereParticipateId($auth_id)->whereNull('participate_deleted_at');
+                    });
+                    if($has_system_messages){
+                        $query->orWhere(function($q)use($system_chat_room_id){
+                            $q->where('id',$system_chat_room_id);
+                        });
+                    }
+                });
+                if(!empty($search)){
+                    $rooms->where(function($query)use($search){
+                        $query->whereHas('creator.userTranslations',function($q1)use($search){
+                            $q1->where('full_name','like','%'.$search.'%');
+                        })->orWhereHas('participator.userTranslations',function($q2)use($search){
+                            $q2->where('full_name','like','%'.$search.'%');
+                        });
+                    });
+                }
+                $count = $rooms->count();
+                $rooms = $rooms->orderBy('updated_at','desc')->limit($limit)->offset($offset)->get();
+                if($rooms->isNotEmpty()){
+                    $rooms = $rooms->sortBy(function($room)use($system_chat_room_id){
+                        return ($room->id == $system_chat_room_id) ? 0 : 1;
+                    });
+                    return (ChatRoomResource::Collection($rooms))->additional([
+                        'meta' => [
+                            'limit'    => $limit,
+                            'offset'   => $offset,
+                            'total'    => $count,
+                            'url'      => url()->current(),
+                            'api'      => $this->getVersion(),
+                            'language' => app()->getLocale(),
+                            'is_ban'   => false,
+                            'message'  => trans('api.list',['entity'=>__('Chat rooms')]),
+                            'memory_usage' => (round(memory_get_usage() / 1048576,5)).'MB'
+                        ]
+                    ]);
+                } else {
+                    $this->status = Response::HTTP_OK;
+                    $this->response['meta']['message']  =   trans('api.not_found', ['entity' => __('Chat rooms')]);
+                    $this->response['meta']['is_ban'] = false;
+                }
+            } catch (ModelNotFoundException $exception) {
+                $this->status = Response::HTTP_OK;
+                switch ($exception->getModel()) {
+                    case 'App\Models\ChatRoom':
+                        $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("Chat rooms")]);
+                        $this->response['meta']['is_ban'] = false;
+                        break;
+                    case 'App\Models\User':
+                        $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("User")]);
+                        $this->response['meta']['is_ban'] = false;
+                        break;
+                    default:
+                        $this->response['meta']['message'] = trans('api.went_wrong');
+                        $this->response['meta']['is_ban'] = false;
+                        break;
+                };
+            }catch(\Exception $e){
+                $this->status = Response::HTTP_OK;
+                $this->storeErrorLog($e, 'get_chat_rooms');
+            }
+        }
+        return $this->returnResponse();
+    }
+
+    public function getChatRoomsOld(Request $request)
     {
         $getRoomRequest = new GetRoomRequest();
         if ($this->apiValidator($request->all(), $getRoomRequest->rules())) {

@@ -4,6 +4,8 @@ namespace App\Http\Resources\v2;
 
 use Illuminate\Http\Resources\Json\JsonResource;
 
+use App\Models\ChatMessage;
+
 class ChatRoomResource extends JsonResource
 {
     /**
@@ -16,22 +18,21 @@ class ChatRoomResource extends JsonResource
     {
         $this->authLatestMessage = null;
         $auth_id = $request->user() ? $request->user()->id : NULL;
-        if($this->participate_id == $auth_id){
+        if($this->id == config('utility.chat.system_chat_room')){
+            $this->authLatestMessage = ChatMessage::where('room_id',$this->id)->where('receiver_id',$auth_id)->orderBy('id','desc')->first();
+        }
+        elseif($this->participate_id == $auth_id){
             $this->authLatestMessage = $this->chatMessagesWithTrashed->where('created_at','>',$this->participate_cleared_at ?? '')
             ->filter(function($query){
                 return ($query->is_vanished == 'n' || $query->status != 'read') && (empty($query->sender_deleted_at) || ($query->sender_id != $auth_id));
             })
             ->sortByDesc('id')->first();
-        }
-        if($this->creator_id == $auth_id){
+        }elseif($this->creator_id == $auth_id){
             $this->authLatestMessage = $this->chatMessagesWithTrashed->where('created_at','>',$this->creator_cleared_at ?? '')
             ->filter(function($query){
                 return ($query->is_vanished == 'n' || $query->status != 'read') && (empty($query->sender_deleted_at) || ($query->sender_id != $auth_id));
             })
             ->sortByDesc('id')->first();
-        }
-        if($this->id == config('utility.chat.system_chat_room')){
-            $this->authLatestMessage = $this->chatMessages->where('receiver_id',$auth_id)->sortByDesc('id')->first();
         }
         return [
             'id'            =>  $this->custom_id,

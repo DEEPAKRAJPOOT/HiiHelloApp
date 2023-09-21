@@ -455,6 +455,8 @@ io.on('connection', (socket)=>{
 										console.log("Log: Push Notification");
 									}
 								});
+								let updateRoom =  "UPDATE chat_rooms SET updated_at = ? WHERE id = ?";
+								let updateRoomSql = connection.query(updateRoom, [request.time, chatRoom.id],(read_error,_message) => {});
 							});
 						});
 					});

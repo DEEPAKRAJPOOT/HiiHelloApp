@@ -179,16 +179,14 @@ class ChatController extends Controller
                 $user_type = 'participant';
                 $cleared_time = '';
                 $auth_id = $request->user() ? $request->user()->id : NULL;
-                $room = ChatRoom::whereCustomId($request->room)->whereIsActive('y')->first();
-                if(!empty($room)){
-                    if($room->creator_id == $auth_id){
-                        $user_type = 'creator';
-                        $cleared_time  = $room->creator_cleared_at;
-                    }
+                $room = ChatRoom::whereCustomId($request->room)->whereIsActive('y')->firstOrFail();
+                if($room->creator_id == $auth_id){
+                    $user_type = 'creator';
+                    $cleared_time  = $room->creator_cleared_at;
+                }
 
-                    if($room->participate_id == $auth_id){
-                        $cleared_time = $room->participate_cleared_at;
-                    }
+                if($room->participate_id == $auth_id){
+                    $cleared_time = $room->participate_cleared_at;
                 }
                 $messages = ChatMessage::select('id', 'custom_id', 'room_id', 'sender_id', 'message', 'status', 'created_at', 'updated_at', 'deleted_at','is_vanished')
                 ->where(function($expired_query){
