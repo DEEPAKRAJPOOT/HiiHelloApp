@@ -71,7 +71,6 @@ class Chatv2Controller extends Controller
                             'language' => app()->getLocale(),
                             'is_ban'   => false,
                             'message'  => trans('api.list',['entity'=>__('Chat rooms')]),
-                            'memory_usage' => (round(memory_get_usage() / 1048576,5)).'MB'
                         ]
                     ]);
                 } else {

@@ -22,22 +22,28 @@ class ChatRoomResource extends JsonResource
             $this->authLatestMessage = ChatMessage::where('room_id',$this->id)->where('receiver_id',$auth_id)->orderBy('id','desc')->first();
         }
         elseif($this->participate_id == $auth_id){
-            $this->authLatestMessage = $this->chatMessagesWithTrashed->where('created_at','>',$this->participate_cleared_at ?? '')
-            ->filter(function($query){
-                return ($query->is_vanished == 'n' || $query->status != 'read') && (empty($query->sender_deleted_at) || ($query->sender_id != $auth_id));
-            })
-            ->sortByDesc('id')->first();
+            $this->authLatestMessage = ChatMessage::withTrashed()->where('created_at','>',$this->participate_cleared_at ?? '')
+            ->where(function($query){
+                $query->where('is_vanished','n');
+                $query->orWhere('status','!=','read');
+            })->where(function($query)use($auth_id){
+                $query->whereNull('sender_deleted_at');
+                $query->orWhere('sender_id','!=',$auth_id);
+            })->orderBy('id','desc')->first();
         }elseif($this->creator_id == $auth_id){
-            $this->authLatestMessage = $this->chatMessagesWithTrashed->where('created_at','>',$this->creator_cleared_at ?? '')
-            ->filter(function($query){
-                return ($query->is_vanished == 'n' || $query->status != 'read') && (empty($query->sender_deleted_at) || ($query->sender_id != $auth_id));
-            })
-            ->sortByDesc('id')->first();
+            $this->authLatestMessage = ChatMessage::withTrashed()->where('created_at','>',$this->creator_cleared_at ?? '')
+            ->where(function($query){
+                $query->where('is_vanished','n');
+                $query->orWhere('status','!=','read');
+            })->where(function($query)use($auth_id){
+                $query->whereNull('sender_deleted_at');
+                $query->orWhere('sender_id','!=',$auth_id);
+            })->orderBy('id','desc')->first();
         }
         return [
             'id'            =>  $this->custom_id,
             'is_active'     =>  $this->is_active ? $this->is_active == 'y' ? true : false : false,
-            'is_blocked'    =>  $this->block_by_count ? $this->block_by_count > 0 ? true : false : false,
+            'is_blocked'    =>  !empty($this->block_by_count),
             'creator'  =>  [
                 'id'            =>  $this->creator ? $this->creator->custom_id : "",
                 'full_name'     =>  $this->creator ? 
