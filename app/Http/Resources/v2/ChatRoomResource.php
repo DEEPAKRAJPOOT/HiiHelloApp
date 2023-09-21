@@ -22,7 +22,7 @@ class ChatRoomResource extends JsonResource
             $this->authLatestMessage = ChatMessage::where('room_id',$this->id)->where('receiver_id',$auth_id)->orderBy('id','desc')->first();
         }
         elseif($this->participate_id == $auth_id){
-            $this->authLatestMessage = ChatMessage::withTrashed()->where('created_at','>',$this->participate_cleared_at ?? '')
+            $this->authLatestMessage = ChatMessage::withTrashed()->where('room_id',$this->id)->where('created_at','>',$this->participate_cleared_at ?? '')
             ->where(function($query){
                 $query->where('is_vanished','n');
                 $query->orWhere('status','!=','read');
@@ -31,7 +31,7 @@ class ChatRoomResource extends JsonResource
                 $query->orWhere('sender_id','!=',$auth_id);
             })->orderBy('id','desc')->first();
         }elseif($this->creator_id == $auth_id){
-            $this->authLatestMessage = ChatMessage::withTrashed()->where('created_at','>',$this->creator_cleared_at ?? '')
+            $this->authLatestMessage = ChatMessage::withTrashed()->where('room_id',$this->id)->where('created_at','>',$this->creator_cleared_at ?? '')
             ->where(function($query){
                 $query->where('is_vanished','n');
                 $query->orWhere('status','!=','read');
