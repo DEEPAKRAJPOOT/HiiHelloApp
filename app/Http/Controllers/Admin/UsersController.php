@@ -1042,6 +1042,7 @@ class UsersController extends Controller
     }
 
     public function listing(Request $request){
+        session_write_close();
         $users = User::query();
         if(!empty($request->get('user_filter'))){
             switch ($request->get('user_filter')) {
@@ -1082,7 +1083,7 @@ class UsersController extends Controller
         return DataTables::eloquent($users)
         ->editColumn('profile_photo','{{ !empty($profile_photo) ? generateURL($profile_photo) : "" }}')
         ->editColumn('verify_photo','{{ !empty($verify_photo) ? generateURL($verify_photo) : "" }}')
-        ->editColumn('created_at','{{ now()->create($created_at)->format("Y-m-d H:i:s") }}')
+        ->editColumn('created_at','{{ now()->parse($created_at,"UTC")->setTimezone("Asia/Kolkata")->format("Y-m-d H:i:s") }}')
         ->addColumn('checkbox',function(User $user){
             return view('admin.layouts.includes.checkbox',[
                 'params' => [

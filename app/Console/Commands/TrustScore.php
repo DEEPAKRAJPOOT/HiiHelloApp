@@ -46,7 +46,8 @@ class TrustScore extends Command
 
         //->where('id',14591)
 
-        User::select('id','custom_id','email','verify_photo_status','verify_email_send','email_verified_at','contact_verified_at')                
+        User::select('id','custom_id','email','verify_photo_status','verify_email_send','email_verified_at','contact_verified_at')
+                ->orderBy('trusted_score_at','asc')
                 ->chunk(10000, function($users) {
                         if($users->isNotEmpty())
                         {
