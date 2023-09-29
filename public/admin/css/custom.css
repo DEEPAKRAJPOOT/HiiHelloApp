@@ -84,6 +84,9 @@ form > .card-header .card-toolbar {
     flex-wrap: wrap;
 }
 
+.select2-selection__rendered{
+    min-height: 34.09px;
+}
 
 /*Close button*/
 .symbol div a {

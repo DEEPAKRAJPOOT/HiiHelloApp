@@ -83,25 +83,27 @@ class AdminComposer
 				];
 
 				foreach ($section['roles'] as $s_role) {
-					$active_class = '';
-					if (array_key_exists($s_role['id'], $userPermissions) && !empty($userPermissions[$s_role['id']])) {
-						if ($s_role['id'] == $role->id) {
-							$this->permissions = explode(',', $userPermissions[$role->id]['permissions']);
-						}
-
-						if (substr($s_role['route'], 0, strrpos($s_role['route'], '.')) == $this->routeName) {
-						// if (substr($s_role['route'], 0, strrpos($role->route, '.')) == $this->routeName) {
-							if (!empty($s_role['params'])) {
-								if (!empty($route_parameters['slug'])) {
-									if ($route_parameters['slug'] == $s_role['params']) {
-										$active_class = 'menu-item-active';
-									}
-								}
-							} else {
-								$active_class = 'menu-item-active';
+					if($s_role['is_display'] == 'y'){
+						$active_class = '';
+						if (array_key_exists($s_role['id'], $userPermissions) && !empty($userPermissions[$s_role['id']])) {
+							if ($s_role['id'] == $role->id) {
+								$this->permissions = explode(',', $userPermissions[$role->id]['permissions']);
 							}
+
+							if (substr($s_role['route'], 0, strrpos($s_role['route'], '.')) == $this->routeName) {
+							// if (substr($s_role['route'], 0, strrpos($role->route, '.')) == $this->routeName) {
+								if (!empty($s_role['params'])) {
+									if (!empty($route_parameters['slug'])) {
+										if ($route_parameters['slug'] == $s_role['params']) {
+											$active_class = 'menu-item-active';
+										}
+									}
+								} else {
+									$active_class = 'menu-item-active';
+								}
+							}
+							$data['roles'][] = array_merge(array('class' => $active_class), array_except($s_role, ['sequence', 'active', 'created_at', 'updated_at']));
 						}
-						$data['roles'][] = array_merge(array('class' => $active_class), array_except($s_role, ['sequence', 'active', 'created_at', 'updated_at']));
 					}
 				}
 

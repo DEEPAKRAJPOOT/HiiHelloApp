@@ -174,9 +174,17 @@ Route::group(['namespace' => 'Admin', 'middleware' => ['check_permit', 'revalida
 	Route::get('call-logs/listing', 'CallController@listing')->name('call-logs.listing');
 	Route::resource('call-logs', 'CallController');
 
-	Route::get('user-matches/listing', 'UserMatchesController@listing')->name('user-matches.listing');
-	Route::post('user-matches/chart-data', 'UserMatchesController@chartData')->name('user-matches.chart-data');
 	Route::resource('user-matches', 'UserMatchesController');
+
+	Route::get('system-matches/listing', 'SystemMatchesController@listing')->name('system-matches.listing');
+	Route::post('system-matches/chart-data', 'SystemMatchesController@chartData')->name('system-matches.chart-data');
+	Route::resource('system-matches', 'SystemMatchesController');
+	
+	Route::get('organic-matches/listing', 'OrganicMatchesController@listing')->name('organic-matches.listing');
+	Route::post('organic-matches/reporting-data', 'OrganicMatchesController@reportingData')->name('organic-matches.reporting-data');
+	Route::post('organic-matches/table-data', 'OrganicMatchesController@tableData')->name('organic-matches.table-data');
+	Route::resource('organic-matches', 'OrganicMatchesController');
+
 
 });
 

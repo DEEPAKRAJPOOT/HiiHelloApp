@@ -358,14 +358,32 @@ Breadcrumbs::register('dashboard', function ($breadcrumbs) {
 	    $breadcrumbs->push('Coupon Users', route(Auth::getDefaultDriver().'.coupon-users.index'));
 	});
 
-	//User matches
-	Breadcrumbs::register('user_matches',function($breadcrumbs){
+	//System matches
+	Breadcrumbs::register('system_matches',function($breadcrumbs){
 		$breadcrumbs->parent('dashboard');
-	    $breadcrumbs->push('User Matches',route(Auth::getDefaultDriver().'.user-matches.index'));
+	    $breadcrumbs->push('System Matches',route(Auth::getDefaultDriver().'.system-matches.index'));
+	});
+
+	Breadcrumbs::register('system_matches_create', function($breadcrumbs)
+	{
+		$breadcrumbs->parent('system_matches');
+	    $breadcrumbs->push('Create System Match', route(Auth::getDefaultDriver().'.system-matches.create'));
+	});
+
+	//Organic matches
+	Breadcrumbs::register('organic_matches',function($breadcrumbs){
+		$breadcrumbs->parent('dashboard');
+	    $breadcrumbs->push('Organic Matches',route(Auth::getDefaultDriver().'.organic-matches.index'));
+	});
+
+	Breadcrumbs::register('organic_matches_create', function($breadcrumbs)
+	{
+		$breadcrumbs->parent('organic_matches');
+	    $breadcrumbs->push('Create Like', route(Auth::getDefaultDriver().'.organic-matches.create'));
 	});
 
 	Breadcrumbs::register('user_matches_view',function($breadcrumbs,$id){
-		$breadcrumbs->parent('user_matches');
+		$breadcrumbs->parent('system_matches');
 	    $breadcrumbs->push('User Match Details',route(Auth::getDefaultDriver().'.user-matches.show',$id));
 	});
 

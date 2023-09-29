@@ -5,6 +5,7 @@ namespace App\Console;
 use App\Console\Commands\TrustScore;
 use App\Console\Commands\BirthDayWish;
 use App\Console\Commands\AdminDashboard;
+use App\Console\Commands\AdminData;
 use App\Console\Commands\ChatMediaCheker;
 use App\Console\Commands\ImageModeration;
 use App\Console\Commands\RenewSwipeLimit;
@@ -37,6 +38,7 @@ class Kernel extends ConsoleKernel
         LocationTranslations::class,
         TrustScore::class,
         AdminDashboard::class,
+        AdminData::class,
         UserReminderMessages::class,
     ];
 
@@ -119,6 +121,12 @@ class Kernel extends ConsoleKernel
             $scheculeCommand = new AdminDashboard;
             $scheculeCommand->handle();
         })->name('AdminDashboardUpdate')->everyFifteenMinutes()->withoutOverlapping();
+
+        // Admin Data cron
+        $schedule->call(function () {
+            $scheculeCommand = new AdminData;
+            $scheculeCommand->handle();
+        })->name('AdminDataUpdate')->hourly()->withoutOverlapping();
 
         // Calculate Trust Scroe on the first day of every month at 2:00
         $schedule->call(function () {

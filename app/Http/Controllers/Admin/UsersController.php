@@ -2196,6 +2196,7 @@ class UsersController extends Controller
     }
 
     public function selectionListing(Request $request){
+        session_write_close();
         ignore_user_abort(false);
         $offset = 0;
         $length = 100;

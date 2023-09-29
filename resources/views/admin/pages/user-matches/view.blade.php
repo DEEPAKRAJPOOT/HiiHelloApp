@@ -179,13 +179,13 @@
                                             <td>
                                                 {{ !empty($user_match->for_user->userTransDefault) ? $user_match->for_user->userTransDefault->full_name : '-' }}
                                                 @if($user->custom_id != $user_match->for_user->custom_id)
-                                                    <a href="{{ route('admin.user-matches.show',$user_match->for_user->custom_id) }}" class="ml-2"><i class="fa fa-eye"></i></a>
+                                                    <a href="{{ route('admin.system-matches.show',$user_match->for_user->custom_id) }}" class="ml-2"><i class="fa fa-eye"></i></a>
                                                 @endif
                                             </td>
                                             <td>
                                                 {{ !empty($user_match->to_user->userTransDefault) ? $user_match->to_user->userTransDefault->full_name : '-' }}
                                                 @if($user->custom_id != $user_match->to_user->custom_id)
-                                                    <a href="{{ route('admin.user-matches.show',$user_match->to_user->custom_id) }}" class="ml-2"><i class="fa fa-eye"></i></a>
+                                                    <a href="{{ route('admin.system-matches.show',$user_match->to_user->custom_id) }}" class="ml-2"><i class="fa fa-eye"></i></a>
                                                 @endif
                                             </td>
                                             <td data-order="{{ now()->create($user_match->match_date)->timestamp }}">{{ now()->create($user_match->match_date)->format('jS M Y') }}</td>
@@ -211,13 +211,13 @@
                                             <td>
                                                 {{ !empty($user_match->for_user->userTransDefault) ? $user_match->for_user->userTransDefault->full_name : '-' }}
                                                 @if($user->custom_id != $user_match->for_user->custom_id)
-                                                    <a href="{{ route('admin.user-matches.show',$user_match->for_user->custom_id) }}" class="ml-2"><i class="fa fa-eye"></i></a>
+                                                    <a href="{{ route('admin.system-matches.show',$user_match->for_user->custom_id) }}" class="ml-2"><i class="fa fa-eye"></i></a>
                                                 @endif
                                             </td>
                                             <td>
                                                 {{ !empty($user_match->to_user->userTransDefault) ? $user_match->to_user->userTransDefault->full_name : '-' }}
                                                 @if($user->custom_id != $user_match->to_user->custom_id)
-                                                    <a href="{{ route('admin.user-matches.show',$user_match->to_user->custom_id) }}" class="ml-2"><i class="fa fa-eye"></i></a>
+                                                    <a href="{{ route('admin.system-matches.show',$user_match->to_user->custom_id) }}" class="ml-2"><i class="fa fa-eye"></i></a>
                                                 @endif
                                             </td>
                                             <td data-order="{{ now()->create($user_match->match_date)->timestamp }}">{{ now()->create($user_match->match_date)->format('jS M Y') }}</td>
