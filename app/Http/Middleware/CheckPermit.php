@@ -23,7 +23,7 @@ class CheckPermit
         $routeName = substr($routeName, 0, strrpos($routeName, '.'));
         $method = ($method != '' ? $method : $routeName);
         $permission = '';
-
+        
         try {
             if (config('utility.caching') && Redis::exists('active.routes.' . $routeName)) {
                 $role = json_decode((Redis::get('active.routes.' . $routeName)));
@@ -39,7 +39,7 @@ class CheckPermit
 
 
         // Permissions 
-        $access = ['index', 'listing', 'selection-listing', 'showSetting', 'change-setting', 'trashed', 'trasheddata','actor-list','singer-list','unde-review','genderupdate','bulk_gender_update','bulk-approve','dashboardupdate','bulk_photo_verification','bulk_email_verification','deleted','filters','under-review-listing','refund-transaction'];
+        $access = ['index', 'listing', 'selection-listing', 'showSetting', 'change-setting', 'trashed', 'trasheddata','actor-list','singer-list','unde-review','genderupdate','bulk_gender_update','bulk-approve','dashboardupdate','bulk_photo_verification','bulk_email_verification','deleted','filters','under-review-listing','refund-transaction','merge-location','mergelocations','duplicate-location','duplicate-location-listing'];
         $add = ['store', 'create', 'send-bulk'];
         $update = ['edit', 'update','get-fields','preview','publish'];
         $view = ['show','chart-data','reporting-data','table-data'];
@@ -52,7 +52,7 @@ class CheckPermit
         elseif (in_array($method, $delete)) $permission = 'delete';
         elseif (in_array($method, $restore)) $permission = 'restore';
         elseif (in_array($method, $view)) $permission = 'view';
-
+        
         if (!empty($permission)) {
             $current_permission = unserialize($request->user()->permissions);
             if (

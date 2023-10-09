@@ -95,7 +95,12 @@ Route::group(['namespace' => 'Admin', 'middleware' => ['check_permit', 'revalida
 
 	/* Locations Management*/
 	Route::get('locations/listing', 'LocationController@listing')->name('locations.listing');
+	Route::get('locations/duplicate-location', 'LocationController@duplicatelisting')->name('locations.duplicate-location');
+	Route::get('location/duplicate-location-listing','LocationController@duplicateLocationlisting')->name('locations.duplicate-location-listing');
+	Route::get('locations/merge-location','LocationController@mergeLocation')->name('locations.merge-location');
+	Route::post('locations/mergelocations', 'LocationController@mergeselectedlocations')->name('locations.mergelocations');
 	Route::resource('locations', 'LocationController');
+	
 
 	/* Locations Management*/
 	Route::get('profile-reports/listing', 'ProfileReportController@listing')->name('profile-reports.listing');

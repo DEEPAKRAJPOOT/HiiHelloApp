@@ -21,43 +21,10 @@
             </div>
 
             <div class="card-toolbar">
-                @if (in_array('delete', $permissions))
-                    <a href="{{ route('admin.locations.destroy', 0) }}" name="del_select" id="del_select" class="btn btn-sm btn-light-danger font-weight-bolder text-uppercase mr-2 delete_all_link">
-                        <i class="far fa-trash-alt"></i> Delete Selected
-                    </a>
-                @endif
-                @if (in_array('add', $permissions))
-                    <a href="{{ route('admin.locations.create') }}" class="btn btn-sm btn-primary font-weight-bolder text-uppercase">
-                        <i class="fas fa-plus"></i>
-                        Add {{ $custom_title }}
-                    </a>
-                @endif
-                <a href="{{ route('admin.locations.duplicate-location') }}"
-                class="btn btn-sm btn-primary font-weight-bolder text-uppercase ml-2">
-                    <i class="fas fa-clone"></i>
-                    Duplicate Locations
-                </a>
-                {{--<a href="{{ route('admin.locations.merge-location') }}"
+                <a href="{{ route('admin.locations.merge-location') }}"
                 class="btn btn-sm btn-primary font-weight-bolder text-uppercase ml-2">
                     <i class="fas fa-location-arrow"></i>
                     Merge Locations
-                </a>--}}
-
-                <a href="{{ route('admin.location.csv-download') }}"
-                class="btn btn-sm btn-primary font-weight-bolder text-uppercase ml-2">
-                    <i class="fas fa-arrow-down"></i>
-                    Download CSV
-                </a>
-
-                <a href="{{ route('admin.location.user-location-csv-download') }}"
-                class="btn btn-sm btn-primary font-weight-bolder text-uppercase ml-2">
-                    <i class="fas fa-arrow-down"></i>
-                    Download User location CSV
-                </a>
-                <a href="{{ route('admin.location.user-not-location-csv-download') }}"
-                class="btn btn-sm btn-primary font-weight-bolder text-uppercase ml-2">
-                    <i class="fas fa-arrow-down"></i>
-                    Download Not location Id Assign
                 </a>
             </div>
         </div>
@@ -81,7 +48,7 @@
             processing: true,
             serverSide: true,
             ajax: {
-                url: "{{ route('admin.locations.listing') }}",
+                url: "{{ route('admin.locations.duplicate-location-listing') }}",
                 data: {
                     columnsDef: ['checkbox','name', 'active', 'action'],
                 },
@@ -91,7 +58,7 @@
                 { data: 'id' },
                 { data: 'name' },
                 { data: 'state' },
-                { data: 'active' },
+                { data: 'countDuplicacy' },
                 { data: 'action', responsivePriority: -1 },
             ],
             columnDefs: [
@@ -100,7 +67,7 @@
                 { targets: 1, title: 'Id', orderable: true },
                 { targets: 2, title: 'Name', orderable: false },
                 { targets: 3, title: 'State Name', orderable: false },
-                { targets: 4, title: 'Active', orderable: false },
+                { targets: 4, title: 'Num Of Duplicacy', orderable: false },
                 // Action buttons
                 { targets: -1, title: 'Action',
                 orderable: false },

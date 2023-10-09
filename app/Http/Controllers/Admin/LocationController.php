@@ -6,12 +6,16 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Language;
 use App\Models\Location;
+use App\Models\LocationTranslation;
 use App\Models\User;
+use App\Models\Interest;
 use App\Http\Requests\Admin\LocationRequest;
+use App\Http\Requests\Admin\MergeLocationRequest;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Response;
 use DB;
 use Exception;
+use Illuminate\Support\Facades\Crypt;
 
 class LocationController extends Controller
 {
@@ -379,4 +383,120 @@ class LocationController extends Controller
         }
         return redirect(route('admin.locations.index'));
     }
+
+    public function mergeLocation(Request $request){
+        $data = $request->all();
+        $selectedLocationIds = '';
+        if(isset($data['location_ids']) && !empty($data['location_ids'])){
+            $selectedLocationIds = Crypt::decrypt($data['location_ids']);
+        }
+        $locations = Location::with('locationTransDefault')->whereIsActive('y')->get();
+        return view('admin.pages.locations.merge',compact('locations','selectedLocationIds'))->with(['custom_title' => 'Merge Location']);
+    }
+
+    public function mergeselectedlocations(MergeLocationRequest $request){
+
+        $locationData = $request->all();
+        try{
+
+        $fromLocation = $locationData['from_location'];
+        $toLocation = $locationData['location_id'];
+        $array_without_ToLocation = array_values(array_diff($fromLocation, array($toLocation)));
+        $locationMerged=false;
+        for($i=0;$i<count($array_without_ToLocation);$i++){
+            
+            $currentUserSettedLocation = User::where('location_id',$array_without_ToLocation[$i])->get();
+            $currentUserInterestLocation = Interest::where('location_id',$array_without_ToLocation[$i])->get();
+            if($currentUserSettedLocation->count() > 0){
+                User::where('location_id',$array_without_ToLocation[$i])->update([
+                    'location_id'=>$toLocation,
+                    'discover_location_id'=>$toLocation
+                ]);
+            }
+
+            if($currentUserInterestLocation->count() > 0){
+                Interest::where('location_id',$array_without_ToLocation[$i])->update([
+                    'location_id'=>$toLocation
+                ]);
+            }
+
+            $delLocationTrans = LocationTranslation::where('location_id',$array_without_ToLocation[$i])->delete();
+
+            $delLocation = Location::where('id',$array_without_ToLocation[$i])->delete();
+            if($i == count($array_without_ToLocation)-1){
+
+              $locationMerged=true;
+
+            }
+        }
+
+        if($locationMerged){
+            flash('Location merged successfully!')->success();
+        }else{
+            flash('Unable to merge location. Try again later')->error();
+        }
+
+        return redirect(route('admin.locations.duplicate-location'));
+
+    } catch (\Exception $e) {
+        // Add error log
+        flash($e->getMessage())->error();
+        return redirect(route('admin.locations.duplicate-location'));
+    } 
+   }
+
+   public function duplicatelisting(Request $request){
+    //   dd($request->all());
+      return view('admin.pages.locations.duplicatelisting')->with(['custom_title' => 'Duplicate Locations']);
+   }
+
+   public function duplicateLocationlisting(Request $request){
+    extract($this->DTFilters($request->all()));
+        $records = [];
+        DB::enableQueryLog();
+        if ($search != '') {
+            $sql = "SELECT a.*,locations.custom_id,locations.is_active,b.total,b.location_id as all_location_ids FROM location_translations a JOIN (SELECT name,state, COUNT(*) as total,GROUP_CONCAT(location_id) as location_id FROM location_translations JOIN locations ON locations.id = location_translations.location_id WHERE location_translations.locale = 'en' AND locations.is_active = 'y' AND name LIKE '%".$search."%' GROUP BY name,state HAVING count(*) > 1 ORDER BY name) as b ON a.name = b.name AND a.state = b.state AND a.locale = 'en' join locations ON a.location_id = locations.id  WHERE locations.is_active = 'y' GROUP BY a.name,a.state ORDER BY a.name";
+
+
+            $limitsql =  " LIMIT ".$limit." OFFSET ".$offset.";";
+            $locations = DB::select($sql.$limitsql);
+            $totallocations = DB::select($sql);
+
+        }else{
+            
+            $sql = "SELECT a.*,locations.custom_id,locations.is_active,b.total,b.location_id as all_location_ids FROM location_translations a JOIN (SELECT name,state, COUNT(*) as total,GROUP_CONCAT(location_id) as location_id FROM location_translations JOIN locations ON locations.id = location_translations.location_id WHERE location_translations.locale = 'en' AND locations.is_active = 'y' GROUP BY name,state HAVING count(*) > 1 ORDER BY name) as b ON a.name = b.name AND a.state = b.state AND a.locale = 'en' join locations ON a.location_id = locations.id  WHERE locations.is_active = 'y' GROUP BY a.name,a.state ORDER BY a.name";
+
+            $limitsql =  " LIMIT ".$limit." OFFSET ".$offset.";";
+            $locations = DB::select($sql.$limitsql);
+            $totallocations = DB::select($sql);
+        }
+        
+        // ->offset($offset)->limit($limit)
+        
+        $count = count($locations);
+        $records['recordsTotal'] = $count;
+        $records['recordsFiltered'] = count($totallocations);
+        $records['data'] = [];
+        // dd($records);
+        foreach ($locations as $location) {
+            //dd($location);
+            $params = [
+                'checked'       =>  ($location->is_active == 'y' ? 'checked' : ''),
+                'getaction'     =>  $location->is_active,
+                'class'         =>  '',
+                'id'            =>  $location->custom_id,
+            ];
+
+            $records['data'][] = [
+                'id'            =>  $location->id,
+                'name'          =>  $location->name ?? "",
+                'state'         =>  $location->state ?? "",
+                'countDuplicacy'=> $location->total,
+                'action'        =>  view('admin.layouts.includes.mergelocation')->with(['custom_title' => 'Location', 'id' => $location->custom_id,'location_ids' => Crypt::encrypt($location->all_location_ids)], $location)->render(),
+                'checkbox'      =>  view('admin.layouts.includes.checkbox')->with('id', $location->custom_id)->render(),
+            ];
+        }
+        return $records;
+
+   }
 }
