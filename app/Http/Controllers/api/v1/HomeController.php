@@ -147,6 +147,9 @@ class HomeController extends Controller
                         $data = $this->callUsersOfCity($users, $user, $exclusiveData);
                         if($data['users']->count() < 1){
                             $data = $this->callUsersOfState($users, $user, $exclusiveData);
+                            if($data['users']->count() < 1){
+                                $data = $this->callUsersOfCountry($users, $user, $exclusiveData);
+                            }
                         }
                     }   
                         // dd(DB::getQueryLog());
@@ -283,6 +286,89 @@ class HomeController extends Controller
         return  $data;  
     }
 
+    public function callUsersOfCountry($prevusersCollection, $user, $exclusiveData){
+
+        $languages = $exclusiveData['languages'];
+        $disLikes = $exclusiveData['disLikes'];
+        $likes    = $exclusiveData['likes'];
+        $reported = $exclusiveData['reported'];
+        $auth_id  = $exclusiveData['auth_id'];
+        $auth_interest = $exclusiveData['auth_interest'];
+
+        $users = $this->withoutRadius();
+        $users = $users->with(['userDetails', 'interests.interest.interestTranslation', 'userTranslation', 'location.locationTranslation'])
+                        ->withCount('interests')
+                        ->where('users.id', '!=', $auth_id)
+                        ->whereNotNull('profile_photo')
+                        ->whereNotNull('location_id')
+                        ->whereIsActive('y')
+                        ->where('id','!=',config('utility.system.system_user_id'))
+                        ->whereUserStatus('active');
+                    if ($auth_interest != 'Both') {
+                        $users->where('gender', $auth_interest);
+                    }     // Interested in Gender
+
+
+                    if (count($disLikes) > 0) {
+                        $users->whereNotIn('users.id', $disLikes);    // Restrict DisLiked Profile
+                    }
+
+                    if (count($likes) > 0) {
+                        $users->whereNotIn('users.id', $likes);   // Restrict Liked Profile
+                    }
+
+                    if (count($reported) > 0) {
+                        $users->whereNotIn('users.id', $reported);    // Restrict Reported Profile
+                    }
+
+                    $users->whereDoesntHave('blockedTos',function($query)use($auth_id){
+                        $query->where('block_by',$auth_id);
+                    });
+
+                    $users->whereDoesntHave('hiddenTos',function($query)use($auth_id){
+                        $query->where('block_by',$auth_id);
+                    });
+
+                    $users->whereIn('location_id',function ($query) use ($user) {
+                        $query->select(['lt.location_id'])
+                            ->from('locations as loc')
+                            ->join('location_translations as lt','loc.id','=','lt.location_id')
+                            ->where('lt.name', function($query1) use ($user){
+                                $query1->select('name')
+                                      ->from('location_translations')
+                                      ->join('locations','location_translations.location_id', '=' ,'locations.id')
+                                      ->where('locations.is_active','=','y')
+                                      ->where('location_translations.locale','=','en');
+                            });
+                    });
+                                                         
+
+                    // Discovery
+                    if (!empty($user->discover_start_age) && !empty($user->discover_end_age)) {
+                        
+                        $users->whereBetween(\DB::raw('TIMESTAMPDIFF(YEAR,users.birth_date,CURDATE())'), array($user->discover_start_age, $user->discover_end_age));
+                    }
+
+
+                    $users->where(function ($query)  use ($languages) {
+                        if (count($languages) > 0) {
+                            $query->orWhereIn('language_id', $languages);   // Languages
+                        }
+                    });
+
+                    $users = $users->orderBy('last_online','DESC')
+                        ->orderBy('email_verified_at', "DESC")
+                        ->orderBy('contact_verified_at', "DESC")
+                        ->orderBy('photo_verified_at', "DESC")
+                        ->orderBy('interests_count', "DESC")
+                        ->orderBy('profile_percentage', "DESC");
+                    $data['count'] = $users->count();
+                    $data['users'] = $users->limit($request->limit ?? config('utility.pagination.limit'))
+                        ->offset($request->offset ?? config('utility.pagination.offset'))
+                        ->get();
+        return  $data; 
+        
+    }
     public function callUsersOfState($prevusersCollection, $user, $exclusiveData){
         
         $languages = $exclusiveData['languages'];
