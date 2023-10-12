@@ -135,7 +135,7 @@ class HomeController extends Controller
                     $data['users'] = $users->limit($request->limit ?? config('utility.pagination.limit'))
                         ->offset($request->offset ?? config('utility.pagination.offset'))
                         ->get();
-
+                    
                     if($data['users']->count() < 1){
                         
                         $exclusiveData['languages'] = $languages;
@@ -144,11 +144,11 @@ class HomeController extends Controller
                         $exclusiveData['reported'] = $reported;
                         $exclusiveData['auth_id'] = $auth_id;
                         $exclusiveData['auth_interest'] = $auth_interest;
-                        $data = $this->callUsersOfCity($users, $user, $exclusiveData);
+                        $data = $this->callUsersOfCity($users, $user, $exclusiveData,$request->limit,$request->offset);
                         if($data['users']->count() < 1){
-                            $data = $this->callUsersOfState($users, $user, $exclusiveData);
+                            $data = $this->callUsersOfState($users, $user, $exclusiveData,$request->limit,$request->offset);
                             if($data['users']->count() < 1){
-                                $data = $this->callUsersOfCountry($users, $user, $exclusiveData);
+                                $data = $this->callUsersOfCountry($users, $user, $exclusiveData,$request->limit,$request->offset);
                             }
                         }
                     }   
@@ -203,7 +203,7 @@ class HomeController extends Controller
         }
         return $this->returnResponse();
     }
-    public function callUsersOfCity($prevusersCollection, $user, $exclusiveData){
+    public function callUsersOfCity($prevusersCollection, $user, $exclusiveData, $limit, $offset){
         $languages = $exclusiveData['languages'];
         $disLikes = $exclusiveData['disLikes'];
         $likes    = $exclusiveData['likes'];
@@ -280,13 +280,13 @@ class HomeController extends Controller
                         ->orderBy('interests_count', "DESC")
                         ->orderBy('profile_percentage', "DESC");
                     $data['count'] = $users->count();
-                    $data['users'] = $users->limit($request->limit ?? config('utility.pagination.limit'))
-                        ->offset($request->offset ?? config('utility.pagination.offset'))
+                    $data['users'] = $users->limit($limit ?? config('utility.pagination.limit'))
+                        ->offset($offset ?? config('utility.pagination.offset'))
                         ->get();
         return  $data;  
     }
 
-    public function callUsersOfCountry($prevusersCollection, $user, $exclusiveData){
+    public function callUsersOfCountry($prevusersCollection, $user, $exclusiveData, $limit, $offset){
 
         $languages = $exclusiveData['languages'];
         $disLikes = $exclusiveData['disLikes'];
@@ -333,13 +333,8 @@ class HomeController extends Controller
                         $query->select(['lt.location_id'])
                             ->from('locations as loc')
                             ->join('location_translations as lt','loc.id','=','lt.location_id')
-                            ->where('lt.name', function($query1) use ($user){
-                                $query1->select('name')
-                                      ->from('location_translations')
-                                      ->join('locations','location_translations.location_id', '=' ,'locations.id')
-                                      ->where('locations.is_active','=','y')
-                                      ->where('location_translations.locale','=','en');
-                            });
+                            ->where('loc.is_active','=','y')
+                            ->where('lt.locale','=','en');
                     });
                                                          
 
@@ -363,13 +358,13 @@ class HomeController extends Controller
                         ->orderBy('interests_count', "DESC")
                         ->orderBy('profile_percentage', "DESC");
                     $data['count'] = $users->count();
-                    $data['users'] = $users->limit($request->limit ?? config('utility.pagination.limit'))
-                        ->offset($request->offset ?? config('utility.pagination.offset'))
+                    $data['users'] = $users->limit($limit ?? config('utility.pagination.limit'))
+                        ->offset($offset ?? config('utility.pagination.offset'))
                         ->get();
         return  $data; 
         
     }
-    public function callUsersOfState($prevusersCollection, $user, $exclusiveData){
+    public function callUsersOfState($prevusersCollection, $user, $exclusiveData, $limit, $offset){
         
         $languages = $exclusiveData['languages'];
         $disLikes = $exclusiveData['disLikes'];
@@ -447,8 +442,8 @@ class HomeController extends Controller
                         ->orderBy('interests_count', "DESC")
                         ->orderBy('profile_percentage', "DESC");
                     $data['count'] = $users->count();
-                    $data['users'] = $users->limit($request->limit ?? config('utility.pagination.limit'))
-                        ->offset($request->offset ?? config('utility.pagination.offset'))
+                    $data['users'] = $users->limit($limit ?? config('utility.pagination.limit'))
+                        ->offset($offset ?? config('utility.pagination.offset'))
                         ->get();
         return  $data;   
 
