@@ -39,7 +39,7 @@ class LikeController extends Controller
                 }
 
                 if (!$block) {
-                    $like = Like::firstOrCreate([
+                    $like = Like::updateOrCreate([
                         'user_id'       =>  $user_id,
                         'liker_id'      =>  $auth_id,
                     ], [

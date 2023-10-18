@@ -51,11 +51,17 @@ class HomeController extends Controller
 
                     $disLikes   =   DisLike::whereDisLikerId($auth_id)->whereBetween('updated_at', [$last7thDate, $currentDate])
                         ->whereNotNull('user_id')->distinct()->pluck('user_id')->toArray();
-                    $likes   =   Like::whereLikerId($auth_id)
-                        ->whereBetween('updated_at', [$last7thDate, $currentDate])
+                    $likes   =   Like::select('user_id')->whereLikerId($auth_id)
+                        ->where('is_superlike','n')->whereBetween('updated_at', [$last7thDate, $currentDate])
                         ->whereNotNull('user_id')->distinct()->pluck('user_id')->toArray();
 
-                    $reported = ProfileReport::where('user_id', $auth_id)
+                    $superlikes   =   Like::select(DB::raw('(CASE WHEN `liker_id` = '.$auth_id.' THEN `user_id` ELSE `liker_id` END) AS user_id'))->where(function($query)use($auth_id){
+                            $query->where('liker_id',$auth_id);
+                            $query->orWhere('user_id',$auth_id);
+                        })
+                        ->where('is_superlike','y')->distinct()->pluck('user_id')->toArray();
+
+                    $reported = ProfileReport::select('reported_user_id')->where('user_id', $auth_id)
                         ->whereBetween('updated_at', [$last30thDate, $currentDate])
                         ->whereNotNull('user_id')->distinct()->pluck('reported_user_id')->toArray();
                         // dd($radius,$latitude,$longitude);
@@ -105,6 +111,10 @@ class HomeController extends Controller
                             $users->whereNotIn('users.id', $reported);    // Restrict Reported Profile
                         }
 
+                        if (count($superlikes) > 0) {
+                            $users->whereNotIn('users.id', $superlikes);   // Restrict Super Liked Profiles - Both Ways
+                        }
+
                         $users->whereDoesntHave('blockedTos',function($query)use($auth_id){
                             $query->where('block_by',$auth_id);
                         });
@@ -150,6 +160,7 @@ class HomeController extends Controller
                             $exclusiveData['languages'] = $languages;
                             $exclusiveData['disLikes'] = $disLikes;
                             $exclusiveData['likes'] = $likes;
+                            $exclusiveData['superlikes'] = $superlikes;
                             $exclusiveData['reported'] = $reported;
                             $exclusiveData['auth_id'] = $auth_id;
                             $exclusiveData['auth_interest'] = $auth_interest;
@@ -237,6 +248,7 @@ class HomeController extends Controller
         $likes    = $exclusiveData['likes'];
         $reported = $exclusiveData['reported'];
         $auth_id  = $exclusiveData['auth_id'];
+        $superlikes = $exclusiveData['superlikes'];
         $auth_interest = $exclusiveData['auth_interest'];
         if (!empty($radius) && !empty($latitude) && !empty($longitude)) {
                         
@@ -266,6 +278,10 @@ class HomeController extends Controller
 
             if (count($likes) > 0) {
                 $users->whereNotIn('users.id', $likes);   // Restrict Liked Profile
+            }
+
+            if (count($superlikes) > 0) {
+                $users->whereNotIn('users.id', $superlikes);   // Restrict Super Liked Profiles - Both Ways
             }
 
             if (count($reported) > 0) {
@@ -313,6 +329,7 @@ class HomeController extends Controller
         $likes    = $exclusiveData['likes'];
         $reported = $exclusiveData['reported'];
         $auth_id  = $exclusiveData['auth_id'];
+        $superlikes = $exclusiveData['superlikes'];
         $auth_interest = $exclusiveData['auth_interest'];
         $with_interest = $exclusiveData['with_interest'];
 
@@ -349,6 +366,10 @@ class HomeController extends Controller
 
         if (count($likes) > 0) {
             $users->whereNotIn('users.id', $likes);   // Restrict Liked Profile
+        }
+
+        if (count($superlikes) > 0) {
+            $users->whereNotIn('users.id', $superlikes);   // Restrict Super Liked Profiles - Both Ways
         }
 
         if (count($reported) > 0) {
@@ -418,6 +439,7 @@ class HomeController extends Controller
         $likes    = $exclusiveData['likes'];
         $reported = $exclusiveData['reported'];
         $auth_id  = $exclusiveData['auth_id'];
+        $superlikes = $exclusiveData['superlikes'];
         $auth_interest = $exclusiveData['auth_interest'];
         $with_interest = $exclusiveData['with_interest'];
 
@@ -454,6 +476,10 @@ class HomeController extends Controller
 
         if (count($likes) > 0) {
             $users->whereNotIn('users.id', $likes);   // Restrict Liked Profile
+        }
+
+        if (count($superlikes) > 0) {
+            $users->whereNotIn('users.id', $superlikes);   // Restrict Super Liked Profiles - Both Ways
         }
 
         if (count($reported) > 0) {
@@ -512,6 +538,7 @@ class HomeController extends Controller
         $auth_id  = $exclusiveData['auth_id'];
         $auth_interest = $exclusiveData['auth_interest'];
         $with_interest = $exclusiveData['with_interest'];
+        $superlikes = $exclusiveData['superlikes'];
 
         $users = $this->withoutRadius();
         $users = $users->with(['userDetails', 'interests.interest.interestTranslation', 'userTranslation', 'location.locationTranslation']);
@@ -546,6 +573,10 @@ class HomeController extends Controller
 
         if (count($likes) > 0) {
             $users->whereNotIn('users.id', $likes);   // Restrict Liked Profile
+        }
+
+        if (count($superlikes) > 0) {
+            $users->whereNotIn('users.id', $superlikes);   // Restrict Super Liked Profiles - Both Ways
         }
 
         if (count($reported) > 0) {
