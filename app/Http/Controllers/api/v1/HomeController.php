@@ -151,7 +151,7 @@ class HomeController extends Controller
                         $data['users'] = $users->limit($request->limit ?? config('utility.pagination.limit'))
                         ->offset($request->offset ?? config('utility.pagination.offset'))
                         ->get();
-
+                        
                         if($data['users']->count() < 1){
 
                             $exclusiveData['latitude'] = $latitude;
@@ -169,20 +169,22 @@ class HomeController extends Controller
                             if($data['users']->count() < 1){
                                 $data = $this->callUsersOfState($users, $user, $exclusiveData,$request->limit,$request->offset);
                                 if($data['users']->count() < 1){
-                                    $data = $this->callUsersOfCountry($users, $user, $exclusiveData,$request->limit,$request->offset);
+                                    $exclusiveData['with_interest'] = false;
+                                    $data = $this->callUserWithDistanceAndLocations($users, $user, $exclusiveData,$request->limit,$request->offset);
+                                   if($data['users']->count() < 1){
+                                        $data = $this->callUsersOfCity($users, $user, $exclusiveData,$request->limit,$request->offset);
+                                        if($data['users']->count() < 1){
+                                            $data = $this->callUsersOfState($users, $user, $exclusiveData,$request->limit,$request->offset);
+                                        }
+                                   }
                                 }
                             }
                             if($data['users']->count() < 1){
-                                $exclusiveData['with_interest'] = false;
-                                $data = $this->callUserWithDistanceAndLocations($users, $user, $exclusiveData,$request->limit,$request->offset);
+                                $exclusiveData['with_interest'] = true;
+                                $data = $this->callUsersOfCountry($users, $user, $exclusiveData,$request->limit,$request->offset);    
                                 if($data['users']->count() < 1){
-                                    $data = $this->callUsersOfCity($users, $user, $exclusiveData,$request->limit,$request->offset);
-                                    if($data['users']->count() < 1){
-                                        $data = $this->callUsersOfState($users, $user, $exclusiveData,$request->limit,$request->offset);
-                                        if($data['users']->count() < 1){
-                                            $data = $this->callUsersOfCountry($users, $user, $exclusiveData,$request->limit,$request->offset);
-                                        }
-                                    }
+                                    $exclusiveData['with_interest'] = false;
+                                    $data = $this->callUsersOfCountry($users, $user, $exclusiveData,$request->limit,$request->offset);
                                 }
                             }
                         }   
