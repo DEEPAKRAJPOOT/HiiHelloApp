@@ -41,7 +41,7 @@ Route::group(['namespace' => 'v1', 'prefix' => 'v1'], function () {
     Route::post('otpless/login', [AuthenticationController::class, 'otpLessLogin'])->name('api.otp-less-login');
     Route::any('generate-checksum', [AuthenticationController::class, 'generateChecksum'])->name('api.generate-checksum');
     Route::post('user/set-profile', [AuthenticationController::class, 'setProfile'])->name('api.user.set-profile');
-
+    Route::post('user/safe-image-detection',[AuthenticationController::class,'detectValidProfileImage'])->name('api.user.safe-image-detection');
     // Listing
     Route::post('app-status', [GeneralController::class, 'appStatus'])->name('api.app-status');
     Route::post('get/countries', [GeneralController::class, 'getCountries'])->name('api.get-countries');

@@ -11,7 +11,7 @@ use Illuminate\Http\{Request, Response};
 use Illuminate\Support\Facades\{Storage, Auth, Hash};
 use Illuminate\Database\Eloquent\{ModelNotFoundException};
 use App\Http\Resources\v1\{UserProfile, LoginResource, SignUpResource};
-use App\Http\Requests\Api\Authentication\{LoginRequest, OTPLessRequest, RegisterRequest, SocialLoginRequest};
+use App\Http\Requests\Api\Authentication\{LoginRequest, OTPLessRequest, RegisterRequest, SocialLoginRequest, DetectionSafeProfileImageRequest};
 use App\Models\{User, Country, UserDetail, Location, Interest, UserInterest, Language, ProfileDetail, DeviceToken, Subscription, SubscriptionPlan, LocationTranslation, ApiLogs, ImageModerationLog};
 
 class AuthenticationController extends Controller
@@ -342,6 +342,50 @@ class AuthenticationController extends Controller
             }
         }
 
+        return $this->returnResponse();
+    }
+
+    public function detectValidProfileImage(Request $request){
+
+        $profileDetectionRequest = new DetectionSafeProfileImageRequest();
+        if ($this->apiValidator($request->all(), $profileDetectionRequest->rules())) {
+                   $user = $this->getAuthUser();
+                   $safe_image = "true";
+                   $awsImgResultArr = [];
+
+                    ///CHECK FOR AWS REKOGNIZTION START
+                    $image_detection = new ImageDetectionClass($request->file('profile_photo'), $user);
+                    $awsImgResultArr = $image_detection->checkConstraints();
+
+                    $safe_image = $awsImgResultArr["is_safe_image"];
+                    $user->profile_photo = null;
+                    $user->is_media_checked = 'n';
+
+                    dd($awsImgResultArr);
+                    // if ($awsImgResultArr["is_safe_image"]) {
+                    //     $user->profile_photo = $request->file('profile_photo')->store('users/profile_photo');
+                    //     $user->save();
+                    // }
+
+                    // $message = $awsImgResultArr["log_message"];
+                    // $total_face_detected = $awsImgResultArr["total_face_detected"];
+                    // $response_data = $awsImgResultArr["image_moderation_response"];
+                    // $request_data = $awsImgResultArr["image_moderation_request"];
+                    // $endpoint_url = url()->current();
+
+                    // ImageModerationLog::Create([
+                    //     'user_id'             => $user->id,
+                    //     'is_approved'         => $awsImgResultArr["is_safe_image"] ? 1  : 0,
+                    //     'request'             => $request_data,
+                    //     'response'            => $response_data,
+                    //     'total_face_detected' => $total_face_detected,
+                    //     'message'             => $message,
+                    //     'image_type'          => "profile_photo",
+                    //     'endpoint_url'        => $endpoint_url,
+                    // ]);
+                    //CHECK FOR AWS REKOGNIZTION END
+                
+        }
         return $this->returnResponse();
     }
 
