@@ -4,6 +4,7 @@ namespace App\Http\Resources\v1;
 
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 
 class UserDetailResource extends JsonResource
 {
@@ -14,7 +15,10 @@ class UserDetailResource extends JsonResource
      * @return array|\Illuminate\Contracts\Support\Arrayable|\JsonSerializable
      */
     public function toArray($request)
-    {
+    { 
+       
+        $moderatedImage = (!empty(request()->user()->valid_image))?generateURL(request()->user()->valid_image):'';
+        $moderation_status = request()->user()->moderation_status;
         $auth_id = !empty(request()->user()->id) ? request()->user()->id : 0;
         return [
             'id'                =>  $this->custom_id ?? "",
@@ -52,6 +56,8 @@ class UserDetailResource extends JsonResource
                     'voice'             =>  generateURL($this->voice),
                     'voice_answer'      =>  $this->voice_answer ?? "",
                 ],
+                'moderation_status'     => $moderation_status,
+                'moderated_profile_image' => $moderatedImage,
             ],
             'flags'            =>  [
                 'verified_staus'        =>  ($this->emailVerifyStatus()=='verified' && $this->contactVerifyStatus()=='verified' && $this->verify_photo_status=='verified') ? 'verified' : 'under_review',
