@@ -235,5 +235,11 @@ return [
             'subscription_renew'    =>  "Namaste :entity thank you for renewing your subscription with Hi Hello account. Continue to enjoy Hi Hello services designed for you.",
             'birthday'    =>  "Hi :entity We wish you Happy Bday from the entire Hi Hello community. Have a fun filled day and awesome year ahead.",
         ],
-    ],   
+    ], 
+    'moderation' => [
+        'success' => 'છબી સફળતાપૂર્વક માન્ય થઈ.',
+        'no_face_detect'=> 'ચહેરો મળ્યો નથી!',
+        'multi_image' => 'બહુવિધ ચહેરો મળ્યો, કૃપા કરીને એકલ અને પોતાનો ફોટો અપલોડ કરો.',
+        'unsafe_image' => 'અસુરક્ષિત છબી મળી!'
+    ],  
 ];

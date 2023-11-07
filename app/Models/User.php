@@ -35,7 +35,7 @@ class User extends Authenticatable implements MustVerifyEmail, TranslatableContr
 
     protected $fillable = [
         'custom_id', 'account_id', 'email', 'country_code', 'contact_no', 'birth_date', 'gender',
-        'interest', 'country_id', 'location_id', 'new_location_id', 'profile_percentage', 'language_id', 'latitude', 'longitude', 'profile_photo', 'voice', 'voice_answer', 'password',
+        'interest', 'country_id', 'location_id', 'new_location_id', 'profile_percentage', 'language_id', 'latitude', 'longitude', 'profile_photo', 'valid_image', 'moderation_status', 'voice', 'voice_answer', 'password',
         'swipe_count', 'like_count', 'match_count', 'chat_count',
         'is_social_user', 'is_trans_full_name', 'is_trans_about_me', 'is_trans_fav_movie', 
         'is_media_checked', 'is_subscribed', 'subscription_end_date',

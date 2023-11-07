@@ -254,5 +254,11 @@ return [
         'used' => "Coupon already used",
         'invalid' => "Invalid Coupon",
         'already_subscribed' => "Already Subscribed!"
-    ]
+    ],
+    'moderation' => [
+        'success' => 'Image validated successfully.',
+        'no_face_detect'=> 'Face is not detected !',
+        'multi_image' => 'Multiple Face detected please upload single and own photo.',
+        'unsafe_image' => 'Unsafe image detected !'
+    ],
 ];
