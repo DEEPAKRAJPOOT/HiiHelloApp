@@ -40,6 +40,8 @@ class UserController extends Controller
                     'swipe_count',
                     'gender',
                     'verify_status',
+                    'valid_image',
+                    'moderation_status',
                     'subscription_end_date',
                     'education_id',
                     'university_id',
