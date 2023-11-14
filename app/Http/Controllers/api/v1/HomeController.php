@@ -370,7 +370,7 @@ class HomeController extends Controller
                 + sin(radians(" . $latitude . ")) 
                 * sin(radians(users.latitude))) AS distance")
             );
-              
+
         } else {   
             $users = $this->withoutRadius();
         }
@@ -474,6 +474,9 @@ class HomeController extends Controller
 
     public function callUsersOfCountry($prevusersCollection, $user, $exclusiveData, $limit, $offset){
 
+        $latitude = $exclusiveData['latitude'];
+        $longitude = $exclusiveData['longitude'];
+        $radius = $exclusiveData['radius'];
         $languages = $exclusiveData['languages'];
         $disLikes = $exclusiveData['disLikes'];
         $likes    = $exclusiveData['likes'];
@@ -482,8 +485,42 @@ class HomeController extends Controller
         $superlikes = $exclusiveData['superlikes'];
         $auth_interest = $exclusiveData['auth_interest'];
         $with_interest = $exclusiveData['with_interest'];
+        if (!empty($radius) && !empty($latitude) && !empty($longitude)) {               
+            $users =  User::select(
+                'users.id',
+                'users.custom_id',
+                'birth_date',
+                'profile_photo',
+                'gender',
+                'interest',
+                'location_id',
+                'language_id',
+                'verify_status',
+                'verify_photo_status',
+                'verify_email_send',
+                'last_online',
+                'created_at',
+    
+                'trusted_score',
+                'email_verified_at',
+    
+                'contact_verified_at',
+    
+                'profile_percentage',
+    
+                'is_active',
+                // DB::raw('GROUP_CONCAT(user_interests.interest_id) AS groupC'),
+    
+                DB::raw("3959 * 1.609344 * acos(cos(radians(" . $latitude . ")) 
+                * cos(radians(users.latitude)) 
+                * cos(radians(users.longitude) - radians(" . $longitude . ")) 
+                + sin(radians(" . $latitude . ")) 
+                * sin(radians(users.latitude))) AS distance")
+            );
 
-        $users = $this->withoutRadius();
+        } else {   
+            $users = $this->withoutRadius();
+        }
         $users = $users->with(['userDetails', 'interests.interest.interestTranslation', 'userTranslation', 'location.locationTranslation']);
         if($with_interest){
 
