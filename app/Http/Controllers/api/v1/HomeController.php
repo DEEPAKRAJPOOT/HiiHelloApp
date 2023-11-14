@@ -151,7 +151,6 @@ class HomeController extends Controller
                         $data['users'] = $users->limit($request->limit ?? config('utility.pagination.limit'))
                         ->offset($request->offset ?? config('utility.pagination.offset'))
                         ->get();
-                        
                         if($data['users']->count() < 1){
 
                             $exclusiveData['latitude'] = $latitude;
@@ -171,6 +170,7 @@ class HomeController extends Controller
                                 if($data['users']->count() < 1){
                                     $exclusiveData['with_interest'] = false;
                                     $data = $this->callUserWithDistanceAndLocations($users, $user, $exclusiveData,$request->limit,$request->offset);
+                                    
                                    if($data['users']->count() < 1){
                                         $data = $this->callUsersOfCity($users, $user, $exclusiveData,$request->limit,$request->offset);
                                         if($data['users']->count() < 1){
@@ -596,9 +596,11 @@ class HomeController extends Controller
         $users = $users->orderBy('last_online','DESC')
             ->orderBy('email_verified_at', "DESC")
             ->orderBy('contact_verified_at', "DESC")
-            ->orderBy('photo_verified_at', "DESC")
-            ->orderBy('interests_count', "DESC")
-            ->orderBy('profile_percentage', "DESC");
+            ->orderBy('photo_verified_at', "DESC");
+            if($with_interest){
+                $users = $users->orderBy('interests_count', "DESC");
+            }
+            $users = $users->orderBy('profile_percentage', "DESC");
         $data['count'] = $users->count();
         $data['users'] = $users->limit($limit ?? config('utility.pagination.limit'))
             ->offset($offset ?? config('utility.pagination.offset'))
@@ -736,9 +738,11 @@ class HomeController extends Controller
         $users = $users->orderBy('last_online','DESC')
             ->orderBy('email_verified_at', "DESC")
             ->orderBy('contact_verified_at', "DESC")
-            ->orderBy('photo_verified_at', "DESC")
-            ->orderBy('interests_count', "DESC")
-            ->orderBy('profile_percentage', "DESC");
+            ->orderBy('photo_verified_at', "DESC");
+            if($with_interest){
+                $users = $users->orderBy('interests_count', "DESC");
+            }
+            $users = $users->orderBy('profile_percentage', "DESC");
         $data['count'] = $users->count();
         $data['users'] = $users->limit($limit ?? config('utility.pagination.limit'))
             ->offset($offset ?? config('utility.pagination.offset'))
