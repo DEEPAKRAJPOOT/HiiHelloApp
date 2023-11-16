@@ -65,130 +65,22 @@ class HomeController extends Controller
                         ->whereBetween('updated_at', [$last30thDate, $currentDate])
                         ->whereNotNull('user_id')->distinct()->pluck('reported_user_id')->toArray();
                         // dd($radius,$latitude,$longitude);
-                    if (!empty($radius) && !empty($latitude) && !empty($longitude)) {
-                        
-                        $users = $this->withRadius($latitude, $longitude, $radius, $user);
-                        
-                    } else {
-                        
-                        $users = $this->withoutRadius();
+                    $exclusiveData['latitude'] = $latitude;
+                    $exclusiveData['longitude'] = $longitude;
+                    $exclusiveData['radius'] = $radius;
+                    $exclusiveData['languages'] = $languages;
+                    $exclusiveData['disLikes'] = $disLikes;
+                    $exclusiveData['likes'] = $likes;
+                    $exclusiveData['superlikes'] = $superlikes;
+                    $exclusiveData['reported'] = $reported;
+                    $exclusiveData['auth_id'] = $auth_id;
+                    $exclusiveData['auth_interest'] = $auth_interest;
+                    $data = $this->fetchHomeCardData($user, $exclusiveData,$request->limit,$request->offset);
+                         
+                    if($data['users']->isEmpty()){
+                        $data = $this->callUsersOfCountry($users, $user, $exclusiveData,$request->limit,$request->offset); 
                     }
 
-                    
-                    
-                    $users = $users->with(['userDetails', 'interests.interest.interestTranslation', 'userTranslation', 'location.locationTranslation']);
-
-                    $users = $users->withCount(['interests' => function($q) use($auth_id) {
-                            $q->whereIn('interest_id', function($query1) use ($auth_id){
-                                $query1->select('interest_id')
-                                      ->from('user_interests')
-                                      ->where('user_id','=',$auth_id);
-                            });
-                        }]);
-                        
-                    $users = $users->where('users.id', '!=', $auth_id)
-                                ->whereNotNull('profile_photo')
-                                ->whereNotNull('location_id')
-                                ->whereIsActive('y')
-                                ->where('id','!=',config('utility.system.system_user_id'))
-                                ->whereUserStatus('active');
-
-                        $users = $users->having('interests_count','>',1);
-                        if ($auth_interest != 'Both') {
-                            $users->where('gender', $auth_interest);
-                        }     // Interested in Gender
-                        
-                    
-                        if (count($disLikes) > 0) {
-                            $users->whereNotIn('users.id', $disLikes);    // Restrict DisLiked Profile
-                        }
-
-                        if (count($likes) > 0) {
-                            $users->whereNotIn('users.id', $likes);   // Restrict Liked Profile
-                        }
-
-                        if (count($reported) > 0) {
-                            $users->whereNotIn('users.id', $reported);    // Restrict Reported Profile
-                        }
-
-                        if (count($superlikes) > 0) {
-                            $users->whereNotIn('users.id', $superlikes);   // Restrict Super Liked Profiles - Both Ways
-                        }
-
-                        $users->whereDoesntHave('blockedTos',function($query)use($auth_id){
-                            $query->where('block_by',$auth_id);
-                        });
-
-                        $users->whereDoesntHave('hiddenTos',function($query)use($auth_id){
-                            $query->where('block_by',$auth_id);
-                        });
-
-                    // if (count($blocked) > 0) {
-                    //     $users->whereNotIn('id', $blocked);     // Restrict Blocked Profile
-                    // }                                           
-
-                    // Discovery
-                        if (!empty($user->discover_start_age) && !empty($user->discover_end_age)) {
-                            // $users->whereBetween('birth_date', array($user->discover_start_age, $user->discover_end_age)); // Age
-                            $users->whereBetween(\DB::raw('TIMESTAMPDIFF(YEAR,users.birth_date,CURDATE())'), array($user->discover_start_age, $user->discover_end_age));
-                        }
-
-
-                        $users->where(function ($query)  use ($languages) {
-                            if (count($languages) > 0) {
-                                $query->orWhereIn('language_id', $languages);   // Languages
-                            }
-                        });
-
-                        $users = $users->orderBy('last_online','DESC')
-                            ->orderBy('email_verified_at', "DESC")
-                            ->orderBy('contact_verified_at', "DESC")
-                            ->orderBy('photo_verified_at', "DESC")
-                            ->orderBy('profile_percentage', "DESC");
-
-                        $users = $users->orderBy('interests_count', "DESC");    
-                        $data['count'] = $users->count();
-                        $data['users'] = $users->limit($request->limit ?? config('utility.pagination.limit'))
-                        ->offset($request->offset ?? config('utility.pagination.offset'))
-                        ->get();
-                        if($data['users']->count() < 1){
-
-                            $exclusiveData['latitude'] = $latitude;
-                            $exclusiveData['longitude'] = $longitude;
-                            $exclusiveData['radius'] = $radius;
-                            $exclusiveData['languages'] = $languages;
-                            $exclusiveData['disLikes'] = $disLikes;
-                            $exclusiveData['likes'] = $likes;
-                            $exclusiveData['superlikes'] = $superlikes;
-                            $exclusiveData['reported'] = $reported;
-                            $exclusiveData['auth_id'] = $auth_id;
-                            $exclusiveData['auth_interest'] = $auth_interest;
-                            $exclusiveData['with_interest'] = true;
-                            $data = $this->callUsersOfCity($users, $user, $exclusiveData,$request->limit,$request->offset);
-                            if($data['users']->count() < 1){
-                                $data = $this->callUsersOfState($users, $user, $exclusiveData,$request->limit,$request->offset);
-                                if($data['users']->count() < 1){
-                                    $exclusiveData['with_interest'] = false;
-                                    $data = $this->callUserWithDistanceAndLocations($users, $user, $exclusiveData,$request->limit,$request->offset);
-                                    
-                                   if($data['users']->count() < 1){
-                                        $data = $this->callUsersOfCity($users, $user, $exclusiveData,$request->limit,$request->offset);
-                                        if($data['users']->count() < 1){
-                                            $data = $this->callUsersOfState($users, $user, $exclusiveData,$request->limit,$request->offset);
-                                        }
-                                   }
-                                }
-                            }
-                            if($data['users']->count() < 1){
-                                $exclusiveData['with_interest'] = true;
-                                $data = $this->callUsersOfCountry($users, $user, $exclusiveData,$request->limit,$request->offset);    
-                                if($data['users']->count() < 1){
-                                    $exclusiveData['with_interest'] = false;
-                                    $data = $this->callUsersOfCountry($users, $user, $exclusiveData,$request->limit,$request->offset);
-                                }
-                            }
-                        }   
-                        
                     $is_profile_photo = false;
                     if ($user->profile_photo != '') {
                         $is_profile_photo = true;
@@ -240,8 +132,7 @@ class HomeController extends Controller
         return $this->returnResponse();
     }
 
-    public function callUserWithDistanceAndLocations($prevusersCollection, $user, $exclusiveData, $limit, $offset){
-
+    public function fetchHomeCardData($user, $exclusiveData, $limit, $offset){
         $latitude = $exclusiveData['latitude'];
         $longitude = $exclusiveData['longitude'];
         $radius = $exclusiveData['radius'];
@@ -262,144 +153,28 @@ class HomeController extends Controller
         }
 
         $users = $users->with(['userDetails', 'interests.interest.interestTranslation', 'userTranslation', 'location.locationTranslation']);
-                        
+
+        $users = $users->withCount(['interests' => function($q) use($auth_id) {
+            $q->whereIn('interest_id', function($query1) use ($auth_id){
+                $query1->select('interest_id')
+                      ->from('user_interests')
+                      ->where('user_id','=',$auth_id);
+            });
+        }]);
+
         $users = $users->where('users.id', '!=', $auth_id)
-                    ->whereNotNull('profile_photo')
-                    ->whereNotNull('location_id')
-                    ->whereIsActive('y')
-                    ->where('id','!=',config('utility.system.system_user_id'))
-                    ->whereUserStatus('active');
-            if ($auth_interest != 'Both') {
-                $users->where('gender', $auth_interest);
-            }     // Interested in Gender
-            
+                                ->whereNotNull('profile_photo')
+                                ->whereNotNull('location_id')
+                                ->whereIsActive('y')
+                                ->where('id','!=',config('utility.system.system_user_id'))
+                                ->whereUserStatus('active');
         
-            if (count($disLikes) > 0) {
-                $users->whereNotIn('users.id', $disLikes);    // Restrict DisLiked Profile
-            }
-
-            if (count($likes) > 0) {
-                $users->whereNotIn('users.id', $likes);   // Restrict Liked Profile
-            }
-
-            if (count($superlikes) > 0) {
-                $users->whereNotIn('users.id', $superlikes);   // Restrict Super Liked Profiles - Both Ways
-            }
-
-            if (count($reported) > 0) {
-                $users->whereNotIn('users.id', $reported);    // Restrict Reported Profile
-            }
-
-            $users->whereDoesntHave('blockedTos',function($query)use($auth_id){
-                $query->where('block_by',$auth_id);
-            });
-
-            $users->whereDoesntHave('hiddenTos',function($query)use($auth_id){
-                $query->where('block_by',$auth_id);
-            });
-                                          
-
-        // Discovery
-            if (!empty($user->discover_start_age) && !empty($user->discover_end_age)) {
-                $users->whereBetween(\DB::raw('TIMESTAMPDIFF(YEAR,users.birth_date,CURDATE())'), array($user->discover_start_age, $user->discover_end_age));
-            }
-
-
-            $users->where(function ($query)  use ($languages) {
-                if (count($languages) > 0) {
-                    $query->orWhereIn('language_id', $languages);   // Languages
-                }
-            });
-
-            $users = $users->orderBy('last_online','DESC')
-                ->orderBy('email_verified_at', "DESC")
-                ->orderBy('contact_verified_at', "DESC")
-                ->orderBy('photo_verified_at', "DESC")
-                ->orderBy('profile_percentage', "DESC");
-
-            $data['count'] = $users->count();
-            $data['users'] = $users->limit($request->limit ?? config('utility.pagination.limit'))
-            ->offset($request->offset ?? config('utility.pagination.offset'))
-            ->get();
-
-            return  $data;
-    }
-
-    public function callUsersOfCity($prevusersCollection, $user, $exclusiveData, $limit, $offset){
-        $latitude = $exclusiveData['latitude'];
-        $longitude = $exclusiveData['longitude'];
-        $radius = $exclusiveData['radius'];
-        $languages = $exclusiveData['languages'];
-        $disLikes = $exclusiveData['disLikes'];
-        $likes    = $exclusiveData['likes'];
-        $reported = $exclusiveData['reported'];
-        $auth_id  = $exclusiveData['auth_id'];
-        $superlikes = $exclusiveData['superlikes'];
-        $auth_interest = $exclusiveData['auth_interest'];
-        $with_interest = $exclusiveData['with_interest'];
-
-        if (!empty($radius) && !empty($latitude) && !empty($longitude)) {               
-            $users =  User::select(
-                'users.id',
-                'users.custom_id',
-                'birth_date',
-                'profile_photo',
-                'gender',
-                'interest',
-                'location_id',
-                'language_id',
-                'verify_status',
-                'verify_photo_status',
-                'verify_email_send',
-                'last_online',
-                'created_at',
-    
-                'trusted_score',
-                'email_verified_at',
-    
-                'contact_verified_at',
-    
-                'profile_percentage',
-    
-                'is_active',
-                // DB::raw('GROUP_CONCAT(user_interests.interest_id) AS groupC'),
-    
-                DB::raw("3959 * 1.609344 * acos(cos(radians(" . $latitude . ")) 
-                * cos(radians(users.latitude)) 
-                * cos(radians(users.longitude) - radians(" . $longitude . ")) 
-                + sin(radians(" . $latitude . ")) 
-                * sin(radians(users.latitude))) AS distance")
-            );
-
-        } else {   
-            $users = $this->withoutRadius();
-        }
-        $users = $users->with(['userDetails', 'interests.interest.interestTranslation', 'userTranslation', 'location.locationTranslation']);
-        if($with_interest){
-
-            $users = $users->withCount(['interests' => function($q) use($auth_id) {
-                $q->whereIn('interest_id', function($query1) use ($auth_id){
-                    $query1->select('interest_id')
-                          ->from('user_interests')
-                          ->where('user_id','=',$auth_id);
-                });
-            }]);
-        }
-        $users->where('users.id', '!=', $auth_id)
-                ->whereNotNull('profile_photo')
-                ->whereNotNull('location_id')
-                ->whereIsActive('y')
-                ->where('id','!=',config('utility.system.system_user_id'))
-                ->whereUserStatus('active');
-        if($with_interest){
-
-            $users = $users->having('interests_count','>',1);
-        }
+        
         if ($auth_interest != 'Both') {
             $users->where('gender', $auth_interest);
         }     // Interested in Gender
-
-
+        
+    
         if (count($disLikes) > 0) {
             $users->whereNotIn('users.id', $disLikes);    // Restrict DisLiked Profile
         }
@@ -408,12 +183,12 @@ class HomeController extends Controller
             $users->whereNotIn('users.id', $likes);   // Restrict Liked Profile
         }
 
-        if (count($superlikes) > 0) {
-            $users->whereNotIn('users.id', $superlikes);   // Restrict Super Liked Profiles - Both Ways
-        }
-
         if (count($reported) > 0) {
             $users->whereNotIn('users.id', $reported);    // Restrict Reported Profile
+        }
+
+        if (count($superlikes) > 0) {
+            $users->whereNotIn('users.id', $superlikes);   // Restrict Super Liked Profiles - Both Ways
         }
 
         $users->whereDoesntHave('blockedTos',function($query)use($auth_id){
@@ -424,7 +199,23 @@ class HomeController extends Controller
             $query->where('block_by',$auth_id);
         });
 
-        $users->whereIn('location_id',function ($query) use ($user) {
+    // if (count($blocked) > 0) {
+    //     $users->whereNotIn('id', $blocked);     // Restrict Blocked Profile
+    // }                                           
+
+    // Discovery
+        if (!empty($user->discover_start_age) && !empty($user->discover_end_age)) {
+            // $users->whereBetween('birth_date', array($user->discover_start_age, $user->discover_end_age)); // Age
+            $users->whereBetween(\DB::raw('TIMESTAMPDIFF(YEAR,users.birth_date,CURDATE())'), array($user->discover_start_age, $user->discover_end_age));
+        }
+
+        $users->where(function ($query)  use ($languages) {
+            if (count($languages) > 0) {
+                $query->orWhereIn('language_id', $languages);   // Languages
+            }
+        });
+///City Condition
+        $users->orWhereIn('location_id',function ($query) use ($user) {
             $query->select(['lt.location_id'])
                 ->from('locations as loc')
                 ->join('location_translations as lt','loc.id','=','lt.location_id')
@@ -437,39 +228,42 @@ class HomeController extends Controller
                             ->where('location_translations.locale','=','en');
                 });
         });
-                                                
-
-        // Discovery
-        if (!empty($user->discover_start_age) && !empty($user->discover_end_age)) {
-            
-            $users->whereBetween(\DB::raw('TIMESTAMPDIFF(YEAR,users.birth_date,CURDATE())'), array($user->discover_start_age, $user->discover_end_age));
-        }
-
-
-        $users->where(function ($query)  use ($languages) {
-            if (count($languages) > 0) {
-                $query->orWhereIn('language_id', $languages);   // Languages
-            }
+///State Condition
+        $users->orWhereIn('location_id',function ($query) use ($user) {
+            $query->select(['lt.location_id'])
+                ->from('locations as loc')
+                ->join('location_translations as lt','loc.id','=','lt.location_id')
+                ->where('lt.state', function($query1) use ($user){
+                    $query1->select('state')
+                            ->from('location_translations')
+                            ->join('locations','location_translations.location_id', '=' ,'locations.id')
+                            ->where('location_id','=',$user->discover_location_id)
+                            ->where('locations.is_active','=','y')
+                            ->where('location_translations.locale','=','en');
+                });
         });
 
-        $users = $users->orderBy('last_online','DESC')
-            ->orderBy('email_verified_at', "DESC")
-            ->orderBy('contact_verified_at', "DESC")
-            ->orderBy('photo_verified_at', "DESC")
-            ->orderBy('profile_percentage', "DESC");
+        
 
-        if($with_interest){
-
-            $users = $users->orderBy('interests_count', "DESC"); 
-        }    
+        $users = $users->having('interests_count','>',1)
+                       ->orHaving('interests_count','>',1)
+                       ->orHaving('interests_count','>',0);
+                        
+        $users = $users->orderByRaw('location_id = '.$user->discover_location_id.' DESC')
+                       ->orderBy('interests_count', "DESC")
+                       ->orderBy('last_online','DESC')
+                       ->orderBy('email_verified_at', "DESC")
+                       ->orderBy('contact_verified_at', "DESC")
+                       ->orderBy('photo_verified_at', "DESC")
+                       ->orderBy('profile_percentage', "DESC");
+           
                
 
         $data['count'] = $users->count();
         $data['users'] = $users->limit($limit ?? config('utility.pagination.limit'))
             ->offset($offset ?? config('utility.pagination.offset'))
             ->get();
-
-            return  $data;  
+        return  $data;   
     }
 
     public function callUsersOfCountry($prevusersCollection, $user, $exclusiveData, $limit, $offset){
@@ -532,16 +326,14 @@ class HomeController extends Controller
                 });
             }]);
         }
+
         $users->where('users.id', '!=', $auth_id)
                 ->whereNotNull('profile_photo')
                 ->whereNotNull('location_id')
                 ->whereIsActive('y')
                 ->where('id','!=',config('utility.system.system_user_id'))
                 ->whereUserStatus('active');
-        if($with_interest){
-
-            $users = $users->having('interests_count','>',1);
-        }
+        
         if ($auth_interest != 'Both') {
             $users->where('gender', $auth_interest);
         }     // Interested in Gender
@@ -593,162 +385,22 @@ class HomeController extends Controller
             }
         });
 
-        $users = $users->orderBy('last_online','DESC')
-            ->orderBy('email_verified_at', "DESC")
-            ->orderBy('contact_verified_at', "DESC")
-            ->orderBy('photo_verified_at', "DESC");
-            if($with_interest){
-                $users = $users->orderBy('interests_count', "DESC");
-            }
-            $users = $users->orderBy('profile_percentage', "DESC");
+        $users = $users->orHaving('interests_count','>',1)
+                       ->orHaving('interests_count','>',0);
+
+        $users = $users->orderBy('interests_count', "DESC")
+                    ->orderBy('last_online','DESC')
+                    ->orderBy('email_verified_at', "DESC")
+                    ->orderBy('contact_verified_at', "DESC")
+                    ->orderBy('photo_verified_at', "DESC")
+                    ->orderBy('profile_percentage', "DESC");
+
         $data['count'] = $users->count();
         $data['users'] = $users->limit($limit ?? config('utility.pagination.limit'))
             ->offset($offset ?? config('utility.pagination.offset'))
             ->get();
         return  $data; 
         
-    }
-    public function callUsersOfState($prevusersCollection, $user, $exclusiveData, $limit, $offset){
-        $latitude = $exclusiveData['latitude'];
-        $longitude = $exclusiveData['longitude'];
-        $radius = $exclusiveData['radius'];
-        $languages = $exclusiveData['languages'];
-        $disLikes = $exclusiveData['disLikes'];
-        $likes    = $exclusiveData['likes'];
-        $reported = $exclusiveData['reported'];
-        $auth_id  = $exclusiveData['auth_id'];
-        $auth_interest = $exclusiveData['auth_interest'];
-        $with_interest = $exclusiveData['with_interest'];
-        $superlikes = $exclusiveData['superlikes'];
-
-        if (!empty($radius) && !empty($latitude) && !empty($longitude)) {                
-            $users =  User::select(
-                'users.id',
-                'users.custom_id',
-                'birth_date',
-                'profile_photo',
-                'gender',
-                'interest',
-                'location_id',
-                'language_id',
-                'verify_status',
-                'verify_photo_status',
-                'verify_email_send',
-                'last_online',
-                'created_at',
-    
-                'trusted_score',
-                'email_verified_at',
-    
-                'contact_verified_at',
-    
-                'profile_percentage',
-    
-                'is_active',
-                // DB::raw('GROUP_CONCAT(user_interests.interest_id) AS groupC'),
-    
-                DB::raw("3959 * 1.609344 * acos(cos(radians(" . $latitude . ")) 
-                * cos(radians(users.latitude)) 
-                * cos(radians(users.longitude) - radians(" . $longitude . ")) 
-                + sin(radians(" . $latitude . ")) 
-                * sin(radians(users.latitude))) AS distance")
-            );
-
-        } else {
-            $users = $this->withoutRadius();
-        }
-        $users = $users->with(['userDetails', 'interests.interest.interestTranslation', 'userTranslation', 'location.locationTranslation']);
-        if($with_interest){
-
-            $users = $users->withCount(['interests' => function($q) use($auth_id) {
-                $q->whereIn('interest_id', function($query1) use ($auth_id){
-                    $query1->select('interest_id')
-                          ->from('user_interests')
-                          ->where('user_id','=',$auth_id);
-                });
-            }]);
-        }
-        $users->where('users.id', '!=', $auth_id)
-                ->whereNotNull('profile_photo')
-                ->whereNotNull('location_id')
-                ->whereIsActive('y')
-                ->where('id','!=',config('utility.system.system_user_id'))
-                ->whereUserStatus('active');
-        if($with_interest){
-
-            $users = $users->having('interests_count','>',1);
-        }
-        if ($auth_interest != 'Both') {
-            $users->where('gender', $auth_interest);
-        }     // Interested in Gender
-
-
-        if (count($disLikes) > 0) {
-            $users->whereNotIn('users.id', $disLikes);    // Restrict DisLiked Profile
-        }
-
-        if (count($likes) > 0) {
-            $users->whereNotIn('users.id', $likes);   // Restrict Liked Profile
-        }
-
-        if (count($superlikes) > 0) {
-            $users->whereNotIn('users.id', $superlikes);   // Restrict Super Liked Profiles - Both Ways
-        }
-
-        if (count($reported) > 0) {
-            $users->whereNotIn('users.id', $reported);    // Restrict Reported Profile
-        }
-
-        $users->whereDoesntHave('blockedTos',function($query)use($auth_id){
-            $query->where('block_by',$auth_id);
-        });
-
-        $users->whereDoesntHave('hiddenTos',function($query)use($auth_id){
-            $query->where('block_by',$auth_id);
-        });
-
-        $users->whereIn('location_id',function ($query) use ($user) {
-            $query->select(['lt.location_id'])
-                ->from('locations as loc')
-                ->join('location_translations as lt','loc.id','=','lt.location_id')
-                ->where('lt.state', function($query1) use ($user){
-                    $query1->select('state')
-                            ->from('location_translations')
-                            ->join('locations','location_translations.location_id', '=' ,'locations.id')
-                            ->where('location_id','=',$user->discover_location_id)
-                            ->where('locations.is_active','=','y')
-                            ->where('location_translations.locale','=','en');
-                });
-        });
-                                                
-
-        // Discovery
-        if (!empty($user->discover_start_age) && !empty($user->discover_end_age)) {
-            
-            $users->whereBetween(\DB::raw('TIMESTAMPDIFF(YEAR,users.birth_date,CURDATE())'), array($user->discover_start_age, $user->discover_end_age));
-        }
-
-
-        $users->where(function ($query)  use ($languages) {
-            if (count($languages) > 0) {
-                $query->orWhereIn('language_id', $languages);   // Languages
-            }
-        });
-
-        $users = $users->orderBy('last_online','DESC')
-            ->orderBy('email_verified_at', "DESC")
-            ->orderBy('contact_verified_at', "DESC")
-            ->orderBy('photo_verified_at', "DESC");
-            if($with_interest){
-                $users = $users->orderBy('interests_count', "DESC");
-            }
-            $users = $users->orderBy('profile_percentage', "DESC");
-        $data['count'] = $users->count();
-        $data['users'] = $users->limit($limit ?? config('utility.pagination.limit'))
-            ->offset($offset ?? config('utility.pagination.offset'))
-            ->get();
-        return  $data;   
-
     }
 
     public function withRadius($latitude, $longitude, $radius, $user){
@@ -784,7 +436,6 @@ class HomeController extends Controller
             + sin(radians(" . $latitude . ")) 
             * sin(radians(users.latitude))) AS distance")
         );
-        
         if (!empty($user->discover_location_id)) {
             if ($user->location_id == $user->discover_location_id) {
                     $users->having("distance", "<=", $radius);
