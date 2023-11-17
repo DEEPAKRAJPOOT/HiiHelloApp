@@ -76,9 +76,9 @@ class HomeController extends Controller
                     $exclusiveData['auth_id'] = $auth_id;
                     $exclusiveData['auth_interest'] = $auth_interest;
                     $data = $this->fetchHomeCardData($user, $exclusiveData,$request->limit,$request->offset);
-                         
+                       
                     if($data['users']->isEmpty()){
-                        $data = $this->callUsersOfCountry($users, $user, $exclusiveData,$request->limit,$request->offset); 
+                        $data = $this->callUsersOfCountry($user, $exclusiveData,$request->limit,$request->offset); 
                     }
 
                     $is_profile_photo = false;
@@ -247,10 +247,14 @@ class HomeController extends Controller
 
         $users = $users->having('interests_count','>',1)
                        ->orHaving('interests_count','>',1)
-                       ->orHaving('interests_count','>',0);
-                        
-        $users = $users->orderByRaw('location_id = '.$user->discover_location_id.' DESC')
-                       ->orderBy('interests_count', "DESC")
+                       ->orHaving('interests_count','=',0);
+
+        if (!empty($user->discover_location_id)) {
+            if ($user->location_id != $user->discover_location_id) {
+                $users = $users->orderByRaw('location_id = '.$user->discover_location_id.' DESC');
+            }
+        }    
+        $users = $users->orderBy('interests_count', "DESC")
                        ->orderBy('last_online','DESC')
                        ->orderBy('email_verified_at', "DESC")
                        ->orderBy('contact_verified_at', "DESC")
@@ -266,7 +270,7 @@ class HomeController extends Controller
         return  $data;   
     }
 
-    public function callUsersOfCountry($prevusersCollection, $user, $exclusiveData, $limit, $offset){
+    public function callUsersOfCountry($user, $exclusiveData, $limit, $offset){
 
         $latitude = $exclusiveData['latitude'];
         $longitude = $exclusiveData['longitude'];
@@ -386,7 +390,7 @@ class HomeController extends Controller
         });
 
         $users = $users->orHaving('interests_count','>',1)
-                       ->orHaving('interests_count','>',0);
+                       ->orHaving('interests_count','=',0);
 
         $users = $users->orderBy('interests_count', "DESC")
                     ->orderBy('last_online','DESC')
@@ -436,12 +440,13 @@ class HomeController extends Controller
             + sin(radians(" . $latitude . ")) 
             * sin(radians(users.latitude))) AS distance")
         );
-        if (!empty($user->discover_location_id)) {
+        
             if ($user->location_id == $user->discover_location_id) {
+                    $users->whereNotNull('users.latitude');
+                    $users->whereNotNull('users.longitude');
                     $users->having("distance", "<=", $radius);
                     $users = $users->orderBy('distance');
             }
-        }
 
         if (!empty($user->discover_location_id)) {
             if ($user->location_id != $user->discover_location_id) {
