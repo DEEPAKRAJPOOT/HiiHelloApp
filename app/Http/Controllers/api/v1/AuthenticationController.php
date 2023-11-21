@@ -93,7 +93,6 @@ class AuthenticationController extends Controller
                 }
                 if (!empty($request->latitude) && !empty($request->longitude)) {
                     $locationdata = $this->get_user_location($request->latitude, $request->longitude);
-                    // echo "<pre>"; print_r($locationdata); die();
                     $location_id = !empty($locationdata) ? $locationdata : NULL;
                     // $location_id = 1;
                     $new_location_id = 'y';
@@ -591,7 +590,10 @@ class AuthenticationController extends Controller
                 // check city and state not empty
                 if (!empty($result) && !empty($result['city']) && !empty($result['state'])) {
                     // if already exist city and state then get id and update user location id
-                    $locationTranslation = LocationTranslation::where('name', $result['city'])->where('state', $result['state'])->where('locale', 'en')->first();
+                    $city = strstr($result['city'], ' ', true);
+                    
+                    $locationTranslation = LocationTranslation::join('locations', 'locations.id', '=', 'location_translations.location_id')->where('locations.is_active','=','y')->where('name','LIKE',"%{$city}%")->where('state', $result['state'])->where('locale', 'en')->first();
+                    
                     if (!empty($locationTranslation)) {
                         $location_id = $locationTranslation->location_id;
 
