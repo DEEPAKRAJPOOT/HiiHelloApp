@@ -590,9 +590,8 @@ class AuthenticationController extends Controller
                 // check city and state not empty
                 if (!empty($result) && !empty($result['city']) && !empty($result['state'])) {
                     // if already exist city and state then get id and update user location id
-                    $city = strstr($result['city'], ' ', true);
                     
-                    $locationTranslation = LocationTranslation::join('locations', 'locations.id', '=', 'location_translations.location_id')->where('locations.is_active','=','y')->where('name','LIKE',"%{$city}%")->where('state', $result['state'])->where('locale', 'en')->first();
+                    $locationTranslation = LocationTranslation::where('name', $result['city'])->where('state', $result['state'])->where('locale', 'en')->first();
                     
                     if (!empty($locationTranslation)) {
                         $location_id = $locationTranslation->location_id;

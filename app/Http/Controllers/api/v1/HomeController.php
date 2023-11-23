@@ -32,8 +32,9 @@ class HomeController extends Controller
                 $user = $request->user();
                 $auth_id = $user ? $user->id : NULL;
                 $is_swipe_allow = $user->isSwipeAllow();
-
+                
                 if ($is_swipe_allow) {
+                    // dd($user);
                     $auth_interest = $user->interest ? $user->interest : 'Both';
                     $radius = $user->discover_distance;
                     $latitude = $user->current_latitude?$user->current_latitude:$user->latitude;
@@ -53,7 +54,7 @@ class HomeController extends Controller
                     $likes   =   Like::select('user_id')->whereLikerId($auth_id)
                         ->where('is_superlike','n')->whereBetween('updated_at', [$last7thDate, $currentDate])
                         ->whereNotNull('user_id')->distinct()->pluck('user_id')->toArray();
-
+                        
                     $superlikes   =   Like::select(DB::raw('(CASE WHEN `liker_id` = '.$auth_id.' THEN `user_id` ELSE `liker_id` END) AS user_id'))->where(function($query)use($auth_id){
                             $query->where('liker_id',$auth_id);
                             $query->orWhere('user_id',$auth_id);
@@ -459,7 +460,7 @@ if (count($superlikes) > 0) {
         $data['users'] = $users->limit($limit ?? config('utility.pagination.limit'))
             ->offset($offset ?? config('utility.pagination.offset'))
             ->get();
-            //dd(DB::getQueryLog());
+            // dd(DB::getQueryLog());
         return  $data;   
     }
 
