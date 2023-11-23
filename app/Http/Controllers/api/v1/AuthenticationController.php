@@ -603,6 +603,7 @@ class AuthenticationController extends Controller
                         ]);
                     } else {
                         // if city and state not exits then create new
+                        $result['city'] = $city;
                         $location = new Location();
                         $location->custom_id = getUniqueString('locations');
                         $location->is_used   = 'y';
