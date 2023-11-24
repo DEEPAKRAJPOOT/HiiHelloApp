@@ -430,6 +430,24 @@ if (count($superlikes) > 0) {
         
         
         $users->whereNotNull('profile_photo');
+        if ($auth_interest != 'Both') {
+            $users->where('gender', $auth_interest);
+        }
+        if (count($disLikes) > 0) {
+            $users->whereNotIn('users.id', $disLikes);    // Restrict DisLiked Profile
+        }
+
+        if (count($likes) > 0) {
+            $users->whereNotIn('users.id', $likes);   // Restrict Liked Profile
+        }
+
+        if (count($reported) > 0) {
+            $users->whereNotIn('users.id', $reported);    // Restrict Reported Profile
+        }
+
+        if (count($superlikes) > 0) {
+            $users->whereNotIn('users.id', $superlikes);   // Restrict Super Liked Profiles - Both Ways
+        } 
                         
         $users = $users->having('interests_count','>',1)
                        ->orHaving('interests_count','>',1)
