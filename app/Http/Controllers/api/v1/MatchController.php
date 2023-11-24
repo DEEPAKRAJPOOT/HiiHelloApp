@@ -103,7 +103,8 @@ class MatchController extends Controller
                     $matches = $matches->whereNotIn('id', $restricted_ids);
                 }
                 
-                $matches = $matches->select('id','custom_id','profile_photo','created_at','gender'); 
+                $matches = $matches->select('id','custom_id','profile_photo','created_at','gender','verify_email_send','contact_verified_at','location_id','birth_date')->with(
+                    'location', 'location.locationTranslation');
 
 
                 //CHECK AND GENERATE NEW  SYSTEM GENERATED USER DAILY START
