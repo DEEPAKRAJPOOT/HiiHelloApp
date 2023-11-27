@@ -448,6 +448,11 @@ if (count($superlikes) > 0) {
         if (count($superlikes) > 0) {
             $users->whereNotIn('users.id', $superlikes);   // Restrict Super Liked Profiles - Both Ways
         } 
+
+        if (!empty($user->discover_start_age) && !empty($user->discover_end_age)) {
+            // $users->whereBetween('birth_date', array($user->discover_start_age, $user->discover_end_age)); // Age
+            $users->whereBetween(\DB::raw('TIMESTAMPDIFF(YEAR,users.birth_date,CURDATE())'), array($user->discover_start_age, $user->discover_end_age));
+        }
                         
         $users = $users->having('interests_count','>',1)
                        ->orHaving('interests_count','>',1)
@@ -455,6 +460,8 @@ if (count($superlikes) > 0) {
 
         if (!empty($user->discover_location_id)) {
             if ($user->location_id != $user->discover_location_id) {
+                $users = $users->orderByRaw('location_id = '.$user->discover_location_id.' DESC');
+            }else{
                 $users = $users->orderByRaw('location_id = '.$user->discover_location_id.' DESC');
             }
         } 
