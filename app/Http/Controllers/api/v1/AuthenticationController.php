@@ -93,7 +93,6 @@ class AuthenticationController extends Controller
                 }
                 if (!empty($request->latitude) && !empty($request->longitude)) {
                     $locationdata = $this->get_user_location($request->latitude, $request->longitude);
-                    // echo "<pre>"; print_r($locationdata); die();
                     $location_id = !empty($locationdata) ? $locationdata : NULL;
                     // $location_id = 1;
                     $new_location_id = 'y';
