@@ -25,6 +25,7 @@ class HomeController extends Controller
     // Get All Users List
     public function getHomeFeeds(Request $request)
     {
+        echo "Hello";die;
         $paginationRequest = new PaginationRequest();
         if ($this->apiValidator($request->all(), $paginationRequest->rules())) {
             try {
