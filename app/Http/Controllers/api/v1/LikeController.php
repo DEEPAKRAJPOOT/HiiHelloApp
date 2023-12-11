@@ -260,10 +260,10 @@ class LikeController extends Controller
                     ->where("likes.user_id", '!=', $user_id)
                     ->pluck('users.id')->toArray();
                 
-                $likes = Like::with([
-                    'likerUser:id,custom_id,birth_date,profile_photo,location_id,is_active',
-                    'likerUser.userTranslation', 'likerUser.location.locationTranslation'
-                ])
+                    $likes = Like::with([
+                        'likerUser:id,custom_id,birth_date,profile_photo,gender,verify_email_send,contact_verified_at,location_id,is_active',
+                        'likerUser.userTranslation', 'likerUser.location.locationTranslation'
+                    ])
                     ->whereHas('likerUser', function ($query) {
                         $query->whereIsActive('y');
                     })
