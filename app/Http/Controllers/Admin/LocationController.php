@@ -420,9 +420,9 @@ class LocationController extends Controller
                 ]);
             }
 
-            $delLocationTrans = LocationTranslation::where('location_id',$array_without_ToLocation[$i])->delete();
+            // $delLocationTrans = LocationTranslation::where('location_id',$array_without_ToLocation[$i])->update(['is_active'=>'n']);
 
-            $delLocation = Location::where('id',$array_without_ToLocation[$i])->delete();
+            $delLocation = Location::where('id',$array_without_ToLocation[$i])->update(['is_active'=>'n']);
             if($i == count($array_without_ToLocation)-1){
 
               $locationMerged=true;
