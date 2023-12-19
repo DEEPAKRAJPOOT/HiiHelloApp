@@ -403,19 +403,17 @@ class LocationController extends Controller
         $toLocation = $locationData['location_id'];
         $array_without_ToLocation = array_values(array_diff($fromLocation, array($toLocation)));
         $locationMerged=false;
+        
         for($i=0;$i<count($array_without_ToLocation);$i++){
-            
+
             $currentUserSettedLocation = User::where('location_id',$array_without_ToLocation[$i])->get();
             $currentUserInterestLocation = Interest::where('location_id',$array_without_ToLocation[$i])->get();
-            if($currentUserSettedLocation->count() > 0){
-                User::where('location_id',$array_without_ToLocation[$i])
-                    ->orWhere('discover_location_id',$array_without_ToLocation[$i])
-                    ->update([
-                    'location_id'=>$toLocation,
-                    'discover_location_id'=>$toLocation
-                    ]);
-            }
+            
+               $updateLocation = User::where('location_id',$array_without_ToLocation[$i])->update(['location_id'=>$toLocation]);
 
+               $updateDiscoverLocation = User::where('discover_location_id',$array_without_ToLocation[$i])->update(['discover_location_id'=>$toLocation]);
+
+            
             if($currentUserInterestLocation->count() > 0){
                 Interest::where('location_id',$array_without_ToLocation[$i])->update([
                     'location_id'=>$toLocation
