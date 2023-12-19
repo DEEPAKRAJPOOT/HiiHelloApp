@@ -408,10 +408,12 @@ class LocationController extends Controller
             $currentUserSettedLocation = User::where('location_id',$array_without_ToLocation[$i])->get();
             $currentUserInterestLocation = Interest::where('location_id',$array_without_ToLocation[$i])->get();
             if($currentUserSettedLocation->count() > 0){
-                User::where('location_id',$array_without_ToLocation[$i])->update([
+                User::where('location_id',$array_without_ToLocation[$i])
+                    ->orWhere('discover_location_id',$array_without_ToLocation[$i])
+                    ->update([
                     'location_id'=>$toLocation,
                     'discover_location_id'=>$toLocation
-                ]);
+                    ]);
             }
 
             if($currentUserInterestLocation->count() > 0){
