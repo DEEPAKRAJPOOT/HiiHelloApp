@@ -184,7 +184,14 @@ class DiscoveryController extends Controller
                 'discover_distance',
                 'discover_start_age',
                 'discover_end_age',
-                'discover_location_id'
+                'discover_location_id',
+                'discover_profile_ranking',
+                'discover_has_photo',
+                'discover_search_near_me',
+                'discover_by_state',
+                'discover_online_status',
+                'discover_relationship_status',
+                'discover_education'
             )
                 ->with([
                     'discoveryLocation:id,custom_id,is_active',
