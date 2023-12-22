@@ -109,11 +109,18 @@ class DiscoveryController extends Controller
                 ];
                 $user = $request->user();
                 $location = Location::select('id')->whereCustomId($request->location)->whereIsActive('y')->firstOrFail();
-                $user->discover_distance    =   $request->distance;
-                $user->discover_start_age   =   $request->start_age;
-                $user->discover_end_age     =   $request->end_age;
-                $user->interest             =   $interest_trans_arr[$request->interest];
-                $user->discover_location_id =   $location->id;
+                $user->discover_distance        =   $request->distance;
+                $user->discover_start_age       =   $request->start_age;
+                $user->discover_end_age         =   $request->end_age;
+                $user->interest                 =   $interest_trans_arr[$request->interest];
+                $user->discover_location_id     =   $location->id;
+                $user->discover_profile_ranking =   $request->profile_ranking;
+                $user->discover_has_photo      =    $request->has_photo;
+                $user->discover_search_near_me =    $request->search_near_me;
+                $user->discover_by_state       =    $request->search_by_state;
+                $user->discover_online_status  =    $request->online_status;
+                $user->discover_relationship_status =  $request->relationship_status;
+                $user->discover_education =   $request->education;
                 $user->save();
 
                 if (!empty($request->languages)) {
