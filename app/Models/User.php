@@ -46,7 +46,7 @@ class User extends Authenticatable implements MustVerifyEmail, TranslatableContr
         'religion_id', 'community_id', 'education_id',
         'discover_distance', 'discover_start_age', 'discover_end_age', 'discover_location_id',
         'discover_profile_ranking','discover_has_photo','discover_search_near_me',
-        'discover_by_state','discover_online_status','discover_relationship_status',
+        'discover_by_state','discover_state','discover_online_status','discover_relationship_status',
         'discover_education','verify_email_send','super_matches',
         'verify_photo', 'verify_video', 'photo_suggestion', 'video_suggestion',
         'verify_photo_status', 'verify_video_status',

@@ -118,6 +118,7 @@ class DiscoveryController extends Controller
                 $user->discover_has_photo      =    $request->has_photo;
                 $user->discover_search_near_me =    $request->search_near_me;
                 $user->discover_by_state       =    $request->search_by_state;
+                $user->discover_state          =    $request->state;
                 $user->discover_online_status  =    $request->online_status;
                 $user->discover_relationship_status =  $request->relationship_status;
                 $user->discover_education =   $request->education;
@@ -189,6 +190,7 @@ class DiscoveryController extends Controller
                 'discover_has_photo',
                 'discover_search_near_me',
                 'discover_by_state',
+                'discover_state',
                 'discover_online_status',
                 'discover_relationship_status',
                 'discover_education'
