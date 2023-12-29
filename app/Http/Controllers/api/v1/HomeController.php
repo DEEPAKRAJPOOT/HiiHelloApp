@@ -317,32 +317,50 @@ class HomeController extends Controller
                 // });
 
             }else{
-                $query->whereIn('location_id',function ($query1) use ($user) {
-                    $query1->select(['lt.location_id'])
-                        ->from('locations as loc')
-                        ->join('location_translations as lt','loc.id','=','lt.location_id')
-                        ->where('lt.name', function($query2) use ($user){
-                            $query2->select('name')
-                                    ->from('location_translations')
-                                    ->join('locations','location_translations.location_id', '=' ,'locations.id')
-                                    ->where('location_id','=',$user->discover_location_id)
-                                    ->where('locations.is_active','=','y')
-                                    ->where('location_translations.locale','=','en');
-                        });
-                });
-                $query->orWhereIn('location_id',function ($queryD) use ($user) {
-                    $queryD->select(['lt.location_id'])
-                        ->from('locations as loc')
-                        ->join('location_translations as lt','loc.id','=','lt.location_id')
-                        ->where('lt.state', function($queryE) use ($user){
-                            $queryE->select('state')
-                                    ->from('location_translations')
-                                    ->join('locations','location_translations.location_id', '=' ,'locations.id')
-                                    ->where('location_id','=',$user->discover_location_id)
-                                    ->where('locations.is_active','=','y')
-                                    ->where('location_translations.locale','=','en');
-                        });
-                });
+                if($user->discover_location_id == NULL && $user->location_id != NULL){
+                    $user->discover_location_id = $user->location_id;
+                }
+
+                if($user->discover_location_id == NULL){
+
+                    $query->whereIn('location_id',function ($query1) use ($user) {
+                        $query1->select(['lt.location_id'])
+                            ->from('locations as loc')
+                            ->join('location_translations as lt','loc.id','=','lt.location_id')
+                            ->where('lt.name', function($query2) use ($user){
+                                $query2->select('name')
+                                        ->from('location_translations')
+                                        ->join('locations','location_translations.location_id', '=' ,'locations.id')
+                                        ->where('location_id','=',$user->discover_location_id)
+                                        ->where('locations.is_active','=','y')
+                                        ->where('location_translations.locale','=','en');
+                            });
+                    });
+                    $query->orWhereIn('location_id',function ($queryD) use ($user) {
+                        $queryD->select(['lt.location_id'])
+                            ->from('locations as loc')
+                            ->join('location_translations as lt','loc.id','=','lt.location_id')
+                            ->where('lt.state', function($queryE) use ($user){
+                                $queryE->select('state')
+                                        ->from('location_translations')
+                                        ->join('locations','location_translations.location_id', '=' ,'locations.id')
+                                        ->where('location_id','=',$user->discover_location_id)
+                                        ->where('locations.is_active','=','y')
+                                        ->where('location_translations.locale','=','en');
+                            });
+                    });
+
+                }else{
+
+                    $query->whereIn('location_id',function ($queryF) use ($user) {
+                        $queryF->select(['lt.location_id'])
+                            ->from('locations as loc')
+                            ->join('location_translations as lt','loc.id','=','lt.location_id')
+                            ->where('loc.is_active','=','y')
+                            ->where('lt.locale','=','en');
+                    });
+                    
+                }
             }
 
             

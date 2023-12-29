@@ -32,6 +32,7 @@ public function toArray($request)
             'online_status' => $this->discover_online_status??0,
             'relationship_status' => $this->discover_relationship_status??0,
             'education' => $this->discover_education??0,
+            'verified_profile'  => $this->discover_verified_profile??0,
             'interest'          =>  $this->interest ?? "",
             'location'          =>  new LocationResource($this->discoveryLocation),
             'languages'         =>  $languages,
