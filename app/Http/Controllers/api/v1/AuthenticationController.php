@@ -44,7 +44,7 @@ class AuthenticationController extends Controller
                         ->whereContactNo($request->contact_no)->firstOrFail();
                     if ($user->is_active == 'y') {
                         Auth::login($user);
-                        Auth::user()->tokens()->delete(); // Logout From All Devices    
+                        Auth::user()->tokens()->delete();  // Logout From All Devices    
                         $user->changeLanguage(); // Change Language
 
                         return (new LoginResource($user))
