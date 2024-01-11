@@ -788,9 +788,14 @@ class AuthenticationController extends Controller
                 $url = "https://enterprise.smsgupshup.com/GatewayAPI/rest?".$request;
                 // dd($url);
                 $ch = curl_init($url);
-                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true); $curl_scraped_page = curl_exec($ch); curl_close($ch);
-                if ($curl_scraped_page === false) 
-                        $response = curl_error($ch);
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true); 
+                $response = curl_exec($ch); 
+                curl_close($ch);
+                if ($response === false) {
+                    $response = curl_error($ch);
+                }
+                        
+
                 echo $response;die;
 
                 $url = "https://enterprise.smsgupshup.com/GatewayAPI/rest?userid=2000236882&password=kkgExVyf&method=TWO_FACTOR_AUTH&v=1.1&phone_no=9205209548&msg=%25code%25%20is%20your%20SECRET%20OTP%20for%20login-signup%20into%20Hi%20Hello%20platform.%20Please%20do%20not%20share%20this%20OTP%20with%20anyone.%20v6kmjV9NJDp&format=text&otpCodeLength=6&otpCodeType=NUMERIC";
