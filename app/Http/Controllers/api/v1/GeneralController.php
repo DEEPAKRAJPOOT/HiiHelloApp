@@ -90,6 +90,12 @@ class GeneralController extends Controller
                     'en'    =>  route('safety.tips', ['device' => 'mobile']),
                 ],
             ],
+            'phone_auth_type' => [
+                'android' =>[
+                    'firebase_sms_enabled' => false,
+                    'whatsapp_login_enabled'=>true
+                ]
+            ],
             'verification_details'  =>  $verification_data
         ];
         $this->status = Response::HTTP_OK;
