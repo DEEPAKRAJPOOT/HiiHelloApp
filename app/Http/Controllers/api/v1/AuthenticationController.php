@@ -802,7 +802,7 @@ class AuthenticationController extends Controller
                     'otp_status' =>$extractedRes[0],
                     'response'   => $body
                    ];
-                   if(!empty($user->toArray())){
+                   if($user != null){
                     $authenticateLog['user_id'] = $user->id;
                    }
                    $logcreated = OtpAutheticateLog::create($authenticateLog);
