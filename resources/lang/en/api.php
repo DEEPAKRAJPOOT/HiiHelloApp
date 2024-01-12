@@ -46,6 +46,10 @@ return [
     'generated'  =>  ':entity generated successfully',
     'apply_success' =>  ':entity applied succesfully',
     'swipe_over' =>  'Your daily like limit is over. Upgrade to continue.',
+    'otp_sent'   => 'Otp sent to your registered number.',
+    'otp_not_sent' => 'Something went wrong try again later.',
+    'otp_unable_matched' => 'Unable to match otp please try again later',
+    'otp_matched_success'=> 'Otp matched successfully.',
 
     /* Login Messages */
     'login_fail' => 'These credentials do not match our records',

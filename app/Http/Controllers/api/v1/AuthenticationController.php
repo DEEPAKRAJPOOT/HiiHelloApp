@@ -12,7 +12,8 @@ use Illuminate\Support\Facades\{Storage, Auth, Hash};
 use Illuminate\Database\Eloquent\{ModelNotFoundException};
 use App\Http\Resources\v1\{UserProfile, LoginResource, SignUpResource};
 use App\Http\Requests\Api\Authentication\{LoginRequest, OTPLessRequest, RegisterRequest, SocialLoginRequest};
-use App\Models\{User, Country, UserDetail, Location, Interest, UserInterest, Language, ProfileDetail, DeviceToken, Subscription, SubscriptionPlan, LocationTranslation, ApiLogs, ImageModerationLog};
+use App\Models\{User, Country, UserDetail, Location, Interest, UserInterest, Language, ProfileDetail, DeviceToken, Subscription, SubscriptionPlan, LocationTranslation, ApiLogs, ImageModerationLog,OtpAutheticateLog};
+
 
 class AuthenticationController extends Controller
 {
@@ -744,23 +745,9 @@ class AuthenticationController extends Controller
    public function gupshupOtpAuthenticate(Request $request){
     
     $rules = [
-        'contact_no'    =>  'required',
-        'type'          => 'required',
+        'contact_no'    =>  'required'
     ];
     if ($this->apiValidator($request->all(), $rules)) {
-            try {
-                $user = User::whereContactNo($request->contact_no)->first();
-            } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $exception) {
-                return response()->json([
-                    'data'  =>  [
-                        'data'      =>  $request->all(),
-                        'message'   =>  'Contact details not found!'
-                    ]
-                ], 404);
-            } catch (\Exception $e) {
-                $this->storeErrorLog($e, 'gupshup_otp_authenticate');
-            }
-            if(!empty($user)){
 
                 $gupshupUserId = env('GUPSHUP_USERID');
                 $gupshupPassword = env('GUPSHUP_PASSWORD');
@@ -771,12 +758,12 @@ class AuthenticationController extends Controller
                 $param['msg'] = "%code% is your SECRET OTP for login-signup into Hi Hello platform. Please do not share this OTP with anyone. v6kmjV9NJDp"; 
                 $param['userid'] = "2000236882"; 
                 $param['password'] ="kkgExVyf"; 
-                $param['v'] = "1.0";
+                $param['v'] = "1.1";
                 $param['msg_type'] = "TEXT"; //Can be "FLASH”/"UNICODE_TEXT"/”BINARY” 
                 $param['format'] = "text";
                 $param['otpCodeLength'] = 6;
                 $param['otpCodeType'] = 'NUMERIC';
-                // $param['auth_scheme'] = "PLAIN";
+
                 //Have to URL encode the values 
                 foreach($param as $key=>$val) {
                 $request.= $key."=".urlencode(utf8_encode($val)); 
@@ -789,45 +776,167 @@ class AuthenticationController extends Controller
                 // dd($url);
                 $ch = curl_init($url);
                 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true); 
+                curl_setopt($ch, CURLOPT_HEADER, true);
                 $response = curl_exec($ch); 
+                $httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+                // extract header
+                $headerSize = curl_getinfo($ch, CURLINFO_HEADER_SIZE);
+                $header = substr($response, 0, $headerSize);
+                $header = $this->getHeaders($header);
+            
+                // extract body
+                $body = substr($response, $headerSize);
                 curl_close($ch);
                 if ($response === false) {
                     $response = curl_error($ch);
                 }
-                        
 
-                echo $response;die;
+                if($httpcode == 200){
+                   $extractno = preg_replace('/^\+?91|\|91|\D/', '', ($contact));
+                   $user =  User::where('contact_no',$extractno)->first();
+                   $extractedRes = explode('|',$body);
+                //    dd($extractedRes,);
+                   $authenticateLog = [
+                    'custom_id' => getUniqueString('authentication_log'),
+                    'phone_number' => $contact,
+                    'otp_status' =>$extractedRes[0],
+                    'response'   => $body
+                   ];
+                   if(!empty($user->toArray())){
+                    $authenticateLog['user_id'] = $user->id;
+                   }
+                   $logcreated = OtpAutheticateLog::create($authenticateLog);
+                   if($logcreated){
+                    $this->response['data']['custom_id'] = $logcreated->custom_id;
+                    $this->response['data']['contact_no'] = $contact;
+                    $this->status = Response::HTTP_OK;
+                    if(trim($extractedRes[0]) === 'success'){
+                        $this->response['meta']['message']  = trans('api.otp_sent');
+                    }else{
+                        $this->response['meta']['message']  = $extractedRes[2];
+                    }
+                   }
 
-                $url = "https://enterprise.smsgupshup.com/GatewayAPI/rest?userid=2000236882&password=kkgExVyf&method=TWO_FACTOR_AUTH&v=1.1&phone_no=9205209548&msg=%25code%25%20is%20your%20SECRET%20OTP%20for%20login-signup%20into%20Hi%20Hello%20platform.%20Please%20do%20not%20share%20this%20OTP%20with%20anyone.%20v6kmjV9NJDp&format=text&otpCodeLength=6&otpCodeType=NUMERIC";
-                dd($url);
-                $ch = curl_init();
-                curl_setopt($ch, CURLOPT_URL, $url);
-                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-                $response = curl_exec($ch);
-                if ($response === false) 
-                        $response = curl_error($ch);
-
-                        echo "<pre>"; print_r($response);   
-                    //echo stripslashes($response);
-                curl_close($ch); 
-                // $response = json_decode($responseJson);
-                dd($url);
-                echo "<pre>"; print_r($responseJson); die();
-                dd(json_decode($responseJson));
+                }else{
+                    $this->response['meta']['message']  = trans('api.otp_not_sent');
+                }
                 
-                
-            }else{
-
-                return response()->json([
-                    'data'  =>  [
-                        'data'      =>  ['contact_no'=>$request->contact_no],
-                        'message'   =>  'Contact details not found!'
-                    ]
-                ], 404);
             }
-    }
-        return $this->returnResponse();
-    
-        
+
+        return $this->returnResponse();  
    } 
+
+   public function getVerifyOtpAuth(Request $request){
+
+    $rules = [
+        'otp'    =>  'required',
+        'custom_id' => 'required'
+    ];
+    
+    if ($this->apiValidator($request->all(), $rules)) {
+        $otpLogData = OtpAutheticateLog::where('custom_id',$request->custom_id)->first();
+        if(!empty($otpLogData->toArray())){
+            $contact = $otpLogData->phone_number;
+            $otp = $request->otp;
+            $custom_id = $request->custom_id;
+            $request =""; //initialise the request variable 
+            $param['method']= "TWO_FACTOR_AUTH";
+            $param['phone_no'] = $contact; 
+            $param['userid'] = "2000236882"; 
+            $param['password'] ="kkgExVyf"; 
+            $param['v'] = "1.1";
+            $param['otp_code'] = $otp;
+            foreach($param as $key=>$val) {
+                $request.= $key."=".urlencode(utf8_encode($val));
+                $request.= "&";
+            }
+            $request = substr($request, 0, strlen($request)-1); //remove final (&) sign from the request
+            $url = "https://enterprise.smsgupshup.com/GatewayAPI/rest?".$request;
+            $ch = curl_init($url);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true); 
+            curl_setopt($ch, CURLOPT_HEADER, true);
+            $response = curl_exec($ch); 
+            $httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            // extract header
+            $headerSize = curl_getinfo($ch, CURLINFO_HEADER_SIZE);
+            $header = substr($response, 0, $headerSize);
+            $header = $this->getHeaders($header);
+        
+            // extract body
+            $body = substr($response, $headerSize);
+            curl_close($ch);
+            if ($response === false) {
+                $response = curl_error($ch);
+            }
+            $extractedRes = explode('|',$body);
+            if($httpcode == 200){
+
+                $authenticateLog = [
+                    'verify_status' => $extractedRes[0],
+                    'otp' => $otp,
+                    'verify_response' =>$body
+                   ];
+                $verifiedOtpt = OtpAutheticateLog::where('custom_id',$custom_id)->update($authenticateLog);
+                $this->status = Response::HTTP_OK;
+                if(trim($extractedRes[0]) === 'success'){
+                    $extractno = preg_replace('/^\+?91|\|91|\D/', '', ($contact));
+                    $checksumToken = $this->getChecksumToken($extractno);
+                    
+                    $this->response['data']['checksum'] = $checksumToken['checksum'];
+                    $this->response['data']['data'] = $checksumToken['data'];
+                    $this->response['meta']['message']  = trans('api.otp_matched_success');
+
+                }else{
+                    $this->response['meta']['message']  = $extractedRes[2];
+                }
+            }else{
+                $this->response['meta']['message']  = trans('api.otp_unable_matched');
+            }
+        }else{
+            $this->response['meta']['message']  = trans('api.otp_not_sent');
+        }
+    }
+    return $this->returnResponse();  
+
+   }
+
+   public function getHeaders($respHeaders) {
+        $headers = array();
+
+        $headerText = substr($respHeaders, 0, strpos($respHeaders, "\r\n\r\n"));
+
+        foreach (explode("\r\n", $headerText) as $i => $line) {
+            if ($i === 0) {
+                $headers['http_code'] = $line;
+            } else {
+                list ($key, $value) = explode(': ', $line);
+
+                $headers[$key] = $value;
+            }
+        }
+
+        return $headers;
+  }
+
+  public function getChecksumToken($contact){
+    $key = config('utility.checksum.key');
+    $algo = config('utility.checksum.algorithm');
+
+    $data = [
+        'time'          =>  \Carbon\Carbon::now(),
+        'contact_no'    =>  $contact,
+    ];
+
+    $data = json_encode($data);
+    $iv = str_random(openssl_cipher_iv_length($algo));
+    $value = \openssl_encrypt($data, $algo, $key, 0, $iv);
+    $mac = hash_hmac(
+        'sha256',
+        base64_encode($iv) . $value,
+        $key
+    );
+    $iv = base64_encode($iv);
+    $payload = base64_encode(json_encode(compact('iv', 'value', 'mac')));
+    return ['checksum'=>$payload,'data'=>$data];
+  }
 }

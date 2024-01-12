@@ -41,7 +41,7 @@ Route::group(['namespace' => 'v1', 'prefix' => 'v1'], function () {
     Route::post('otpless/login', [AuthenticationController::class, 'otpLessLogin'])->name('api.otp-less-login');
     //Gupshup OTP Authenticatioon Route
     Route::post('gupshup-otp-authenticate', [AuthenticationController::class, 'gupshupOtpAuthenticate'])->name('api.gupshup-otp-authenticate');
-    Route::post('gupshup-otp-verify', [AuthenticationController::class, 'gupshupOtpverify'])->name('api.gupshup-otp-authenticate');
+    Route::post('gupshup-otp-verify', [AuthenticationController::class, 'getVerifyOtpAuth'])->name('api.gupshup-otp-authenticate');
     //END Gupshup OTP Authenticatioon Route
 
     Route::any('generate-checksum', [AuthenticationController::class, 'generateChecksum'])->name('api.generate-checksum');
