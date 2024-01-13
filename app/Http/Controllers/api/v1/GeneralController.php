@@ -92,7 +92,7 @@ class GeneralController extends Controller
             ],
             'phone_auth_type' => [
                 'android' =>[
-                    'firebase_sms_enabled' => false,
+                    'firebase_sms_enabled' => true,
                     'whatsapp_login_enabled'=>true
                 ]
             ],
