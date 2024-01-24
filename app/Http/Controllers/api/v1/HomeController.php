@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\{DB};
 use Illuminate\Http\{Request, Response};
 use App\Http\Resources\v1\{HomeResource};
 use App\Http\Requests\Api\General\{PaginationRequest};
-use App\Models\{User, BlockUser, UserSetting, DisLike};
+use App\Models\{User, BlockUser, UserSetting, DisLike,LocationTranslation};
 use Illuminate\Database\Eloquent\{ModelNotFoundException};
 
 class HomeController extends Controller
@@ -196,7 +196,7 @@ class HomeController extends Controller
                 $radius = 10;
             }
 
-            $users = $this->withRadius($latitude, $longitude, $radius, $user);
+            $users = $this->withRadius($latitude, $longitude, $radius, $user,$state);
             
         } else {
             
@@ -368,27 +368,88 @@ class HomeController extends Controller
         if((int)$profile_ranking == 1){
             $users->orWhereBetween('users.created_at',[$startDate, $endDate]);
         }
+        // dd($onlineStatus);
         //online now
         if((int)$onlineStatus == 1){
-          $users->orWhereBetween('users.last_online',[Carbon::now()->subMinutes(10), Carbon::now()]);
+          $users->orWhereBetween('users.last_online',[Carbon::now()->subMinutes(1), Carbon::now()])->where('users.id','!=',$auth_id);
+        
         //online today
         }else if((int)$onlineStatus == 2){
-            $users->orWhereBetween('users.last_online',[Carbon::now()->subHours(24), Carbon::now()]);
+            $users->orWhereBetween('users.last_online',[Carbon::now()->subHours(24), Carbon::now()])->where('users.id','!=',$auth_id);
+
         //online this week    
         }else if((int)$onlineStatus == 3){
+            $users->orWhereBetween('users.last_online',[Carbon::now()->subDays(7), Carbon::now()])->where('users.id','!=',$auth_id);
             
-            $users->orWhereBetween('users.last_online',[Carbon::now()->subDays(7), Carbon::now()]);
         }
 
-        if(!empty($relationStatus)){
+        if((int)$onlineStatus == 1||(int)$onlineStatus == 2||(int)$onlineStatus == 3){
+            if((int)$searchByState == 1){
+                $users->whereIn('location_id',function ($queryH) use ($user,$state) {
+                    $queryH->select(['lt.location_id'])
+                        ->from('locations as loc')
+                        ->join('location_translations as lt','loc.id','=','lt.location_id')
+                        ->where('lt.state','=',$state)
+                        ->where('loc.is_active','=','y')
+                        ->where('lt.locale','=','en');
+                });
+            }else{
+                if($user->discover_location_id == NULL && $user->location_id != NULL){
+                    $user->discover_location_id = $user->location_id;
+                }
 
-            $users->where('relationship_status_id',$relationStatus);
+                if($user->discover_location_id == NULL){
+
+                    $query->whereIn('location_id',function ($query1) use ($user) {
+                        $query1->select(['lt.location_id'])
+                            ->from('locations as loc')
+                            ->join('location_translations as lt','loc.id','=','lt.location_id')
+                            ->where('lt.name', function($query2) use ($user){
+                                $query2->select('name')
+                                        ->from('location_translations')
+                                        ->join('locations','location_translations.location_id', '=' ,'locations.id')
+                                        ->where('location_id','=',$user->discover_location_id)
+                                        ->where('locations.is_active','=','y')
+                                        ->where('location_translations.locale','=','en');
+                            });
+                    });
+                    $query->orWhereIn('location_id',function ($queryD) use ($user) {
+                        $queryD->select(['lt.location_id'])
+                            ->from('locations as loc')
+                            ->join('location_translations as lt','loc.id','=','lt.location_id')
+                            ->where('lt.state', function($queryE) use ($user){
+                                $queryE->select('state')
+                                        ->from('location_translations')
+                                        ->join('locations','location_translations.location_id', '=' ,'locations.id')
+                                        ->where('location_id','=',$user->discover_location_id)
+                                        ->where('locations.is_active','=','y')
+                                        ->where('location_translations.locale','=','en');
+                            });
+                    });
+
+                }else{
+
+                    $query->whereIn('location_id',function ($queryF) use ($user) {
+                        $queryF->select(['lt.location_id'])
+                            ->from('locations as loc')
+                            ->join('location_translations as lt','loc.id','=','lt.location_id')
+                            ->where('loc.is_active','=','y')
+                            ->where('lt.locale','=','en');
+                    });
+                    
+                }
+            }
         }
 
-        if(!empty($education)){
+        // if(!empty($relationStatus)){
 
-            $users->where('education_id',$education);
-        }   
+        //     $users->orWhere('relationship_status_id',$relationStatus);
+        // }
+
+        // if(!empty($education)){
+
+        //     $users->orWhere('education_id',$education);
+        // }   
         
         $users->withTrashed();                
         $users = $users->having('interests_count','>',1)
@@ -405,16 +466,36 @@ class HomeController extends Controller
     // }
 
         
+    $getUserState = $this->getUserState($user->location_id);
+    if($state != null){
+        if($state === $getUserState->state){
 
-        
-        // if ($user->location_id == $user->discover_location_id|| $user->discover_location_id == null) {
+            if (
+                $user->location_id == $user->discover_location_id|| 
+                $user->discover_location_id == null
+            ) {
+                if (!empty($radius) && !empty($latitude) && !empty($longitude)) {
+                        
+                    $users = $users->orderBy('distance');
+                    
+                }
+            }
+        }
+    }else{
+        if (
+            $user->location_id == $user->discover_location_id|| 
+            $user->discover_location_id == null
+        ) {
             if (!empty($radius) && !empty($latitude) && !empty($longitude)) {
                         
                 $users = $users->orderBy('distance');
                 
             }
-            $users = $users->orderBy('interests_count', "DESC");
-        // }
+        }
+    }
+        
+       // $users = $users->orderBy('interests_count', "DESC");
+        
         $users = $users->orderBy('last_online','DESC')
                        ->orderBy('email_verified_at', "DESC")
                        ->orderBy('contact_verified_at', "DESC")
@@ -428,7 +509,7 @@ class HomeController extends Controller
         $data['users'] = $users->limit($limit ?? config('utility.pagination.limit'))
         ->offset($offset ?? config('utility.pagination.offset'))
         ->get();
-        // dd($data,DB::getQueryLog());
+        // dd($data,DB::getQueryLog(),Carbon::now()->subMinutes(1), Carbon::now());
         return  $data;   
     }
 
@@ -566,7 +647,7 @@ class HomeController extends Controller
         
     }
 
-    public function withRadius($latitude, $longitude, $radius, $user){
+    public function withRadius($latitude, $longitude, $radius, $user, $state){
 
         $users =  User::select(
             'users.id',
@@ -599,17 +680,38 @@ class HomeController extends Controller
             + sin(radians(" . $latitude . ")) 
             * sin(radians(users.latitude))) AS distance")
         );
+        $getUserState = $this->getUserState($user->location_id);
+        // dd($getUserState->state,$state);
+        if($state != null){
+            if($state === $getUserState->state){
 
-        if (
-            $user->location_id == $user->discover_location_id|| 
-            $user->discover_location_id == null
-        ) {
-                $users->having("distance", "<=", $radius);
+                if (
+                    $user->location_id == $user->discover_location_id|| 
+                    $user->discover_location_id == null
+                ) {
+                        $users->having("distance", "<=", $radius);
+                }
+            }
+        }else{
+            if (
+                $user->location_id == $user->discover_location_id|| 
+                $user->discover_location_id == null
+            ) {
+                    $users->having("distance", "<=", $radius);
+            }
         }
+        
 
         
 
         return $users;
+    }
+
+    public function getUserState($location_id)
+    {
+       $location =  LocationTranslation::select('state')->where(['location_id'=>$location_id,'locale'=>'en'])->first();
+       
+       return $location;
     }
 
     public function withoutRadius(){
