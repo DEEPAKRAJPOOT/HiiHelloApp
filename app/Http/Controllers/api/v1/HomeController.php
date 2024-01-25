@@ -383,7 +383,8 @@ class HomeController extends Controller
             
         }
 
-        if((int)$onlineStatus == 1||(int)$onlineStatus == 2||(int)$onlineStatus == 3){
+        if((int)$onlineStatus == 1||(int)$onlineStatus == 2||(int)$onlineStatus == 3 || (int)$profile_ranking == 1){
+            
             if((int)$searchByState == 1){
                 $users->whereIn('location_id',function ($queryH) use ($user,$state) {
                     $queryH->select(['lt.location_id'])
@@ -509,7 +510,7 @@ class HomeController extends Controller
         $data['users'] = $users->limit($limit ?? config('utility.pagination.limit'))
         ->offset($offset ?? config('utility.pagination.offset'))
         ->get();
-        // dd($data,DB::getQueryLog(),Carbon::now()->subMinutes(1), Carbon::now());
+        dd(DB::getQueryLog(),Carbon::now()->subMinutes(1), Carbon::now());
         return  $data;   
     }
 
