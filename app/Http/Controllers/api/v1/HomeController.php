@@ -510,7 +510,7 @@ class HomeController extends Controller
         $data['users'] = $users->limit($limit ?? config('utility.pagination.limit'))
         ->offset($offset ?? config('utility.pagination.offset'))
         ->get();
-        dd(DB::getQueryLog(),Carbon::now()->subMinutes(1), Carbon::now());
+        // dd(DB::getQueryLog(),Carbon::now()->subMinutes(1), Carbon::now());
         return  $data;   
     }
 
