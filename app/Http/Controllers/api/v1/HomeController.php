@@ -321,7 +321,7 @@ class HomeController extends Controller
                     $user->discover_location_id = $user->location_id;
                 }
 
-                if($user->discover_location_id == NULL){
+                if($user->discover_location_id != NULL){
 
                     $query->whereIn('location_id',function ($query1) use ($user) {
                         $query1->select(['lt.location_id'])
@@ -384,7 +384,7 @@ class HomeController extends Controller
         }
 
         if((int)$onlineStatus == 1||(int)$onlineStatus == 2||(int)$onlineStatus == 3 || (int)$profile_ranking == 1){
-            
+            $users->where(function($query) use ($user,$auth_id,$languages,$superlikes,$auth_interest,$disLikes,$likes,$reported,$searchByState,$state){
             if((int)$searchByState == 1){
                 $users->whereIn('location_id',function ($queryH) use ($user,$state) {
                     $queryH->select(['lt.location_id'])
@@ -398,10 +398,10 @@ class HomeController extends Controller
                 if($user->discover_location_id == NULL && $user->location_id != NULL){
                     $user->discover_location_id = $user->location_id;
                 }
+                // dd($auth_id,$user->discover_location_id);
+                if($user->discover_location_id != NULL){
 
-                if($user->discover_location_id == NULL){
-
-                    $users->whereIn('location_id',function ($query1) use ($user) {
+                    $query->whereIn('location_id',function ($query1) use ($user) {
                         $query1->select(['lt.location_id'])
                             ->from('locations as loc')
                             ->join('location_translations as lt','loc.id','=','lt.location_id')
@@ -414,7 +414,7 @@ class HomeController extends Controller
                                         ->where('location_translations.locale','=','en');
                             });
                     });
-                    $users->orWhereIn('location_id',function ($queryD) use ($user) {
+                    $query->orWhereIn('location_id',function ($queryD) use ($user) {
                         $queryD->select(['lt.location_id'])
                             ->from('locations as loc')
                             ->join('location_translations as lt','loc.id','=','lt.location_id')
@@ -430,7 +430,7 @@ class HomeController extends Controller
 
                 }else{
 
-                    $users->whereIn('location_id',function ($queryF) use ($user) {
+                    $query->whereIn('location_id',function ($queryF) use ($user) {
                         $queryF->select(['lt.location_id'])
                             ->from('locations as loc')
                             ->join('location_translations as lt','loc.id','=','lt.location_id')
@@ -440,7 +440,9 @@ class HomeController extends Controller
                     
                 }
             }
+          });
         }
+       
 
         // if(!empty($relationStatus)){
 
@@ -510,7 +512,8 @@ class HomeController extends Controller
         $data['users'] = $users->limit($limit ?? config('utility.pagination.limit'))
         ->offset($offset ?? config('utility.pagination.offset'))
         ->get();
-        // dd(DB::getQueryLog(),Carbon::now()->subMinutes(1), Carbon::now());
+        
+        // dd($auth_id,DB::getQueryLog(),Carbon::now()->subMinutes(1), Carbon::now());
         return  $data;   
     }
 
