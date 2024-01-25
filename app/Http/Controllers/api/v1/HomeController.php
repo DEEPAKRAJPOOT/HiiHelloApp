@@ -401,7 +401,7 @@ class HomeController extends Controller
 
                 if($user->discover_location_id == NULL){
 
-                    $query->whereIn('location_id',function ($query1) use ($user) {
+                    $users->whereIn('location_id',function ($query1) use ($user) {
                         $query1->select(['lt.location_id'])
                             ->from('locations as loc')
                             ->join('location_translations as lt','loc.id','=','lt.location_id')
@@ -414,7 +414,7 @@ class HomeController extends Controller
                                         ->where('location_translations.locale','=','en');
                             });
                     });
-                    $query->orWhereIn('location_id',function ($queryD) use ($user) {
+                    $users->orWhereIn('location_id',function ($queryD) use ($user) {
                         $queryD->select(['lt.location_id'])
                             ->from('locations as loc')
                             ->join('location_translations as lt','loc.id','=','lt.location_id')
@@ -430,7 +430,7 @@ class HomeController extends Controller
 
                 }else{
 
-                    $query->whereIn('location_id',function ($queryF) use ($user) {
+                    $users->whereIn('location_id',function ($queryF) use ($user) {
                         $queryF->select(['lt.location_id'])
                             ->from('locations as loc')
                             ->join('location_translations as lt','loc.id','=','lt.location_id')
