@@ -386,7 +386,7 @@ class HomeController extends Controller
         if((int)$onlineStatus == 1||(int)$onlineStatus == 2||(int)$onlineStatus == 3 || (int)$profile_ranking == 1){
             $users->where(function($query) use ($user,$auth_id,$languages,$superlikes,$auth_interest,$disLikes,$likes,$reported,$searchByState,$state){
             if((int)$searchByState == 1){
-                $users->whereIn('location_id',function ($queryH) use ($user,$state) {
+                $query->whereIn('location_id',function ($queryH) use ($user,$state) {
                     $queryH->select(['lt.location_id'])
                         ->from('locations as loc')
                         ->join('location_translations as lt','loc.id','=','lt.location_id')
