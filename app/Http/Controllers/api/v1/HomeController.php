@@ -516,15 +516,15 @@ class HomeController extends Controller
         $users = $users->having('interests_count','>',1)
                        ->orHaving('interests_count','>',1)
                        ->orHaving('interests_count','=',0);
-    // if((int)$searchByState == false){
-    //     if (!empty($user->discover_location_id)) {
-    //         if ($user->location_id != $user->discover_location_id) {
-    //             $users = $users->orderByRaw('location_id = '.$user->discover_location_id.' DESC');
-    //         }else{
-    //             $users = $users->orderByRaw('location_id = '.$user->discover_location_id.' DESC');
-    //         }
-    //     } 
-    // }
+    if((int)$searchByState == false){
+        if (!empty($user->discover_location_id)) {
+            if ($user->location_id != $user->discover_location_id) {
+                $users = $users->orderByRaw('location_id = '.$user->discover_location_id.' DESC');
+            }else{
+                $users = $users->orderByRaw('location_id = '.$user->discover_location_id.' DESC');
+            }
+        } 
+    }
 
         
     $getUserState = $this->getUserState($user->location_id);
