@@ -203,7 +203,8 @@ class HomeController extends Controller
             $users = $this->withoutRadius();
         }
         
-        $users = $users->with(['userDetails', 'interests.interest.interestTranslation', 'userTranslation', 'location.locationTranslation']);
+        $users = $users->with(['userDetails', 'interests.interest.interestTranslation', 'userTranslation', 'location.locationTranslation','likes']);
+        $users = $users->withCount('likes');
 
         $users = $users->withCount(['interests' => function($q) use($auth_id) {
             $q->whereIn('interest_id', function($query1) use ($auth_id){
@@ -556,6 +557,9 @@ class HomeController extends Controller
     }
         
        // $users = $users->orderBy('interests_count', "DESC");
+       if((int)$profile_ranking == 2){
+        $users->orderBy('likes_count','DESC');
+       }
         
         $users = $users->orderBy('last_online','DESC')
                        ->orderBy('email_verified_at', "DESC")

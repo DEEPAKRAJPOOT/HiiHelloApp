@@ -43,7 +43,8 @@ class HomeResource extends JsonResource
                 'distance'         =>  $this->distance ?? 0,
                 'online_status'    =>  $this->onlineStatus(),
                 'new_account'      =>  $this->isNewAccount(),
-                'last_seen'        =>  strtotime($this->last_online) * 1000
+                'last_seen'        =>  strtotime($this->last_online) * 1000,
+                'likes_count'      => $this->likes_count??0
             ],
         ];
     }
