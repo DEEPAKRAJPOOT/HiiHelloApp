@@ -229,7 +229,7 @@
                             response.data[i].profile_photo = '<div class="symbol symbol-32" style="padding:5;vertical-align:middle"><div class="symbol-label" style="width:50px;height:50px"></div></div>';
                         }
                         if(user.verify_photo && user.verify_photo != ''){
-                            response.data[i].verify_photo = '<img src="'+user.verify_photo+'" id="1photo_'+user.id+'" data-id="'+user.id+'" height="50" width="50" class="my_profile_image" style="vertical-align:middle;cursor:pointer">';
+                            response.data[i].verify_photo = '<img src="'+user.verify_photo+'" id="2photo_'+user.id+'" data-id="'+user.id+'" height="50" width="50" class="my_profile_image" style="vertical-align:middle;cursor:pointer">';
                         }else{
                             response.data[i].verify_photo = '<div class="symbol symbol-32" style="padding:5;vertical-align:middle"><div class="symbol-label" style="width:50px;height:50px"></div></div>';
                         }
