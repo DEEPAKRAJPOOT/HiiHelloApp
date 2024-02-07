@@ -14,7 +14,7 @@ class ChatMessageResource extends JsonResource
      */
     public function toArray($request)
     {
-        return [
+        $resource =  [
             'id'        =>  $this->custom_id ?? "",
             'message'   =>  $this->getMessage() ?? NULL,
             'status'    =>  strtr($this->status ?? "",['send'=>'sent','read'=>'seen']),
@@ -26,6 +26,22 @@ class ChatMessageResource extends JsonResource
             'deleted_at'  =>  $this->deleted_at ?? "",
             'is_vanished' =>  (($this->is_vanished ?? 'n') == 'y')
         ];
+        if($this->reply_sender_id !== null){
+            // $resource['message']->reply_message->reply_sender_id=1;
+            $resource['message'] = (array)$resource['message'];
+            $resource['message']['reply_message']['reply_sender_id']= $this->reply_sender_id;
+            $resource['message']['reply_message']['reply_message_id']= $this->reply_message_id;
+            $resource['message']['reply_message']['reply_type'] = $this->reply_type;
+            $resource['message']['reply_message']['reply_value'] = $this->reply_value;
+            
+            if($this->reply_type == 'file'){
+                $resource['message']['reply_message']['reply_other']['reply_message_file_path'] = $this->reply_message_file_path;
+                $resource['message']['reply_message']['reply_other']['reply_message_file_type']=$this->reply_message_file_type;
+            }
+            // dd($resource['message']);
+        }
+        return $resource;
+
         return parent::toArray($request);
     }
 
