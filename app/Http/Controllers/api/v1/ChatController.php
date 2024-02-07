@@ -188,7 +188,7 @@ class ChatController extends Controller
                 if($room->participate_id == $auth_id){
                     $cleared_time = $room->participate_cleared_at;
                 }
-                $messages = ChatMessage::select('id', 'custom_id', 'room_id', 'sender_id', 'message', 'status', 'created_at', 'updated_at', 'deleted_at','is_vanished')
+                $messages = ChatMessage::select('id', 'custom_id', 'room_id', 'sender_id', 'message', 'status', 'created_at', 'updated_at', 'deleted_at','is_vanished','reply_sender_id','reply_sender_name','reply_message_id','reply_type','reply_value','reply_message_file_path','reply_message_file_type')
                 ->where(function($expired_query){
                     $expired_query->where('is_vanished','n');
                     $expired_query->orWhere('status','!=','read');
@@ -214,7 +214,7 @@ class ChatController extends Controller
                 $messages   =   $messages->limit($request->limit ?? config('utility.pagination.limit'))
                     ->offset($request->offset ?? config('utility.pagination.offset'))
                     ->get();
-
+                // dd($messages);
                 $callLog    =   CallLog::select('id', 'room_id', 'remaining_time')->where('date', now()->format('Y-m-d'))
                     ->whereHas('room', function ($q) use ($request) {
                         $q->whereCustomId($request->room)->whereIsActive('y');
