@@ -24,7 +24,7 @@ class SetDiscoveryLocationRequest extends FormRequest
     public function rules()
     {
         return [
-            'location'          =>  'required|max:100',
+           // 'location'          =>  'required|max:100',
         ];
     }
 }

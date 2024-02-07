@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\{ModelNotFoundException};
 use Illuminate\Support\Facades\{Auth};
 use App\Http\Requests\Api\Discovery\{SetDiscoveryRequest, SetDiscoveryLocationRequest};
 use App\Http\Resources\v1\{DiscoveryResource};
-use App\Models\{User, UserSetting, Location, Language};
+use App\Models\{User, UserSetting, Location, Language, LocationTranslation};
 
 class DiscoveryController extends Controller
 {
@@ -21,9 +21,21 @@ class DiscoveryController extends Controller
         if ($this->apiValidator($request->all(), $setDiscoveryLocationRequest->rules())) {
             try {
                 $user = $request->user();
-                $location = Location::select('id')->whereCustomId($request->location)->whereIsActive('y')->firstOrFail();
-                $user->discover_location_id = $location->id;
-                $user->save();
+                if($request->location =""){
+                    $lat = $user->latitude;
+                    $long = $user->longitude;
+
+                    $location_id = $this->get_user_location($lat, $long);
+                    $user->discover_location_id = $location_id;
+                    $user->location_id = $location_id;
+                    $user->save();
+                }else{
+
+                    $location = Location::select('id')->whereCustomId($request->location)->whereIsActive('y')->firstOrFail();
+                    $user->discover_location_id = $location->id;
+                    $user->save();
+                }
+                
 
                 return ([
                     'data'  => NULL,
@@ -108,12 +120,31 @@ class DiscoveryController extends Controller
                     'స్త్రీ' => 'Female'
                 ];
                 $user = $request->user();
-                $location = Location::select('id')->whereCustomId($request->location)->whereIsActive('y')->firstOrFail();
-                $user->discover_distance    =   $request->distance;
-                $user->discover_start_age   =   $request->start_age;
-                $user->discover_end_age     =   $request->end_age;
-                $user->interest             =   $interest_trans_arr[$request->interest];
-                $user->discover_location_id =   $location->id;
+                if(empty($request->location)){
+                    $lat = $user->latitude;
+                    $long = $user->longitude;
+
+                    $location_id = $this->get_user_location($lat, $long);
+                    $user->discover_location_id = $location_id;
+                    $user->location_id = $location_id;
+                }else{
+                    $location = Location::select('id')->whereCustomId($request->location)->whereIsActive('y')->firstOrFail();
+                    $user->discover_location_id     =   $location->id;
+                }
+                
+                $user->discover_distance        =   $request->distance;
+                $user->discover_start_age       =   $request->start_age;
+                $user->discover_end_age         =   $request->end_age;
+                $user->interest                 =   $interest_trans_arr[$request->interest];
+                $user->discover_profile_ranking =   $request->profile_ranking;
+                $user->discover_has_photo      =    $request->has_photo;
+                $user->discover_search_near_me =    $request->search_near_me;
+                $user->discover_by_state       =    $request->search_by_state;
+                $user->discover_state          =    $request->state;
+                $user->discover_online_status  =    $request->online_status;
+                $user->discover_relationship_status =  $request->relationship_status;
+                $user->discover_education =   $request->education;
+                $user->discover_verified_profile = $request->verified_profile;
                 $user->save();
 
                 if (!empty($request->languages)) {
@@ -177,7 +208,16 @@ class DiscoveryController extends Controller
                 'discover_distance',
                 'discover_start_age',
                 'discover_end_age',
-                'discover_location_id'
+                'discover_location_id',
+                'discover_profile_ranking',
+                'discover_has_photo',
+                'discover_search_near_me',
+                'discover_by_state',
+                'discover_state',
+                'discover_online_status',
+                'discover_relationship_status',
+                'discover_education',
+                'discover_verified_profile'
             )
                 ->with([
                     'discoveryLocation:id,custom_id,is_active',
@@ -210,4 +250,123 @@ class DiscoveryController extends Controller
         }
         return $this->returnResponse();
     }
+
+    // User get location id using lat and logn
+    public function get_user_location($lat, $long)
+    {
+        $apiKey = env('GOOGLE_MAPS_API_KEY');
+        $latlng = $lat . ',' . $long;
+        $result = [];
+        $location_id = '';
+
+        $url = "https://maps.googleapis.com/maps/api/geocode/json?latlng=" . $latlng . "&sensor=true&key=" . $apiKey;
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        $responseJson = curl_exec($ch);
+        curl_close($ch);
+        $response = json_decode($responseJson);
+        // echo "<pre>"; print_r($response); die();
+        if (!empty($response) && !empty($response->results[0]->address_components)) {
+            $location = false;
+            foreach ($response->results[0]->address_components as $key => $value) {
+                if ($value->types[0] == "administrative_area_level_3") {
+                    $location = true;
+                    $result['city'] = trim($value->long_name);
+                }
+                if ($value->types[0] == "administrative_area_level_1") {
+                    $result['state'] = trim($value->long_name);
+                }
+
+                // check city and state not empty
+                if (!empty($result) && !empty($result['city']) && !empty($result['state'])) {
+                    // if already exist city and state then get id and update user location id
+                    $city = strtok($result['city'], " ");
+                    $locationTranslation = LocationTranslation::join('locations', 'locations.id', '=', 'location_translations.location_id')->where('locations.is_active','=','y')->where('name','LIKE',"%{$city}%")->where('state', $result['state'])->where('locale', 'en')->first(); 
+                    
+                    if (!empty($locationTranslation)) {
+                        $location_id = $locationTranslation->location_id;
+
+                        // update location table for city is used some one users
+                        Location::where('id', $location_id)->update([
+                            'is_used' =>  'y',
+                        ]);
+                    } else {
+                        // if city and state not exits then create new
+                        $result['city'] = $city;
+                        $location = new Location();
+                        $location->custom_id = getUniqueString('locations');
+                        $location->is_used   = 'y';
+                        $location->save();
+
+                        $location_id = $location->id;
+
+                        $LocationTranslation = new LocationTranslation();
+                        $LocationTranslation->locale = 'en';
+                        $LocationTranslation->location_id = $location_id;
+                        $LocationTranslation->name = $result['city'];
+                        $LocationTranslation->state = $result['state'];
+                        $LocationTranslation->save();
+                    }
+                }
+            }
+
+            if($location == false){
+                
+                if (!empty($response)) {
+                     
+                     foreach($response->results as $res){
+                        if(isset($res->address_components) && !empty($res->address_components)){
+                            
+                            foreach ($res->address_components as $key => $value) {
+                                if ($value->types[0] == "administrative_area_level_3") {
+                                    $location = true;
+                                    $result['city'] = trim($value->long_name);
+                                }
+
+                                if ($value->types[0] == "administrative_area_level_1") {
+                                    $result['state'] = trim($value->long_name);
+                                }
+
+                                // check city and state not empty
+                                if (!empty($result) && !empty($result['city']) && !empty($result['state'])) {
+                                    // if already exist city and state then get id and update user location id
+                                    
+                                    $city = strtok($result['city'], " ");
+                                    $locationTranslation = LocationTranslation::join('locations', 'locations.id', '=', 'location_translations.location_id')->where('locations.is_active','=','y')->where('name','LIKE',"%{$city}%")->where('state', $result['state'])->where('locale', 'en')->first(); 
+                                    
+                                    if (!empty($locationTranslation)) {
+                                        $location_id = $locationTranslation->location_id;
+
+                                        // update location table for city is used some one users
+                                        Location::where('id', $location_id)->update([
+                                            'is_used' =>  'y',
+                                        ]);
+                                    } else {
+                                        // if city and state not exits then create new
+                                        $result['city'] = $city;
+                                        $location = new Location();
+                                        $location->custom_id = getUniqueString('locations');
+                                        $location->is_used   = 'y';
+                                        $location->save();
+
+                                        $location_id = $location->id;
+
+                                        $LocationTranslation = new LocationTranslation();
+                                        $LocationTranslation->locale = 'en';
+                                        $LocationTranslation->location_id = $location_id;
+                                        $LocationTranslation->name = $result['city'];
+                                        $LocationTranslation->state = $result['state'];
+                                        $LocationTranslation->save();
+                                    }
+                                }
+                            }
+                        }
+                     }
+                }
+            }
+            return $location_id;
+        }
+    }
+
 }

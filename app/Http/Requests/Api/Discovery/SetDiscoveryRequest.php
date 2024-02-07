@@ -77,7 +77,7 @@ class SetDiscoveryRequest extends FormRequest
             'start_age'         =>  'required|numeric|min:1|max:100',
             'end_age'           =>  'required_with:start_age|numeric|min:1|max:100',
             'interest'          =>  'required|in:' . join(',', array_keys($interest_trans_arr)),
-            'location'          =>  'required|max:100',
+            // 'location'          =>  'required|max:100',
             'languages'         =>  'nullable|array',
             'languages.*'       =>  'required',
         ];
