@@ -29,7 +29,7 @@ class ChatMessageResource extends JsonResource
         if($this->reply_sender_id !== null){
             // $resource['message']->reply_message->reply_sender_id=1;
             $resource['message'] = (array)$resource['message'];
-            
+            $resource['message']['reply_message']['reply_sender_id']= $this->reply_sender_id;
             $resource['message']['reply_message']['reply_message_id']= $this->reply_message_id;
             $resource['message']['reply_message']['reply_type'] = $this->reply_type;
             $resource['message']['reply_message']['reply_value'] = $this->reply_value;
