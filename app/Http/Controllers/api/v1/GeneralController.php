@@ -185,7 +185,8 @@ class GeneralController extends Controller
     {
         $locationRequest = new LocationRequest();
         if ($this->apiValidator($request->all(), $locationRequest->rules())) {
-            try {
+            // try {
+                DB::enableQueryLog();
                 $search = $request->search;
                 $lang = 'en'; //app()->getLocale();
 
@@ -198,8 +199,13 @@ class GeneralController extends Controller
                     ->join('location_translations', 'locations.id', '=', 'location_translations.location_id')
                     ->where('locations.is_active', 'y')
                     ->where('location_translations.locale', $lang)
-                    ->where('location_translations.name', 'like', "%{$search}%")
-                    ->orderBy('location_translations.name')
+                    ->where('location_translations.name', 'like', "{$search}%")
+                    // ->orderBy(DB::raw("locate('".$search."', 'location_translations.`name')"))
+                    ->orderByRaw("CASE
+                    WHEN 'location_translations.name' LIKE '{$search}%' THEN 2
+                    ELSE 1 
+                    end")
+                    ->orderBy('location_translations.name','asc')
                     ->groupBy('location_translations.name')
                     ->groupBy('location_translations.state');
 
@@ -214,7 +220,9 @@ class GeneralController extends Controller
                 $locations = $locations->limit($request->limit ?? config('utility.pagination.limit'))
                     ->offset($request->offset ?? config('utility.pagination.offset'))
                     ->get();
+                    // dd(DB::getQueryLog());
                 if ($locations->isNotEmpty()) {
+                    // dd($locations->toArray());
                     return (LocationSearchResource::collection($locations))->additional([
                         'meta' => [
                             'limit'     =>  $request->limit,
@@ -230,18 +238,18 @@ class GeneralController extends Controller
                     $this->response['meta']['message']  =   trans('api.not_found', ['entity' => __('Locations')]);
                     $this->status = Response::HTTP_NOT_FOUND;
                 }
-            } catch (ModelNotFoundException $exception) {
-                switch ($exception->getModel()) {
-                    case 'App\Models\Location':
-                        $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("Locations")]);
-                        break;
-                    default:
-                        $this->response['meta']['message'] = trans('api.went_wrong');
-                        break;
-                };
-            } catch (\Exception $e) {
-                $this->storeErrorLog($e, 'get_locations');
-            }
+            // } catch (ModelNotFoundException $exception) {
+            //     switch ($exception->getModel()) {
+            //         case 'App\Models\Location':
+            //             $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("Locations")]);
+            //             break;
+            //         default:
+            //             $this->response['meta']['message'] = trans('api.went_wrong');
+            //             break;
+            //     };
+            // } catch (\Exception $e) {
+            //     $this->storeErrorLog($e, 'get_locations');
+            // }
         }
         return $this->returnResponse();
     }
