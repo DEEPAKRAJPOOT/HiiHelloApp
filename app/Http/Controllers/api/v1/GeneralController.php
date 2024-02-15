@@ -200,10 +200,17 @@ class GeneralController extends Controller
                     ->where('locations.is_active', 'y')
                     ->where('location_translations.locale', $lang)
                     ->where('location_translations.name', 'like', "{$search}%")
+                    ->orWhere(function($query) use($search, $lang) {
+                        $query->where('location_translations.name', 'like', "%{$search}%")
+                              ->where('locations.is_active', 'y')
+                              ->where('location_translations.locale', $lang);
+                    })
+                    // ->orWhere('location_translations.name','like',"%{$search}%")
                     // ->orderBy(DB::raw("locate('".$search."', 'location_translations.`name')"))
                     ->orderByRaw("CASE
-                    WHEN 'location_translations.name' LIKE '{$search}%' THEN 2
-                    ELSE 1 
+                    WHEN 'location_translations.name' LIKE '{$search}%' THEN 1
+                    WHEN 'location_translations.name' LIKE '%{$search}%' THEN 2
+                    ELSE 3 
                     end")
                     ->orderBy('location_translations.name','asc')
                     ->groupBy('location_translations.name')
