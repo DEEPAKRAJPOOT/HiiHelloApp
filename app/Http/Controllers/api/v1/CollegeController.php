@@ -101,6 +101,12 @@ class CollegeController extends Controller
 
                 if(!empty($search)){
                     $college_list->where(function($query)use($search){
+                        $query->where('name','like',"{$search}%");
+                        $query->orWhere('university','like',"{$search}%");
+                        $query->orWhere('abbreviation','like',preg_replace('/[^a-z]/i','',$search).'%');
+                    });
+
+                    $college_list->orWhere(function($query)use($search){
                         $query->where('name','like',"%{$search}%");
                         $query->orWhere('university','like',"%{$search}%");
                         $query->orWhere('abbreviation','like','%'.preg_replace('/[^a-z]/i','',$search).'%');
