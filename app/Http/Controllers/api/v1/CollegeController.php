@@ -100,6 +100,7 @@ class CollegeController extends Controller
                 $college_list = College::whereNotNull('approved_at');
 
                 if(!empty($search)){
+                    
                     $college_list->where(function($query)use($search){
                         $query->where('name','like',"{$search}%");
                         $query->orWhere('university','like',"{$search}%");

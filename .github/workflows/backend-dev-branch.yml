@@ -64,7 +64,7 @@ jobs:
              uses: appleboy/ssh-action@master
              with:
                   #host: 65.2.137.219
-                  host: 13.201.14.111
+                  host: 3.111.43.85
                   username: ubuntu
                   key: ${{ secrets.BACKEND_SERVER_LARAVEL }}
                   port: 22

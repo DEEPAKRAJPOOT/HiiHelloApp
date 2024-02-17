@@ -327,6 +327,7 @@ class GeneralController extends Controller
                 // });
 
                 if (!empty($search)) {
+                    
                     $interests = $interests->whereHas('interestTranslation', function ($query) use ($search) {
                         $query->where('title', 'like', "{$search}%")
                               ->orWhere('title', 'like', "%{$search}%");
