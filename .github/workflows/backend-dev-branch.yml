@@ -40,7 +40,7 @@ jobs:
            - name: connect to aws cli
              uses: appleboy/ssh-action@master
              with:
-                  host: 65.1.31.65
+                  #host: 65.1.31.65
                   username: ubuntu
                   key: ${{ secrets.CRON_SERVER_ACCESS }}
                   port: 22
@@ -64,7 +64,7 @@ jobs:
              uses: appleboy/ssh-action@master
              with:
                   #host: 65.2.137.219
-                  host: 65.2.137.219
+                  #host: 65.2.137.219
                   username: ubuntu
                   key: ${{ secrets.BACKEND_SERVER_LARAVEL }}
                   port: 22
