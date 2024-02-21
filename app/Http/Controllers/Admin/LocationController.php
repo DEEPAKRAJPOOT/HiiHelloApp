@@ -152,25 +152,75 @@ class LocationController extends Controller
 
     public function listing(Request $request)
     {
+        $data = $request->all();
+        $location_filter =$data['location_filter'];
+        DB::enableQueryLog();
         extract($this->DTFilters($request->all()));
         $records = [];
-
-        $locations = Location::select("locations.id as id","locations.custom_id as custom_id","locations.is_active as is_active","location_translations.location_id as location_id","location_translations.name as name","location_translations.state as state");
-        $locations = $locations->join("location_translations","location_translations.location_id","=","locations.id");
-        $locations = $locations->where('location_translations.locale','en');
+        $locationsql = "SELECT
+        locations.`id`    AS `id`,
+        locations.`custom_id` AS `custom_id`,
+        locations.`is_active` AS `is_active`,
+        locations.`created_at`,
+        b.`location_id` AS `location_id`,
+        b.`name`        AS `name`,
+        b.`state`       AS `state`,
+        b.total,
+        b.location_id AS all_location_ids
+ FROM   location_translations AS a
+        JOIN (SELECT NAME,
+                     state,
+                     Count(*)                  AS total,
+                     Group_concat(location_id) AS location_id
+              FROM   location_translations
+                     JOIN locations
+                       ON locations.id = location_translations.location_id
+              WHERE  location_translations.locale = 'en'
+                     AND locations.is_active = 'y'
+              GROUP  BY NAME,
+                        state
+              HAVING Count(*) >= 1 
+              ORDER  BY NAME) AS b
+          ON a.NAME = b.NAME
+             AND a.state = b.state
+             AND a.locale = 'en'
+        JOIN locations
+          ON a.location_id = locations.id";// AND a.name LIKE '%Adi%'
         if ($search != '') {
-            $locations->where("location_translations.name","like",'%'.$search.'%');
-            $locations->orWhere("location_translations.state","like",'%'.$search.'%');
-        }
-        $locations = $locations->where("locations.is_active","y");
-        $count = $locations->count();
+            $locationsql .= " WHERE (locations.is_active = 'y' AND a.name LIKE '%".$search."%') OR (locations.is_active = 'y' AND a.state LIKE '%".$search."%')";
+         }else{
+            $locationsql .= " WHERE locations.is_active = 'y'";
+         }
+
+       $locationsql .= " GROUP  BY a.NAME,a.state";
+       if($location_filter == '2'){
+         $locationsql .= " ORDER  BY b.total DESC";
+       }else{
+         $locationsql .= " ORDER  BY a.NAME";
+       }
+       
+       $locationsCount = DB::select($locationsql);
+       $count = count($locationsCount);
+       $locationsql .= " LIMIT ".$limit." OFFSET ".$offset."";
+        //  dd($locationsql);
+       $locations = DB::select($locationsql);
+       //    dd($locationsql);
+        // $locations = Location::select("locations.id as id","locations.custom_id as custom_id","locations.is_active as is_active","locations.created_at","location_translations.location_id as location_id","location_translations.name as name","location_translations.state as state");
+        // $locations = $locations->join("location_translations","location_translations.location_id","=","locations.id");
+        // $locations = $locations->where('location_translations.locale','en');
+        // if ($search != '') {
+        //     $locations->where("location_translations.name","like",'%'.$search.'%');
+        //     $locations->orWhere("location_translations.state","like",'%'.$search.'%');
+        // }
+        // $locations = $locations->where("locations.is_active","y");
+        //$count = count($locations);
         $records['recordsTotal'] = $count;
         $records['recordsFiltered'] = $count;
         $records['data'] = [];
 
-        $locations = $locations->offset($offset)->limit($limit)->orderBy("location_translations.name", "asc");
-        $locations = $locations->get();
-
+        // $locations = $locations->offset($offset)->limit($limit)->orderBy("location_translations.name", "asc");
+        // $locations = $locations->get();
+        // dd($locations);
         foreach ($locations as $location) {
             $params = [
                 'checked'       =>  ($location->is_active == 'y' ? 'checked' : ''),
@@ -178,17 +228,44 @@ class LocationController extends Controller
                 'class'         =>  '',
                 'id'            =>  $location->custom_id,
             ];
+            $arrayDuplicateLocationIds = explode(",",$location->all_location_ids);
+            $mergtoId = min($arrayDuplicateLocationIds);
+            $getUserCount = $this->getLocationAndUserCount($location->all_location_ids,$arrayDuplicateLocationIds);
 
             $records['data'][] = [
                 'id'            =>  $location->id,
                 'name'          =>  $location->name ?? "",
                 'state'         =>  $location->state ?? "",
+                'created_at'    =>  $location->created_at ?? "",
+                'duplicates'    =>  $location->total ?? '0',
+                'mergeToId'     =>  (int)$mergtoId,
+                'locationByUser'=>  $getUserCount,
                 'active'        =>  view('admin.layouts.includes.switch', compact('params'))->render(),
                 'action'        =>  view('admin.layouts.includes.actions')->with(['custom_title' => 'Location', 'id' => $location->custom_id], $location)->render(),
                 'checkbox'      =>  view('admin.layouts.includes.checkbox')->with('id', $location->custom_id)->render(),
             ];
         }
+
         return $records;
+    }
+
+    public function getLocationAndUserCount($all_location_ids, $arrayDuplicateLocationIds){
+        
+        $getUserCountSql = "SELECT users.location_id,lt.name,COUNT(`users`.id)  AS total FROM dev_hi_hello_app.users JOIN location_translations AS lt
+        on lt.location_id = users.location_id WHERE  users.location_id IN (".$all_location_ids.") AND lt.locale = 'en' group by users.location_id";
+        $getUserCount = DB::select($getUserCountSql);
+        $mergtoId = min($arrayDuplicateLocationIds);
+                // Iterate through each object
+        foreach ($getUserCount as $userCount) {
+            // Check if the name is 'John'
+            if ($userCount->location_id == (int)$mergtoId) {
+                // Add a new element inside the object
+                $userCount->location_type = 'M';
+            }
+        }
+       
+       return $getUserCount;
+
     }
 
     public function csvDownload(Request $request)
