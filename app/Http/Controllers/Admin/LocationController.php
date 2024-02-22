@@ -294,7 +294,7 @@ class LocationController extends Controller
 
     public function getLocationAndUserCount($all_location_ids, $arrayDuplicateLocationIds){
         
-        $getUserCountSql = "SELECT users.location_id,lt.name,lt.created_at,COUNT(`users`.id)  AS total FROM dev_hi_hello_app.users JOIN location_translations AS lt
+        $getUserCountSql = "SELECT users.location_id,lt.name,lt.created_at,COUNT(`users`.id)  AS total FROM users JOIN location_translations AS lt
         on lt.location_id = users.location_id WHERE  users.location_id IN (".$all_location_ids.") AND lt.locale = 'en' group by users.location_id";
         $getUserCount = DB::select($getUserCountSql);
         $mergtoId = min($arrayDuplicateLocationIds);
