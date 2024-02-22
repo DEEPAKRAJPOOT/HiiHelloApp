@@ -209,7 +209,7 @@
                 { targets: 3, title: 'State Name', orderable: false },
                 { targets: 4, title: 'Country', orderable: false },
                 { targets: 5, title: 'Active', orderable: false },
-                { targets: 6, title: 'Created At', orderable: true },
+                { targets: 6, title: 'Created At', orderable: false },
                 { targets: 7, title: 'Total Dublicates', orderable: false, searchable: false },
                 { targets: 8, title: 'Merge with location id', orderable: false, searchable: false },
                 { targets: 9, title: 'Dublicates Locations Details', orderable: false, searchable: false },
