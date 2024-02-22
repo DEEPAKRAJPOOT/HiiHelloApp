@@ -26,7 +26,9 @@ class LocationController extends Controller
      */
     public function index()
     {
-        return view('admin.pages.locations.index')->with(['custom_title' => 'Locations']);
+        $getCountrySql = "SELECT country FROM location_translations JOIN locations on locations.id = location_translations.location_id  WHERE locations.is_active = 'y' AND country IS NOT NULL group by country order by country";
+        $getCounty = DB::select($getCountrySql);
+        return view('admin.pages.locations.index',compact('getCounty'))->with(['custom_title' => 'Locations']);
     }
 
     /**
@@ -97,6 +99,9 @@ class LocationController extends Controller
             if($location) {
                 $location->is_active = $request->value;
                 if($location->save()) {
+                    if($request->value === "n"){
+                       User::where('location_id',$location->id)->update(['is_active'=>'n']);
+                    }
                     $content['status']=200;
                     $content['message'] = "Status updated successfully.";
                 }
@@ -154,6 +159,9 @@ class LocationController extends Controller
     {
         $data = $request->all();
         $location_filter =$data['location_filter'];
+        $from_date = $data['from_date'];
+        $to_date = $data['to_date'];
+        $country_filter = $data['country_filter'];
         DB::enableQueryLog();
         extract($this->DTFilters($request->all()));
         $records = [];
@@ -165,13 +173,15 @@ class LocationController extends Controller
         b.`location_id` AS `location_id`,
         b.`name`        AS `name`,
         b.`state`       AS `state`,
-        b.total,
-        b.location_id AS all_location_ids
+        b.`country`,
+        b.`total`,
+        b.`location_id` AS all_location_ids
  FROM   location_translations AS a
         JOIN (SELECT NAME,
                      state,
                      Count(*)                  AS total,
-                     Group_concat(location_id) AS location_id
+                     Group_concat(location_id) AS location_id,
+                     country
               FROM   location_translations
                      JOIN locations
                        ON locations.id = location_translations.location_id
@@ -187,9 +197,40 @@ class LocationController extends Controller
         JOIN locations
           ON a.location_id = locations.id";// AND a.name LIKE '%Adi%'
         if ($search != '') {
-            $locationsql .= " WHERE (locations.is_active = 'y' AND a.name LIKE '%".$search."%') OR (locations.is_active = 'y' AND a.state LIKE '%".$search."%')";
+            if($from_date != '' && $to_date != ''){
+                if($country_filter != ''){
+
+                    $locationsql .= " WHERE (locations.is_active = 'y' AND a.name LIKE '%".$search."%' AND DATE(a.created_at) BETWEEN '".$from_date."' AND '".$to_date."' AND a.country = '".$country_filter."') OR (locations.is_active = 'y' AND a.state LIKE '%".$search."%' AND DATE(a.created_at) BETWEEN '".$from_date."' AND '".$to_date."' AND a.country = '".$country_filter."')";
+                }else{
+                    $locationsql .= " WHERE (locations.is_active = 'y' AND a.name LIKE '%".$search."%' AND DATE(a.created_at) BETWEEN '".$from_date."' AND '".$to_date."') OR (locations.is_active = 'y' AND a.state LIKE '%".$search."%' AND DATE(a.created_at) BETWEEN '".$from_date."' AND '".$to_date."')";
+                }
+                
+            }else{
+                if($country_filter != ''){
+
+                  $locationsql .= " WHERE (locations.is_active = 'y' AND a.name LIKE '%".$search."%' AND a.country = '".$country_filter."') OR (locations.is_active = 'y' AND a.state LIKE '%".$search."%' AND a.country = '".$country_filter."')";
+                }else{  
+
+                  $locationsql .= " WHERE (locations.is_active = 'y' AND a.name LIKE '%".$search."%') OR (locations.is_active = 'y' AND a.state LIKE '%".$search."%')";
+              }
+            }
+            
          }else{
-            $locationsql .= " WHERE locations.is_active = 'y'";
+            if($from_date != '' && $to_date != ''){
+                if($country_filter != ''){
+
+                    $locationsql .= " WHERE locations.is_active = 'y' AND DATE(a.created_at) BETWEEN '".$from_date."' AND '".$to_date."'  AND a.country = '".$country_filter."'";
+                  }else{  
+                    $locationsql .= " WHERE locations.is_active = 'y' AND DATE(a.created_at) BETWEEN '".$from_date."' AND '".$to_date."'";
+                   }
+            }else{
+                if($country_filter != ''){
+                    $locationsql .= " WHERE locations.is_active = 'y' AND a.country = '".$country_filter."'";
+                  }else{  
+                     $locationsql .= " WHERE locations.is_active = 'y'";
+                   }
+                
+            }
          }
 
        $locationsql .= " GROUP  BY a.NAME,a.state";
@@ -231,15 +272,17 @@ class LocationController extends Controller
             $arrayDuplicateLocationIds = explode(",",$location->all_location_ids);
             $mergtoId = min($arrayDuplicateLocationIds);
             $getUserCount = $this->getLocationAndUserCount($location->all_location_ids,$arrayDuplicateLocationIds);
-
+            
             $records['data'][] = [
                 'id'            =>  $location->id,
                 'name'          =>  $location->name ?? "",
                 'state'         =>  $location->state ?? "",
+                'country'       =>  $location->country??"",
                 'created_at'    =>  $location->created_at ?? "",
                 'duplicates'    =>  $location->total ?? '0',
                 'mergeToId'     =>  (int)$mergtoId,
                 'locationByUser'=>  $getUserCount,
+                'location_ids'  =>  Crypt::encrypt($location->all_location_ids),
                 'active'        =>  view('admin.layouts.includes.switch', compact('params'))->render(),
                 'action'        =>  view('admin.layouts.includes.actions')->with(['custom_title' => 'Location', 'id' => $location->custom_id], $location)->render(),
                 'checkbox'      =>  view('admin.layouts.includes.checkbox')->with('id', $location->custom_id)->render(),
@@ -251,7 +294,7 @@ class LocationController extends Controller
 
     public function getLocationAndUserCount($all_location_ids, $arrayDuplicateLocationIds){
         
-        $getUserCountSql = "SELECT users.location_id,lt.name,COUNT(`users`.id)  AS total FROM dev_hi_hello_app.users JOIN location_translations AS lt
+        $getUserCountSql = "SELECT users.location_id,lt.name,lt.created_at,COUNT(`users`.id)  AS total FROM dev_hi_hello_app.users JOIN location_translations AS lt
         on lt.location_id = users.location_id WHERE  users.location_id IN (".$all_location_ids.") AND lt.locale = 'en' group by users.location_id";
         $getUserCount = DB::select($getUserCountSql);
         $mergtoId = min($arrayDuplicateLocationIds);
@@ -466,14 +509,21 @@ class LocationController extends Controller
         $selectedLocationIds = '';
         if(isset($data['location_ids']) && !empty($data['location_ids'])){
             $selectedLocationIds = Crypt::decrypt($data['location_ids']);
+            $arrayDuplicateLocationIds = explode(",",$selectedLocationIds);
+            $mergtoId = min($arrayDuplicateLocationIds);
+            // $excludeLocations = array_diff($arrayDuplicateLocationIds, [$mergtoId] );
+            // $selectedLocationIds = implode(",",$excludeLocations);
+            // dd($selectedLocationIds);
         }
         $locations = Location::with('locationTransDefault')->whereIsActive('y')->get();
+        // $locations = (object)array("id"=>$mergtoId);
         return view('admin.pages.locations.merge',compact('locations','selectedLocationIds'))->with(['custom_title' => 'Merge Location']);
     }
 
     public function mergeselectedlocations(MergeLocationRequest $request){
 
         $locationData = $request->all();
+        // dd($locationData);
         try{
 
         $fromLocation = $locationData['from_location'];
@@ -513,12 +563,12 @@ class LocationController extends Controller
             flash('Unable to merge location. Try again later')->error();
         }
 
-        return redirect(route('admin.locations.duplicate-location'));
+        return redirect(route('admin.locations.index'));
 
     } catch (\Exception $e) {
         // Add error log
         flash($e->getMessage())->error();
-        return redirect(route('admin.locations.duplicate-location'));
+        return redirect(route('admin.locations.index'));
     } 
    }
 
@@ -556,7 +606,6 @@ class LocationController extends Controller
         $records['data'] = [];
         // dd($records);
         foreach ($locations as $location) {
-            //dd($location);
             $params = [
                 'checked'       =>  ($location->is_active == 'y' ? 'checked' : ''),
                 'getaction'     =>  $location->is_active,

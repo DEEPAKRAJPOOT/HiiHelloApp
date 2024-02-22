@@ -589,6 +589,10 @@ class AuthenticationController extends Controller
                 if ($value->types[0] == "administrative_area_level_1") {
                     $result['state'] = trim($value->long_name);
                 }
+                if ($value->types[0] == "country") {
+                    $result['country_long'] = trim($value->long_name);
+                    $result['country_short'] = trim($value->short_name);
+                }
 
                 // check city and state not empty
                 if (!empty($result) && !empty($result['city']) && !empty($result['state'])) {
@@ -618,6 +622,7 @@ class AuthenticationController extends Controller
                         $LocationTranslation->location_id = $location_id;
                         $LocationTranslation->name = $result['city'];
                         $LocationTranslation->state = $result['state'];
+                        $LocationTranslation->country = $result['country_long'];
                         $LocationTranslation->save();
                     }
                 }

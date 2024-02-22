@@ -519,6 +519,10 @@ class UtilityController extends Controller
                 if ($value->types[0] == "administrative_area_level_1") {
                     $result['state'] = $value->long_name;
                 }
+                if ($value->types[0] == "country") {
+                    $result['country_long'] = trim($value->long_name);
+                    $result['country_short'] = trim($value->short_name);
+                }
             }
             return $result;
         }

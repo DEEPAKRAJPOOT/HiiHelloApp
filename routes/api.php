@@ -101,6 +101,7 @@ Route::group(['namespace' => 'v1', 'prefix' => 'v1', 'middleware' => ['auth:sanc
     Route::post('user/set-college', [ProfileController::class,'setCollege'])->name('api.user.set-college');
     Route::post('user/profile-report',[UserController::class,'storeProfileReport'])->name('api.user.profile-report');
     Route::post('user/set-latlong',[UserController::class,'storeLatLong'])->name('api.user.set-latlong');
+    Route::get('user/update-othercountry',[UserController::class,'updateOtherCountryOfCity'])->name('api.user.update-othercountry');
     Route::post('user/change-user-status',[UserController::class,'activateDeactivateUser'])
     ->name('api.user.change_user_status')
     ->withoutMiddleware([CheckApiUser::class]);

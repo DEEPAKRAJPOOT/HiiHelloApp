@@ -10,7 +10,7 @@ use App\Http\Resources\v1\{UserProfile, UserDetailResource, MyProfile};
 use App\Http\Requests\Api\User\{ProfileRequest, ProfileReportRequest, SetLatLongRequest};
 use App\Http\Requests\Api\Authentication\{DeleteAccountRequest};
 use App\Http\Requests\Api\General\{PaginationRequest};
-use App\Models\{User, Location, ProfileReport, NotificationStatus, Language};
+use App\Models\{User, Location, ProfileReport, NotificationStatus, Language,LocationTranslation};
 
 class UserController extends Controller
 {
@@ -288,7 +288,8 @@ class UserController extends Controller
     {
         $setLatLongRequest = new SetLatLongRequest();
         if ($this->apiValidator($request->all(), $setLatLongRequest->rules())) {
-            try {
+            //try {
+                
                 $user = $request->user();
                 $user->current_latitude = $request->latitude;
                 $user->current_longitude = $request->longitude;
@@ -303,22 +304,73 @@ class UserController extends Controller
                         'message'   =>  trans('api.add', ['entity' => __('Current location')]),
                     ]
                 ]);
-            } catch (ModelNotFoundException $exception) {
-                switch ($exception->getModel()) {
-                    case 'App\Models\User':
-                        $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("User")]);
-                        $this->response['meta']['is_ban'] = false;
-                        break;
-                    default:
-                        $this->response['meta']['message'] = trans('api.went_wrong');
-                        $this->response['meta']['is_ban'] = false;
-                        break;
-                };
-            } catch (\Exception $e) {
-                $this->storeErrorLog($e, 'store_latlong');
-            }
+            // } catch (ModelNotFoundException $exception) {
+            //     switch ($exception->getModel()) {
+            //         case 'App\Models\User':
+            //             $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("User")]);
+            //             $this->response['meta']['is_ban'] = false;
+            //             break;
+            //         default:
+            //             $this->response['meta']['message'] = trans('api.went_wrong');
+            //             $this->response['meta']['is_ban'] = false;
+            //             break;
+            //     };
+            // } catch (\Exception $e) {
+            //     $this->storeErrorLog($e, 'store_latlong');
+            // }
         }
         return $this->returnResponse();
+    }
+
+    public function updateOtherCountryOfCity(Request $request){
+
+        $otherCountryLocationId = "23780"; 
+        $arrayOtherCountryLocationId = explode(",",$otherCountryLocationId);
+        $sqlTogetLatLong = "SELECT country_id, location_id, latitude, longitude 
+        FROM users WHERE location_id IN (".$otherCountryLocationId.")";
+        $allUsersData = DB::select($sqlTogetLatLong);
+        foreach($allUsersData as $userData){
+            $result = $this->get_city_name($userData->latitude,$userData->longitude);
+            if($result != null){
+                LocationTranslation::where('location_id',$userData->location_id)->update(['country'=>$result['country_long']]);
+            }
+        }
+        
+        //$updateCountry = LocationTranslation::whereNull('country')->update(['country'=>'India']);
+        //if($updateCountry){
+            echo "other Country Location updated";die;
+        //}
+        
+    }
+
+    public function get_city_name($lat,$long){
+        
+        $apiKey = env('GOOGLE_MAPS_API_KEY');
+        $latlng = $lat.','.$long;
+        $result = [];
+
+        $url = "https://maps.googleapis.com/maps/api/geocode/json?latlng=".$latlng."&sensor=true&key=".$apiKey;
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);    
+        $responseJson = curl_exec($ch);
+        curl_close($ch);
+        $response = json_decode($responseJson);
+        if (!empty($response) && !empty($response->results[0]->address_components)) {
+            foreach ($response->results[0]->address_components as $key => $value) {
+                if ($value->types[0] == "administrative_area_level_3") {
+                    $result['city'] = trim($value->long_name);
+                }
+                if ($value->types[0] == "administrative_area_level_1") {
+                    $result['state'] = trim($value->long_name);
+                }
+                if ($value->types[0] == "country") {
+                    $result['country_long'] = trim($value->long_name);
+                    $result['country_short'] = trim($value->short_name);
+                }
+            }
+            return $result;
+        }
     }
 
     // Update Notification Status Of User

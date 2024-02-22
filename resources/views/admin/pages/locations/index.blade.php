@@ -62,15 +62,29 @@
             </div>
         </div>
         <div class="row">
-        <div class="col-sm-6" >
+        <div class="col-sm-12" >
         {{-- Filter Start --}}
-            <table class="mb-5" align="left" style="margin-left:14px;margin: top 15px;">
+            <table class="mb-5" align="left" style="margin-left:25px;margin: top 15px !important;">
                 <tr>
                     <td>
                         <span class="card-icon">
                             <i class="fa fa-filter text-primary"></i>
                         </span>
                         <label>Filter:&nbsp;&nbsp;</label>
+                    </td>
+                    <td>                        
+                        <input type='date' id='search_fromdate' class="form-control" placeholder='From date'>
+                    </td>
+                    <td>
+                        <input type='date' id='search_todate' class="form-control" placeholder='To date'>
+                    </td>
+                    <td>
+                        <select name="country_filter" id="country_filter" class="form-control">
+                            <option value="">Filter Country</option>
+                            @foreach($getCounty as $country)
+                            <option value="{{$country->country}}">{{$country->country}}</option>
+                            @endforeach
+                        </select>
                     </td>
                     <td>
                         <select name="location_filter" id="location_filter" class="form-control">
@@ -117,7 +131,13 @@
                 data: function(data) {
                     
                     var location_filter = $("#location_filter").val();
+                    var from_date = $('#search_fromdate').val();
+                    var to_date = $('#search_todate').val();
+                    var country_filter = $('#country_filter').val();
                     data.location_filter       = location_filter;
+                    data.from_date = from_date;
+                    data.to_date = to_date;
+                    data.country_filter = country_filter;
                 },
                 dataSrc: function(response){
                     console.log(response.data);
@@ -125,14 +145,33 @@
                     for ( var i=0, ien=response.data.length ; i<ien ; i++ ) {
                         response.data[i];
                         var locations = '<table cellpadding="5" cellspacing="0" border="0" style="padding-left:50px;">';
-                        locations += '<tr><th></th><th>Location ID</th><th>Location Type</th><th>Name</th><th>Total Users</th><th>Click To Merge</th></tr>';
+                        locations += '<tr><th></th><th>Location ID</th><th>Location Type</th><th>Name</th><th>Total Users</th><th>Created At</th>';
+                        if(parseInt(response.data[i].duplicates) != 1){
+                         locations += '<th>Click To Merge</th>';
+                        }
+                        locations += '</tr>';
+
                         for(var j=0, jen=response.data[i].locationByUser.length;j<jen;j++){
                             var locType = '';
                             if(typeof response.data[i].locationByUser[j].location_type !== 'undefined'){
                                 locType = response.data[i].locationByUser[j].location_type;
                             }
                             locations += '<tr>' +
-                            '<td></td><td>'+ response.data[i].locationByUser[j].location_id+'</td><td>'+locType+'</td><td>'+response.data[i].locationByUser[j].name+'</td><td>'+response.data[i].locationByUser[j].total+'</td><td><a href="#" class="btn btn-sm btn-primary font-weight-bolder text-uppercase ml-2"><i class="fas fa-location-arrow"></i>Merge Locations</a></td><td></td>';
+                            '<td></td><td>'+ response.data[i].locationByUser[j].location_id+'</td><td>'+locType+'</td><td>'+response.data[i].locationByUser[j].name+'</td><td>'+response.data[i].locationByUser[j].total+'</td><td>'+response.data[i].locationByUser[j].created_at+'</td>';
+                            console.log(parseInt(response.data[i].locationByUser[j].total));
+                            if(parseInt(response.data[i].duplicates) != 1){
+                                if(j == 0){
+                                    var url = "{{ route("admin.locations.merge-location") }}"
+                                    // var url = '{{ route("admin.locations.merge-location", ["location_ids"=>"'+response.data[i].location_ids+'"]) }}';
+                                        //url = url.replace('":location_ids"', response.data[i].location_ids);
+                                    locations += '<td><a href="'+url+'?location_ids='+response.data[i].location_ids+'" class="btn btn-sm btn-primary font-weight-bolder text-uppercase ml-2"><i class="fas fa-location-arrow"></i>Merge Locations</a></td><td></td>';
+                                }else{
+                                     locations += '<td></td><td></td>';
+                                }
+                            }
+
+                            
+                            
                             // Nested table content
                             // if(typeof response.data[i].locationByUser[j].location_type !== 'undefined'){
                             //     locations +=
@@ -154,6 +193,7 @@
                 { data: 'id' },
                 { data: 'name' },
                 { data: 'state' },
+                {data: 'country'},
                 { data: 'active' },
                 {data: 'created_at'},
                 {data: 'duplicates'},
@@ -167,11 +207,12 @@
                 { targets: 1, title: 'Id', orderable: true },
                 { targets: 2, title: 'Name', orderable: false },
                 { targets: 3, title: 'State Name', orderable: false },
-                { targets: 4, title: 'Active', orderable: false },
-                { targets: 5, title: 'Created At', orderable: true },
-                { targets: 6, title: 'Total Dublicates', orderable: false, searchable: false },
-                { targets: 7, title: 'Merge with location id', orderable: false, searchable: false },
-                { targets: 8, title: 'Dublicates Locations Details', orderable: false, searchable: false },
+                { targets: 4, title: 'Country', orderable: false },
+                { targets: 5, title: 'Active', orderable: false },
+                { targets: 6, title: 'Created At', orderable: true },
+                { targets: 7, title: 'Total Dublicates', orderable: false, searchable: false },
+                { targets: 8, title: 'Merge with location id', orderable: false, searchable: false },
+                { targets: 9, title: 'Dublicates Locations Details', orderable: false, searchable: false },
                 // Action buttons
                 { targets: -1, title: 'Action',
                 orderable: false },
