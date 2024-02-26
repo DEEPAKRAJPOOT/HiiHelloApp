@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\{ModelNotFoundException};
 use App\Http\Resources\v1\{LanguageResource, CmsResource, CountryResource, LocationResource, InterestResource, FaqResource, ProfileDetailResource, PersonalityResource, LocationTransResource, LocationSearchResource, DeviceTokenResource};
 use App\Http\Requests\Api\General\{PaginationRequest, LocationRequest, ProfileDetailRequest, InterestRequest, CheckLocationRequest};
 use App\Http\Requests\Api\User\{AddDeviceTokenRequest, GetDeviceTokenRequest};
-use App\Models\{User, Language, CmsPage, Country, Location, Interest, Faq, DeviceToken, ProfileDetail, AppDetail, Personality, LocationTranslation};
+use App\Models\{User, Language, CmsPage, Country, Location, Interest, Faq, DeviceToken, ProfileDetail, AppDetail, Personality, LocationTranslation,AppStatus};
 use Illuminate\Support\Facades\Redis;
 use App\Http\Traits\RedisTrait;
 use DB;
@@ -33,7 +33,12 @@ class GeneralController extends Controller
         $location       =   Location::select('updated_at')->orderBy('updated_at', 'DESC')->first();
         $attributes     =   ProfileDetail::whereIsActive('y')->distinct()->pluck('attribute')->toArray();
         $app_details    =   AppDetail::limit(4)->get();
-
+        $appStatus = AppStatus::get();
+        $statusData=[];
+        foreach($appStatus as $status){
+            $statusData[$status->flag_constant] = (int)$status->flag_value?true:false;
+        }
+        
         $verification_data = [];
         if ($app_details->isNotEmpty()) {
             $verification_data = [
@@ -91,10 +96,7 @@ class GeneralController extends Controller
                 ],
             ],
             'phone_auth_type' => [
-                'android' =>[
-                    'firebase_sms_enabled' => false,
-                    'whatsapp_login_enabled'=>true
-                ]
+                'android' =>$statusData
             ],
             'verification_details'  =>  $verification_data
         ];

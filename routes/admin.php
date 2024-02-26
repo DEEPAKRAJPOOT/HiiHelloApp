@@ -101,7 +101,10 @@ Route::group(['namespace' => 'Admin', 'middleware' => ['check_permit', 'revalida
 	Route::post('locations/mergelocations', 'LocationController@mergeselectedlocations')->name('locations.mergelocations');
 	Route::resource('locations', 'LocationController');
 	
-
+	/* App Status Management */
+	
+	Route::get('appstatus/listing', 'AppStatusController@listing')->name('appstatus.listing');
+    Route::resource('appstatus','AppStatusController');
 	/* Locations Management*/
 	Route::get('profile-reports/listing', 'ProfileReportController@listing')->name('profile-reports.listing');
 	Route::resource('profile-reports', 'ProfileReportController');

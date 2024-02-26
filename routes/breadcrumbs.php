@@ -144,7 +144,7 @@ Breadcrumbs::register('dashboard', function ($breadcrumbs) {
 	});
 
 
-	// Locations Management -------------------------------------------------------------------------------------------------------------------------------------------------------
+	//  Locations Management -------------------------------------------------------------------------------------------------------------------------------------------------------
 	Breadcrumbs::register('locations_list', function($breadcrumbs)
 	{
 		$breadcrumbs->parent('dashboard');
@@ -161,6 +161,12 @@ Breadcrumbs::register('dashboard', function ($breadcrumbs) {
 		$breadcrumbs->push('Edit Location', route('admin.locations.edit', $id));
 	});
 
+    //App Status Management
+	Breadcrumbs::register('appstatus_list', function($breadcrumbs)
+	{
+		$breadcrumbs->parent('dashboard');
+	    $breadcrumbs->push('App Status', route(Auth::getDefaultDriver().'.appstatus.index'));
+	});
 
 	// Profile Reports Management -------------------------------------------------------------------------------------------------------------------------------------------------------
 	Breadcrumbs::register('profile_reports_list', function($breadcrumbs)
