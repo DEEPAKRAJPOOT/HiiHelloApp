@@ -29,7 +29,7 @@
 </div>
         <div class="card-body">
             {{--  Datatable Start  --}}
-            <table class="table table-bordered table-hover table-checkable" id="users_table" style="margin-top: 13px !important"></table>
+            <table class="table table-bordered table-hover " id="users_table" style="margin-top: 13px !important"></table>
             {{--  Datatable End  --}}
         </div>
     </div>
@@ -49,7 +49,7 @@
             ajax: {
                 url: "{{ route('admin.appstatus.listing') }}",
                 data: {
-                    columnsDef: ['checkbox','name', 'status','active','action'],
+                    columnsDef: ['name', 'active','action'],
                 },
                 dataSrc: function(response){
                     console.log(response.data);
@@ -59,7 +59,6 @@
                 },
             },
             columns: [
-                { data: 'checkbox' },
                 { data: 'id' },
                 { data: 'name' },
                 { data: 'active' },
@@ -67,10 +66,9 @@
             ],
             columnDefs: [
                 // Specify columns titles here...
-                { targets: 0, title: "<center><input type='checkbox' class='all_select'></center>", orderable: false },
-                { targets: 1, title: 'Id', orderable: true },
-                { targets: 2, title: 'Name', orderable: false },
-                { targets: 3, title: 'Active', orderable: false },
+                { targets: 0, title: 'Id', orderable: true },
+                { targets: 1, title: 'Name', orderable: false },
+                { targets: 2, title: 'Active', orderable: false },
                 // { targets: -1, title: 'Action',
                 // orderable: false },
                

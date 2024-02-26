@@ -100,11 +100,17 @@ class AppStatusController extends Controller
     }
 
     public function listing(Request $request){
-        
-       $statusListing = AppStatus::get();
-        // dd($statusListing);
+       extract($this->DTFilters($request->all()));
+       $statusListing = AppStatus::select('id','flag_constant','flag_value');
+       if ($search != '') {
+            $statusListing->where("flag_constant","like",'%'.$search.'%');
+            $statusListing->orWhere("flag_constant","like",'%'.$search.'%');
+      
+       }
        $records['recordsTotal'] = $statusListing->count();
        $records['recordsFiltered'] = $statusListing->count();
+       $statusListing = $statusListing->offset($offset)->limit($limit)->orderBy("flag_constant", "asc");
+       $statusListing = $statusListing->get();
        $records['data'] = [];
        foreach ($statusListing as $status) {
         $params = [
