@@ -21,6 +21,7 @@ class SubscriptionListController extends Controller
      */
     public function index()
     {
+        // echo "hello";die;
         return view('admin.pages.subscription-list.index')->with(['custom_title' => 'Subscriptions']);
     }
 
@@ -82,6 +83,7 @@ class SubscriptionListController extends Controller
         $subscriptions = $subscriptions->get();
         // echo "<pre>"; print_r($subscriptions->toArray()); die();
         foreach ($subscriptions as $subscription) {
+            // dd($subscription->user);
             $records['data'][] = [
                 'id' => $subscription->id,
                 'account_id' => $subscription->user ? ($subscription->user->account_id ?? "") : "",

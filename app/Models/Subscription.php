@@ -20,7 +20,7 @@ class Subscription extends Model
     public function getRouteKeyName(){ return 'custom_id'; }
 
     public function subscriptionPlan(){ return $this->belongsTo('App\Models\SubscriptionPlan', 'plan_id', 'id'); }
-    public function user(){ return $this->belongsTo('App\Models\User'); }
+    public function user(){ return $this->belongsTo('App\Models\User')->withTrashed(); }
 
     public function notifySubScriptionPurchase($status)
     {
