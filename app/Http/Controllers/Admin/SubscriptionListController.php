@@ -43,18 +43,26 @@ class SubscriptionListController extends Controller
 
     public function listing(Request $request)
     {
+        DB::enableQueryLog();
         extract($this->DTFilters($request->all()));
         $records = [];
+        // dd($request->all());
+        // if($from_date != '' && $to_date != ''){
+        //     if($country_filter != ''){
+
+        //         $locationsql .= " WHERE (locations.is_active = 'y' AND a.name LIKE '%".$search."%' AND DATE(a.created_at) BETWEEN '".$from_date."' AND '".$to_date."' AND a.country = '".$country_filter."') OR (locations.is_active = 'y' AND a.state LIKE '%".$search."%' AND DATE(a.created_at) BETWEEN '".$from_date."' AND '".$to_date."' AND a.country = '".$country_filter."')";
+        //     }else{
+        //         $locationsql .= " WHERE (locations.is_active = 'y' AND a.name LIKE '%".$search."%' AND DATE(a.created_at) BETWEEN '".$from_date."' AND '".$to_date."') OR (locations.is_active = 'y' AND a.state LIKE '%".$search."%' AND DATE(a.created_at) BETWEEN '".$from_date."' AND '".$to_date."')";
+        //     }
+            
+        // }else{
         $subscriptions = Subscription::select('subscriptions.*','users.gender as gender');
         $subscriptions = $subscriptions->join("users","users.id","=","subscriptions.user_id");
         $subscriptions = $subscriptions->with([
             'subscriptionPlan', 'subscriptionPlan.subscriptionPlanTranslation',
             'user', 'user.userTransDefault'
         ]);
-
-        if ($request->status_filter != '') {
-            $subscriptions = $subscriptions->where("subscriptions.status",$request->status_filter);
-        }
+        
 
         $subscriptions = $subscriptions->where("users.gender","Male");
         $subscriptions = $subscriptions->orderBy($sort_column, $sort_order);
@@ -74,6 +82,16 @@ class SubscriptionListController extends Controller
                     });
             });
         }
+
+        if($request->from_date != '' && $request->to_date != ''){
+            if ($request->status_filter != '') {
+                $subscriptions = $subscriptions->where("subscriptions.status",$request->status_filter);
+                $subscriptions = $subscriptions->whereBetween("subscriptions.start_date",[$request->from_date,$request->to_date]);
+            }else{
+                $subscriptions = $subscriptions->whereBetween("subscriptions.start_date",[$request->from_date,$request->to_date]);
+            }
+       }
+       
         $count = $subscriptions->count();
         $records['recordsTotal'] = $count;
         $records['recordsFiltered'] = $count;
@@ -81,6 +99,7 @@ class SubscriptionListController extends Controller
 
         $subscriptions = $subscriptions->offset($offset)->limit($limit)->orderBy($sort_column, $sort_order);
         $subscriptions = $subscriptions->get();
+        // dd(DB::getQueryLog());
         // echo "<pre>"; print_r($subscriptions->toArray()); die();
         foreach ($subscriptions as $subscription) {
             // dd($subscription->user);

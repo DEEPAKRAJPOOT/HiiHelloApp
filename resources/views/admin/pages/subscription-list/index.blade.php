@@ -42,14 +42,22 @@
             </div>
         </div>
         <div class="card-body">
+        <div class="row">
+        <div class="col-sm-12" >
             {{-- Filter Start --}}
-            <table class="mb-5" align="center">
+            <table class="mb-5" align="left" style="margin-left:25px;margin: top 15px !important;">
                 <tr>
                     <td>
                         <span class="card-icon">
                             <i class="fa fa-filter text-primary"></i>
                         </span>
                         <label>Filter:&nbsp;&nbsp;</label>
+                    </td>
+                    <td>                        
+                        <input type='date' id='search_fromdate' class="form-control" placeholder='From date'>
+                    </td>
+                    <td>
+                        <input type='date' id='search_todate' class="form-control" placeholder='To date'>
                     </td>
                     <td>
                         <select name="status_filter" id="status_filter" class="form-control">
@@ -71,6 +79,8 @@
                     </td>
                 </tr>
             </table>
+            </div>
+            </div>
             {{-- Filter End --}}
             {{-- Datatable Start --}}
             <table class="table table-bordered table-hover table-checkable" id="subscription_pan_table"
@@ -97,7 +107,10 @@
                     columnsDef: ['user_id', 'plan_id', 'account_id','months','amount', 'status','action'],
                 },
                 data: function(data) {
-
+                    var from_date = $('#search_fromdate').val();
+                    var to_date = $('#search_todate').val();
+                    data.from_date = from_date;
+                    data.to_date = to_date;
                   // Read values
                   var status_filter = $('#status_filter').val();
 
