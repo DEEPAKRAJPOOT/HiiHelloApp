@@ -98,6 +98,10 @@ return [
 
     'validate'          =>  ':entity validated successfully!',
     'validate_fail'     =>  'Invalid :entity, please try again later',
+    'challenge_add'      => 'You challenged to user successfully',
+    'challenge_pending'      => 'Your challenged to this user is already pending',
+    'challenge_accept'    => 'Challenge Accepted Successfully.',
+    'challenge_reject'   => 'Challenge Reject Successfully.',
 
     'qr'    =>  [
         'generated' =>  ':entity generated successfully!',

@@ -4,7 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Middleware\CheckApiLanguage;
 
-use App\Http\Controllers\api\v1\{AuthenticationController, GeneralController,CollegeController, UserController, LikeController, TwillioController, ChatController, MatchController, SearchController, BlockController, VerificationController, ProfileController, DiscoveryController, FilterController, HomeController, PaymentController, PaymentHDFCController, SubscriptionController,QueryController,CouponController};
+use App\Http\Controllers\api\v1\{AuthenticationController, GeneralController,CollegeController, UserController, LikeController, TwillioController, ChatController, MatchController, SearchController, BlockController, VerificationController, ProfileController, DiscoveryController, FilterController, HomeController, PaymentController, PaymentHDFCController, SubscriptionController,QueryController,CouponController,GameChallengeController};
 use App\Http\Controllers\api\v2\{Authenticationv2Controller,Chatv2Controller};
 use App\Http\Middleware\CheckApiUser;
 /*
@@ -187,6 +187,9 @@ Route::group(['namespace' => 'v1', 'prefix' => 'v1', 'middleware' => ['auth:sanc
     // AWS S3 STORAGE
     Route::post('aws/generate-url', [GeneralController::class, 'generateAwsUrl'])->name('aws.generate-url');
 
+    Route::post('game/add-challenge', [GameChallengeController::class,'doGameChallenge'])->name('game.add-challenge');
+    Route::post('game/accept-reject-challenge', [GameChallengeController::class,'acceptRejectChallenge'])->name('game.accept-reject-challenge');
+    
 
     // payment getway
     // instamojo 
