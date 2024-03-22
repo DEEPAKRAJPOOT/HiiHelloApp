@@ -10,4 +10,7 @@ class GameChallenge extends Model
     use HasFactory;
 
     protected $fillable = ['user_id', 'challenger_id', 'status'];
+
+    public function user(){ return $this->belongsTo('App\Models\User','user_id','id'); }
+    public function challengerUser(){ return $this->belongsTo('App\Models\User','challenger_id','id'); }
 }

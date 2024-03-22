@@ -102,6 +102,8 @@ return [
     'challenge_pending'      => 'Your challenged to this user is already pending',
     'challenge_accept'    => 'Challenge Accepted Successfully.',
     'challenge_reject'   => 'Challenge Reject Successfully.',
+    'game_play_status'   => 'Game Play Status Updated successfully.',
+    'already_playing_game' => 'This user already playing game.',
 
     'qr'    =>  [
         'generated' =>  ':entity generated successfully!',

@@ -52,7 +52,7 @@ class User extends Authenticatable implements MustVerifyEmail, TranslatableContr
         'verify_photo_status', 'verify_video_status',
         'verify_status', 'email_verified_at', 'contact_verified_at', 'photo_verified_at', 'video_verified_at',
         'reason_of_delete','app_delete','device_type','device_app_version',
-        'otp_less_id','user_status','last_online','college_id','is_test_user'
+        'otp_less_id','user_status','last_online','college_id','is_test_user','game_playing_status'
     ];
 
     public static function boot(){
