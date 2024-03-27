@@ -9,13 +9,15 @@ use Illuminate\Support\Facades\{Auth};
 use App\Http\Requests\Api\General\{PaginationRequest};
 use App\Http\Requests\Api\Game\{SetChallengeRequest,ActionOnChallengeRequest,GamePlayStatusRequest};
 use App\Http\Resources\v1\{GameChallengeResource};
-use App\Models\{User, UserSetting, Location, Language, GameChallenge};
+use App\Http\Traits\FirebaseTrait;
+use App\Models\{User, UserSetting, Location, Language, GameChallenge, DeviceToken};
 use DB;
 
 
 class GameChallengeController extends Controller
 {
     private $version = "v.1.0";
+    use FirebaseTrait;
     public function getVersion(){ return $this->version; }
     public function getAuthUser()
     {
@@ -47,6 +49,30 @@ class GameChallengeController extends Controller
                     $challengeData['user_id'] = $user_id;
                     $challengeData['challenger_id'] = $challenger_id;
                     $challengeAdded = GameChallenge::create($challengeData);
+                    if($challengeAdded){
+                        $payload = $this->generatePayload($user_id);
+                        DB::enableQueryLog();
+                        $deviceToken = DeviceToken::where(['user_id'=>$user_id])->first();
+                        if($deviceToken != null){
+
+                            $send_notification = [
+                                'priority'  =>  'high',
+                                'to'        =>  $deviceToken->token,
+                                'sound'     =>  'default',
+                            ];
+                    
+                            if( $deviceToken->type == 'android' ) {
+                                $send_notification['data'] = $payload;
+                            } else {
+                                $send_notification['notification'] = $payload;
+                                $send_notification['data'] = $payload;
+                            }
+                    
+                            $data = json_encode($send_notification);
+                            $sendNotify = $this->sendPushNotification($data);
+                            
+                        }
+                    }
                     return ([
                         'data'  => NULL,
                         'meta' => [
@@ -86,6 +112,21 @@ class GameChallengeController extends Controller
             } 
         }
         return $this->returnResponse();
+    }
+
+    public function generatePayload($user_id){
+
+        $challenges = GameChallenge::with('challengerUser','challengerUser.userTranslation')->where(['user_id'=>$user_id,'status'=>'0'])->first();
+        $challengeData=[];
+        if($challenges){
+            $challengeData = [
+                'id'        =>  $challenges->challengerUser->custom_id ?? "",
+                'full_name' =>  $challenges->challengerUser->userTranslation ? $challenges->challengerUser->userTranslation->full_name : "",
+                'gender'            =>  $challenges->challengerUser->gender ?? "",
+                'profile_photo'     =>  generateURL($challenges->challengerUser->profile_photo) ?? ""
+            ];
+        }
+        return $challengeData;
     }
 
     public function acceptRejectChallenge(Request $request){
