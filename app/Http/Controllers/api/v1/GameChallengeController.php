@@ -75,10 +75,11 @@ class GameChallengeController extends Controller
                             
                         }
                     }
-                    $data['status'] = true;
-                    $data['message'] = trans('api.challenge_add');
+                    $res['status'] = 'true';
+                    $res['message'] = trans('api.challenge_add');
+                    // dd($data);
                     return ([
-                        'data'  => $data,
+                        'data'  => $res,
                         'meta' => [
                             'url'       =>  url()->current(),
                             'api'       =>  $this->getVersion(),
