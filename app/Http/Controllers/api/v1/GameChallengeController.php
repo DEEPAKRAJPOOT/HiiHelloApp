@@ -33,21 +33,21 @@ class GameChallengeController extends Controller
             $challenger_id = $challenger->id;
             $user_id = $user->id;
             if($user->game_playing_status == false){
-                $challenge = GameChallenge::where(['challenger_id'=>$challenger_id,'user_id'=>$user_id,'status'=>'0'])->first();
-                if($challenge){
-                    $data['status'] = true;
-                    $data['message'] = trans('api.challenge_pending');
-                    return ([
-                        'data'  => $data,
-                        'meta' => [
-                            'url'       =>  url()->current(),
-                            'api'       =>  $this->getVersion(),
-                            'language'  =>  app()->getLocale(),
-                            'is_ban'    =>  false,
-                            'message'   =>  trans('api.challenge_pending'),
-                        ]
-                    ]);
-                }else{
+                // $challenge = GameChallenge::where(['challenger_id'=>$challenger_id,'user_id'=>$user_id,'status'=>'0'])->first();
+                // if($challenge){
+                //     $data['status'] = true;
+                //     $data['message'] = trans('api.challenge_pending');
+                //     return ([
+                //         'data'  => $data,
+                //         'meta' => [
+                //             'url'       =>  url()->current(),
+                //             'api'       =>  $this->getVersion(),
+                //             'language'  =>  app()->getLocale(),
+                //             'is_ban'    =>  false,
+                //             'message'   =>  trans('api.challenge_pending'),
+                //         ]
+                //     ]);
+                // }else{
                     $challengeData['user_id'] = $user_id;
                     $challengeData['challenger_id'] = $challenger_id;
                     $challengeAdded = GameChallenge::create($challengeData);
@@ -87,7 +87,7 @@ class GameChallengeController extends Controller
                             'message'   =>  trans('api.challenge_add'),
                         ]
                     ]);
-                }
+                //}
              }else{
                 $data['status'] = false;
                 $data['message'] = trans('api.already_playing_game');
@@ -126,6 +126,8 @@ class GameChallengeController extends Controller
         $challengeData=[];
         if($challenges){
             $challengeData = [
+                'title' => "Game challenge",
+                 'body'=>$challenges->challengerUser->userTranslation->full_name." has challenged you to play a Game in Hihello Games",
                 'id'        =>  $challenges->challengerUser->custom_id ?? "",
                 'full_name' =>  $challenges->challengerUser->userTranslation ? $challenges->challengerUser->userTranslation->full_name : "",
                 'gender'            =>  $challenges->challengerUser->gender ?? "",
