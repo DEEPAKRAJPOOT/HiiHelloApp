@@ -189,7 +189,7 @@ Route::group(['namespace' => 'v1', 'prefix' => 'v1', 'middleware' => ['auth:sanc
 
     Route::post('game/add-challenge', [GameChallengeController::class,'doGameChallenge'])->name('game.add-challenge');
     Route::post('game/accept-reject-challenge', [GameChallengeController::class,'acceptRejectChallenge'])->name('game.accept-reject-challenge');
-    Route::get('game/get-challenges',[GameChallengeController::class,'getChallengeList'])->name('game.get-challenges');
+    Route::post('game/get-challenges',[GameChallengeController::class,'getChallengeList'])->name('game.get-challenges');
     Route::post('game/update-game-status',[GameChallengeController::class,'updateGamePlayStaus']);
 
     // payment getway
