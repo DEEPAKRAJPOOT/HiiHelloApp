@@ -35,8 +35,10 @@ class GameChallengeController extends Controller
             if($user->game_playing_status == false){
                 $challenge = GameChallenge::where(['challenger_id'=>$challenger_id,'user_id'=>$user_id,'status'=>'0'])->first();
                 if($challenge){
+                    $data['status'] = true;
+                    $data['message'] = trans('api.challenge_pending');
                     return ([
-                        'data'  => NULL,
+                        'data'  => $data,
                         'meta' => [
                             'url'       =>  url()->current(),
                             'api'       =>  $this->getVersion(),
@@ -73,8 +75,10 @@ class GameChallengeController extends Controller
                             
                         }
                     }
+                    $data['status'] = true;
+                    $data['message'] = trans('api.challenge_add');
                     return ([
-                        'data'  => NULL,
+                        'data'  => $data,
                         'meta' => [
                             'url'       =>  url()->current(),
                             'api'       =>  $this->getVersion(),
@@ -85,8 +89,10 @@ class GameChallengeController extends Controller
                     ]);
                 }
              }else{
+                $data['status'] = false;
+                $data['message'] = trans('api.already_playing_game');
                 return ([
-                    'data'  => NULL,
+                    'data'  => $data,
                     'meta' => [
                         'url'       =>  url()->current(),
                         'api'       =>  $this->getVersion(),
@@ -123,7 +129,8 @@ class GameChallengeController extends Controller
                 'id'        =>  $challenges->challengerUser->custom_id ?? "",
                 'full_name' =>  $challenges->challengerUser->userTranslation ? $challenges->challengerUser->userTranslation->full_name : "",
                 'gender'            =>  $challenges->challengerUser->gender ?? "",
-                'profile_photo'     =>  generateURL($challenges->challengerUser->profile_photo) ?? ""
+                'profile_photo'     =>  generateURL($challenges->challengerUser->profile_photo) ?? "",
+                'type'              => 'game_challenge'
             ];
         }
         return $challengeData;
@@ -144,6 +151,8 @@ class GameChallengeController extends Controller
                     $challenge->status = $status;
                     $challenge->save();
                     if($status == '1'){
+                        $data['isAccepted'] = true;
+                        $data['message'] = trans('api.challenge_accept');
                         return ([
                             'data'  => NULL,
                             'meta' => [
@@ -155,6 +164,8 @@ class GameChallengeController extends Controller
                             ]
                         ]);
                     }else if($status == '2'){
+                        $data['isAccepted'] = false;
+                        $data['message'] = trans('api.challenge_reject');
                         return ([
                             'data'  => NULL,
                             'meta' => [
@@ -167,6 +178,8 @@ class GameChallengeController extends Controller
                         ]);
                     }
                }else{
+                   $data['isAccepted'] = false;
+                   $data['message'] =  trans('api.went_wrong');
                     return ([
                         'data'  => NULL,
                         'meta' => [
