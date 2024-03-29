@@ -52,28 +52,7 @@ class GameChallengeController extends Controller
                     $challengeData['challenger_id'] = $challenger_id;
                     $challengeAdded = GameChallenge::create($challengeData);
                     if($challengeAdded){
-                        $payload = $this->generatePayload($user_id);
-                        DB::enableQueryLog();
-                        $deviceToken = DeviceToken::where(['user_id'=>$user_id])->first();
-                        if($deviceToken != null){
-
-                            $send_notification = [
-                                'priority'  =>  'high',
-                                'to'        =>  $deviceToken->token,
-                                'sound'     =>  'default',
-                            ];
-                    
-                            if( $deviceToken->type == 'android' ) {
-                                $send_notification['data'] = $payload;
-                            } else {
-                                $send_notification['notification'] = $payload;
-                                $send_notification['data'] = $payload;
-                            }
-                    
-                            $data = json_encode($send_notification);
-                            $sendNotify = $this->sendPushNotification($data);
-                            
-                        }
+                        $this->sendFirebaseNotification($user_id,'game_challenge');
                     }
                     $res['status'] = 'true';
                     $res['message'] = trans('api.challenge_add');
@@ -121,24 +100,6 @@ class GameChallengeController extends Controller
         return $this->returnResponse();
     }
 
-    public function generatePayload($user_id){
-
-        $challenges = GameChallenge::with('challengerUser','challengerUser.userTranslation')->where(['user_id'=>$user_id,'status'=>'0'])->first();
-        $challengeData=[];
-        if($challenges){
-            $challengeData = [
-                'title' => "Game challenge",
-                 'body'=>$challenges->challengerUser->userTranslation->full_name." has challenged you to play a Game in Hihello Games",
-                'id'        =>  $challenges->challengerUser->custom_id ?? "",
-                'full_name' =>  $challenges->challengerUser->userTranslation ? $challenges->challengerUser->userTranslation->full_name : "",
-                'gender'            =>  $challenges->challengerUser->gender ?? "",
-                'profile_photo'     =>  generateURL($challenges->challengerUser->profile_photo) ?? "",
-                'type'              => 'game_challenge'
-            ];
-        }
-        return $challengeData;
-    }
-
     public function acceptRejectChallenge(Request $request){
 
         $setChallengeRequest = new ActionOnChallengeRequest();
@@ -151,13 +112,16 @@ class GameChallengeController extends Controller
                $status =  $request->status;
                $challenge = GameChallenge::where(['challenger_id'=>$challenger_id,'user_id'=>$user_id,'status'=>'0'])->first();
                if($challenge){
+
                     $challenge->status = $status;
                     $challenge->save();
-                    if($status == '1'){
+
+                    if((string)$status === '1'){
+                       $notifyData =  $this->sendFirebaseNotification($challenger_id, 'accept_challenge');
                         $data['isAccepted'] = true;
                         $data['message'] = trans('api.challenge_accept');
                         return ([
-                            'data'  => NULL,
+                            'data'  => $data,
                             'meta' => [
                                 'url'       =>  url()->current(),
                                 'api'       =>  $this->getVersion(),
@@ -166,11 +130,11 @@ class GameChallengeController extends Controller
                                 'message'   =>  trans('api.challenge_accept'),
                             ]
                         ]);
-                    }else if($status == '2'){
+                    }else if((string)$status === '2'){
                         $data['isAccepted'] = false;
                         $data['message'] = trans('api.challenge_reject');
                         return ([
-                            'data'  => NULL,
+                            'data'  => $data,
                             'meta' => [
                                 'url'       =>  url()->current(),
                                 'api'       =>  $this->getVersion(),
@@ -184,7 +148,7 @@ class GameChallengeController extends Controller
                    $data['isAccepted'] = false;
                    $data['message'] =  trans('api.went_wrong');
                     return ([
-                        'data'  => NULL,
+                        'data'  => $data,
                         'meta' => [
                             'url'       =>  url()->current(),
                             'api'       =>  $this->getVersion(),
@@ -220,7 +184,7 @@ class GameChallengeController extends Controller
             $user_id = $user->id;
             $limit = $request->limit;
             $offset = $request->offset;
-            $challengesSql = GameChallenge::with('challengerUser','challengerUser.userTranslation')->where(['user_id'=>$user_id,'status'=>'0'])->groupBy('challenger_id');
+            $challengesSql = GameChallenge::with('challengerUser','challengeReceiverUser','challengerUser.userTranslation','challengeReceiverUser.userTranslation')->where(['user_id'=>$user_id])->orWhere(['challenger_id'=>$user_id])->groupBy('challenger_id','user_id');
              $totalCount = $challengesSql->get()->count();
              $challenges = $challengesSql->limit($limit ?? config('utility.pagination.limit'))
             ->offset($offset ?? config('utility.pagination.offset'))->get();
@@ -302,4 +266,89 @@ class GameChallengeController extends Controller
        }
        return $this->returnResponse();
    }
+
+   public function sendFirebaseNotification($user_id, $type){
+    $payload = $this->generatePayload($user_id, $type);
+    DB::enableQueryLog();
+    $deviceToken = DeviceToken::where(['user_id'=>$user_id])->first();
+    if($deviceToken != null){
+
+        $send_notification = [
+            'priority'  =>  'high',
+            'to'        =>  $deviceToken->token,
+            'sound'     =>  'default',
+        ];
+
+        if( $deviceToken->type == 'android' ) {
+            $send_notification['data'] = $payload;
+        } else {
+            $send_notification['notification'] = $payload;
+            $send_notification['data'] = $payload;
+        }
+
+        $data = json_encode($send_notification);
+        $sendNotify = $this->sendPushNotification($data);
+        return $sendNotify;
+        
+    }
+}
+
+public function generatePayload($user_id, $type){
+    //    dd($type);
+       $challengeData=[];
+        if($type === 'game_challenge'){
+            $challenges = GameChallenge::with('challengerUser','challengerUser.userTranslation','challengeReceiverUser','challengeReceiverUser.userTranslation')->where(['user_id'=>$user_id,'status'=>'0'])->first();
+            if($challenges){
+                $challengeData = [
+                    'title' => "Game challenge",
+                    'body'=>$challenges->challengerUser->userTranslation->full_name." has challenged you to play a Game in Hihello Games",
+                    'id'        =>  $challenges->challengerUser->custom_id ?? "",
+                    'full_name' =>  $challenges->challengerUser->userTranslation ? $challenges->challengerUser->userTranslation->full_name : "",
+                    'gender'            =>  $challenges->challengerUser->gender ?? "",
+                    'age'               =>  $challenges->challengerUser->getAge(),
+                    'Status'            => $challenges->getStatus(),
+                    'onlineStatus'      => $challenges->challengerUser->onlineStatus(),
+                    'isReadToPlay'      => $this->isReadToPlay($challenges->challengerUser->onlineStatus(),$challenges->getStatus()),
+                    'profile_photo'     =>  generateURL($challenges->challengerUser->profile_photo) ?? "",
+                    'type'              => 'game_challenge'
+                ];
+            }
+
+        }else{
+            $challenges = GameChallenge::with('challengerUser','challengerUser.userTranslation','challengeReceiverUser','challengeReceiverUser.userTranslation')->where(['challenger_id'=>$user_id])->first();
+            
+            $challengeData=[];
+            if($challenges){
+                if($challenges->status){
+                    $body = $challenges->challengeReceiverUser->userTranslation->full_name." has Accepted your challenge to play a Game in Hihello Games.";
+                }else{
+                    $body = $challenges->challengeReceiverUser->userTranslation->full_name." not available to play a Game with you.";
+                }
+                
+
+                $challengeData = [
+                    'title' => "Game challenge",
+                    'body'=>$body,
+                    'id'        =>  $challenges->challengeReceiverUser->custom_id ?? "",
+                    'full_name' =>  $challenges->challengeReceiverUser->userTranslation ? $challenges->challengeReceiverUser->userTranslation->full_name : "",
+                    'gender'            =>  $challenges->challengeReceiverUser->gender ?? "",
+                    'age'               =>  $challenges->challengeReceiverUser->getAge(),
+                    'Status'            =>  $challenges->getStatus(),
+                    'onlineStatus'      =>  $challenges->challengeReceiverUser->onlineStatus(),
+                    'isReadToPlay'      =>  $this->isReadToPlay($challenges->challengeReceiverUser->onlineStatus(),$challenges->getStatus()),
+                    'profile_photo'     =>  generateURL($challenges->challengeReceiverUser->profile_photo) ?? "",
+                    'type'              => 'game_challenge'
+                ];
+            }
+        }
+        return $challengeData;
+    }
+
+    public function isReadToPlay($onlineStatus,$status){
+        if($onlineStatus === 'online' && $status === 'Accepted'){
+            return true;
+        }else{
+            return false;
+        }
+    }
 }
