@@ -1,6 +1,8 @@
 <?php
 
 namespace App\Http\Resources\v1;
+use App\Models\{User};
+use Carbon;
 
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -15,10 +17,13 @@ class GameChallengeResource extends JsonResource
     public function toArray($request)
     {
         $user = $this->getAuthUser();
+        $challenger = User::find($this->challenger_id);
         if($this->challenger_id != $user->id){
 
             return  [
                 'id'        =>  $this->challengerUser->custom_id ?? "",
+                'sender_id' =>  $challenger->custom_id ?? "",
+                'challenges_date' => \Carbon\Carbon::parse($this->created_at)->format('Y-m-d H:i:s'),
                 'full_name' =>  $this->challengerUser->userTranslation ? $this->challengerUser->userTranslation->full_name : "",
                 'gender'            =>  $this->challengerUser->gender ?? "",
                 'age'               =>  $this->challengerUser->getAge(),
@@ -33,6 +38,8 @@ class GameChallengeResource extends JsonResource
 
             return  [
                 'id'        =>  $this->challengeReceiverUser->custom_id ?? "",
+                'sender_id' =>  $challenger->custom_id ?? "",
+                'challenges_date' => \Carbon\Carbon::parse($this->created_at)->format('Y-m-d H:i:s'),
                 'full_name' =>  $this->challengeReceiverUser->userTranslation ? $this->challengeReceiverUser->userTranslation->full_name : "",
                 'gender'            =>  $this->challengeReceiverUser->gender ?? "",
                 'age'               =>  $this->challengeReceiverUser->getAge(),
