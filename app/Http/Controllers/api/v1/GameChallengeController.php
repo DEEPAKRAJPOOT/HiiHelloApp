@@ -234,10 +234,14 @@ class GameChallengeController extends Controller
           $user  = User::find($user_id);
           $user->game_playing_status =  $request->status;
           $user->save();
-
+          if(isset($request->user_id) && !empty($request->user_id)){
+            $notifyData =  $this->sendFirebaseNotification($request->user_id, 'play_game');
+          }
           if($user){
+                $data['isStatusUpdated'] = true;
+                $data['message'] = trans('api.game_play_status');
                 return ([
-                    'data'  => NULL,
+                    'data'  => $data,
                     'meta' => [
                         'url'       =>  url()->current(),
                         'api'       =>  $this->getVersion(),
@@ -270,6 +274,10 @@ class GameChallengeController extends Controller
    public function sendFirebaseNotification($user_id, $type){
     $payload = $this->generatePayload($user_id, $type);
     DB::enableQueryLog();
+    if($type === 'play_game'){
+        $user = User::whereCustomId($user_id)->first();
+        $user_id = $user->id;
+    }
     $deviceToken = DeviceToken::where(['user_id'=>$user_id])->first();
     if($deviceToken != null){
 
@@ -288,6 +296,7 @@ class GameChallengeController extends Controller
 
         $data = json_encode($send_notification);
         $sendNotify = $this->sendPushNotification($data);
+        // dd($sendNotify);
         return $sendNotify;
         
     }
@@ -314,7 +323,8 @@ public function generatePayload($user_id, $type){
                 ];
             }
 
-        }else{
+        }else if($type === 'accept_challenge'){
+
             $challenges = GameChallenge::with('challengerUser','challengerUser.userTranslation','challengeReceiverUser','challengeReceiverUser.userTranslation')->where(['challenger_id'=>$user_id])->first();
             
             $challengeData=[];
@@ -340,7 +350,55 @@ public function generatePayload($user_id, $type){
                     'type'              => 'game_challenge'
                 ];
             }
+
+            
+        }else{
+            $user = User::whereCustomId($user_id)->first();
+            $user_id = $user->id;
+            $challenges = GameChallenge::with('challengerUser','challengerUser.userTranslation','challengeReceiverUser','challengeReceiverUser.userTranslation')->where(['challenger_id'=>$user_id])->orWhere(['user_id'=>$user_id])->first();
+            
+            $challengeData=[];
+            if($challenges){
+                if($challenges->challenger_id != $user_id){
+                        $body = $challenges->challengerUser->userTranslation->full_name." going to play a Game with you in Hihello Games.";
+
+                        $challengeData = [
+                        'title' => "Game challenge",
+                        'body'=>$body,
+                        'id'        =>  $challenges->challengerUser->custom_id ?? "",
+                        'full_name' =>  $challenges->challengerUser->userTranslation ? $challenges->challengerUser->userTranslation->full_name : "",
+                        'gender'            =>  $challenges->challengerUser->gender ?? "",
+                        'age'               =>  $challenges->challengerUser->getAge(),
+                        'Status'            =>  $challenges->getStatus(),
+                        'onlineStatus'      =>  $challenges->challengerUser->onlineStatus(),
+                        'isReadToPlay'      =>  $this->isReadToPlay($challenges->challengerUser->onlineStatus(),$challenges->getStatus()),
+                        'profile_photo'     =>  generateURL($challenges->challengerUser->profile_photo) ?? "",
+                        'type'              => 'game_challenge'
+                    ];
+
+                }else{
+                       $body = $challenges->challengeReceiverUser->userTranslation->full_name." going to play a Game with you in Hihello Games.";
+                    
+
+                    $challengeData = [
+                        'title' => "Game challenge",
+                        'body'=>$body,
+                        'id'        =>  $challenges->challengeReceiverUser->custom_id ?? "",
+                        'full_name' =>  $challenges->challengeReceiverUser->userTranslation ? $challenges->challengeReceiverUser->userTranslation->full_name : "",
+                        'gender'            =>  $challenges->challengeReceiverUser->gender ?? "",
+                        'age'               =>  $challenges->challengeReceiverUser->getAge(),
+                        'Status'            =>  $challenges->getStatus(),
+                        'onlineStatus'      =>  $challenges->challengeReceiverUser->onlineStatus(),
+                        'isReadToPlay'      =>  $this->isReadToPlay($challenges->challengeReceiverUser->onlineStatus(),$challenges->getStatus()),
+                        'profile_photo'     =>  generateURL($challenges->challengeReceiverUser->profile_photo) ?? "",
+                        'type'              => 'game_challenge'
+                    ];
+
+                }
+                
+            }
         }
+        
         return $challengeData;
     }
 

@@ -31,7 +31,7 @@ class GameChallengeResource extends JsonResource
                 'profile_photo'     =>  generateURL($this->challengerUser->profile_photo) ?? "",
                 'Status'            => $this->getStatus(),
                 'onlineStatus'      => $this->challengerUser->onlineStatus(),
-                'isReadToPlay'      => $this->isReadToPlay($this->challengerUser->onlineStatus(),$this->getStatus()),
+                'isReadyToPlay'      => $this->isReadToPlay($this->challengerUser->onlineStatus(),$this->getStatus()),
             ];
 
         }else{
@@ -47,7 +47,7 @@ class GameChallengeResource extends JsonResource
                 'profile_photo'     =>  generateURL($this->challengeReceiverUser->profile_photo) ?? "",
                 'Status'            => $this->getStatus(),
                 'onlineStatus'      => $this->challengeReceiverUser->onlineStatus(),
-                'isReadToPlay'      => $this->isReadToPlay($this->challengeReceiverUser->onlineStatus(),$this->getStatus()),
+                'isReadyToPlay'      => $this->isReadToPlay($this->challengeReceiverUser->onlineStatus(),$this->getStatus()),
             ];
         }
 
