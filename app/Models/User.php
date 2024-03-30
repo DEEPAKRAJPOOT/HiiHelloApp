@@ -35,7 +35,7 @@ class User extends Authenticatable implements MustVerifyEmail, TranslatableContr
 
     protected $fillable = [
         'custom_id', 'account_id', 'email', 'country_code', 'contact_no', 'birth_date', 'gender',
-        'interest', 'country_id', 'location_id', 'new_location_id', 'profile_percentage', 'language_id', 'latitude', 'longitude', 'profile_photo', 'voice', 'voice_answer', 'password',
+        'interest', 'country_id', 'location_id', 'new_location_id', 'profile_percentage', 'language_id', 'latitude', 'longitude', 'profile_photo', 'valid_image', 'moderation_status', 'voice', 'voice_answer', 'password',
         'swipe_count', 'like_count', 'match_count', 'chat_count',
         'is_social_user', 'is_trans_full_name', 'is_trans_about_me', 'is_trans_fav_movie', 
         'is_media_checked', 'is_subscribed', 'subscription_end_date',
@@ -43,7 +43,7 @@ class User extends Authenticatable implements MustVerifyEmail, TranslatableContr
         'university_id', 'profession_id',
         'relationship_status_id', 'you_are_here_id', 'food_preference_id',
         'drinking_id', 'smoking_id', 'pet_id', 'star_sign_id', 
-        'religion_id', 'community_id', 'education_id',
+        'religion_id', 'community_id', 'education_id','verify_email_send','super_matches',
         'discover_distance', 'discover_start_age', 'discover_end_age', 'discover_location_id',
         'discover_profile_ranking','discover_has_photo','discover_search_near_me',
         'discover_by_state','discover_state','discover_online_status','discover_relationship_status',
@@ -233,8 +233,10 @@ class User extends Authenticatable implements MustVerifyEmail, TranslatableContr
         if(!empty($this->last_online)){
             $online_time_limit = config('utility.profile.durations.online_time');
             $recent_time_limit = config('utility.profile.durations.recent_online_time');
+            
             $time_difference = time() - strtotime($this->last_online);
-            if($time_difference < ($online_time_limit * 60)){
+            // dd(time(),strtotime($this->last_online),$time_difference,$online_time_limit);
+            if($time_difference < $online_time_limit){
                 return 'online';
             }
             if($time_difference < ($recent_time_limit * 60)){
@@ -283,6 +285,11 @@ class User extends Authenticatable implements MustVerifyEmail, TranslatableContr
         ){ $is_swipe_allow = false; }
 
         return $is_swipe_allow;
+    }
+
+    public function isSuperLikeAllowed(){
+        return $this->super_matches;
+        return !empty($this->super_matches);
     }
 
     public function notifySwipeAlert(){
