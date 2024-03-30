@@ -233,10 +233,8 @@ class User extends Authenticatable implements MustVerifyEmail, TranslatableContr
         if(!empty($this->last_online)){
             $online_time_limit = config('utility.profile.durations.online_time');
             $recent_time_limit = config('utility.profile.durations.recent_online_time');
-            
             $time_difference = time() - strtotime($this->last_online);
-            // dd(time(),strtotime($this->last_online),$time_difference,$online_time_limit);
-            if($time_difference < $online_time_limit){
+            if($time_difference < ($online_time_limit * 60)){
                 return 'online';
             }
             if($time_difference < ($recent_time_limit * 60)){
