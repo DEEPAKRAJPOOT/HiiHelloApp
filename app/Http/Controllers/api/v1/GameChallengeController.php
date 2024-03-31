@@ -296,17 +296,17 @@ class GameChallengeController extends Controller
 
         $data = json_encode($send_notification);
         $sendNotify = $this->sendPushNotification($data);
-        // dd($sendNotify);
         return $sendNotify;
         
     }
 }
 
 public function generatePayload($user_id, $type){
-    //    dd($type);
+        $user = $this->getAuthUser();
+        $auth_id = $user->id;
        $challengeData=[];
         if($type === 'game_challenge'){
-            $challenges = GameChallenge::with('challengerUser','challengerUser.userTranslation','challengeReceiverUser','challengeReceiverUser.userTranslation')->where(['user_id'=>$user_id,'status'=>'0'])->first();
+            $challenges = GameChallenge::with('challengerUser','challengerUser.userTranslation','challengeReceiverUser','challengeReceiverUser.userTranslation')->where(['user_id'=>$user_id,'status'=>'0','challenger_id'=>$auth_id])->first();
             if($challenges){
                 $challengeData = [
                     'title' => "Game challenge",
@@ -324,12 +324,11 @@ public function generatePayload($user_id, $type){
             }
 
         }else if($type === 'accept_challenge'){
-
-            $challenges = GameChallenge::with('challengerUser','challengerUser.userTranslation','challengeReceiverUser','challengeReceiverUser.userTranslation')->where(['challenger_id'=>$user_id])->first();
+            $challenges = GameChallenge::with('challengerUser','challengerUser.userTranslation','challengeReceiverUser','challengeReceiverUser.userTranslation')->where(['challenger_id'=>$user_id,'user_id'=>$auth_id])->first();
             
             $challengeData=[];
             if($challenges){
-                if($challenges->status){
+                if((int)$challenges->status){
                     $body = $challenges->challengeReceiverUser->userTranslation->full_name." has Accepted your challenge to play a Game in Hihello Games.";
                 }else{
                     $body = $challenges->challengeReceiverUser->userTranslation->full_name." not available to play a Game with you.";
@@ -355,7 +354,7 @@ public function generatePayload($user_id, $type){
         }else{
             $user = User::whereCustomId($user_id)->first();
             $user_id = $user->id;
-            $challenges = GameChallenge::with('challengerUser','challengerUser.userTranslation','challengeReceiverUser','challengeReceiverUser.userTranslation')->where(['challenger_id'=>$user_id])->orWhere(['user_id'=>$user_id])->first();
+            $challenges = GameChallenge::with('challengerUser','challengerUser.userTranslation','challengeReceiverUser','challengeReceiverUser.userTranslation')->where(['challenger_id'=>$user_id,'user_id'=>$auth_id,'status'=>1])->orWhere(['user_id'=>$user_id,'challenger_id'=>$auth_id,'status'=>1])->first();
             
             $challengeData=[];
             if($challenges){
