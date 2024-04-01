@@ -28,7 +28,7 @@ class MatchController extends Controller
         //return $request; exit;
         $getMatchRequest = new GetMatchRequest();
         if ($this->apiValidator($request->all(), $getMatchRequest->rules())) {
-            try {
+            // try {
                
                  $user = $request->user(); 
               
@@ -145,9 +145,15 @@ class MatchController extends Controller
                 if(count($array_system_match_user_custome_id) > 0)
                 {
                     foreach ($array_system_match_user_custome_id as $user_key => $user_value) {                        
+<<<<<<< Updated upstream
                         $info_user = User::where('id','=',$user_key)->first();
                         if ($info_user) {                        
                             array_push($likes,$info_user['custom_id']);
+=======
+                        $info_user = User::select('custom_id')->where('id',$user_key)->first();
+                        if ($info_user) {
+                            array_push($likes,$info_user->custom_id);
+>>>>>>> Stashed changes
                         } 
                     }                
                 }
@@ -249,13 +255,13 @@ class MatchController extends Controller
                     $this->response['meta']['is_ban'] = false;
                     $this->status = Response::HTTP_OK;
                 }
-            } catch (ModelNotFoundException $exception) {
-                $this->response['meta']['message'] = trans('api.went_wrong');
-                $this->response['meta']['is_ban'] = false;
-            } catch (\Exception $e) {
-                $this->response['meta']['is_ban'] = false;
-                $this->storeErrorLog($e, 'new_matches');
-            }
+            // } catch (ModelNotFoundException $exception) {
+            //     $this->response['meta']['message'] = trans('api.went_wrong');
+            //     $this->response['meta']['is_ban'] = false;
+            // } catch (\Exception $e) {
+            //     $this->response['meta']['is_ban'] = false;
+            //     $this->storeErrorLog($e, 'new_matches');
+            // }
         }
         return $this->returnResponse();
     }
