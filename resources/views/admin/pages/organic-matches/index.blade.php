@@ -53,6 +53,12 @@
 					Add New Like
 				</a>
 			</div>
+			<div class="card-toolbar">
+				<a href="{{ route('admin.challenges.create') }}" class="btn btn-sm btn-primary font-weight-bolder text-uppercase ml-5">
+					<i class="fas fa-plus"></i>
+					 Add New Challenge
+				</a>
+			</div>
 		</div>
 		<div class="card-body">
 			<div class="row">

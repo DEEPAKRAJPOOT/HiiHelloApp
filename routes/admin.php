@@ -193,6 +193,8 @@ Route::group(['namespace' => 'Admin', 'middleware' => ['check_permit', 'revalida
 	Route::post('organic-matches/table-data', 'OrganicMatchesController@tableData')->name('organic-matches.table-data');
 	Route::resource('organic-matches', 'OrganicMatchesController');
 
+	Route::resource('challenges','GameChallengesController');
+
 
 });
 

@@ -168,6 +168,8 @@ Breadcrumbs::register('dashboard', function ($breadcrumbs) {
 	    $breadcrumbs->push('App Status', route(Auth::getDefaultDriver().'.appstatus.index'));
 	});
 
+	
+
 	// Profile Reports Management -------------------------------------------------------------------------------------------------------------------------------------------------------
 	Breadcrumbs::register('profile_reports_list', function($breadcrumbs)
 	{
@@ -386,6 +388,12 @@ Breadcrumbs::register('dashboard', function ($breadcrumbs) {
 	{
 		$breadcrumbs->parent('organic_matches');
 	    $breadcrumbs->push('Create Like', route(Auth::getDefaultDriver().'.organic-matches.create'));
+	});
+
+	Breadcrumbs::register('challenge_create', function($breadcrumbs)
+	{
+		$breadcrumbs->parent('challenges');
+	    $breadcrumbs->push('Create Challenge', route(Auth::getDefaultDriver().'.challenges.create'));
 	});
 
 	Breadcrumbs::register('user_matches_view',function($breadcrumbs,$id){
