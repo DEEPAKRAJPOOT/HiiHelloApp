@@ -131,6 +131,7 @@ class GameChallengeController extends Controller
                             ]
                         ]);
                     }else if((string)$status === '2'){
+                        $notifyData =  $this->sendFirebaseNotification($challenger_id, 'accept_challenge');
                         $data['isAccepted'] = false;
                         $data['message'] = trans('api.challenge_reject');
                         return ([
@@ -225,6 +226,54 @@ class GameChallengeController extends Controller
     return $this->returnResponse();
    } 
 
+   public function playGame(Request $request){
+        $gamePlayRequest = new GamePlayStatusRequest();
+        if ($this->apiValidator($request->all(), $gamePlayRequest->rules())) {
+            $user = $this->getAuthUser();
+            $challenger_id = $user->id;
+            $user = User::whereCustomId($request->user_id)->first();  
+            $user_id = $user->id;
+            $status =  $request->status;
+            $challenge = GameChallenge::where(['challenger_id'=>$challenger_id,'user_id'=>$user_id,'challenger_status'=>'0','status'=>1])->orWhere(['challenger_id'=>$user_id,'user_id'=>$challenger_id,'challenger_status'=>'0','status'=>1])->orderBy('id','desc')->first();
+               if($challenge){
+
+                    $challenge->challenger_status = $status;
+                    $challenge->save();
+                    if((string)$status === '1'){
+                        $notifyData =  $this->sendFirebaseNotification($request->user_id, 'play_challenge');
+                         $data['isAccepted'] = true;
+                         $data['message'] = trans('api.challenge_accept');
+                         return ([
+                             'data'  => $data,
+                             'meta' => [
+                                 'url'       =>  url()->current(),
+                                 'api'       =>  $this->getVersion(),
+                                 'language'  =>  app()->getLocale(),
+                                 'is_ban'    =>  false,
+                                 'message'   =>  trans('api.challenge_accept'),
+                             ]
+                         ]);
+                     }else if((string)$status === '2'){
+                         $notifyData =  $this->sendFirebaseNotification($request->user_id, 'play_challenge');
+                         $data['isAccepted'] = false;
+                         $data['message'] = trans('api.challenge_reject');
+                         return ([
+                             'data'  => $data,
+                             'meta' => [
+                                 'url'       =>  url()->current(),
+                                 'api'       =>  $this->getVersion(),
+                                 'language'  =>  app()->getLocale(),
+                                 'is_ban'    =>  false,
+                                 'message'   =>  trans('api.challenge_reject'),
+                             ]
+                         ]);
+                     }
+
+               }
+
+        }
+   }
+
    public function updateGamePlayStaus(Request $request){
        $gamePlayRequest = new GamePlayStatusRequest();
        if ($this->apiValidator($request->all(), $gamePlayRequest->rules())) {
@@ -274,7 +323,7 @@ class GameChallengeController extends Controller
    public function sendFirebaseNotification($user_id, $type){
     $payload = $this->generatePayload($user_id, $type);
     DB::enableQueryLog();
-    if($type === 'play_game'){
+    if($type === 'play_game' || $type === 'play_challenge'){
         $user = User::whereCustomId($user_id)->first();
         $user_id = $user->id;
     }
@@ -351,7 +400,7 @@ public function generatePayload($user_id, $type){
             }
 
             
-        }else{
+        }else if($type === 'play_game'){
             $user = User::whereCustomId($user_id)->first();
             $user_id = $user->id;
             $challenges = GameChallenge::with('challengerUser','challengerUser.userTranslation','challengeReceiverUser','challengeReceiverUser.userTranslation')->where(['challenger_id'=>$user_id,'user_id'=>$auth_id,'status'=>1])->orWhere(['user_id'=>$user_id,'challenger_id'=>$auth_id,'status'=>1])->orderBy('id','desc')->first();
@@ -364,6 +413,7 @@ public function generatePayload($user_id, $type){
                         $challengeData = [
                         'title' => "Game challenge",
                         'body'=>$body,
+                        'sender_id' =>  $challenges->challengerUser->custom_id ?? "",
                         'id'        =>  $challenges->challengerUser->custom_id ?? "",
                         'full_name' =>  $challenges->challengerUser->userTranslation ? $challenges->challengerUser->userTranslation->full_name : "",
                         'gender'            =>  $challenges->challengerUser->gender ?? "",
@@ -382,6 +432,7 @@ public function generatePayload($user_id, $type){
                     $challengeData = [
                         'title' => "Game challenge",
                         'body'=>$body,
+                        'sender_id' =>  $challenges->challengerUser->custom_id ?? "",
                         'id'        =>  $challenges->challengeReceiverUser->custom_id ?? "",
                         'full_name' =>  $challenges->challengeReceiverUser->userTranslation ? $challenges->challengeReceiverUser->userTranslation->full_name : "",
                         'gender'            =>  $challenges->challengeReceiverUser->gender ?? "",
@@ -395,6 +446,57 @@ public function generatePayload($user_id, $type){
 
                 }
                 
+            }
+        }else{
+            $challenges = GameChallenge::with('challengerUser','challengerUser.userTranslation','challengeReceiverUser','challengeReceiverUser.userTranslation')->where(['challenger_id'=>$user_id,'user_id'=>$auth_id,'status'=>1])->orWhere(['user_id'=>$user_id,'challenger_id'=>$auth_id,'status'=>1])->orderBy('id','desc')->first();
+            
+            $challengeData=[];
+            if($challenges){
+                
+                if($challenges->challenger_id != $user_id){
+                    if((int)$challenges->challenger_status){
+                        $body = $challenges->challengerUser->userTranslation->full_name." is waiting for you to Join in Hihello Games.";
+                    }else{
+                        $body = $challenges->challengerUser->userTranslation->full_name." not available to play a Game with you.";
+                    }
+                    $challengeData = [
+                        'title' => "Game Play Request",
+                        'body'=>$body,
+                        'sender_id' =>  $challenges->challengerUser->custom_id ?? "",
+                        'id'        =>  $challenges->challengerUser->custom_id ?? "",
+                        'full_name' =>  $challenges->challengerUser->userTranslation ? $challenges->challengerUser->userTranslation->full_name : "",
+                        'gender'            =>  $challenges->challengerUser->gender ?? "",
+                        'age'               =>  $challenges->challengerUser->getAge(),
+                        'Status'            =>  $challenges->getStatus(),
+                        'senderStatus'      =>  $challenges->senderStatus(),
+                        'onlineStatus'      =>  $challenges->challengerUser->onlineStatus(),
+                        'isReadToPlay'      =>  $this->isReadToPlay($challenges->challengerUser->onlineStatus(),$challenges->getStatus()),
+                        'profile_photo'     =>  generateURL($challenges->challengerUser->profile_photo) ?? "",
+                        'type'              => 'game_play'
+                    ];
+                
+                }else{
+                    if((int)$challenges->challenger_status){
+                        $body = $challenges->challengerUser->userTranslation->full_name." is waiting for you to Join in Hihello Games.";
+                    }else{
+                        $body = $challenges->challengerUser->userTranslation->full_name." not available to play a Game with you.";
+                    }
+                    $challengeData = [
+                        'title' => "Game Play Request",
+                        'body'=>$body,
+                        'sender_id' =>  $challenges->challengerUser->custom_id ?? "",
+                        'id'        =>  $challenges->challengeReceiverUser->custom_id ?? "",
+                        'full_name' =>  $challenges->challengeReceiverUser->userTranslation ? $challenges->challengeReceiverUser->userTranslation->full_name : "",
+                        'gender'            =>  $challenges->challengeReceiverUser->gender ?? "",
+                        'age'               =>  $challenges->challengeReceiverUser->getAge(),
+                        'Status'            =>  $challenges->getStatus(),
+                        'senderStatus'      =>  $challenges->senderStatus(),
+                        'onlineStatus'      =>  $challenges->challengeReceiverUser->onlineStatus(),
+                        'isReadToPlay'      =>  $this->isReadToPlay($challenges->challengeReceiverUser->onlineStatus(),$challenges->getStatus()),
+                        'profile_photo'     =>  generateURL($challenges->challengeReceiverUser->profile_photo) ?? "",
+                        'type'              => 'game_play'
+                    ];
+                }  
             }
         }
         
