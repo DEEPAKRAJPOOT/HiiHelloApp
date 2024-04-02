@@ -278,7 +278,7 @@ class GameChallengeController extends Controller
         $user = User::whereCustomId($user_id)->first();
         $user_id = $user->id;
     }
-    $deviceToken = DeviceToken::where(['user_id'=>$user_id])->first();
+    $deviceToken = DeviceToken::where(['user_id'=>$user_id])->orderBy('id','desc')->first();
     if($deviceToken != null){
 
         $send_notification = [
