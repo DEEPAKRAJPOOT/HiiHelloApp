@@ -324,7 +324,7 @@ public function generatePayload($user_id, $type){
             }
 
         }else if($type === 'accept_challenge'){
-            $challenges = GameChallenge::with('challengerUser','challengerUser.userTranslation','challengeReceiverUser','challengeReceiverUser.userTranslation')->where(['challenger_id'=>$user_id,'user_id'=>$auth_id])->first();
+            $challenges = GameChallenge::with('challengerUser','challengerUser.userTranslation','challengeReceiverUser','challengeReceiverUser.userTranslation')->where(['challenger_id'=>$user_id,'user_id'=>$auth_id])->orderBy('id','desc')->first();
             
             $challengeData=[];
             if($challenges){
@@ -354,7 +354,7 @@ public function generatePayload($user_id, $type){
         }else{
             $user = User::whereCustomId($user_id)->first();
             $user_id = $user->id;
-            $challenges = GameChallenge::with('challengerUser','challengerUser.userTranslation','challengeReceiverUser','challengeReceiverUser.userTranslation')->where(['challenger_id'=>$user_id,'user_id'=>$auth_id,'status'=>1])->orWhere(['user_id'=>$user_id,'challenger_id'=>$auth_id,'status'=>1])->first();
+            $challenges = GameChallenge::with('challengerUser','challengerUser.userTranslation','challengeReceiverUser','challengeReceiverUser.userTranslation')->where(['challenger_id'=>$user_id,'user_id'=>$auth_id,'status'=>1])->orWhere(['user_id'=>$user_id,'challenger_id'=>$auth_id,'status'=>1])->orderBy('id','desc')->first();
             
             $challengeData=[];
             if($challenges){
