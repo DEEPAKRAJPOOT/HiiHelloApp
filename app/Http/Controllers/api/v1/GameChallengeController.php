@@ -240,8 +240,8 @@ class GameChallengeController extends Controller
                     $challenge->challenger_status = $status;
                     $challenge->save();
                     if((string)$status === '1'){
-                         $notifysenderData =  $this->sendFirebaseNotification($challenge->challenger_id, 'play_challenge');
-                         $notifyReceiverData =  $this->sendFirebaseNotification($challenge->user_id, 'play_challenge');
+                         $notifysenderData =  $this->sendFirebaseNotification($challenge->challenger_id, 'game_play');
+                         $notifyReceiverData =  $this->sendFirebaseNotification($challenge->user_id, 'game_play');
                          $data['isAccepted'] = true;
                          $data['message'] = trans('api.challenge_accept');
                          return ([
@@ -255,7 +255,7 @@ class GameChallengeController extends Controller
                              ]
                          ]);
                      }else if((string)$status === '2'){
-                         $notifyData =  $this->sendFirebaseNotification($request->user_id, 'play_challenge');
+                         $notifyData =  $this->sendFirebaseNotification($request->user_id, 'game_play');
                          $data['isAccepted'] = false;
                          $data['message'] = trans('api.challenge_reject');
                          return ([
@@ -324,7 +324,7 @@ class GameChallengeController extends Controller
    public function sendFirebaseNotification($user_id, $type){
     $payload = $this->generatePayload($user_id, $type);
     DB::enableQueryLog();
-    if($type === 'play_game' || $type === 'play_challenge'){
+    if($type === 'play_game'){
         $user = User::whereCustomId($user_id)->first();
         $user_id = $user->id;
     }
@@ -346,7 +346,9 @@ class GameChallengeController extends Controller
 
         $data = json_encode($send_notification);
         $sendNotify = $this->sendPushNotification($data);
-        return $sendNotify;
+        $notifyData['payload'] = $data;
+        $notifyData['notify'] =$sendNotify;
+        return $notifyData;
         
     }
 }
@@ -481,9 +483,9 @@ public function generatePayload($user_id, $type){
                 
                 }else{
                     if((int)$challenges->challenger_status){
-                        $body = $challenges->challengerUser->userTranslation->full_name." is waiting for you to Join in Hihello Games.";
+                        $body = $challenges->challengeReceiverUser->userTranslation->full_name." is waiting for you to Join in Hihello Games.";
                     }else{
-                        $body = $challenges->challengerUser->userTranslation->full_name." not available to play a Game with you.";
+                        $body = $challenges->challengeReceiverUser->userTranslation->full_name." not available to play a Game with you.";
                     }
                     $challengeData = [
                         'title' => "Game Play Request",
