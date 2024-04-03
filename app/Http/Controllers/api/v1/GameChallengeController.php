@@ -240,7 +240,8 @@ class GameChallengeController extends Controller
                     $challenge->challenger_status = $status;
                     $challenge->save();
                     if((string)$status === '1'){
-                        $notifyData =  $this->sendFirebaseNotification($request->user_id, 'play_challenge');
+                         $notifysenderData =  $this->sendFirebaseNotification($challenger_id, 'play_challenge');
+                         $notifyReceiverData =  $this->sendFirebaseNotification($user_id, 'play_challenge');
                          $data['isAccepted'] = true;
                          $data['message'] = trans('api.challenge_accept');
                          return ([
@@ -414,6 +415,7 @@ public function generatePayload($user_id, $type){
                         'title' => "Game challenge",
                         'body'=>$body,
                         'sender_id' =>  $challenges->challengerUser->custom_id ?? "",
+                        'receiver_id'=> $challenges->challengeReceiverUser->custom_id ?? "",
                         'id'        =>  $challenges->challengerUser->custom_id ?? "",
                         'full_name' =>  $challenges->challengerUser->userTranslation ? $challenges->challengerUser->userTranslation->full_name : "",
                         'gender'            =>  $challenges->challengerUser->gender ?? "",
@@ -433,6 +435,7 @@ public function generatePayload($user_id, $type){
                         'title' => "Game challenge",
                         'body'=>$body,
                         'sender_id' =>  $challenges->challengerUser->custom_id ?? "",
+                        'receiver_id'=> $challenges->challengeReceiverUser->custom_id ?? "",
                         'id'        =>  $challenges->challengeReceiverUser->custom_id ?? "",
                         'full_name' =>  $challenges->challengeReceiverUser->userTranslation ? $challenges->challengeReceiverUser->userTranslation->full_name : "",
                         'gender'            =>  $challenges->challengeReceiverUser->gender ?? "",
@@ -463,6 +466,7 @@ public function generatePayload($user_id, $type){
                         'title' => "Game Play Request",
                         'body'=>$body,
                         'sender_id' =>  $challenges->challengerUser->custom_id ?? "",
+                        'receiver_id'=> $challenges->challengeReceiverUser->custom_id ?? "",
                         'id'        =>  $challenges->challengerUser->custom_id ?? "",
                         'full_name' =>  $challenges->challengerUser->userTranslation ? $challenges->challengerUser->userTranslation->full_name : "",
                         'gender'            =>  $challenges->challengerUser->gender ?? "",
@@ -485,6 +489,7 @@ public function generatePayload($user_id, $type){
                         'title' => "Game Play Request",
                         'body'=>$body,
                         'sender_id' =>  $challenges->challengerUser->custom_id ?? "",
+                        'receiver_id'=> $challenges->challengeReceiverUser->custom_id ?? "",
                         'id'        =>  $challenges->challengeReceiverUser->custom_id ?? "",
                         'full_name' =>  $challenges->challengeReceiverUser->userTranslation ? $challenges->challengeReceiverUser->userTranslation->full_name : "",
                         'gender'            =>  $challenges->challengeReceiverUser->gender ?? "",
