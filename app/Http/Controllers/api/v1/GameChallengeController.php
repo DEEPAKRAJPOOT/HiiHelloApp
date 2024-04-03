@@ -240,8 +240,8 @@ class GameChallengeController extends Controller
                     $challenge->challenger_status = $status;
                     $challenge->save();
                     if((string)$status === '1'){
-                         $notifysenderData =  $this->sendFirebaseNotification($challenger_id, 'play_challenge');
-                         $notifyReceiverData =  $this->sendFirebaseNotification($user_id, 'play_challenge');
+                         $notifysenderData =  $this->sendFirebaseNotification($challenge->challenger_id, 'play_challenge');
+                         $notifyReceiverData =  $this->sendFirebaseNotification($challenge->user_id, 'play_challenge');
                          $data['isAccepted'] = true;
                          $data['message'] = trans('api.challenge_accept');
                          return ([
