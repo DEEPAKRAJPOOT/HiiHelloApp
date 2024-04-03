@@ -457,6 +457,7 @@ public function generatePayload($user_id, $type){
             
             $challengeData=[];
             if($challenges){
+                
                    $type = 'game_play';
                 if((int)$challenges->status && (int)$challenges->challenger_status){
                     $type = 'game_start';
@@ -481,7 +482,7 @@ public function generatePayload($user_id, $type){
                         'onlineStatus'      =>  $challenges->challengerUser->onlineStatus(),
                         'isReadToPlay'      =>  $this->isReadToPlay($challenges->challengerUser->onlineStatus(),$challenges->getStatus()),
                         'profile_photo'     =>  generateURL($challenges->challengerUser->profile_photo) ?? "",
-                        'type'              => 'game_play'
+                        'type'              => $type
                     ];
                 
                 }else{
@@ -504,7 +505,7 @@ public function generatePayload($user_id, $type){
                         'onlineStatus'      =>  $challenges->challengeReceiverUser->onlineStatus(),
                         'isReadToPlay'      =>  $this->isReadToPlay($challenges->challengeReceiverUser->onlineStatus(),$challenges->getStatus()),
                         'profile_photo'     =>  generateURL($challenges->challengeReceiverUser->profile_photo) ?? "",
-                        'type'              => 'game_play'
+                        'type'              => $type
                     ];
                 }  
             }
