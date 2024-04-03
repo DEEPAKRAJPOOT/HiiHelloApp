@@ -457,7 +457,10 @@ public function generatePayload($user_id, $type){
             
             $challengeData=[];
             if($challenges){
-                
+                   $type = 'game_play';
+                if((int)$challenges->status && (int)$challenges->challenger_status){
+                    $type = 'game_start';
+                }
                 if($challenges->challenger_id != $user_id){
                     if((int)$challenges->challenger_status){
                         $body = $challenges->challengerUser->userTranslation->full_name." is waiting for you to Join in Hihello Games.";
