@@ -53,6 +53,7 @@ class GameChallengeController extends Controller
                     $challengeAdded = GameChallenge::create($challengeData);
                     if($challengeAdded){
                         $notifyData = $this->sendFirebaseNotification($user_id,NULL,'game_challenge');
+                        dd($notifyData);
                     }
                     $res['status'] = 'true';
                     $res['message'] = trans('api.challenge_add');
@@ -118,6 +119,7 @@ class GameChallengeController extends Controller
 
                     if((string)$status === '1'){
                        $notifyData =  $this->sendFirebaseNotification($challenger_id,NULL, 'accept_challenge');
+                       dd($notifyData);
                         $data['isAccepted'] = true;
                         $data['message'] = trans('api.challenge_accept');
                         return ([
@@ -132,6 +134,7 @@ class GameChallengeController extends Controller
                         ]);
                     }else if((string)$status === '2'){
                         $notifyData =  $this->sendFirebaseNotification($challenger_id,NULL, 'accept_challenge');
+                        dd($notifyData);
                         $data['isAccepted'] = false;
                         $data['message'] = trans('api.challenge_reject');
                         return ([
@@ -246,7 +249,8 @@ class GameChallengeController extends Controller
                     $challenge->challenger_status = $status;
                     $challenge->save();
                     if((string)$status === '1'){
-                         $notifysenderData =  $this->sendFirebaseNotification($challenge->user_id,$challenge->challenger_id,  'game_play');
+                         $notifyData =  $this->sendFirebaseNotification($challenge->user_id,$challenge->challenger_id,  'game_play');
+                         dd($notifyData);
                          $data['isAccepted'] = true;
                          $data['message'] = trans('api.challenge_accept');
                          return ([
@@ -261,6 +265,7 @@ class GameChallengeController extends Controller
                          ]);
                      }else if((string)$status === '2'){
                          $notifyData =  $this->sendFirebaseNotification($challenge->user_id,$challenge->challenger_id, 'game_play');
+                         dd($notifyData);
                          $data['isAccepted'] = false;
                          $data['message'] = trans('api.challenge_reject');
                          return ([
@@ -300,11 +305,12 @@ class GameChallengeController extends Controller
           try{
           $user = $this->getAuthUser();
           $user_id = $user->id;
-          $user  = User::find($user_id);
-          $user->game_playing_status =  $request->status;
-          $user->save();
+        //   $user  = User::find($user_id);
+        //   $user->game_playing_status =  $request->status;
+        //   $user->save();
           if(isset($request->user_id) && !empty($request->user_id)){
             $notifyData =  $this->sendFirebaseNotification($request->user_id, NULL,'play_game');
+            dd($notifyData);
           }
           if($user){
                 $data['isStatusUpdated'] = true;
@@ -372,7 +378,7 @@ class GameChallengeController extends Controller
             $sendNotify = $this->sendPushNotification($data);
             $notifyData['payload'] = $data;
             $notifyData['notify'] =$sendNotify;
-            
+            // dd($notifyData);
             return $notifyData;
             
         }
@@ -495,6 +501,12 @@ public function generatePayload($user_id, $challenger_id=null, $type){
                     $type = 'game_play';
                 if((int)$challenges->status && (int)$challenges->challenger_status){
                     $type = 'game_start';
+                    $senderUser  = User::find($challenger_id);
+                    $senderUser->game_playing_status =  1;
+                    $senderUser->save();
+                    $receiverUser  = User::find($user_id);
+                    $receiverUser->game_playing_status =  1;
+                    $receiverUser->save();
                 }
                     if((int)$challenges->challenger_status){
                         $senderbody = $challenges->challengerUser->userTranslation->full_name." is waiting for you to Join in Hihello Games.";
