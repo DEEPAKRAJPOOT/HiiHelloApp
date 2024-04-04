@@ -354,20 +354,21 @@ class GameChallengeController extends Controller
         $user_id = $user->id;
     }
     if($type != 'game_play'){
-        // DB::enableQueryLog();
-        $deviceToken = DeviceToken::where(['user_id'=>$user_id])->orderBy('id','desc')->first();
+        DB::enableQueryLog();
+        // $deviceToken = DeviceToken::where(['user_id'=>$user_id])->orderBy('id','desc')->first();
         // dd(DB::getQueryLog());
-        // echo "<pre>";
-        // print_r($user_id);
+        $deviceToken = DB::select('select * from `device_tokens` where (`user_id` = '.$user_id.')  order by `id` desc limit 1');
+        //echo "<pre>";
+        // dd($deviceToken);
         if($deviceToken != null){
-            // dd($deviceToken->token);
+            
             $send_notification = [
                 'priority'  =>  'high',
-                'to'        =>  $deviceToken->token,
+                'to'        =>  $deviceToken[0]->token,
                 'sound'     =>  'default',
             ];
-
-            if( $deviceToken->type == 'android' ) {
+            
+            if( $deviceToken[0]->type == 'android' ) {
                 $send_notification['data'] = $payload;
             } else {
                 $send_notification['notification'] = $payload;
@@ -378,7 +379,7 @@ class GameChallengeController extends Controller
             $sendNotify = $this->sendPushNotification($data);
             $notifyData['payload'] = $data;
             $notifyData['notify'] =$sendNotify;
-            // dd($notifyData);
+            // dd($notifyData,$deviceToken[0]->token,$user_id);
             return $notifyData;
             
         }
