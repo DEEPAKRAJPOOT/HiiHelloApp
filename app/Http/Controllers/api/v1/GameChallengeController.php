@@ -52,7 +52,7 @@ class GameChallengeController extends Controller
                     $challengeData['challenger_id'] = $challenger_id;
                     $challengeAdded = GameChallenge::create($challengeData);
                     if($challengeAdded){
-                        $this->sendFirebaseNotification($user_id,'game_challenge');
+                        $notifyData = $this->sendFirebaseNotification($user_id,'game_challenge');
                     }
                     $res['status'] = 'true';
                     $res['message'] = trans('api.challenge_add');
@@ -233,15 +233,20 @@ class GameChallengeController extends Controller
             $challenger_id = $user->id;
             $user = User::whereCustomId($request->user_id)->first();  
             $user_id = $user->id;
+            
             $status =  $request->status;
-            $challenge = GameChallenge::where(['challenger_id'=>$challenger_id,'user_id'=>$user_id,'challenger_status'=>'0','status'=>1])->orWhere(['challenger_id'=>$user_id,'user_id'=>$challenger_id,'challenger_status'=>'0','status'=>1])->orderBy('id','desc')->first();
-               if($challenge){
+            DB::enableQueryLog();
+            $challenge = GameChallenge::where(['challenger_id'=>$challenger_id,'user_id'=>$user_id,'challenger_status'=>'0','status'=>1])
+            ->orWhere(function($query) use ($user_id, $challenger_id){
+                $query->where(['challenger_id'=>$user_id,'user_id'=>$challenger_id,'challenger_status'=>'0','status'=>1]);
+            })->orderBy('id','desc')->first();
+            
+            if($challenge){
 
                     $challenge->challenger_status = $status;
                     $challenge->save();
                     if((string)$status === '1'){
-                         $notifysenderData =  $this->sendFirebaseNotification($challenge->challenger_id, 'game_play');
-                         $notifyReceiverData =  $this->sendFirebaseNotification($challenge->user_id, 'game_play');
+                         $notifysenderData =  $this->sendFirebaseNotification($challenge->user_id,$challenge->challenger_id,  'game_play');
                          $data['isAccepted'] = true;
                          $data['message'] = trans('api.challenge_accept');
                          return ([
@@ -270,6 +275,20 @@ class GameChallengeController extends Controller
                          ]);
                      }
 
+               }else{
+
+                         $data['isAccepted'] = true;
+                         $data['message'] = 'User Already Accepted your request.';
+                         return ([
+                             'data'  => $data,
+                             'meta' => [
+                                 'url'       =>  url()->current(),
+                                 'api'       =>  $this->getVersion(),
+                                 'language'  =>  app()->getLocale(),
+                                 'is_ban'    =>  false,
+                                 'message'   =>  'User Already Accepted your request.',
+                             ]
+                         ]);
                }
 
         }
@@ -321,39 +340,48 @@ class GameChallengeController extends Controller
        return $this->returnResponse();
    }
 
-   public function sendFirebaseNotification($user_id, $type){
-    $payload = $this->generatePayload($user_id, $type);
-    DB::enableQueryLog();
+   public function sendFirebaseNotification($user_id, $challenger_id=null, $type){
+    $payload = $this->generatePayload($user_id, $challenger_id, $type);
+    // DB::enableQueryLog();
     if($type === 'play_game'){
         $user = User::whereCustomId($user_id)->first();
         $user_id = $user->id;
     }
-    $deviceToken = DeviceToken::where(['user_id'=>$user_id])->orderBy('id','desc')->first();
-    if($deviceToken != null){
+    if($type != 'game_play'){
+        // DB::enableQueryLog();
+        $deviceToken = DeviceToken::where(['user_id'=>$user_id])->orderBy('id','desc')->first();
+        // dd(DB::getQueryLog());
+        // echo "<pre>";
+        // print_r($user_id);
+        if($deviceToken != null){
+            // dd($deviceToken->token);
+            $send_notification = [
+                'priority'  =>  'high',
+                'to'        =>  $deviceToken->token,
+                'sound'     =>  'default',
+            ];
 
-        $send_notification = [
-            'priority'  =>  'high',
-            'to'        =>  $deviceToken->token,
-            'sound'     =>  'default',
-        ];
+            if( $deviceToken->type == 'android' ) {
+                $send_notification['data'] = $payload;
+            } else {
+                $send_notification['notification'] = $payload;
+                $send_notification['data'] = $payload;
+            }
 
-        if( $deviceToken->type == 'android' ) {
-            $send_notification['data'] = $payload;
-        } else {
-            $send_notification['notification'] = $payload;
-            $send_notification['data'] = $payload;
+            $data = json_encode($send_notification);
+            $sendNotify = $this->sendPushNotification($data);
+            $notifyData['payload'] = $data;
+            $notifyData['notify'] =$sendNotify;
+            
+            return $notifyData;
+            
         }
-
-        $data = json_encode($send_notification);
-        $sendNotify = $this->sendPushNotification($data);
-        $notifyData['payload'] = $data;
-        $notifyData['notify'] =$sendNotify;
-        return $notifyData;
-        
+    }else{
+        return $payload;
     }
 }
 
-public function generatePayload($user_id, $type){
+public function generatePayload($user_id, $challenger_id=null, $type){
         $user = $this->getAuthUser();
         $auth_id = $user->id;
        $challengeData=[];
@@ -406,7 +434,10 @@ public function generatePayload($user_id, $type){
         }else if($type === 'play_game'){
             $user = User::whereCustomId($user_id)->first();
             $user_id = $user->id;
-            $challenges = GameChallenge::with('challengerUser','challengerUser.userTranslation','challengeReceiverUser','challengeReceiverUser.userTranslation')->where(['challenger_id'=>$user_id,'user_id'=>$auth_id,'status'=>1])->orWhere(['user_id'=>$user_id,'challenger_id'=>$auth_id,'status'=>1])->orderBy('id','desc')->first();
+            $challenges = GameChallenge::with('challengerUser','challengerUser.userTranslation','challengeReceiverUser','challengeReceiverUser.userTranslation')->where(['challenger_id'=>$user_id,'user_id'=>$auth_id,'status'=>1])
+            ->orWhere(function($query) use ($user_id, $auth_id){
+                $query->where(['user_id'=>$user_id,'challenger_id'=>$auth_id,'status'=>1]);
+            })->orderBy('id','desc')->first();
             
             $challengeData=[];
             if($challenges){
@@ -453,24 +484,28 @@ public function generatePayload($user_id, $type){
                 
             }
         }else{
-            $challenges = GameChallenge::with('challengerUser','challengerUser.userTranslation','challengeReceiverUser','challengeReceiverUser.userTranslation')->where(['challenger_id'=>$user_id,'user_id'=>$auth_id,'status'=>1])->orWhere(['user_id'=>$user_id,'challenger_id'=>$auth_id,'status'=>1])->orderBy('id','desc')->first();
-            
-            $challengeData=[];
+            DB::enableQueryLog();
+            $challenges = GameChallenge::with('challengerUser','challengerUser.userTranslation','challengeReceiverUser','challengeReceiverUser.userTranslation')->where(['challenger_id'=>$user_id,'user_id'=>$challenger_id,'status'=>1])
+            ->orWhere(function($query) use ($user_id, $challenger_id){
+                $query->where(['user_id'=>$user_id,'challenger_id'=>$challenger_id,'status'=>1]);
+            })->orderBy('id','desc')->first();
+            // dd($challenges);
+            $senderChallengeData=[];$receiverChallengeData=[]; $notifyData=[];
             if($challenges){
-                
-                   $type = 'game_play';
+                    $type = 'game_play';
                 if((int)$challenges->status && (int)$challenges->challenger_status){
                     $type = 'game_start';
                 }
-                if($challenges->challenger_id != $user_id){
                     if((int)$challenges->challenger_status){
-                        $body = $challenges->challengerUser->userTranslation->full_name." is waiting for you to Join in Hihello Games.";
+                        $senderbody = $challenges->challengerUser->userTranslation->full_name." is waiting for you to Join in Hihello Games.";
+                        $receiverbody = $challenges->challengeReceiverUser->userTranslation->full_name." is waiting for you to Join in Hihello Games.";
                     }else{
-                        $body = $challenges->challengerUser->userTranslation->full_name." not available to play a Game with you.";
+                        $senderbody = $challenges->challengerUser->userTranslation->full_name." not available to play a Game with you.";
+                        $receiverbody = $challenges->challengeReceiverUser->userTranslation->full_name." not available to play a Game with you.";
                     }
-                    $challengeData = [
+                    $senderChallengeData = [
                         'title' => "Game Play Request",
-                        'body'=>$body,
+                        'body'=>$senderbody,
                         'sender_id' =>  $challenges->challengerUser->custom_id ?? "",
                         'receiver_id'=> $challenges->challengeReceiverUser->custom_id ?? "",
                         'id'        =>  $challenges->challengerUser->custom_id ?? "",
@@ -484,16 +519,10 @@ public function generatePayload($user_id, $type){
                         'profile_photo'     =>  generateURL($challenges->challengerUser->profile_photo) ?? "",
                         'type'              => $type
                     ];
-                
-                }else{
-                    if((int)$challenges->challenger_status){
-                        $body = $challenges->challengeReceiverUser->userTranslation->full_name." is waiting for you to Join in Hihello Games.";
-                    }else{
-                        $body = $challenges->challengeReceiverUser->userTranslation->full_name." not available to play a Game with you.";
-                    }
-                    $challengeData = [
+                    
+                    $receiverChallengeData = [
                         'title' => "Game Play Request",
-                        'body'=>$body,
+                        'body'=>$receiverbody,
                         'sender_id' =>  $challenges->challengerUser->custom_id ?? "",
                         'receiver_id'=> $challenges->challengeReceiverUser->custom_id ?? "",
                         'id'        =>  $challenges->challengeReceiverUser->custom_id ?? "",
@@ -507,8 +536,55 @@ public function generatePayload($user_id, $type){
                         'profile_photo'     =>  generateURL($challenges->challengeReceiverUser->profile_photo) ?? "",
                         'type'              => $type
                     ];
-                }  
-            }
+                    // dd($receiverChallengeData,$senderChallengeData);
+                    // DB::enableQueryLog();
+                    $senderDeviceToken = DeviceToken::where(['user_id'=>$challenger_id])->orderBy('id','desc')->first();
+                    $receiverDeviceToken = DeviceToken::where(['user_id'=>$user_id])->orderBy('id','desc')->first();
+                    // dd(DB::getQueryLog());
+                    // echo "<pre>";
+                    // print_r($user_id);
+                    if($senderDeviceToken != null && $receiverDeviceToken != null){
+                        // dd($deviceToken->token);
+                        $sender_notification = [
+                            'priority'  =>  'high',
+                            'to'        =>  $senderDeviceToken->token,
+                            'sound'     =>  'default',
+                        ];
+
+                        $receiver_notification = [
+                            'priority'  =>  'high',
+                            'to'        =>  $receiverDeviceToken->token,
+                            'sound'     =>  'default',
+                        ];
+
+                        if( $senderDeviceToken->type == 'android' ) {
+                            $sender_notification['data'] = $receiverChallengeData;
+                        } else {
+                            $sender_notification['notification'] = $receiverChallengeData;
+                            $sender_notification['data'] = $receiverChallengeData;
+                        }
+
+                        if( $receiverDeviceToken->type == 'android' ) {
+                            $receiver_notification['data'] = $senderChallengeData;
+                        } else {
+                            $receiver_notification['notification'] = $senderChallengeData;
+                            $receiver_notification['data'] = $senderChallengeData;
+                        }
+
+                        $sender_data = json_encode($sender_notification);
+                        $receiver_data = json_encode($receiver_notification);
+                        
+                        $sendNotifyTosender = $this->sendPushNotification($sender_data);
+                        $sendNotifyToreceiver = $this->sendPushNotification($receiver_data);
+                        $notifyData['senderpayload'] = $sender_notification;
+                        $notifyData['sendernotify'] =$sendNotifyTosender;
+                        $notifyData['receiverpayload'] = $receiver_notification;
+                        $notifyData['receivernotify'] =$sendNotifyToreceiver;
+                        
+                        
+                    }
+                    return $notifyData;
+                } 
         }
         
         return $challengeData;
