@@ -52,7 +52,7 @@ class GameChallengeController extends Controller
                     $challengeData['challenger_id'] = $challenger_id;
                     $challengeAdded = GameChallenge::create($challengeData);
                     if($challengeAdded){
-                        $notifyData = $this->sendFirebaseNotification($user_id,'game_challenge');
+                        $notifyData = $this->sendFirebaseNotification($user_id,NULL,'game_challenge');
                     }
                     $res['status'] = 'true';
                     $res['message'] = trans('api.challenge_add');
@@ -117,7 +117,7 @@ class GameChallengeController extends Controller
                     $challenge->save();
 
                     if((string)$status === '1'){
-                       $notifyData =  $this->sendFirebaseNotification($challenger_id, 'accept_challenge');
+                       $notifyData =  $this->sendFirebaseNotification($challenger_id,NULL, 'accept_challenge');
                         $data['isAccepted'] = true;
                         $data['message'] = trans('api.challenge_accept');
                         return ([
@@ -131,7 +131,7 @@ class GameChallengeController extends Controller
                             ]
                         ]);
                     }else if((string)$status === '2'){
-                        $notifyData =  $this->sendFirebaseNotification($challenger_id, 'accept_challenge');
+                        $notifyData =  $this->sendFirebaseNotification($challenger_id,NULL, 'accept_challenge');
                         $data['isAccepted'] = false;
                         $data['message'] = trans('api.challenge_reject');
                         return ([
@@ -260,7 +260,7 @@ class GameChallengeController extends Controller
                              ]
                          ]);
                      }else if((string)$status === '2'){
-                         $notifyData =  $this->sendFirebaseNotification($request->user_id, 'game_play');
+                         $notifyData =  $this->sendFirebaseNotification($challenge->user_id,$challenge->challenger_id, 'game_play');
                          $data['isAccepted'] = false;
                          $data['message'] = trans('api.challenge_reject');
                          return ([
@@ -304,7 +304,7 @@ class GameChallengeController extends Controller
           $user->game_playing_status =  $request->status;
           $user->save();
           if(isset($request->user_id) && !empty($request->user_id)){
-            $notifyData =  $this->sendFirebaseNotification($request->user_id, 'play_game');
+            $notifyData =  $this->sendFirebaseNotification($request->user_id, NULL,'play_game');
           }
           if($user){
                 $data['isStatusUpdated'] = true;
@@ -340,7 +340,7 @@ class GameChallengeController extends Controller
        return $this->returnResponse();
    }
 
-   public function sendFirebaseNotification($user_id, $challenger_id=null, $type){
+   public function sendFirebaseNotification($user_id, $challenger_id=NULL, $type){
     $payload = $this->generatePayload($user_id, $challenger_id, $type);
     // DB::enableQueryLog();
     if($type === 'play_game'){
