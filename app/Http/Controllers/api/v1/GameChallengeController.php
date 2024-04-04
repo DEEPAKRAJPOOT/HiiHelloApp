@@ -305,9 +305,12 @@ class GameChallengeController extends Controller
           try{
           $user = $this->getAuthUser();
           $user_id = $user->id;
-        //   $user  = User::find($user_id);
-        //   $user->game_playing_status =  $request->status;
-        //   $user->save();
+          if((int)$request->status == 0){
+              $user  = User::find($user_id);
+              $user->game_playing_status =  $request->status;
+              $user->save();
+          }
+        
           if(isset($request->user_id) && !empty($request->user_id)){
             $notifyData =  $this->sendFirebaseNotification($request->user_id, NULL,'play_game');
             // dd($notifyData);
