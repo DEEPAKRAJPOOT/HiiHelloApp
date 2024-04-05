@@ -317,6 +317,10 @@ class GameChallengeController extends Controller
                         $query->where(['challenger_id'=>$challenger_id,'user_id'=>$user_id,'challenger_status'=>1,'status'=>1]);
                     })->delete();
               }
+          }else if(!isset($request->user_id) && empty($request->user_id) && (int)$request->status == 0){
+                $user  = User::find($user_id);
+                $user->game_playing_status =  $request->status;
+                $user->save();
           }
         
           if(isset($request->user_id) && !empty($request->user_id)){
@@ -574,17 +578,17 @@ public function generatePayload($user_id, $challenger_id=null, $type){
             $senderChallengeData=[];$receiverChallengeData=[]; $notifyData=[];
             if($challenges){
                     $type = 'game_play';
-                if((int)$challenges->status == 1 && (int)$challenges->challenger_status == 1){
-                    $type = 'game_start';
-                    $senderUser  = User::find($challenger_id);
-                    $senderUser->game_playing_status =  1;
-                    $senderUser->save();
-                    $receiverUser  = User::find($user_id);
-                    $receiverUser->game_playing_status =  1;
-                    $receiverUser->save();
-                }else{
-                    $type = 'game_reject';
-                }
+                    if((int)$challenges->status == 1 && (int)$challenges->challenger_status == 1){
+                        $type = 'game_start';
+                        $senderUser  = User::find($challenger_id);
+                        $senderUser->game_playing_status =  1;
+                        $senderUser->save();
+                        $receiverUser  = User::find($user_id);
+                        $receiverUser->game_playing_status =  1;
+                        $receiverUser->save();
+                    }else{
+                        $type = 'game_reject';
+                    }
                     if((int)$challenges->challenger_status){
                         $senderbody = $challenges->challengerUser->userTranslation->full_name." is waiting for you to Join in Hihello Games.";
                         $receiverbody = $challenges->challengeReceiverUser->userTranslation->full_name." is waiting for you to Join in Hihello Games.";
