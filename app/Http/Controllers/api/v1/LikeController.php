@@ -262,7 +262,7 @@ class LikeController extends Controller
                 
                     $likes = Like::with([
                         'likerUser:id,custom_id,birth_date,profile_photo,gender,verify_email_send,contact_verified_at,location_id,is_active',
-                        'likerUser.userTranslation', 'likerUser.location.locationTranslation'
+                        'likerUser.userTranslation', 'likerUser.location.locationTranslation','likerUser.last_online'
                     ])
                     ->whereHas('likerUser', function ($query) {
                         $query->whereIsActive('y');
