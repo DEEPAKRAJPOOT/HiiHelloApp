@@ -192,6 +192,7 @@ Route::group(['namespace' => 'v1', 'prefix' => 'v1', 'middleware' => ['auth:sanc
     Route::post('game/get-challenges',[GameChallengeController::class,'getChallengeList'])->name('game.get-challenges');
     Route::post('game/update-game-status',[GameChallengeController::class,'updateGamePlayStaus']);
     Route::post('game/play-game',[GameChallengeController::class,'playGame'])->name('game.get-challenges');
+    Route::post('game/delete-challenges',[GameChallengeController::class,'deleteChallenge'])->name('game.delete-challenges');
     // payment getway
     // instamojo 
     Route::post('instamojo/pay', [PaymentController::class, 'instamojo_pay'])->name('api.instamojo.pay');

@@ -4,7 +4,7 @@ namespace App\Http\Requests\Api\Game;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class GamePlayStatusRequest extends FormRequest
+class DeleteGameRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -24,7 +24,6 @@ class GamePlayStatusRequest extends FormRequest
     public function rules()
     {
         return [
-            'status'          =>  'required',
             'user_id'         =>  'required'
         ];
     }

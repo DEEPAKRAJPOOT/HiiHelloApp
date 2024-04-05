@@ -7,7 +7,7 @@ use Illuminate\Http\{Request, Response};
 use Illuminate\Database\Eloquent\{ModelNotFoundException};
 use Illuminate\Support\Facades\{Auth};
 use App\Http\Requests\Api\General\{PaginationRequest};
-use App\Http\Requests\Api\Game\{SetChallengeRequest,ActionOnChallengeRequest,GamePlayStatusRequest};
+use App\Http\Requests\Api\Game\{SetChallengeRequest,ActionOnChallengeRequest,GamePlayStatusRequest,DeleteGameRequest};
 use App\Http\Resources\v1\{GameChallengeResource};
 use App\Http\Traits\FirebaseTrait;
 use App\Models\{User, UserSetting, Location, Language, GameChallenge, DeviceToken};
@@ -309,6 +309,14 @@ class GameChallengeController extends Controller
               $user  = User::find($user_id);
               $user->game_playing_status =  $request->status;
               $user->save();
+              $challengerUser = User::whereCustomId($request->user_id)->first();  
+              $challenger_id = $challengerUser->id;
+              if($user){
+                    $refreshchallenge =  GameChallenge::where(['challenger_id'=>$user_id,'user_id'=>$challenger_id,'challenger_status'=>1,'status'=>1])
+                    ->orWhere(function($query) use ($user_id, $challenger_id){
+                        $query->where(['challenger_id'=>$challenger_id,'user_id'=>$user_id,'challenger_status'=>1,'status'=>1]);
+                    })->delete();
+              }
           }
         
           if(isset($request->user_id) && !empty($request->user_id)){
@@ -347,6 +355,69 @@ class GameChallengeController extends Controller
 
        }
        return $this->returnResponse();
+   }
+
+    public function deleteChallenge(Request $request){
+        $deletePlayRequest = new DeleteGameRequest();
+        if ($this->apiValidator($request->all(), $deletePlayRequest->rules())) {
+         try{   
+            $user = $this->getAuthUser();
+            $auth_id = $user->id;
+            $challengerUser = User::whereCustomId($request->user_id)->first();  
+            $user_id = $challengerUser->id;
+            DB::enableQueryLog();
+            $refreshchallenge =  GameChallenge::where(['challenger_id'=>$user_id,'user_id'=>$auth_id])
+            ->orWhere(function($query) use ($user_id, $auth_id){
+                $query->where(['challenger_id'=>$auth_id,'user_id'=>$user_id]);
+            })->delete();
+            if($refreshchallenge){
+                $data['isRefreshed'] = true;
+                $data['message'] = trans('api.delete_game');
+                return ([
+                    'data'  => $data,
+                    'meta' => [
+                        'url'       =>  url()->current(),
+                        'api'       =>  $this->getVersion(),
+                        'language'  =>  app()->getLocale(),
+                        'is_ban'    =>  false,
+                        'message'   =>  trans('api.delete_game'),
+                    ]
+                ]);
+            }else{
+
+                   $data['isRefreshed'] = false;
+                   $data['message'] =  trans('api.went_wrong');
+                    return ([
+                        'data'  => $data,
+                        'meta' => [
+                            'url'       =>  url()->current(),
+                            'api'       =>  $this->getVersion(),
+                            'language'  =>  app()->getLocale(),
+                            'is_ban'    =>  false,
+                            'message'   =>  trans('api.went_wrong'),
+                        ]
+                    ]);
+            }
+            
+
+        } catch (ModelNotFoundException $exception) {
+            switch ($exception->getModel()) {
+                case 'App\Models\User':
+                    $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("Users")]);
+                    $this->response['meta']['is_ban']  = false;
+                    break;
+                default:
+                    $this->response['meta']['message'] = trans('api.went_wrong');
+                    $this->response['meta']['is_ban']  = false;
+                    break;
+            };
+        } catch (\Exception $e) {
+            throw $e;
+            $this->storeErrorLog($e, 'get_home_feed');
+        }     
+
+     }
+     return $this->returnResponse();
    }
 
    public function sendFirebaseNotification($user_id, $challenger_id=NULL, $type){

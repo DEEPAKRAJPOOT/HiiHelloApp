@@ -104,6 +104,7 @@ return [
     'challenge_reject'   => 'Challenge Reject Successfully.',
     'game_play_status'   => 'Game Play Status Updated successfully.',
     'already_playing_game' => 'This user already playing game.',
+    'delete_game'      => 'Game Challenges Reset Successfully.',
 
     'qr'    =>  [
         'generated' =>  ':entity generated successfully!',
