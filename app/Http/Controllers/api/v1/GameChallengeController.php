@@ -239,16 +239,16 @@ class GameChallengeController extends Controller
             
             $status =  $request->status;
             DB::enableQueryLog();
-            $challenge = GameChallenge::where(['challenger_id'=>$challenger_id,'user_id'=>$user_id,'challenger_status'=>'0','status'=>1])
+            $challenge = GameChallenge::where(['challenger_id'=>$challenger_id,'user_id'=>$user_id,'status'=>1])
             ->orWhere(function($query) use ($user_id, $challenger_id){
-                $query->where(['challenger_id'=>$user_id,'user_id'=>$challenger_id,'challenger_status'=>'0','status'=>1]);
+                $query->where(['challenger_id'=>$user_id,'user_id'=>$challenger_id,'status'=>1]);
             })->orderBy('id','desc')->first();
             
             if($challenge){
 
                     $challenge->challenger_status = $status;
                     $challenge->save();
-                    if((string)$status === '1'){
+                    if((int)$status == 1){
                          $notifyData =  $this->sendFirebaseNotification($challenge->user_id,$challenge->challenger_id,  'game_play');
                         //  dd($notifyData);
                          $data['isAccepted'] = true;
@@ -263,7 +263,7 @@ class GameChallengeController extends Controller
                                  'message'   =>  trans('api.challenge_accept'),
                              ]
                          ]);
-                     }else if((string)$status === '2'){
+                     }else if((int)$status === 2){
                          $notifyData =  $this->sendFirebaseNotification($challenge->user_id,$challenge->challenger_id, 'game_play');
                         //  dd($notifyData);
                          $data['isAccepted'] = false;
