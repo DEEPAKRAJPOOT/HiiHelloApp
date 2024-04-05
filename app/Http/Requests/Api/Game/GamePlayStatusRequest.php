@@ -24,8 +24,7 @@ class GamePlayStatusRequest extends FormRequest
     public function rules()
     {
         return [
-            'status'          =>  'required',
-            'user_id'         =>  'required'
+            'status'          =>  'required'
         ];
     }
 }
