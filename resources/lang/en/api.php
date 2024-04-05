@@ -98,12 +98,12 @@ return [
 
     'validate'          =>  ':entity validated successfully!',
     'validate_fail'     =>  'Invalid :entity, please try again later',
-    'challenge_add'      => 'You challenged to user successfully',
-    'challenge_pending'      => 'Your challenged to this user is already pending',
-    'challenge_accept'    => 'Challenge Accepted Successfully.',
-    'challenge_reject'   => 'Challenge Reject Successfully.',
+    'challenge_add'      => 'User Successfully Challenged',
+    'challenge_pending'      => 'Your challenged to this user is pending',
+    'challenge_accept'    => 'Challenge Accepted.',
+    'challenge_reject'   => 'User Currently Busy.',
     'game_play_status'   => 'Game Play Status Updated successfully.',
-    'already_playing_game' => 'This user already playing game.',
+    'already_playing_game' => 'User Currently Playing Game.',
     'delete_game'      => 'Game Challenges Reset Successfully.',
 
     'qr'    =>  [

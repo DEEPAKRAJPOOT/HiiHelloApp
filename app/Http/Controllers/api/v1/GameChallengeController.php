@@ -474,8 +474,8 @@ public function generatePayload($user_id, $challenger_id=null, $type){
             $challenges = GameChallenge::with('challengerUser','challengerUser.userTranslation','challengeReceiverUser','challengeReceiverUser.userTranslation')->where(['user_id'=>$user_id,'status'=>'0','challenger_id'=>$auth_id])->first();
             if($challenges){
                 $challengeData = [
-                    'title' => "Game challenge",
-                    'body'=>$challenges->challengerUser->userTranslation->full_name." has challenged you to play a Game in Hihello Games",
+                    'title' => "Game Challenge",
+                    'body'=>$challenges->challengerUser->userTranslation->full_name." has challenged you to play Hi Hello Games",
                     'id'        =>  $challenges->challengerUser->custom_id ?? "",
                     'full_name' =>  $challenges->challengerUser->userTranslation ? $challenges->challengerUser->userTranslation->full_name : "",
                     'gender'            =>  $challenges->challengerUser->gender ?? "",
@@ -494,14 +494,14 @@ public function generatePayload($user_id, $challenger_id=null, $type){
             $challengeData=[];
             if($challenges){
                 if((int)$challenges->status){
-                    $body = $challenges->challengeReceiverUser->userTranslation->full_name." has Accepted your challenge to play a Game in Hihello Games.";
+                    $body = $challenges->challengeReceiverUser->userTranslation->full_name." has Accepted your challenge to play Hi Hello Games.";
                 }else{
-                    $body = $challenges->challengeReceiverUser->userTranslation->full_name." not available to play a Game with you.";
+                    $body = $challenges->challengeReceiverUser->userTranslation->full_name." Not available to play Game.";
                 }
                 
 
                 $challengeData = [
-                    'title' => "Game challenge",
+                    'title' => "Game Challenge",
                     'body'=>$body,
                     'id'        =>  $challenges->challengeReceiverUser->custom_id ?? "",
                     'full_name' =>  $challenges->challengeReceiverUser->userTranslation ? $challenges->challengeReceiverUser->userTranslation->full_name : "",
@@ -526,8 +526,9 @@ public function generatePayload($user_id, $challenger_id=null, $type){
             
             $challengeData=[];
             if($challenges){
+                //Need to change full name to first name only
                 if($challenges->challenger_id != $user_id){
-                        $body = $challenges->challengerUser->userTranslation->full_name." going to play a Game with you in Hihello Games.";
+                        $body = $challenges->challengerUser->userTranslation->full_name." is ready to play Hi Hello games.";
 
                         $challengeData = [
                         'title' => "Game challenge",
@@ -546,7 +547,7 @@ public function generatePayload($user_id, $challenger_id=null, $type){
                     ];
 
                 }else{
-                       $body = $challenges->challengeReceiverUser->userTranslation->full_name." going to play a Game with you in Hihello Games.";
+                       $body = $challenges->challengeReceiverUser->userTranslation->full_name." is ready to play Hi Hello games.";
                     
 
                     $challengeData = [
@@ -590,11 +591,11 @@ public function generatePayload($user_id, $challenger_id=null, $type){
                         $type = 'game_reject';
                     }
                     if((int)$challenges->challenger_status == 1){
-                        $senderbody = $challenges->challengerUser->userTranslation->full_name." is waiting for you to Join in Hihello Games.";
-                        $receiverbody = $challenges->challengeReceiverUser->userTranslation->full_name." is waiting for you to Join in Hihello Games.";
+                        $senderbody = $challenges->challengerUser->userTranslation->full_name." is waiting for you to join in Hi Hello Games.";
+                        $receiverbody = $challenges->challengeReceiverUser->userTranslation->full_name." is waiting for you to join in Hi Hello Games.";
                     }else{
-                        $senderbody = $challenges->challengerUser->userTranslation->full_name." not available to play a Game with you.";
-                        $receiverbody = $challenges->challengeReceiverUser->userTranslation->full_name." not available to play a Game with you.";
+                        $senderbody = $challenges->challengerUser->userTranslation->full_name." not available to play Game.";
+                        $receiverbody = $challenges->challengeReceiverUser->userTranslation->full_name." not available to play Game.";
                     }
 
                     $senderChallengeData = [
