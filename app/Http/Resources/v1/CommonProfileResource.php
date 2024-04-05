@@ -22,6 +22,7 @@ class CommonProfileResource extends JsonResource
             'profile_photo'     =>  generateURL($this->profile_photo) ?? "",
             'gender'            =>  $this->gender,
             'isProfileVerified' => ($this->emailVerifyStatus()=='verified' && $this->contactVerifyStatus()=='verified' && $this->verify_photo_status=='verified') ? true : false,
+            'onlineStatus'      => $this->onlineStatus(),
         ];
         return parent::toArray($request);
     }

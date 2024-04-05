@@ -26,6 +26,7 @@ class MatchResource extends JsonResource
                 'isProfileVerified' => ($this->emailVerifyStatus()=='verified' && $this->contactVerifyStatus()=='verified' && $this->verify_photo_status=='verified') ? true : false,
                 'location'          =>  new LocationResource($this->location),
                 'age'               =>  $this->getAge(),
+                'onlineStatus'      => $this->onlineStatus(),
 
             ],
             'created_at'    =>  $this->created_at ?? "",
