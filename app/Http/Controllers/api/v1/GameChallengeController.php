@@ -640,7 +640,7 @@ public function generatePayload($user_id, $challenger_id=null, $type){
                         }else{
                             $receiver_id = $challenger_id;
                             $senderDeviceToken = DeviceToken::where(['user_id'=>$challenger_id])->orderBy('id','desc')->first();
-                            $payloadData = $receiverDeviceToken;
+                            $payloadData = $senderDeviceToken;
                         }
                         
                         if($senderDeviceToken != null){
