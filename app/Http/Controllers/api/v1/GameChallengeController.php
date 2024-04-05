@@ -305,7 +305,7 @@ class GameChallengeController extends Controller
           try{
           $user = $this->getAuthUser();
           $user_id = $user->id;
-          if((int)$request->status == 0){
+          if((int)$request->status == 0 && $request->user_id){
               $user  = User::find($user_id);
               $user->game_playing_status =  $request->status;
               $user->save();
