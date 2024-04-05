@@ -589,13 +589,14 @@ public function generatePayload($user_id, $challenger_id=null, $type){
                     }else{
                         $type = 'game_reject';
                     }
-                    if((int)$challenges->challenger_status){
+                    if((int)$challenges->challenger_status == 1){
                         $senderbody = $challenges->challengerUser->userTranslation->full_name." is waiting for you to Join in Hihello Games.";
                         $receiverbody = $challenges->challengeReceiverUser->userTranslation->full_name." is waiting for you to Join in Hihello Games.";
                     }else{
                         $senderbody = $challenges->challengerUser->userTranslation->full_name." not available to play a Game with you.";
                         $receiverbody = $challenges->challengeReceiverUser->userTranslation->full_name." not available to play a Game with you.";
                     }
+
                     $senderChallengeData = [
                         'title' => "Game Play Request",
                         'body'=>$senderbody,
@@ -629,54 +630,94 @@ public function generatePayload($user_id, $challenger_id=null, $type){
                         'profile_photo'     =>  generateURL($challenges->challengeReceiverUser->profile_photo) ?? "",
                         'type'              => $type
                     ];
-                    // dd($receiverChallengeData,$senderChallengeData);
-                    // DB::enableQueryLog();
-                    $senderDeviceToken = DeviceToken::where(['user_id'=>$challenger_id])->orderBy('id','desc')->first();
-                    $receiverDeviceToken = DeviceToken::where(['user_id'=>$user_id])->orderBy('id','desc')->first();
-                    // dd(DB::getQueryLog());
-                    // echo "<pre>";
-                    // print_r($user_id);
-                    if($senderDeviceToken != null && $receiverDeviceToken != null){
-                        // dd($deviceToken->token);
-                        $sender_notification = [
-                            'priority'  =>  'high',
-                            'to'        =>  $senderDeviceToken->token,
-                            'sound'     =>  'default',
-                        ];
+                    
+                    if((int)$challenges->challenger_status == 2){
+                        if($auth_id == $challenger_id){
 
-                        $receiver_notification = [
-                            'priority'  =>  'high',
-                            'to'        =>  $receiverDeviceToken->token,
-                            'sound'     =>  'default',
-                        ];
-
-                        if( $senderDeviceToken->type == 'android' ) {
-                            $sender_notification['data'] = $receiverChallengeData;
-                        } else {
-                            $sender_notification['notification'] = $receiverChallengeData;
-                            $sender_notification['data'] = $receiverChallengeData;
+                            $receiver_id = $user_id;
+                            $senderDeviceToken = DeviceToken::where(['user_id'=>$user_id])->orderBy('id','desc')->first();
+                            $payloadData = $senderChallengeData;
+                        }else{
+                            $receiver_id = $challenger_id;
+                            $senderDeviceToken = DeviceToken::where(['user_id'=>$challenger_id])->orderBy('id','desc')->first();
+                            $payloadData = $receiverDeviceToken;
                         }
+                        
+                        if($senderDeviceToken != null){
+                            // dd($deviceToken->token);
+                            $sender_notification = [
+                                'priority'  =>  'high',
+                                'to'        =>  $senderDeviceToken->token,
+                                'sound'     =>  'default',
+                            ];
 
-                        if( $receiverDeviceToken->type == 'android' ) {
-                            $receiver_notification['data'] = $senderChallengeData;
-                        } else {
-                            $receiver_notification['notification'] = $senderChallengeData;
-                            $receiver_notification['data'] = $senderChallengeData;
+                            if( $senderDeviceToken->type == 'android' ) {
+                                $sender_notification['data'] = $payloadData;
+                            } else {
+                                $sender_notification['notification'] = $payloadData;
+                                $sender_notification['data'] = $payloadData;
+                            }
+
+                            $sender_data = json_encode($sender_notification);
+                            
+                            $sendNotifyTosender = $this->sendPushNotification($sender_data);
+                            $notifyData['senderpayload'] = $sender_notification;
+                            $notifyData['sendernotify'] =$sendNotifyTosender;
+                            
+                            
                         }
+                        return $notifyData;
+                    }else{
 
-                        $sender_data = json_encode($sender_notification);
-                        $receiver_data = json_encode($receiver_notification);
-                        
-                        $sendNotifyTosender = $this->sendPushNotification($sender_data);
-                        $sendNotifyToreceiver = $this->sendPushNotification($receiver_data);
-                        $notifyData['senderpayload'] = $sender_notification;
-                        $notifyData['sendernotify'] =$sendNotifyTosender;
-                        $notifyData['receiverpayload'] = $receiver_notification;
-                        $notifyData['receivernotify'] =$sendNotifyToreceiver;
-                        
-                        
+                        // dd($receiverChallengeData,$senderChallengeData);
+                        // DB::enableQueryLog();
+                        $senderDeviceToken = DeviceToken::where(['user_id'=>$challenger_id])->orderBy('id','desc')->first();
+                        $receiverDeviceToken = DeviceToken::where(['user_id'=>$user_id])->orderBy('id','desc')->first();
+                        // dd(DB::getQueryLog());
+                        // echo "<pre>";
+                        // print_r($user_id);
+                        if($senderDeviceToken != null && $receiverDeviceToken != null){
+                            // dd($deviceToken->token);
+                            $sender_notification = [
+                                'priority'  =>  'high',
+                                'to'        =>  $senderDeviceToken->token,
+                                'sound'     =>  'default',
+                            ];
+
+                            $receiver_notification = [
+                                'priority'  =>  'high',
+                                'to'        =>  $receiverDeviceToken->token,
+                                'sound'     =>  'default',
+                            ];
+
+                            if( $senderDeviceToken->type == 'android' ) {
+                                $sender_notification['data'] = $receiverChallengeData;
+                            } else {
+                                $sender_notification['notification'] = $receiverChallengeData;
+                                $sender_notification['data'] = $receiverChallengeData;
+                            }
+
+                            if( $receiverDeviceToken->type == 'android' ) {
+                                $receiver_notification['data'] = $senderChallengeData;
+                            } else {
+                                $receiver_notification['notification'] = $senderChallengeData;
+                                $receiver_notification['data'] = $senderChallengeData;
+                            }
+
+                            $sender_data = json_encode($sender_notification);
+                            $receiver_data = json_encode($receiver_notification);
+                            
+                            $sendNotifyTosender = $this->sendPushNotification($sender_data);
+                            $sendNotifyToreceiver = $this->sendPushNotification($receiver_data);
+                            $notifyData['senderpayload'] = $sender_notification;
+                            $notifyData['sendernotify'] =$sendNotifyTosender;
+                            $notifyData['receiverpayload'] = $receiver_notification;
+                            $notifyData['receivernotify'] =$sendNotifyToreceiver;
+                            
+                            
+                        }
+                        return $notifyData;
                     }
-                    return $notifyData;
                 } 
         }
         
