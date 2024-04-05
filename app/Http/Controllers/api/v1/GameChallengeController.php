@@ -574,7 +574,7 @@ public function generatePayload($user_id, $challenger_id=null, $type){
             $senderChallengeData=[];$receiverChallengeData=[]; $notifyData=[];
             if($challenges){
                     $type = 'game_play';
-                if((int)$challenges->status && (int)$challenges->challenger_status){
+                if((int)$challenges->status == 1 && (int)$challenges->challenger_status == 1){
                     $type = 'game_start';
                     $senderUser  = User::find($challenger_id);
                     $senderUser->game_playing_status =  1;
@@ -582,6 +582,8 @@ public function generatePayload($user_id, $challenger_id=null, $type){
                     $receiverUser  = User::find($user_id);
                     $receiverUser->game_playing_status =  1;
                     $receiverUser->save();
+                }else{
+                    $type = 'game_reject';
                 }
                     if((int)$challenges->challenger_status){
                         $senderbody = $challenges->challengerUser->userTranslation->full_name." is waiting for you to Join in Hihello Games.";
