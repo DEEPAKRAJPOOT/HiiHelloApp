@@ -457,7 +457,6 @@ class GameChallengeController extends Controller
             $sendNotify = $this->sendPushNotification($data);
             $notifyData['payload'] = $data;
             $notifyData['notify'] =$sendNotify;
-            // dd($notifyData,$deviceToken[0]->token,$user_id);
             return $notifyData;
             
         }
@@ -475,7 +474,7 @@ public function generatePayload($user_id, $challenger_id=null, $type){
             if($challenges){
                 $challengeData = [
                     'title' => "Game Challenge",
-                    'body'=>$challenges->challengerUser->userTranslation->full_name." has challenged you to play Hi Hello Games",
+                    'body'=>$this->split_name($challenges->challengerUser->userTranslation->full_name)[0]." has challenged you to play Hi Hello Games",
                     'id'        =>  $challenges->challengerUser->custom_id ?? "",
                     'full_name' =>  $challenges->challengerUser->userTranslation ? $challenges->challengerUser->userTranslation->full_name : "",
                     'gender'            =>  $challenges->challengerUser->gender ?? "",
@@ -494,9 +493,9 @@ public function generatePayload($user_id, $challenger_id=null, $type){
             $challengeData=[];
             if($challenges){
                 if((int)$challenges->status){
-                    $body = $challenges->challengeReceiverUser->userTranslation->full_name." has Accepted your challenge to play Hi Hello Games.";
+                    $body = $this->split_name($challenges->challengeReceiverUser->userTranslation->full_name)[0]." has Accepted your challenge to play Hi Hello Games.";
                 }else{
-                    $body = $challenges->challengeReceiverUser->userTranslation->full_name." Not available to play Game.";
+                    $body = $this->split_name($challenges->challengeReceiverUser->userTranslation->full_name)[0]." Not available to play Game.";
                 }
                 
 
@@ -528,7 +527,7 @@ public function generatePayload($user_id, $challenger_id=null, $type){
             if($challenges){
                 //Need to change full name to first name only
                 if($challenges->challenger_id != $user_id){
-                        $body = $challenges->challengerUser->userTranslation->full_name." is ready to play Hi Hello games.";
+                        $body = $this->split_name($challenges->challengerUser->userTranslation->full_name)[0]." is ready to play Hi Hello games.";
 
                         $challengeData = [
                         'title' => "Game challenge",
@@ -547,7 +546,7 @@ public function generatePayload($user_id, $challenger_id=null, $type){
                     ];
 
                 }else{
-                       $body = $challenges->challengeReceiverUser->userTranslation->full_name." is ready to play Hi Hello games.";
+                       $body = $this->split_name($challenges->challengeReceiverUser->userTranslation->full_name)[0]." is ready to play Hi Hello games.";
                     
 
                     $challengeData = [
@@ -591,11 +590,11 @@ public function generatePayload($user_id, $challenger_id=null, $type){
                         $type = 'game_reject';
                     }
                     if((int)$challenges->challenger_status == 1){
-                        $senderbody = $challenges->challengerUser->userTranslation->full_name." is waiting for you to join in Hi Hello Games.";
-                        $receiverbody = $challenges->challengeReceiverUser->userTranslation->full_name." is waiting for you to join in Hi Hello Games.";
+                        $senderbody = $this->split_name($challenges->challengerUser->userTranslation->full_name)[0]." is waiting for you to join in Hi Hello Games.";
+                        $receiverbody = $this->split_name($challenges->challengeReceiverUser->userTranslation->full_name)[0]." is waiting for you to join in Hi Hello Games.";
                     }else{
-                        $senderbody = $challenges->challengerUser->userTranslation->full_name." not available to play Game.";
-                        $receiverbody = $challenges->challengeReceiverUser->userTranslation->full_name." not available to play Game.";
+                        $senderbody = $this->split_name($challenges->challengerUser->userTranslation->full_name)[0]." not available to play Game.";
+                        $receiverbody = $this->split_name($challenges->challengeReceiverUser->userTranslation->full_name)[0]." not available to play Game.";
                     }
 
                     $senderChallengeData = [
@@ -733,4 +732,12 @@ public function generatePayload($user_id, $challenger_id=null, $type){
             return false;
         }
     }
+
+    public function split_name($name) {
+        $name = trim($name);
+        $last_name = (strpos($name, ' ') === false) ? '' : preg_replace('#.*\s([\w-]*)$#', '$1', $name);
+        $first_name = trim( preg_replace('#'.preg_quote($last_name,'#').'#', '', $name ) );
+        return array($first_name, $last_name);
+    }
+
 }
