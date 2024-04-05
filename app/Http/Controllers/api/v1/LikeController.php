@@ -229,7 +229,7 @@ class LikeController extends Controller
     {
         $paginationRequest = new PaginationRequest();
         if ($this->apiValidator($request->all(), $paginationRequest->rules())) {
-            try {
+            // try {
                 $user = $request->user();
                 // dd($user->toArray());
                 $user_id = $user->id;
@@ -261,8 +261,8 @@ class LikeController extends Controller
                     ->pluck('users.id')->toArray();
                 
                     $likes = Like::with([
-                        'likerUser:id,custom_id,birth_date,profile_photo,gender,verify_email_send,contact_verified_at,location_id,is_active',
-                        'likerUser.userTranslation', 'likerUser.location.locationTranslation','likerUser.last_online'
+                        'likerUser:id,last_online,custom_id,birth_date,profile_photo,gender,verify_email_send,contact_verified_at,location_id,is_active',
+                        'likerUser.userTranslation', 'likerUser.location.locationTranslation'
                     ])
                     ->whereHas('likerUser', function ($query) {
                         $query->whereIsActive('y');
@@ -275,7 +275,6 @@ class LikeController extends Controller
                 $likes = $likes->limit($request->limit ?? config('utility.pagination.limit'))
                     ->offset($request->offset ?? config('utility.pagination.offset'))
                     ->get();
-
                 if ($likes->isNotEmpty()) {
                     return (LikeResource::collection($likes))
                         ->additional([
@@ -297,24 +296,24 @@ class LikeController extends Controller
                     $this->response['meta']['is_ban'] = false;
                     $this->status = Response::HTTP_NOT_FOUND;
                 }
-            } catch (ModelNotFoundException $exception) {
-                switch ($exception->getModel()) {
-                    case 'App\Models\User':
-                        $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("Users")]);
-                        $this->response['meta']['is_ban'] = false;
-                        break;
-                    case 'App\Models\Like':
-                        $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("Users")]);
-                        $this->response['meta']['is_ban'] = false;
-                        break;
-                    default:
-                        $this->response['meta']['message'] = trans('api.went_wrong');
-                        $this->response['meta']['is_ban'] = false;
-                        break;
-                };
-            } catch (\Exception $e) {
-                $this->storeErrorLog($e, 'get_likes');
-            }
+            // } catch (ModelNotFoundException $exception) {
+            //     switch ($exception->getModel()) {
+            //         case 'App\Models\User':
+            //             $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("Users")]);
+            //             $this->response['meta']['is_ban'] = false;
+            //             break;
+            //         case 'App\Models\Like':
+            //             $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("Users")]);
+            //             $this->response['meta']['is_ban'] = false;
+            //             break;
+            //         default:
+            //             $this->response['meta']['message'] = trans('api.went_wrong');
+            //             $this->response['meta']['is_ban'] = false;
+            //             break;
+            //     };
+            // } catch (\Exception $e) {
+            //     $this->storeErrorLog($e, 'get_likes');
+            // }
         }
         return $this->returnResponse();
     }
