@@ -10,7 +10,7 @@ use App\Http\Resources\v1\{UserProfile, UserDetailResource, MyProfile};
 use App\Http\Requests\Api\User\{ProfileRequest, ProfileReportRequest, SetLatLongRequest};
 use App\Http\Requests\Api\Authentication\{DeleteAccountRequest};
 use App\Http\Requests\Api\General\{PaginationRequest};
-use App\Models\{User, Location, ProfileReport, NotificationStatus, Language,LocationTranslation};
+use App\Models\{User, Location, ProfileReport, NotificationStatus, Language,LocationTranslation,OnlineUsers};
 
 class UserController extends Controller
 {
@@ -424,6 +424,22 @@ class UserController extends Controller
             $this->response['meta']['message'] = trans('api.went_wrong');
             $this->response['meta']['is_ban'] = false;
         }
+        return $this->returnResponse();
+    }
+
+    public function migrateLiveUsers(Request $request){
+        $usersData = User::select('id','last_online')->whereNotNull('last_online')->where('is_active','y')->get();
+        if($usersData){
+            foreach($usersData as $users){
+                $onlineData['user_id'] = $users->id;
+                $onlineData['last_online'] =  $users->last_online;
+                $onlineData['created_at'] =  $users->last_online;
+                $onlineData['updated_at'] =  $users->last_online;
+                OnlineUsers::create($onlineData);
+            }
+        }
+        $this->response['meta']['message'] = "Migration success!";
+        $this->status = Response::HTTP_OK;
         return $this->returnResponse();
     }
 }

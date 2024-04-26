@@ -18,6 +18,7 @@ use App\Models\Subscription;
 use App\Models\SubscriptionPlan;
 use App\Models\SubscriptionPlanTranslation;
 use App\Models\UserTranslation;
+use App\Models\OnlineUsers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
@@ -67,6 +68,8 @@ class PagesController extends Controller
                                     ->groupBy("subscription_plan_translations.id")
                                     ->where(['subscription_plan_translations.locale' => 'en'])
                                     ->get();
+
+        $onlineUsersData = OnlineUsers::select('online_users.user_id')->join("users","users.id","=","online_users.user_id")->where('users.is_active','y')->whereNull('users.deleted_at')->whereDate('online_users.last_online',now()->toDateString())->groupBy('online_users.user_id')->get();                     
 
         $age_result[] = [
             'male_age_18_25'    => $dashboard_data ? number_format($dashboard_data->male_18_25) : 0,
@@ -133,6 +136,7 @@ class PagesController extends Controller
         $user['age_result'] = $age_result;
         $user['paid_users_pr'] = number_format($total_subscribed / $total_male * 100,2);
         $user['nonpaid_users_pr'] = number_format($total_unsubscribed / $total_male * 100,2);
+        $user['total_live_users'] = $onlineUsersData->count();
 
 
         // echo "<pre>"; print_r($subscription_result); die();
@@ -195,6 +199,32 @@ class PagesController extends Controller
         return view('admin.pages.dashboard.view-controlled',$dashboard_data)->with(['custom_title'=>__('Dashboard')]);
     }
 
+    public function getliveusers(Request $request){
+        // dd($request->all());
+        $from_date = $request->date;
+        $month = $request->month;
+        DB::enableQueryLog();
+        $onlineUsersData = OnlineUsers::select('online_users.user_id')->join("users","users.id","=","online_users.user_id")->where('users.is_active','y')->whereNull('users.deleted_at');
+        if($from_date != null){
+            $onlineUsersData->whereDate('online_users.last_online',$from_date);
+            //->groupBy('online_users.user_id')
+        }else{
+            $onlineUsersData->whereMonth('online_users.last_online',$month);
+        }
+
+        $onlineUsersData->get();
+        // dd(DB::getQueryLog());
+        $data=[];
+        if($onlineUsersData != null){
+            $data['liveusers'] = $onlineUsersData->count();
+            
+        }else{
+            $data['liveusers'] = false;
+        }
+
+       echo json_encode($data);die;
+    }
+
     public function dashboardupdate()
     {
         ini_set('max_execution_time',3600);
@@ -207,6 +237,7 @@ class PagesController extends Controller
         }
         return redirect()->route('admin.dashboard.index');
     }
+
     public function profile()
     {
         $user = Auth::user();

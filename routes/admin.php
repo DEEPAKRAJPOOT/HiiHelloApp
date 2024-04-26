@@ -221,6 +221,7 @@ Route::get('gender-listing', 'Admin\PagesController@gender_listing')->name('gend
 Route::get('location-listing', 'Admin\PagesController@location_listing')->name('location.listing');
 // language list with no of users
 Route::get('language-listing', 'Admin\PagesController@language_listing')->name('dashboard.languagelisting');
+Route::post('getliveusers', 'Admin\PagesController@getliveusers')->name('dashboard.getliveusers');
 //Chart routes
 Route::get('register-users-chart', 'Admin\ChartController@getRegisterUser')->name('users.registerchart');
 Route::get('active-deactive-users-chart', 'Admin\ChartController@getActiveDeactiveUser')->name('users.activeDeactiveChart');
