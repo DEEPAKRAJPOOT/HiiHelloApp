@@ -356,6 +356,7 @@ class ProfileController extends Controller
                         // $awsImgResultArr = checkAwsImageModeration($request, $s3_file_url, "url");
                         $image_detection = new ImageDetectionClass($s3_file_url, $user, false);
                         $awsImgResultArr = $image_detection->checkConstraints();
+                        $awsImgResultArr = $image_detection->followCelebsConstraints();
                     } else {
                         $safe_image = "false";
                     }
