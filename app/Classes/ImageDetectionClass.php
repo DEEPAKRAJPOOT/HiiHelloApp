@@ -149,10 +149,11 @@ class ImageDetectionClass
             'Image'         => ['Bytes' => $this->bytes],
             'MinConfidence' => $min_confidence
         ]);
-        //dd($moderation_constraint->get('ModerationLabels'));
+        // dd($moderation_constraint->get('ModerationLabels'));
         $moderation = new ModerationConstraintClass($moderation_constraint);
         $moderation = $moderation->isModerationDetected();
-        if ($moderation->getMessage()) {
+        $moderation_labels = $moderation_constraint->get('ModerationLabels');
+        if (!empty($moderation_labels)) {
             $this->response['is_safe_image'] = false;
             $this->response['image_moderation_request'] = json_encode($moderation->getModerationRequest());
             $this->response['image_moderation_response'] = json_encode($moderation->getModerationResponse());
@@ -160,7 +161,6 @@ class ImageDetectionClass
             $this->response['moderation_labels_data'] = $moderation->getModerationLabelData();
             $this->response['log_message'] = $moderation->getMessage();
         }
-
         return $this->response;
     }
 
@@ -169,18 +169,16 @@ class ImageDetectionClass
     {
 
         $this->followFacialConstraint();
-
+        
         if (!$this->response['is_safe_image']) {
             return $this->response;
         }
         
-        /* $this->followTextConstraint();
+         $this->followTextConstraint();
         if (!$this->response['is_safe_image']) {
             return $this->response;
-        }*/
-
+        }
         $this->followModerationConstraint();
-
         return $this->response;
     }
 }

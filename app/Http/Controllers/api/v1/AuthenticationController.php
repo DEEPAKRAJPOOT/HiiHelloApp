@@ -356,7 +356,7 @@ class AuthenticationController extends Controller
                     ///CHECK FOR AWS REKOGNIZTION START
                     $image_detection = new ImageDetectionClass($request->file('profile_photo'), $user);
                     $awsImgResultArr = $image_detection->checkConstraints();
-                    
+                    // dd($awsImgResultArr);
                     $user->profile_photo = null;
                     $user->is_media_checked = 'n';
                     
