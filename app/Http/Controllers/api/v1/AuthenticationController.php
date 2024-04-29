@@ -196,11 +196,10 @@ class AuthenticationController extends Controller
                     ///CHECK FOR AWS REKOGNIZTION START
                     $image_detection = new ImageDetectionClass($request->file('profile_photo'), $user);
                     $awsImgResultArr = $image_detection->checkConstraints();
-
+                    $awsImgResultArr = $image_detection->followCelebsConstraints();
                     $safe_image = $awsImgResultArr["is_safe_image"];
                     $user->profile_photo = null;
                     $user->is_media_checked = 'n';
-
                     if ($awsImgResultArr["is_safe_image"]) {
                         $user->profile_photo = $request->file('profile_photo')->store('users/profile_photo');
                         $user->save();
@@ -343,6 +342,19 @@ class AuthenticationController extends Controller
         }
 
         return $this->returnResponse();
+    }
+
+    public function detectValidImage(){
+        $user = $this->getAuthUser();
+        $safe_image = "true";
+        $awsImgResultArr = [];
+
+        ///CHECK FOR AWS REKOGNIZTION START
+        $image_detection = new ImageDetectionClass($request->file('profile_photo'), $user);
+        $awsImgResultArr = $image_detection->checkConstraints();
+        // dd($awsImgResultArr);
+        $user->profile_photo = null;
+        $user->is_media_checked = 'n';
     }
 
     public function detectValidProfileImage(Request $request){
@@ -573,7 +585,7 @@ class AuthenticationController extends Controller
                     if ($user->profile_photo) if (Storage::exists($user->profile_photo)) Storage::delete($user->profile_photo);
                     $path = $request->file('profile_photo')->store('users/profile_photo');
                 }
-
+                dd($path);
                 if (empty($user->email_verified_at)) {
                     $user->markEmailAsVerified();
                 } // Mark Email As Verified
