@@ -236,4 +236,10 @@ return [
             'birthday'    =>  "Hi :entity We wish you Happy Bday from the entire Hi Hello community. Have a fun filled day and awesome year ahead.",
         ],
     ],
+    'moderation' => [
+        'success' => 'छवि सफलतापूर्वक सत्यापित!',
+        'no_face_detect'=> 'चेहरा पता नहीं चला!',
+        'multi_image' => 'एकाधिक चेहरे का पता चला, कृपया एकल और स्वयं का फोटो अपलोड करें।',
+        'unsafe_image' => 'असुरक्षित छवि का पता चला!'
+    ],
 ];

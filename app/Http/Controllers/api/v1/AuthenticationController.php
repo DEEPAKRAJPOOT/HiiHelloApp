@@ -196,11 +196,10 @@ class AuthenticationController extends Controller
                     ///CHECK FOR AWS REKOGNIZTION START
                     $image_detection = new ImageDetectionClass($request->file('profile_photo'), $user);
                     $awsImgResultArr = $image_detection->checkConstraints();
-
+                    $awsImgResultArr = $image_detection->followCelebsConstraints();
                     $safe_image = $awsImgResultArr["is_safe_image"];
                     $user->profile_photo = null;
                     $user->is_media_checked = 'n';
-
                     if ($awsImgResultArr["is_safe_image"]) {
                         $user->profile_photo = $request->file('profile_photo')->store('users/profile_photo');
                         $user->save();
@@ -342,6 +341,92 @@ class AuthenticationController extends Controller
             }
         }
 
+        return $this->returnResponse();
+    }
+
+    public function detectValidImage(){
+        $user = $this->getAuthUser();
+        $safe_image = "true";
+        $awsImgResultArr = [];
+
+        ///CHECK FOR AWS REKOGNIZTION START
+        $image_detection = new ImageDetectionClass($request->file('profile_photo'), $user);
+        $awsImgResultArr = $image_detection->checkConstraints();
+        // dd($awsImgResultArr);
+        $user->profile_photo = null;
+        $user->is_media_checked = 'n';
+    }
+
+    public function detectValidProfileImage(Request $request){
+
+        $profileDetectionRequest = new DetectionSafeProfileImageRequest();
+        if ($this->apiValidator($request->all(), $profileDetectionRequest->rules())) {
+                   $user = $this->getAuthUser();
+                   $safe_image = "true";
+                   $awsImgResultArr = [];
+
+                    ///CHECK FOR AWS REKOGNIZTION START
+                    $image_detection = new ImageDetectionClass($request->file('profile_photo'), $user);
+                    $awsImgResultArr = $image_detection->checkConstraints();
+                    // dd($awsImgResultArr);
+                    $user->profile_photo = null;
+                    $user->is_media_checked = 'n';
+                    
+                    $awsImgResultArr = $image_detection->followCelebsConstraints();
+                    $safe_image = $awsImgResultArr["is_safe_image"];
+                    $message = $awsImgResultArr["log_message"];
+                    $total_face_detected = $awsImgResultArr["total_face_detected"];
+                    $response_data = $awsImgResultArr["image_moderation_response"];
+                    $request_data = $awsImgResultArr["image_moderation_request"];
+                    $endpoint_url = url()->current();
+                    $moderation_status=0;$moderation_image='';
+                    if($safe_image){
+                        if($total_face_detected == 1){
+                            $path = $request->file('profile_photo')->store('users/images');
+                            $moderation_image = Storage::url($path);
+                            $moderation_status=1;
+                            $user->valid_image = $path;
+                            $user->moderation_status = $moderation_status;
+                            $user->save();
+                            $message = trans('api.moderation.success');
+                        }else if($total_face_detected == 0){
+                            $message = trans('api.moderation.no_face_detect');
+                        }else if($total_face_detected > 1){
+                            $message = trans('api.moderation.multi_image');
+                        }
+                    }else{
+                        $message = trans('api.moderation.unsafe_image');
+                    }
+
+                    $moderationData = [
+                            'user_id'             => $user->id,
+                            'is_approved'         => $awsImgResultArr["is_safe_image"] ? 1  : 0,
+                            'request'             => $request_data,
+                            'response'            => $response_data,
+                            'total_face_detected' => $total_face_detected,
+                            'message'             => $message,
+                            'image_type'          => "valid_image",
+                            'endpoint_url'        => $endpoint_url,
+                    ];
+                    
+                    ImageModerationLog::Create([
+                        'user_id'             => $user->id,
+                        'is_approved'         => $awsImgResultArr["is_safe_image"] ? 1  : 0,
+                        'request'             => $request_data,
+                        'response'            => $response_data,
+                        'total_face_detected' => $total_face_detected,
+                        'message'             => $message,
+                        'image_type'          => "profile_photo",
+                        'endpoint_url'        => $endpoint_url,
+                    ]);
+                    $moderationData['moderation_status'] = $moderation_status;
+                    $moderationData['image_url'] = $moderation_image;
+                    //CHECK FOR AWS REKOGNIZTION END
+                    $this->response['data']   = $moderationData;
+                    $this->response['meta']['message']   = $message;
+                    $this->response['meta']['safe_image'] = $safe_image;
+                    return $this->returnResponse();
+        }
         return $this->returnResponse();
     }
 
@@ -500,7 +585,7 @@ class AuthenticationController extends Controller
                     if ($user->profile_photo) if (Storage::exists($user->profile_photo)) Storage::delete($user->profile_photo);
                     $path = $request->file('profile_photo')->store('users/profile_photo');
                 }
-
+                dd($path);
                 if (empty($user->email_verified_at)) {
                     $user->markEmailAsVerified();
                 } // Mark Email As Verified

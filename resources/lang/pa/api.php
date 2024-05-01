@@ -236,4 +236,10 @@ return [
             'birthday'    =>  "Hi :entity We wish you Happy Bday from the entire Hi Hello community. Have a fun filled day and awesome year ahead.",
         ],
     ],
+    'moderation' => [
+        'success' => 'Image validated successfully.',
+        'no_face_detect'=> 'Face is not detected !',
+        'multi_image' => 'Multiple Face detected please upload single and own photo.',
+        'unsafe_image' => 'Unsafe image detected !'
+    ],
 ];
