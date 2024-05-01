@@ -33,7 +33,7 @@
 <script src="{{ asset('admin/plugins/bootstrap-switch/js/bootstrap-switch.min.js') }}" type="text/javascript"></script>
 
 <script src="{{ asset('admin/js/custom.js') }}" type="text/javascript"></script>
-
+  <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
 <script>
     var oTable;
 </script>

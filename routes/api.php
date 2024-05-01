@@ -36,6 +36,7 @@ Route::post('webhook/hdfc-upi', [PaymentHDFCController::class, 'webhookCallback'
 
 Route::group(['namespace' => 'v1', 'prefix' => 'v1'], function () {
     // Authentication
+    Route::get('migrate-live-users',[UserController::class, 'migrateLiveUsers'])->name('api.migrate-live-users');
     Route::post('login', [AuthenticationController::class, 'login'])->name('api.user.login');
     Route::post('social/login', [AuthenticationController::class, 'socialLogin'])->name('api.social-login');
     Route::post('otpless/login', [AuthenticationController::class, 'otpLessLogin'])->name('api.otp-less-login');
