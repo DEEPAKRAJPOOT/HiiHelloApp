@@ -209,7 +209,11 @@ class PagesController extends Controller
             $onlineUsersData->whereDate('online_users.last_online',$from_date);
             //->groupBy('online_users.user_id')
         }else{
+            $months_yrs_seperator = explode("/",$month);
+            $year  =  $months_yrs_seperator[0];
+            $month = $months_yrs_seperator[1];
             $onlineUsersData->whereMonth('online_users.last_online',$month);
+            $onlineUsersData->whereYear('online_users.last_online',$year);
         }
 
         $onlineUsersData->get();

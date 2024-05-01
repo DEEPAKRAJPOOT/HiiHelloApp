@@ -19,3 +19,5 @@
 
 {{-- Custom CSS --}}
 <link rel="stylesheet" type="text/css" href="{{ asset('admin/css/custom.css') }}" />
+<link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+  

@@ -157,6 +157,10 @@
        <input type='date' id='search_todate' class="form-control" placeholder='To date' >
     </div>
     <div class="col-lg-2" style=" margin-left: 30px;margin-top: 70px;">
+      <label><b>Search Live Users By Date:</b></label>
+       <input type='text' class="form-control" id="datepicker" name="start" required>
+    </div>
+    {{--<div class="col-lg-2" style=" margin-left: 30px;margin-top: 70px;">
       <label><b>Search Live Users By Months:</b></label>
       <select name="month_filter" id="month_filter" class="form-control">
           <option value="">Select Month</option>
@@ -173,7 +177,7 @@
           <option value="11">Nov</option>
           <option value="12">Dec</option>
       </select>
-    </div>
+    </div>--}}
     <div class="col-lg-3" style="margin-left: 30px;margin-top: 95px;">
       <input type="button" class="btn btn-primary mr-1 ml-1" id="btn_search_filter" value="Search">
       <input type="button" class="btn btn-warning mr-1 ml-1" id="btn_reset_filter" value="Reset">
@@ -1100,13 +1104,35 @@ $(document).ready(function() {
   });
 </script>
 <script>
+  $("#datepicker").on("click",function(){
+    $("#search_todate").attr('disabled',true);
+  });
+
+
+  $(function() {
+      $("#datepicker").datepicker({
+        changeMonth: true,
+        changeYear: true,
+        changeDay: false,
+        showButtonPanel: true, // Optional: Show navigation buttons
+        dateFormat: 'yy/mm', // Format to display only month and year
+        onClose: function(dateText, inst) {
+          var month = $("#ui-datepicker-div .ui-datepicker-month option:selected").val();
+          var year = $("#ui-datepicker-div .ui-datepicker-year option:selected").val();
+          $(this).datepicker('setDate', new Date(year, month, 1)); // Set selected date to the first day of the chosen month and year
+        }
+      });
+    });
+  
   $('#btn_reset_filter').on('click',function(){
     location.reload(true);
   });
 
   $('#btn_search_filter').on('click',function(){
        var to_date = $("#search_todate").val();
-       var month = $("#month_filter").val();
+       var month = $("#datepicker").val();
+       console.log(to_date);
+       console.log(month);
        if(to_date != undefined || month != undefined){
           $.ajax({
           'url':'{{ route("admin.dashboard.getliveusers") }}',
