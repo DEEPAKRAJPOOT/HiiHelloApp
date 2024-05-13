@@ -457,6 +457,24 @@ class User extends Authenticatable implements MustVerifyEmail, TranslatableContr
         return $percentage;
     }
 
+    public function getPaymentStatus(){
+        $status = false;
+        if(!empty($this->subscription) && 
+        $this->subscription->order_id !== null && 
+        $this->subscription->status === 'incomplete'){
+            $start  = \Carbon\Carbon::parse($this->subscription->created_at)->format('Y-m-d H:i:s');
+            $diff    = \Carbon\Carbon::now()->diffInMinutes($start);
+            if($diff < 10){
+                $status = 'processed';
+            }else{
+                $status = $this->subscription->status;
+            }
+        }else{
+            $status = $this->subscription->status;
+        }
+        return $status;
+    }
+
     /**
      * The attributes that should be hidden for arrays.
      *

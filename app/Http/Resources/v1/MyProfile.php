@@ -98,6 +98,7 @@ class MyProfile extends JsonResource
                 'url'                       =>  url()->current(),
                 'language'                  =>  app()->getLocale(),
                 'is_subscribed'             =>  $is_subscribed,
+                'payment_status'            =>  $this->getPaymentStatus(),
                 'subscription_end_date'     =>  $subscription_end_date,
                 'is_feature_allow'          =>  $is_feature_allow,
             ],
