@@ -1,4 +1,4 @@
-@if (in_array('edit', $permissions))
+@if (in_array('access', $permissions))
     @if ( Route::is($routeName.'.listing'))
         {{--  For Active Users  --}}
         <div class="d-flex align-item-center w-60px">

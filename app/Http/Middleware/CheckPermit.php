@@ -55,6 +55,7 @@ class CheckPermit
         
         if (!empty($permission)) {
             $current_permission = unserialize($request->user()->permissions);
+            // dd($current_permission);
             if (
                 array_key_exists($role->id, $current_permission)
                 && !empty($current_permission[$role->id]['permissions'])

@@ -168,6 +168,12 @@ Breadcrumbs::register('dashboard', function ($breadcrumbs) {
 	    $breadcrumbs->push('App Status', route(Auth::getDefaultDriver().'.appstatus.index'));
 	});
 
+	//Payment Gateway Management
+	Breadcrumbs::register('paymentgateway_list', function($breadcrumbs)
+	{
+		$breadcrumbs->parent('dashboard');
+	    $breadcrumbs->push('Payment Gateway', route(Auth::getDefaultDriver().'.paymentgateway.index'));
+	});
 	
 
 	// Profile Reports Management -------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -390,9 +396,16 @@ Breadcrumbs::register('dashboard', function ($breadcrumbs) {
 	    $breadcrumbs->push('Create Like', route(Auth::getDefaultDriver().'.organic-matches.create'));
 	});
 
+	Breadcrumbs::register('challenges_list',function($breadcrumbs){
+		$breadcrumbs->parent('dashboard');
+	    $breadcrumbs->push('Challenges',route(Auth::getDefaultDriver().'.challenges.index'));
+	});
+
+	
+
 	Breadcrumbs::register('challenge_create', function($breadcrumbs)
 	{
-		$breadcrumbs->parent('challenges');
+		$breadcrumbs->parent('challenges_list');
 	    $breadcrumbs->push('Create Challenge', route(Auth::getDefaultDriver().'.challenges.create'));
 	});
 

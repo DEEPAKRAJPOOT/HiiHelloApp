@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\{ModelNotFoundException};
 use App\Http\Resources\v1\{LanguageResource, CmsResource, CountryResource, LocationResource, InterestResource, FaqResource, ProfileDetailResource, PersonalityResource, LocationTransResource, LocationSearchResource, DeviceTokenResource};
 use App\Http\Requests\Api\General\{PaginationRequest, LocationRequest, ProfileDetailRequest, InterestRequest, CheckLocationRequest};
 use App\Http\Requests\Api\User\{AddDeviceTokenRequest, GetDeviceTokenRequest};
-use App\Models\{User, Language, CmsPage, Country, Location, Interest, Faq, DeviceToken, ProfileDetail, AppDetail, Personality, LocationTranslation,AppStatus};
+use App\Models\{User, Language, CmsPage, Country, Location, Interest, Faq, DeviceToken, ProfileDetail, AppDetail, Personality, LocationTranslation,AppStatus,PaymentGateway};
 use Illuminate\Support\Facades\Redis;
 use App\Http\Traits\RedisTrait;
 use DB;
@@ -38,7 +38,13 @@ class GeneralController extends Controller
         foreach($appStatus as $status){
             $statusData[$status->flag_constant] = (int)$status->flag_value?true:false;
         }
+        $paymentGateway_status =[];
+        $PaymentGateway = PaymentGateway::get();
+        foreach($PaymentGateway as $gatewaystatus){
+            $paymentGateway_status[$gatewaystatus->flag_constant] = (int)$gatewaystatus->flag_value?true:false;
+        }
         
+        $statuses = array_merge($statusData,$paymentGateway_status);
         $verification_data = [];
         if ($app_details->isNotEmpty()) {
             $verification_data = [
@@ -96,7 +102,7 @@ class GeneralController extends Controller
                 ],
             ],
             'phone_auth_type' => [
-                'android' =>$statusData
+                'android' =>$statuses
             ],
             'verification_details'  =>  $verification_data
         ];
