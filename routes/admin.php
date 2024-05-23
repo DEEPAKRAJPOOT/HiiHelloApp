@@ -102,12 +102,10 @@ Route::group(['namespace' => 'Admin', 'middleware' => ['check_permit', 'revalida
 	Route::resource('locations', 'LocationController');
 	
 	/* App Status Management */
-	
 	Route::get('appstatus/listing', 'AppStatusController@listing')->name('appstatus.listing');
     Route::resource('appstatus','AppStatusController');
 
 	/*Payment Gateway */
-	
 	Route::get('paymentgateway/listing', 'PaymentGatewayController@listing')->name('paymentgateway.listing');
 	Route::resource('paymentgateway','PaymentGatewayController');
 	
