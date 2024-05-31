@@ -32,6 +32,10 @@ class Transaction extends Model
     {
         return $this->belongsTo('App\Models\Subscription', 'subscription_id', 'id');
     }
+    public function usersubscription()
+    {
+        return $this->hasOne('App\Models\Subscription', 'id', 'subscription_id');
+    }
     public function subscriptionPlan()
     {
         return $this->belongsTo('App\Models\SubscriptionPlan', 'plan_id', 'id');

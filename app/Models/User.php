@@ -459,7 +459,7 @@ class User extends Authenticatable implements MustVerifyEmail, TranslatableContr
 
     public function getPaymentStatus(){
         $status = false;
-        if(!empty($this->subscription) && 
+        if(!empty($this->subscription) && $this->subscription !== null && 
         $this->subscription->order_id !== null && 
         $this->subscription->status === 'incomplete'){
             $start  = \Carbon\Carbon::parse($this->subscription->created_at)->format('Y-m-d H:i:s');
@@ -469,8 +469,6 @@ class User extends Authenticatable implements MustVerifyEmail, TranslatableContr
             }else{
                 $status = $this->subscription->status;
             }
-        }else{
-            $status = $this->subscription->status;
         }
         return $status;
     }

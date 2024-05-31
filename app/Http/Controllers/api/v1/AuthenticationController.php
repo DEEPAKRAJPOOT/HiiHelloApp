@@ -585,7 +585,7 @@ class AuthenticationController extends Controller
                     if ($user->profile_photo) if (Storage::exists($user->profile_photo)) Storage::delete($user->profile_photo);
                     $path = $request->file('profile_photo')->store('users/profile_photo');
                 }
-                dd($path);
+                // dd($path);
                 if (empty($user->email_verified_at)) {
                     $user->markEmailAsVerified();
                 } // Mark Email As Verified

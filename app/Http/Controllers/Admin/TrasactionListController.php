@@ -44,6 +44,7 @@ class TrasactionListController extends Controller
 
     public function listing(Request $request)
     {
+        DB::enableQueryLog();
         extract($this->DTFilters($request->all()));
 
         $from_date         = ($request->from_date) ? $request->from_date." 00:00:00" : "";
@@ -53,9 +54,8 @@ class TrasactionListController extends Controller
         $search_plan       = ($request->search_plan) ? $request->search_plan : "";
         $search_vendor     = ($request->search_vendor) ? $request->search_vendor : "";
 
-
         $records = [];
-        $transactions = Transaction::with(['subscriptionPlan', 'user', 'user.userTransDefault', 'subscriptionPlan.subscriptionPlanTranslation'])->orderBy($sort_column, $sort_order);
+        $transactions = Transaction::with(['usersubscription','subscriptionPlan', 'user', 'user.userTransDefault', 'subscriptionPlan.subscriptionPlanTranslation'])->orderBy($sort_column, $sort_order);
 
         if ($search != '') {
             $transactions->where(function ($query) use ($search, $transactions) {
@@ -82,7 +82,7 @@ class TrasactionListController extends Controller
 
         // ST - Filter
         if($from_date != "" && $to_date != "") {
-            $transactions = $transactions->whereBetween('transactions.purchase_date', [$from_date, $to_date]);
+            $transactions = $transactions->whereBetween('transactions.created_at', [$from_date, $to_date]);
         }
 
         if($search_status != '') {
@@ -107,6 +107,7 @@ class TrasactionListController extends Controller
 
         $transactions = $transactions->offset($offset)->limit($limit)->orderBy($sort_column, $sort_order);
         $transactions = $transactions->get();
+        // dd(DB::getQueryLog());
 
         
         foreach ($transactions as $transaction) {
@@ -115,13 +116,13 @@ class TrasactionListController extends Controller
                 'account_id' =>  $transaction->user ? ($transaction->user->account_id ?? "") :  "",
                 'user_id' =>  $transaction->user ? ($transaction->user->userTransDefault ? $transaction->user->userTransDefault->full_name : "") : "",
                 'plan_id' => $transaction->subscriptionPlan ? ($transaction->subscriptionPlan->subscriptionPlanTranslation ? $transaction->subscriptionPlan->subscriptionPlanTranslation->name : "N/A") : "",
-                'razorpay_order_id' => $transaction->razorpay_order_id,
+                'razorpay_order_id' => $transaction->usersubscription->order_id,
                 'amount' => $transaction->amount,
                 'status' => view('admin.layouts.includes.status-badge')->with('status',$transaction->status)->render(),
                 'coupon_name' => $transaction->coupon_name,
                 'payment_type' => isset($transaction->payment_type) && !empty($transaction->payment_type) ? $transaction->payment_type : "N/A",
-                'purchase_date' => isset($transaction->purchase_date) && !empty($transaction->purchase_date) ? date("d-m-Y",strtotime($transaction->purchase_date)) : "N/A",
-                'subscription_end_date' => isset($transaction->subscription_end_date) && !empty($transaction->subscription_end_date) ? date("d-m-Y",strtotime($transaction->subscription_end_date)) : "N/A",
+                'purchase_date' => isset($transaction->usersubscription->start_date) && !empty($transaction->usersubscription->start_date) ? date("d-m-Y",strtotime($transaction->usersubscription->start_date)) : "N/A",
+                'subscription_end_date' => isset($transaction->usersubscription->end_date) && !empty($transaction->usersubscription->end_date) ? date("d-m-Y",strtotime($transaction->usersubscription->end_date)) : "N/A",
                 'created_at' => !empty($transaction->created_at) ? date('d-m-Y H:i:s',strtotime($transaction->created_at)) : 'N/A',
                 'state' => !empty($transaction->user->location->locationTransDefault) ? ($transaction->user->location->locationTransDefault->state ?? 'N/A') :  'N/A',
                 'city' => !empty($transaction->user->location->locationTransDefault) ? ($transaction->user->location->locationTransDefault->name ?? 'N/A') :  'N/A',
@@ -141,12 +142,17 @@ class TrasactionListController extends Controller
         $upi = 'UPI';
         $IOS = 'IOS';
         $coupon = 'COUPON';
+        $razorPay = 'Razorpay';
+        $cashfree = 'Cashfree';
 
         $total_google_play = Transaction::where("payment_type","LIKE","%{$google_play}%")->count();
         $total_upi = Transaction::where("payment_type","LIKE","%{$upi}%")->count();
         $total_ios = Transaction::where("payment_type","LIKE","%{$IOS}%")->count();
         $total_coupon = Transaction::where("payment_type","LIKE","%{$coupon}%")->count();
-
+        $totalRazorPayment = Transaction::where("payment_type","LIKE","%{$razorPay}%")->where('status','success')->count();
+        DB::enableQueryLog();
+        $totalCashfreePayment = Transaction::where("payment_type","LIKE","%{$cashfree}%")->where('status','success')->count();
+        dd($totalCashfreePayment);
         $SubscriptionPlans = SubscriptionPlan::all();
 
         foreach($SubscriptionPlans as $val){
@@ -161,6 +167,8 @@ class TrasactionListController extends Controller
         $records['total_google_play'] = number_format($total_google_play);
         $records['total_upi'] = number_format($total_upi);
         $records['total_ios'] = number_format($total_ios);
+        $records['total_razorpay'] = number_format($totalRazorPayment);
+        $records['total_cashfree'] = number_format($totalCashfreePayment);
         $records['total_coupon'] = number_format($total_coupon);
 
         return $records;
