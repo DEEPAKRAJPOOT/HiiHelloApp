@@ -43,6 +43,7 @@ class SubscriptionListController extends Controller
 
     public function listing(Request $request)
     {
+        // dd($request->all());
         DB::enableQueryLog();
         extract($this->DTFilters($request->all()));
         $records = [];
@@ -62,8 +63,9 @@ class SubscriptionListController extends Controller
             'subscriptionPlan', 'subscriptionPlan.subscriptionPlanTranslation',
             'user', 'user.userTransDefault'
         ]);
-        
-
+        if($sort_column === 'status'){
+            $sort_column = 'created_at';
+        }
         $subscriptions = $subscriptions->where("users.gender","Male");
         $subscriptions = $subscriptions->orderBy($sort_column, $sort_order);
         if ($search != '') {
