@@ -116,7 +116,7 @@ class TrasactionListController extends Controller
                 'account_id' =>  $transaction->user ? ($transaction->user->account_id ?? "") :  "",
                 'user_id' =>  $transaction->user ? ($transaction->user->userTransDefault ? $transaction->user->userTransDefault->full_name : "") : "",
                 'plan_id' => $transaction->subscriptionPlan ? ($transaction->subscriptionPlan->subscriptionPlanTranslation ? $transaction->subscriptionPlan->subscriptionPlanTranslation->name : "N/A") : "",
-                'razorpay_order_id' => $transaction->usersubscription->order_id,
+                'razorpay_order_id' => $transaction->usersubscription->order_id??"",
                 'amount' => $transaction->amount,
                 'status' => view('admin.layouts.includes.status-badge')->with('status',$transaction->status)->render(),
                 'coupon_name' => $transaction->coupon_name,
@@ -152,7 +152,6 @@ class TrasactionListController extends Controller
         $totalRazorPayment = Transaction::where("payment_type","LIKE","%{$razorPay}%")->where('status','success')->count();
         DB::enableQueryLog();
         $totalCashfreePayment = Transaction::where("payment_type","LIKE","%{$cashfree}%")->where('status','success')->count();
-        dd($totalCashfreePayment);
         $SubscriptionPlans = SubscriptionPlan::all();
 
         foreach($SubscriptionPlans as $val){
