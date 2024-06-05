@@ -56,14 +56,14 @@ jobs:
                       sudo php artisan cache:clear
                       
                       
-  deploy-to-backendserver:
+  depl.oy-to-backendserver:
      runs-on: self-hosted
      needs: [ laravel-tests]
      steps:
            - name: connect to aws cli
              uses: appleboy/ssh-action@master
              with:
-                  host: 15.207.103.61
+                  host: 3.108.227.29
                   username: ubuntu
                   key: ${{ secrets.BACKEND_SERVER_LARAVEL }}
                   port: 22
