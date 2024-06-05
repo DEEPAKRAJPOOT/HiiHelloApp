@@ -56,7 +56,7 @@ jobs:
                       sudo php artisan cache:clear
                       
                       
-  depl.oy-to-backendserver:
+  deploy-to-backendserver:
      runs-on: self-hosted
      needs: [ laravel-tests]
      steps:

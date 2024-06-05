@@ -14,6 +14,7 @@ class ApiUserOnline {
         $user = Auth::user();
         if(!empty($user)){
             try{
+                
                 $user->last_online = now();
                 $user->save();
                 $user_id = $user->id;
