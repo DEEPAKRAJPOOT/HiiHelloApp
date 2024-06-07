@@ -259,6 +259,7 @@
                            <option value="success">Successful</option>
                            <option value="pending">Pending</option>
                            <option value="fail">Failed</option>
+                           <option value="refund">Refund</option>
                        </select>
                     </td>
 
