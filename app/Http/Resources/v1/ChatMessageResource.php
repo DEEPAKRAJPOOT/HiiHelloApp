@@ -40,8 +40,9 @@ class ChatMessageResource extends JsonResource
             }
             // dd($resource['message']);
         }
+        
         return $resource;
-
+        
         return parent::toArray($request);
     }
 

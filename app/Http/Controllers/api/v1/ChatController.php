@@ -7,6 +7,7 @@ use Illuminate\Http\{Request, Response};
 use Illuminate\Database\Eloquent\{ModelNotFoundException};
 use App\Http\Requests\Api\General\{PaginationRequest};
 use Illuminate\Support\Facades\{Auth};
+use Illuminate\Support\Facades\Cache;
 use App\Models\{ChatRoom, ChatMessage, User, CallLog};
 use App\Http\Resources\v1\{ChatRoomResource, ChatMessageResource};
 use App\Http\Requests\Api\Chat\{CreateRoomRequest, ChatMessagesRequest, ClearRoomRequest, DeleteRoomRequest, GetRoomRequest, DisappearModeRequest, VanishModeRequest};
@@ -221,6 +222,9 @@ class ChatController extends Controller
                     })->latest()->first();
 
                 if ($messages->isNotEmpty()) {
+                    $key = $request->room.'-'.$auth_id.'chatmessage';
+                    $jsonData = $messages->toArray();
+                    Cache::put($key, $jsonData, 3600);
                     return (ChatMessageResource::Collection($messages))->additional([
                         'meta'  =>  [
                             'remaining_time'    =>  $callLog ? $callLog->remaining_time : config('utility.twillio.allow_call_time'),
@@ -238,6 +242,9 @@ class ChatController extends Controller
                             'message'   =>  trans('api.list', ['entity' => __('Chat history')])
                         ],
                     ]);
+                    
+                    
+                    //Cache::put($key, $jsonData, 3600); // 1 hour expiration
                 } else {
                     $this->response['meta']['remaining_time']  = $callLog ? $callLog->remaining_time : config('utility.twillio.allow_call_time');
                     $this->response['meta']['message']  =   trans('api.not_found', ['entity' => __('Chat history')]);
@@ -267,6 +274,7 @@ class ChatController extends Controller
                 $this->storeErrorLog($e, 'get_chat_messages');
             }
         }
+        
         return $this->returnResponse();
     }
 
