@@ -125,6 +125,7 @@ class HomeController extends Controller
                                 'url'       =>  url()->current(),
                                 'api'       =>  $this->getVersion(),
                                 'is_ban'    =>  false,
+                                'dummy_status'=> true,
                                 'language'  =>  app()->getLocale(),
                                 'message'   =>  trans('api.list', ['entity' => __('Users')]),
                             ]
