@@ -8,6 +8,9 @@
 @case('fail')
 <span class="badge bg-danger text-white">Failed</span>
 @break
+@case('refund')
+<span class="badge bg-warning text-white">Refund</span>
+@break
 @default
 N/A
 @endswitch

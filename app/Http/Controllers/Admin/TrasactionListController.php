@@ -116,7 +116,14 @@ class TrasactionListController extends Controller
                 'account_id' =>  $transaction->user ? ($transaction->user->account_id ?? "") :  "",
                 'user_id' =>  $transaction->user ? ($transaction->user->userTransDefault ? $transaction->user->userTransDefault->full_name : "") : "",
                 'plan_id' => $transaction->subscriptionPlan ? ($transaction->subscriptionPlan->subscriptionPlanTranslation ? $transaction->subscriptionPlan->subscriptionPlanTranslation->name : "N/A") : "",
-                'razorpay_order_id' => $transaction->usersubscription->order_id,
+                'razorpay_order_id' => $transaction->usersubscription->order_id??"",
+                'transaction_id'    => $transaction->transaction_id??"",
+                'razorpay_vpa'      => $transaction->razorpay_vpa??"",
+                'razorpay_contact'  => $transaction->razorpay_contact??"",
+                'razorpay_email'  => $transaction->razorpay_email??"",
+                'refund_id'       => $transaction->refund_id??"",
+                'refunded_amount'       => $transaction->refunded_amount??"",
+                'refunded_at'       => !empty($transaction->refunded_at) ? date('d-m-Y H:i:s',strtotime($transaction->refunded_at)) : 'N/A',
                 'amount' => $transaction->amount,
                 'status' => view('admin.layouts.includes.status-badge')->with('status',$transaction->status)->render(),
                 'coupon_name' => $transaction->coupon_name,
@@ -152,7 +159,6 @@ class TrasactionListController extends Controller
         $totalRazorPayment = Transaction::where("payment_type","LIKE","%{$razorPay}%")->where('status','success')->count();
         DB::enableQueryLog();
         $totalCashfreePayment = Transaction::where("payment_type","LIKE","%{$cashfree}%")->where('status','success')->count();
-        dd($totalCashfreePayment);
         $SubscriptionPlans = SubscriptionPlan::all();
 
         foreach($SubscriptionPlans as $val){

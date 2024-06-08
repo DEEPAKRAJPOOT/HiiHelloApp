@@ -148,7 +148,7 @@
                 orderable: false },
             ],
             order: [
-                [1, 'asc']
+                [9, 'desc']
             ],
             lengthMenu: [
                 [10, 50, 100, 250, 500],
