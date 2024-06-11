@@ -883,7 +883,7 @@ class AuthenticationController extends Controller
 
                 if($httpcode == 200){
                    $extractno = preg_replace('/^\+?91|\|91|\D/', '', ($contact));
-                   $user =  User::where('contact_no',$extractno)->first();
+                   $user =  User::select('id')->where('contact_no',$extractno)->first();
                    $extractedRes = explode('|',$body);
                 //    dd($extractedRes,);
                    $authenticateLog = [
