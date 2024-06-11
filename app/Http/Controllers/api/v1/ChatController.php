@@ -178,12 +178,15 @@ class ChatController extends Controller
         if ($this->apiValidator($request->all(), $chatMessagesRequest->rules())) {
             
             // try {
+                
                 $user_type = 'participant';
                 $cleared_time = '';
                 $auth_id = $request->user() ? $request->user()->id : NULL;
                 $chatRoomKey = $request->room.'-'.$auth_id.'chatmessageChatRoom';
                 $key = $request->room.'-'.$auth_id.'chatmessage'.$request->limit;
                 $callLogKey = $request->room.'-'.$auth_id.'chatmessageCallLog';
+                Cache::forget($key);
+                // Cache::tags(['chatmessage', $request->room])->flush(); 
                 $chatRoomData = Cache::get($chatRoomKey);
                 if($chatRoomData){
                     $room = $chatRoomData;
@@ -204,6 +207,7 @@ class ChatController extends Controller
                 $jsonData = Cache::get($key);
                 $messages=[];
                 if($jsonData){
+                    
                     $messages = json_decode($jsonData);
                     $count = count($messages);
                 }else{
@@ -236,7 +240,9 @@ class ChatController extends Controller
                     // $messages =[];
                     if($messages->isNotEmpty()){
                         $jsonData = json_encode($messages->toArray());
-                        Cache::put($key, $jsonData, 3600); 
+                        // Store with tags
+                        Cache::tags(['chatmessage', $request->room])->put($key, $jsonData, 3600);
+                        // Cache::put($key, $jsonData, 3600); 
                     }   
                 }
                 
