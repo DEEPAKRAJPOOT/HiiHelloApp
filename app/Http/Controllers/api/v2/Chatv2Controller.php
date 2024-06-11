@@ -19,6 +19,7 @@ class Chatv2Controller extends Controller
     // Get Chat Rooms Details
 
     public function getChatRooms(Request $request){
+        
         $getRoomRequest = new GetRoomRequest();
         if($this->apiValidator($request->all(),$getRoomRequest->rules())){
             try {

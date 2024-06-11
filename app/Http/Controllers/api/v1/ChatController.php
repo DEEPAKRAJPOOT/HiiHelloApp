@@ -176,11 +176,22 @@ class ChatController extends Controller
     {
         $chatMessagesRequest = new ChatMessagesRequest();
         if ($this->apiValidator($request->all(), $chatMessagesRequest->rules())) {
-            try {
+            
+            // try {
                 $user_type = 'participant';
                 $cleared_time = '';
                 $auth_id = $request->user() ? $request->user()->id : NULL;
-                $room = ChatRoom::whereCustomId($request->room)->whereIsActive('y')->firstOrFail();
+                $chatRoomKey = $request->room.'-'.$auth_id.'chatmessageChatRoom';
+                $key = $request->room.'-'.$auth_id.'chatmessage'.$request->limit;
+                $callLogKey = $request->room.'-'.$auth_id.'chatmessageCallLog';
+                $chatRoomData = Cache::get($chatRoomKey);
+                if($chatRoomData){
+                    $room = $chatRoomData;
+                }else{
+                    $room = ChatRoom::whereCustomId($request->room)->whereIsActive('y')->firstOrFail();
+                    Cache::put($chatRoomKey, $room, 3600); 
+                }
+                
                 if($room->creator_id == $auth_id){
                     $user_type = 'creator';
                     $cleared_time  = $room->creator_cleared_at;
@@ -189,42 +200,59 @@ class ChatController extends Controller
                 if($room->participate_id == $auth_id){
                     $cleared_time = $room->participate_cleared_at;
                 }
-                $messages = ChatMessage::select('id', 'custom_id', 'room_id', 'sender_id', 'message', 'status', 'created_at', 'updated_at', 'deleted_at','is_vanished','reply_sender_id','reply_sender_name','reply_message_id','reply_type','reply_value','reply_message_file_path','reply_message_file_type')
-                ->where(function($expired_query){
-                    $expired_query->where('is_vanished','n');
-                    $expired_query->orWhere('status','!=','read');
-                })
-                ->where(function($sender_deleted_query)use($auth_id){
-                    $sender_deleted_query->whereNull('sender_deleted_at');
-                    $sender_deleted_query->orWhere('sender_id','!=',$auth_id);
-                });
-                if(!empty($cleared_time)){
-                    $messages->where('created_at','>',$cleared_time);
-                }
-                if($room->id == config('utility.chat.system_chat_room')){
-                    $messages->where('receiver_id',$auth_id);
+                
+                $jsonData = Cache::get($key);
+                $messages=[];
+                if($jsonData){
+                    $messages = json_decode($jsonData);
+                    $count = count($messages);
                 }else{
-                    $messages->withTrashed();
-                }
-                $messages = $messages->with(['sender:id,custom_id'])
-                    ->whereHas('room', function ($q) use ($request) {
-                        $q->whereCustomId($request->room)->whereIsActive('y');
-                    })->latest();
+                    $messages = ChatMessage::select('id', 'custom_id', 'room_id', 'sender_id', 'message', 'status', 'created_at', 'updated_at', 'deleted_at','is_vanished','reply_sender_id','reply_sender_name','reply_message_id','reply_type','reply_value','reply_message_file_path','reply_message_file_type')
+                    ->where(function($expired_query){
+                        $expired_query->where('is_vanished','n');
+                        $expired_query->orWhere('status','!=','read');
+                    })
+                    ->where(function($sender_deleted_query)use($auth_id){
+                        $sender_deleted_query->whereNull('sender_deleted_at');
+                        $sender_deleted_query->orWhere('sender_id','!=',$auth_id);
+                    });
+                    if(!empty($cleared_time)){
+                        $messages->where('created_at','>',$cleared_time);
+                    }
+                    if($room->id == config('utility.chat.system_chat_room')){
+                        $messages->where('receiver_id',$auth_id);
+                    }else{
+                        $messages->withTrashed();
+                    }
+                    $messages = $messages->with(['sender:id,custom_id'])
+                        ->whereHas('room', function ($q) use ($request) {
+                            $q->whereCustomId($request->room)->whereIsActive('y');
+                        })->latest();
 
-                $count      =   $messages->count();
-                $messages   =   $messages->limit($request->limit ?? config('utility.pagination.limit'))
-                    ->offset($request->offset ?? config('utility.pagination.offset'))
-                    ->get();
-                // dd($messages);
-                $callLog    =   CallLog::select('id', 'room_id', 'remaining_time')->where('date', now()->format('Y-m-d'))
+                    $count      =   $messages->count();
+                    $messages   =   $messages->limit($request->limit ?? config('utility.pagination.limit'))
+                        ->offset($request->offset ?? config('utility.pagination.offset'))
+                        ->get();
+                    // $messages =[];
+                    if($messages->isNotEmpty()){
+                        $jsonData = json_encode($messages->toArray());
+                        Cache::put($key, $jsonData, 3600); 
+                    }   
+                }
+                
+                
+                $callLogData = Cache::get($callLogKey);
+                if($callLogData){
+                    $callLog = $callLogData;
+                }else{
+                    $callLog    =   CallLog::select('id', 'room_id', 'remaining_time')->where('date', now()->format('Y-m-d'))
                     ->whereHas('room', function ($q) use ($request) {
                         $q->whereCustomId($request->room)->whereIsActive('y');
                     })->latest()->first();
+                    Cache::put($callLogKey, $callLog, 3600); 
+                }
 
-                if ($messages->isNotEmpty()) {
-                    $key = $request->room.'-'.$auth_id.'chatmessage';
-                    $jsonData = $messages->toArray();
-                    Cache::put($key, $jsonData, 3600);
+                if (!empty($messages)) {
                     return (ChatMessageResource::Collection($messages))->additional([
                         'meta'  =>  [
                             'remaining_time'    =>  $callLog ? $callLog->remaining_time : config('utility.twillio.allow_call_time'),
@@ -242,6 +270,7 @@ class ChatController extends Controller
                             'message'   =>  trans('api.list', ['entity' => __('Chat history')])
                         ],
                     ]);
+                    // dd($allData);
                     
                     
                     //Cache::put($key, $jsonData, 3600); // 1 hour expiration
@@ -251,28 +280,28 @@ class ChatController extends Controller
                     $this->response['meta']['is_ban'] = false;
                     $this->status = Response::HTTP_OK;
                 }
-            } catch (ModelNotFoundException $exception) {
-                switch ($exception->getModel()) {
-                    case 'App\Models\ChatRoom':
-                        $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("Chat rooms")]);
-                        $this->response['meta']['is_ban'] = false;
-                        break;
-                    case 'App\Models\ChatMessage':
-                        $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("Chat history")]);
-                        $this->response['meta']['is_ban'] = false;
-                        break;
-                    case 'App\Models\User':
-                        $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("User")]);
-                        $this->response['meta']['is_ban'] = false;
-                        break;
-                    default:
-                        $this->response['meta']['message'] = trans('api.went_wrong');
-                        $this->response['meta']['is_ban'] = false;
-                        break;
-                };
-            } catch (\Exception $e) {
-                $this->storeErrorLog($e, 'get_chat_messages');
-            }
+            // } catch (ModelNotFoundException $exception) {
+            //     switch ($exception->getModel()) {
+            //         case 'App\Models\ChatRoom':
+            //             $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("Chat rooms")]);
+            //             $this->response['meta']['is_ban'] = false;
+            //             break;
+            //         case 'App\Models\ChatMessage':
+            //             $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("Chat history")]);
+            //             $this->response['meta']['is_ban'] = false;
+            //             break;
+            //         case 'App\Models\User':
+            //             $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("User")]);
+            //             $this->response['meta']['is_ban'] = false;
+            //             break;
+            //         default:
+            //             $this->response['meta']['message'] = trans('api.went_wrong');
+            //             $this->response['meta']['is_ban'] = false;
+            //             break;
+            //     };
+            // } catch (\Exception $e) {
+            //     $this->storeErrorLog($e, 'get_chat_messages');
+            // }
         }
         
         return $this->returnResponse();
