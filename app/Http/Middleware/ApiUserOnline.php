@@ -18,7 +18,7 @@ class ApiUserOnline {
                 $user->last_online = now();
                 $user->save();
                 $user_id = $user->id;
-                
+                /*
                 $todayOnline = OnlineUsers::where('user_id',$user_id)->whereDate('last_online',now()->toDateString())->first();
                 if($todayOnline){
                     OnlineUsers::where('user_id',$user_id)->whereDate('last_online','=',now()->toDateString())->update(['last_online'=>now()]);
@@ -27,6 +27,7 @@ class ApiUserOnline {
                     $onlineData['last_online'] = now();
                     OnlineUsers::create($onlineData);
                 }
+                */
             }catch(Exception $e){}
         }
         return $next($request);
