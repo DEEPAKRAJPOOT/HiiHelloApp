@@ -132,7 +132,7 @@ class Kernel extends ConsoleKernel
         $schedule->call(function () {
             $scheculeCommand = new TrustScore;
             $scheculeCommand->handle();
-        })->name('TrustScoreUpdate')->daily()->withoutOverlapping();
+        })->name('TrustScoreUpdate')->monthlyOn(1, '2:00')->withoutOverlapping();
 
 
         // Send Reminders to Users about Profile, Photos etc
