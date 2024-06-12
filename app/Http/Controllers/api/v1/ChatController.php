@@ -186,6 +186,10 @@ class ChatController extends Controller
                 $key = $request->room.'-'.$auth_id.'chatmessage'.$request->limit;
                 $callLogKey = $request->room.'-'.$auth_id.'chatmessageCallLog';
                 $chatRoomData = Cache::get($chatRoomKey);
+                
+                // Cache::forget($chatRoomKey);
+                // Cache::forget($key);
+                // Cache::forget($callLogKey);
                 if($chatRoomData){
                     $room = $chatRoomData;
                 }else{
