@@ -177,7 +177,7 @@ class ChatController extends Controller
         $chatMessagesRequest = new ChatMessagesRequest();
         if ($this->apiValidator($request->all(), $chatMessagesRequest->rules())) {
             
-            // try {
+            try {
                 
                 $user_type = 'participant';
                 $cleared_time = '';
@@ -185,8 +185,6 @@ class ChatController extends Controller
                 $chatRoomKey = $request->room.'-'.$auth_id.'chatmessageChatRoom';
                 $key = $request->room.'-'.$auth_id.'chatmessage'.$request->limit;
                 $callLogKey = $request->room.'-'.$auth_id.'chatmessageCallLog';
-                Cache::forget($key);
-                // Cache::tags(['chatmessage', $request->room])->flush(); 
                 $chatRoomData = Cache::get($chatRoomKey);
                 if($chatRoomData){
                     $room = $chatRoomData;
@@ -237,12 +235,10 @@ class ChatController extends Controller
                     $messages   =   $messages->limit($request->limit ?? config('utility.pagination.limit'))
                         ->offset($request->offset ?? config('utility.pagination.offset'))
                         ->get();
-                    // $messages =[];
                     if($messages->isNotEmpty()){
                         $jsonData = json_encode($messages->toArray());
                         // Store with tags
-                        Cache::tags(['chatmessage', $request->room])->put($key, $jsonData, 3600);
-                        // Cache::put($key, $jsonData, 3600); 
+                        Cache::put($key, $jsonData, 3600); 
                     }   
                 }
                 
@@ -276,38 +272,35 @@ class ChatController extends Controller
                             'message'   =>  trans('api.list', ['entity' => __('Chat history')])
                         ],
                     ]);
-                    // dd($allData);
-                    
-                    
-                    //Cache::put($key, $jsonData, 3600); // 1 hour expiration
+
                 } else {
                     $this->response['meta']['remaining_time']  = $callLog ? $callLog->remaining_time : config('utility.twillio.allow_call_time');
                     $this->response['meta']['message']  =   trans('api.not_found', ['entity' => __('Chat history')]);
                     $this->response['meta']['is_ban'] = false;
                     $this->status = Response::HTTP_OK;
                 }
-            // } catch (ModelNotFoundException $exception) {
-            //     switch ($exception->getModel()) {
-            //         case 'App\Models\ChatRoom':
-            //             $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("Chat rooms")]);
-            //             $this->response['meta']['is_ban'] = false;
-            //             break;
-            //         case 'App\Models\ChatMessage':
-            //             $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("Chat history")]);
-            //             $this->response['meta']['is_ban'] = false;
-            //             break;
-            //         case 'App\Models\User':
-            //             $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("User")]);
-            //             $this->response['meta']['is_ban'] = false;
-            //             break;
-            //         default:
-            //             $this->response['meta']['message'] = trans('api.went_wrong');
-            //             $this->response['meta']['is_ban'] = false;
-            //             break;
-            //     };
-            // } catch (\Exception $e) {
-            //     $this->storeErrorLog($e, 'get_chat_messages');
-            // }
+            } catch (ModelNotFoundException $exception) {
+                switch ($exception->getModel()) {
+                    case 'App\Models\ChatRoom':
+                        $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("Chat rooms")]);
+                        $this->response['meta']['is_ban'] = false;
+                        break;
+                    case 'App\Models\ChatMessage':
+                        $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("Chat history")]);
+                        $this->response['meta']['is_ban'] = false;
+                        break;
+                    case 'App\Models\User':
+                        $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("User")]);
+                        $this->response['meta']['is_ban'] = false;
+                        break;
+                    default:
+                        $this->response['meta']['message'] = trans('api.went_wrong');
+                        $this->response['meta']['is_ban'] = false;
+                        break;
+                };
+            } catch (\Exception $e) {
+                $this->storeErrorLog($e, 'get_chat_messages');
+            }
         }
         
         return $this->returnResponse();
