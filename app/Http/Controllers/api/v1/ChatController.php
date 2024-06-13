@@ -11,6 +11,8 @@ use Illuminate\Support\Facades\Cache;
 use App\Models\{ChatRoom, ChatMessage, User, CallLog};
 use App\Http\Resources\v1\{ChatRoomResource, ChatMessageResource};
 use App\Http\Requests\Api\Chat\{CreateRoomRequest, ChatMessagesRequest, ClearRoomRequest, DeleteRoomRequest, GetRoomRequest, DisappearModeRequest, VanishModeRequest};
+use DB;
+use Illuminate\Support\Facades\Redis;
 
 class ChatController extends Controller
 {
@@ -178,25 +180,44 @@ class ChatController extends Controller
         if ($this->apiValidator($request->all(), $chatMessagesRequest->rules())) {
             
             try {
-                
+                $redis = Redis::connection();
                 $user_type = 'participant';
                 $cleared_time = '';
                 $auth_id = $request->user() ? $request->user()->id : NULL;
                 $chatRoomKey = $request->room.'-'.$auth_id.'chatmessageChatRoom';
                 $key = $request->room.'-'.$auth_id.'chatmessage'.$request->limit;
                 $callLogKey = $request->room.'-'.$auth_id.'chatmessageCallLog';
-                $chatRoomData = Cache::get($chatRoomKey);
-                
-                // Cache::forget($chatRoomKey);
-                // Cache::forget($key);
-                // Cache::forget($callLogKey);
+                // $redis->del($chatRoomKey);
+                // $redis->del($request->room.'-'.$auth_id.'chatmessage20');
+                // $redis->del($request->room.'-'.$auth_id.'chatmessage30');
+                // $redis->del($request->room.'-'.$auth_id.'chatmessage10');
+                // $redis->del($callLogKey);
+                $chatRoomData = $redis->get($chatRoomKey);
+                $participatorTime = '';$creatorTime = '';
                 if($chatRoomData){
-                    $room = $chatRoomData;
+                    $room = json_decode($chatRoomData);
+                    if(!empty($room)){
+                        // dd($room);
+                        $participatorTime = $room->participatorTime;
+                        $creatorTime = $room->creatorTime;
+                    }
                 }else{
                     $room = ChatRoom::whereCustomId($request->room)->whereIsActive('y')->firstOrFail();
-                    Cache::put($chatRoomKey, $room, 3600); 
+                    if(!empty($room)){
+                        
+                        if($room->creator_id == $auth_id){
+                            $participatorTime =  $room->participator->lastOnlineTimeStamp();
+                        }
+                        
+                        if($room->participate_id == $auth_id){
+                            $creatorTime = $room->creator->lastOnlineTimeStamp();
+                        }
+                        $roomData = $room->toArray();
+                        $roomData['participatorTime'] = $participatorTime;
+                        $roomData['creatorTime'] = $creatorTime;
+                        $redis->set($chatRoomKey, json_encode((object)$roomData));
+                    } 
                 }
-                
                 if($room->creator_id == $auth_id){
                     $user_type = 'creator';
                     $cleared_time  = $room->creator_cleared_at;
@@ -206,13 +227,14 @@ class ChatController extends Controller
                     $cleared_time = $room->participate_cleared_at;
                 }
                 
-                $jsonData = Cache::get($key);
+                $jsonData = $redis->get($key);
                 $messages=[];
                 if($jsonData){
                     
                     $messages = json_decode($jsonData);
                     $count = count($messages);
                 }else{
+                    // DB::enableQueryLog();
                     $messages = ChatMessage::select('id', 'custom_id', 'room_id', 'sender_id', 'message', 'status', 'created_at', 'updated_at', 'deleted_at','is_vanished','reply_sender_id','reply_sender_name','reply_message_id','reply_type','reply_value','reply_message_file_path','reply_message_file_type')
                     ->where(function($expired_query){
                         $expired_query->where('is_vanished','n');
@@ -241,13 +263,12 @@ class ChatController extends Controller
                         ->get();
                     if($messages->isNotEmpty()){
                         $jsonData = json_encode($messages->toArray());
-                        // Store with tags
-                        Cache::put($key, $jsonData, 3600); 
+                        $redis->set($key, $jsonData); 
                     }   
                 }
                 
                 
-                $callLogData = Cache::get($callLogKey);
+                $callLogData = $redis->get($callLogKey);
                 if($callLogData){
                     $callLog = $callLogData;
                 }else{
@@ -255,9 +276,11 @@ class ChatController extends Controller
                     ->whereHas('room', function ($q) use ($request) {
                         $q->whereCustomId($request->room)->whereIsActive('y');
                     })->latest()->first();
-                    Cache::put($callLogKey, $callLog, 3600); 
+                    if(!empty($callLog)){
+                        $redis->set($callLogKey, json_encode((object)$callLog->toArray()));
+                    }
+                     
                 }
-
                 if (!empty($messages)) {
                     return (ChatMessageResource::Collection($messages))->additional([
                         'meta'  =>  [
@@ -272,7 +295,7 @@ class ChatController extends Controller
                             'is_system_room' =>  ($room->id == config('utility.chat.system_chat_room')),
                             'vanish_mode' =>  (($room->vanish_mode ?? 'n') == 'y'),
                             'disappear_mode' =>  $room->disappear_mode ?? 'off',
-                            'last_online' => ($user_type == 'creator') ? $room->participator->lastOnlineTimeStamp() : $room->creator->lastOnlineTimeStamp(),
+                            'last_online' => ($user_type == 'creator') ? $participatorTime : $creatorTime,
                             'message'   =>  trans('api.list', ['entity' => __('Chat history')])
                         ],
                     ]);
