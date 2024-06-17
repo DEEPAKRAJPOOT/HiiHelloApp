@@ -184,9 +184,9 @@ class ChatController extends Controller
                 $user_type = 'participant';
                 $cleared_time = '';
                 $auth_id = $request->user() ? $request->user()->id : NULL;
-                $chatRoomKey = $request->room.'-'.$auth_id.'chatmessageChatRoom';
-                $key = $request->room.'-'.$auth_id.'chatmessage'.$request->limit;
-                $callLogKey = $request->room.'-'.$auth_id.'chatmessageCallLog';
+                $chatRoomKey = 'chat/room'.$request->room.'-'.$auth_id.'chatmessageChatRoom';
+                $key = 'chat/messages'.$auth_id.'/'.$request->room.'-'.$auth_id.'chatmessage'.$request->limit;
+                $callLogKey = 'chat/callLog'.$request->room.'-'.$auth_id.'chatmessageCallLog';
                 // $redis->del($chatRoomKey);
                 // $redis->del($request->room.'-'.$auth_id.'chatmessage20');
                 // $redis->del($request->room.'-'.$auth_id.'chatmessage30');
