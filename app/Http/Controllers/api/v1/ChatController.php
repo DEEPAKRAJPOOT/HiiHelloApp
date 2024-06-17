@@ -188,11 +188,8 @@ class ChatController extends Controller
                 $chatRoomKey = 'chat/room/'.$auth_id.':'.$request->room.'-'.$auth_id.'chatmessageChatRoom';
                 $key = 'chat/message/'.$auth_id.':'.$request->room.'-'.$auth_id.'chatmessage'.$paginate;
                 $callLogKey = 'chat/calllog/'.$auth_id.':'.$request->room.'-'.$auth_id.'chatmessageCallLog';
-                // $redis->del($chatRoomKey);
-                // $redis->del($request->room.'-'.$auth_id.'chatmessage20');
-                // $redis->del($request->room.'-'.$auth_id.'chatmessage30');
-                // $redis->del($request->room.'-'.$auth_id.'chatmessage10');
-                // $redis->del($callLogKey);
+                $totalChatKey = 'chat/message/'.$auth_id.':'.$request->room.'-'.$auth_id.'totalchat';
+                
                 $chatRoomData = $redis->get($chatRoomKey);
                 $participatorTime = '';$creatorTime = '';
                 if($chatRoomData){
@@ -233,7 +230,7 @@ class ChatController extends Controller
                 if($jsonData){
                     
                     $messages = json_decode($jsonData);
-                    $count = count($messages);
+                    $count = $redis->get($totalChatKey); 
                 }else{
                     // DB::enableQueryLog();
                     $messages = ChatMessage::select('id', 'custom_id', 'room_id', 'sender_id', 'message', 'status', 'created_at', 'updated_at', 'deleted_at','is_vanished','reply_sender_id','reply_sender_name','reply_message_id','reply_type','reply_value','reply_message_file_path','reply_message_file_type')
@@ -264,6 +261,7 @@ class ChatController extends Controller
                         ->get();
                     if($messages->isNotEmpty()){
                         $jsonData = json_encode($messages->toArray());
+                        $redis->set($totalChatKey, $count); 
                         $redis->set($key, $jsonData); 
                     }   
                 }
