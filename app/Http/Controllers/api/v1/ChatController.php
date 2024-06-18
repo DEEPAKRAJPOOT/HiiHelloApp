@@ -17,7 +17,31 @@ use Illuminate\Support\Facades\Redis;
 class ChatController extends Controller
 {
     private $version = "v.1.0";
+    protected $redis;
+
+    function __construct(Request $request,Redis $redis) {
+        $this->redis = Redis::connection();
+    }
+
     public function getVersion(){ return $this->version; }
+
+    //Delete redis key by pattern
+    public function deleteCacheByPattern($pattern)
+    {
+        $cursor = '0';
+        do {
+            list($cursor, $keys) = Redis::scan($cursor, ['match' => $pattern, 'count' => 100]);
+
+            if (!empty($keys)) {
+                
+                $addedPrefix = str_replace('hi_hello_database_chat', 'chat', $keys[0]);
+                $deleted = Redis::del($addedPrefix);
+                
+            }
+        } while ($cursor != '0');
+
+        return response()->json(['message' => 'Cache deleted successfully']);
+    }
 
     // Create New Chat Room 
     public function createChatRoom(Request $request)
@@ -27,6 +51,12 @@ class ChatController extends Controller
             try {
                 $user = $request->user();
                 $auth_id = $user ? $user->id : NULL;
+
+                $pattern = 'hi_hello_database_chat/room/roomList/'.$auth_id.':*';
+                $totalroomkey = $auth_id.'_totalroom:*';
+               
+                $this->deleteCacheByPattern($pattern);
+                $this->deleteCacheByPattern($totalroomkey);
                 $participant = User::whereCustomId($request->participant_id)
                     ->where('id', '!=', $auth_id)->where('id', '!=', config('utility.system.system_user_id'))->whereIsActive('y')->firstOrFail();
                 $participant_id = $participant ? $participant->id : NULL;
@@ -91,13 +121,13 @@ class ChatController extends Controller
                 $auth_id = $request->user() ? $request->user()->id : NULL;
                 $search = $request->search;
 
-                $rooms = ChatRoom::with([
-                    'creator:id,custom_id,profile_photo,language_id',
-                    'participator:id,custom_id,profile_photo,language_id',
-                    'creator.language:id,lang_code', 'participator.language:id,lang_code',
-                    'creator.userTranslation', 'participator.userTranslation',
-                    'latestMessage.sender:id,custom_id'
-                ])
+                    $rooms = ChatRoom::with([
+                        'creator:id,custom_id,profile_photo,language_id',
+                        'participator:id,custom_id,profile_photo,language_id',
+                        'creator.language:id,lang_code', 'participator.language:id,lang_code',
+                        'creator.userTranslation', 'participator.userTranslation',
+                        'latestMessage.sender:id,custom_id'
+                    ])
                     ->whereHas('chatMessages')
                     ->selectRaw("chat_rooms.*, (SELECT MAX(created_at) from chat_messages WHERE deleted_at is null and chat_messages.room_id=chat_rooms.id) as latest_message_on")
                     ->orderBy("latest_message_on", "DESC")
@@ -179,8 +209,7 @@ class ChatController extends Controller
         $chatMessagesRequest = new ChatMessagesRequest();
         if ($this->apiValidator($request->all(), $chatMessagesRequest->rules())) {
             
-            // try {
-                $redis = Redis::connection();
+            try {
                 $user_type = 'participant';
                 $cleared_time = '';
                 $auth_id = $request->user() ? $request->user()->id : NULL;
@@ -190,7 +219,7 @@ class ChatController extends Controller
                 $callLogKey = 'chat/calllog/'.$auth_id.':'.$request->room.'-'.$auth_id.'chatmessageCallLog';
                 $totalChatKey = 'chat/message/'.$auth_id.':'.$request->room.'-'.$auth_id.'totalchat';
                 
-                $chatRoomData = $redis->get($chatRoomKey);
+                $chatRoomData = $this->redis->get($chatRoomKey);
                 $participatorTime = '';$creatorTime = '';
                 if($chatRoomData){
                     $room = json_decode($chatRoomData);
@@ -213,7 +242,7 @@ class ChatController extends Controller
                         $roomData = $room->toArray();
                         $roomData['participatorTime'] = $participatorTime;
                         $roomData['creatorTime'] = $creatorTime;
-                        $redis->set($chatRoomKey, json_encode((object)$roomData));
+                        $this->redis->set($chatRoomKey, json_encode((object)$roomData));
                     } 
                 }
                 if($room->creator_id == $auth_id){
@@ -225,12 +254,12 @@ class ChatController extends Controller
                     $cleared_time = $room->participate_cleared_at;
                 }
                 
-                $jsonData = $redis->get($key);
+                $jsonData = $this->redis->get($key);
                 $messages=[];
                 if($jsonData){
                     
                     $messages = json_decode($jsonData);
-                    $count = $redis->get($totalChatKey); 
+                    $count = $this->redis->get($totalChatKey); 
                 }else{
                     // DB::enableQueryLog();
                     $messages = ChatMessage::select('id', 'custom_id', 'room_id', 'sender_id', 'message', 'status', 'created_at', 'updated_at', 'deleted_at','is_vanished','reply_sender_id','reply_sender_name','reply_message_id','reply_type','reply_value','reply_message_file_path','reply_message_file_type')
@@ -261,13 +290,13 @@ class ChatController extends Controller
                         ->get();
                     if($messages->isNotEmpty()){
                         $jsonData = json_encode($messages->toArray());
-                        $redis->set($totalChatKey, $count); 
-                        $redis->set($key, $jsonData); 
+                        $this->redis->set($totalChatKey, $count); 
+                        $this->redis->set($key, $jsonData); 
                     }   
                 }
                 
                 
-                $callLogData = $redis->get($callLogKey);
+                $callLogData = $this->redis->get($callLogKey);
                 if($callLogData){
                     $callLog = $callLogData;
                 }else{
@@ -276,7 +305,7 @@ class ChatController extends Controller
                         $q->whereCustomId($request->room)->whereIsActive('y');
                     })->latest()->first();
                     if(!empty($callLog)){
-                        $redis->set($callLogKey, json_encode((object)$callLog->toArray()));
+                        $this->redis->set($callLogKey, json_encode((object)$callLog->toArray()));
                     }
                      
                 }
@@ -305,28 +334,28 @@ class ChatController extends Controller
                     $this->response['meta']['is_ban'] = false;
                     $this->status = Response::HTTP_OK;
                 }
-            // } catch (ModelNotFoundException $exception) {
-            //     switch ($exception->getModel()) {
-            //         case 'App\Models\ChatRoom':
-            //             $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("Chat rooms")]);
-            //             $this->response['meta']['is_ban'] = false;
-            //             break;
-            //         case 'App\Models\ChatMessage':
-            //             $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("Chat history")]);
-            //             $this->response['meta']['is_ban'] = false;
-            //             break;
-            //         case 'App\Models\User':
-            //             $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("User")]);
-            //             $this->response['meta']['is_ban'] = false;
-            //             break;
-            //         default:
-            //             $this->response['meta']['message'] = trans('api.went_wrong');
-            //             $this->response['meta']['is_ban'] = false;
-            //             break;
-            //     };
-            // } catch (\Exception $e) {
-            //     $this->storeErrorLog($e, 'get_chat_messages');
-            // }
+            } catch (ModelNotFoundException $exception) {
+                switch ($exception->getModel()) {
+                    case 'App\Models\ChatRoom':
+                        $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("Chat rooms")]);
+                        $this->response['meta']['is_ban'] = false;
+                        break;
+                    case 'App\Models\ChatMessage':
+                        $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("Chat history")]);
+                        $this->response['meta']['is_ban'] = false;
+                        break;
+                    case 'App\Models\User':
+                        $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("User")]);
+                        $this->response['meta']['is_ban'] = false;
+                        break;
+                    default:
+                        $this->response['meta']['message'] = trans('api.went_wrong');
+                        $this->response['meta']['is_ban'] = false;
+                        break;
+                };
+            } catch (\Exception $e) {
+                $this->storeErrorLog($e, 'get_chat_messages');
+            }
         }
         
         return $this->returnResponse();
@@ -339,6 +368,11 @@ class ChatController extends Controller
         if ($this->apiValidator($request->all(), $clearRoomRequest->rules())) {
             try {
                 $auth_id = $request->user() ? $request->user()->id : NULL;
+                $pattern = 'hi_hello_database_chat/room/roomList/'.$auth_id.':*';
+                $totalroomkey = $auth_id.'_totalroom:*';
+               
+                $this->deleteCacheByPattern($pattern);
+                $this->deleteCacheByPattern($totalroomkey);
                 $room = ChatRoom::whereCustomId($request->room_id)
                     ->where(function ($query) use ($auth_id) {
                         $query->where('creator_id', $auth_id)
@@ -400,6 +434,11 @@ class ChatController extends Controller
         if ($this->apiValidator($request->all(), $deleteRoomRequest->rules())) {
             try {
                 $auth_id = $request->user() ? $request->user()->id : NULL;
+                $pattern = 'hi_hello_database_chat/room/roomList/'.$auth_id.':*';
+                $totalroomkey = $auth_id.'_totalroom:*';
+               
+                $this->deleteCacheByPattern($pattern);
+                $this->deleteCacheByPattern($totalroomkey);
                 $room = ChatRoom::whereCustomId($request->room_id)
                     ->where(function ($query) use ($auth_id) {
                         $query->where('creator_id', $auth_id)
