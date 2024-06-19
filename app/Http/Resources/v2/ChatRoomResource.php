@@ -16,13 +16,19 @@ class ChatRoomResource extends JsonResource
      */
     public function toArray($request)
     {
+        // dd($this);
         $this->authLatestMessage = null;
         $auth_id = $request->user() ? $request->user()->id : NULL;
+        
         if($this->id == config('utility.chat.system_chat_room')){
-            $this->authLatestMessage = ChatMessage::where('room_id',$this->id)->where('receiver_id',$auth_id)->orderBy('id','desc')->first();
+            $this->authLatestMessage = ChatMessage::select('custom_id','status','created_at','updated_at','deleted_at','expired_at','is_vanished')->with(['sender' => function ($query) {
+                $query->select('custom_id');
+            }])->where('room_id',$this->id)->where('receiver_id',$auth_id)->orderBy('id','desc')->first();
         }
         elseif($this->participate_id == $auth_id){
-            $this->authLatestMessage = ChatMessage::withTrashed()->where('room_id',$this->id)->where('created_at','>',$this->participate_cleared_at ?? '')
+            $this->authLatestMessage = ChatMessage::select('custom_id','status','created_at','updated_at','deleted_at','expired_at','is_vanished')->with(['sender' => function ($query) {
+                $query->select('custom_id');
+            }])->withTrashed()->where('room_id',$this->id)->where('created_at','>',$this->participate_cleared_at ?? '')
             ->where(function($query){
                 $query->where('is_vanished','n');
                 $query->orWhere('status','!=','read');
@@ -31,7 +37,9 @@ class ChatRoomResource extends JsonResource
                 $query->orWhere('sender_id','!=',$auth_id);
             })->orderBy('id','desc')->first();
         }elseif($this->creator_id == $auth_id){
-            $this->authLatestMessage = ChatMessage::withTrashed()->where('room_id',$this->id)->where('created_at','>',$this->creator_cleared_at ?? '')
+            $this->authLatestMessage = ChatMessage::select('custom_id','status','created_at','updated_at','deleted_at','expired_at','is_vanished')->with(['sender' => function ($query) {
+                $query->select('custom_id');
+            }])->withTrashed()->where('room_id',$this->id)->where('created_at','>',$this->creator_cleared_at ?? '')
             ->where(function($query){
                 $query->where('is_vanished','n');
                 $query->orWhere('status','!=','read');
@@ -47,7 +55,7 @@ class ChatRoomResource extends JsonResource
             'creator'  =>  [
                 'id'            =>  $this->creator ? $this->creator->custom_id : "",
                 'full_name'     =>  $this->creator ? 
-                                        $this->creator->userTranslation ? $this->creator->userTranslation->full_name : ""
+                                        $this->creator->user_translation ? $this->creator->user_translation->full_name : ""
                                     : "",
                 'profile'       =>  $this->creator ? $this->creator->profile_photo : "",
                 'language'      =>  [
@@ -57,7 +65,7 @@ class ChatRoomResource extends JsonResource
             'participator'  =>  [
                 'id'            =>  $this->participator ? $this->participator->custom_id : "",
                 'full_name'     =>  $this->participator ? 
-                                        $this->participator->userTranslation ? $this->participator->userTranslation->full_name : ""
+                                        $this->participator->user_translation ? $this->participator->user_translation->full_name : ""
                                     : "",
                 'profile'       =>  $this->participator ? $this->participator->profile_photo : "",
                 'language'      =>  [

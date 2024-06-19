@@ -14,9 +14,10 @@ class ChatMessageResource extends JsonResource
      */
     public function toArray($request)
     {
+        // dd($this);
         $resource =  [
             'id'        =>  $this->custom_id ?? "",
-            'message'   =>  $this->getMessage() ?? NULL,
+            'message'   =>  $this->getMessage($this->message) ?? NULL,
             'status'    =>  strtr($this->status ?? "",['send'=>'sent','read'=>'seen']),
             'sender'  =>  [
                 'id'    =>  $this->sender ? $this->sender->custom_id : "",
@@ -40,8 +41,9 @@ class ChatMessageResource extends JsonResource
             }
             // dd($resource['message']);
         }
+        
         return $resource;
-
+        
         return parent::toArray($request);
     }
 
@@ -54,5 +56,17 @@ class ChatMessageResource extends JsonResource
                 'language'      =>  app()->getLocale(),
             ],
         ];
+    }
+
+    public function getMessage($message){
+        $message = json_decode( preg_replace("/\r|\n/", " ", $this->message) );
+        if(!empty($message) && !empty($message->type)){            
+            if($message->type == 'location'){
+                if(!empty($message->other) && !empty($message->other->lat && !empty($message->other->lng) ) ){
+                    $message->other->url = 'https://maps.googleapis.com/maps/api/staticmap?center='.$message->other->lat.','.$message->other->lng.'&zoom=14&size=400x400&markers='.$message->other->lat.','.$message->other->lng.'&markers=color:red&key=AIzaSyA2GIt7Ld9duVo85H4Mr15Y_v7Sc6pfzlQ';
+                }
+            }
+        }
+        return $message;
     }
 }

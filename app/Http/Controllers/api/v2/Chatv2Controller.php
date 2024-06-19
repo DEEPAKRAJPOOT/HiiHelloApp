@@ -10,57 +10,89 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\{ChatRoom, ChatMessage, User, CallLog};
 use App\Http\Resources\v2\ChatRoomResource;
 use App\Http\Requests\Api\Chat\GetRoomRequest;
+use DB;
+use Illuminate\Support\Facades\Redis;
 
 class Chatv2Controller extends Controller
 {
     private $version = "v.2.0";
+    protected $redis;
+
+    function __construct(Request $request,Redis $redis) {
+        $this->redis = Redis::connection();
+    }
+
     public function getVersion(){ return $this->version; }
 
     // Get Chat Rooms Details
 
     public function getChatRooms(Request $request){
+        
         $getRoomRequest = new GetRoomRequest();
         if($this->apiValidator($request->all(),$getRoomRequest->rules())){
             try {
-                $limit = !empty($request->limit) ? $request->limit : config('utility.pagination.limit');
-                $offset = !empty($request->offset) ? $request->offset : config('utility.pagination.offset');
-                $auth_id = $request->user() ? $request->user()->id : NULL;
-                $search = $request->search;
-                $system_chat_room_id = config('utility.chat.system_chat_room');
-                $has_system_messages = ChatMessage::where('room_id',$system_chat_room_id)->where('receiver_id',$auth_id)->exists();
-                $rooms = ChatRoom::whereHas('chatMessages')
-                ->withCount(['chatMessages'=>function($query){
-                    $query->where('status','!=','read');
-                }])
-                ->withCount('blockBy')
-                ->where(function($query)use($auth_id,$has_system_messages,$system_chat_room_id){
-                    $query->where(function($q)use($auth_id){
-                        $q->whereCreatorId($auth_id)->whereNull('creator_deleted_at');
+                    $limit = !empty($request->limit) ? $request->limit : config('utility.pagination.limit');
+                    $offset = !empty($request->offset) ? $request->offset : config('utility.pagination.offset');
+                    $paginate = (int)$limit+(int)$offset;
+                    $auth_id = $request->user() ? $request->user()->id : NULL;
+                    $search = $request->search;
+                    $system_chat_room_id = config('utility.chat.system_chat_room');
+                    $has_system_messages = '';$searchKey='';
+                    if(!empty($search)){
+                        $searchKey = str_replace(' ', '_', $search);
+                    }
+                   $roomlistkey = 'chat/room/roomList/'.$auth_id.':'.$auth_id.'_roomlist_'.$searchKey.'_'.$paginate;
+                   $totalroomkey = 'chat/room/roomList/'.$auth_id.':'.$auth_id.'_totalroom';
+                    // $has_system_messages = ChatMessage::where('room_id',$system_chat_room_id)->where('receiver_id',$auth_id)->exists();
+                    $chatRoomListData = $this->redis->get($roomlistkey);
+                    if($chatRoomListData){
+                        $rooms = json_decode($chatRoomListData);
+                        $count = $this->redis->get($totalroomkey);
+                    }else{
+                        // echo "No Data Found !!";die;
+                        $rooms = ChatRoom::with('creator','creator.userTranslation','creator.language','participator','participator.userTranslation','participator.language')->whereHas('chatMessages')
+                    ->withCount(['chatMessages'=>function($query){
+                        $query->where('status','!=','read');
+                    }])
+                    ->withCount('blockBy')
+                    ->where(function($query)use($auth_id,$has_system_messages,$system_chat_room_id){
+                        $query->where(function($q)use($auth_id){
+                            $q->whereCreatorId($auth_id)->whereNull('creator_deleted_at');
+                        });
+                        $query->orWhere(function($q)use($auth_id){
+                            $q->whereParticipateId($auth_id)->whereNull('participate_deleted_at');
+                        });
+                        // $query->orWhere('id',$system_chat_room_id);
+                        // if($has_system_messages){
+                        //     $query->orWhere(function($q)use($system_chat_room_id){
+                        //         $q->where('id',$system_chat_room_id);
+                        //     });
+                        // }
                     });
-                    $query->orWhere(function($q)use($auth_id){
-                        $q->whereParticipateId($auth_id)->whereNull('participate_deleted_at');
-                    });
-                    if($has_system_messages){
-                        $query->orWhere(function($q)use($system_chat_room_id){
-                            $q->where('id',$system_chat_room_id);
+                    if(!empty($search)){
+                        $rooms->where(function($query)use($search){
+                            $query->whereHas('creator.userTranslations',function($q1)use($search){
+                                $q1->where('full_name','like','%'.$search.'%');
+                            })->orWhereHas('participator.userTranslations',function($q2)use($search){
+                                $q2->where('full_name','like','%'.$search.'%');
+                            });
                         });
                     }
-                });
-                if(!empty($search)){
-                    $rooms->where(function($query)use($search){
-                        $query->whereHas('creator.userTranslations',function($q1)use($search){
-                            $q1->where('full_name','like','%'.$search.'%');
-                        })->orWhereHas('participator.userTranslations',function($q2)use($search){
-                            $q2->where('full_name','like','%'.$search.'%');
+                    $count = $rooms->count();
+                    $rooms = $rooms->orderBy('updated_at','desc')->limit($limit)->offset($offset)->get();
+                    if($rooms->isNotEmpty()){
+                        $rooms = $rooms->sortBy(function($room)use($system_chat_room_id){
+                            return ($room->id == $system_chat_room_id) ? 0 : 1;
                         });
-                    });
+
+                        $jsonData = json_encode($rooms->toArray());
+                        $rooms = json_decode($jsonData);
+                        $this->redis->set($totalroomkey, $count); 
+                        $this->redis->set($roomlistkey, $jsonData); 
+                    }
                 }
-                $count = $rooms->count();
-                $rooms = $rooms->orderBy('updated_at','desc')->limit($limit)->offset($offset)->get();
-                if($rooms->isNotEmpty()){
-                    $rooms = $rooms->sortBy(function($room)use($system_chat_room_id){
-                        return ($room->id == $system_chat_room_id) ? 0 : 1;
-                    });
+                
+                if(!empty($rooms)){
                     return (ChatRoomResource::Collection($rooms))->additional([
                         'meta' => [
                             'limit'    => $limit,
