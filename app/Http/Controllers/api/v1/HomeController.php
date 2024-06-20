@@ -13,13 +13,38 @@ use App\Http\Resources\v1\{HomeResource};
 use App\Http\Requests\Api\General\{PaginationRequest};
 use App\Models\{User, BlockUser, UserSetting, DisLike,LocationTranslation};
 use Illuminate\Database\Eloquent\{ModelNotFoundException};
+use Illuminate\Support\Facades\Redis;
 
 class HomeController extends Controller
 {
     private $version = "v.1.0";
+    protected $redis;
+
+    function __construct(Request $request,Redis $redis) {
+        $this->redis = Redis::connection();
+    }
+
     public function getVersion()
     {
         return $this->version;
+    }
+
+    //Delete redis key by pattern
+    public function deleteCacheByPattern($pattern)
+    {
+        $cursor = '0';
+        do {
+            list($cursor, $keys) = Redis::scan($cursor, ['match' => $pattern, 'count' => 100]);
+
+            if (!empty($keys)) {
+                
+                $addedPrefix = str_replace('hi_hello_database_chat', 'chat', $keys[0]);
+                $deleted = Redis::del($addedPrefix);
+                
+            }
+        } while ($cursor != '0');
+
+        return response()->json(['message' => 'Cache deleted successfully']);
     }
 
     // Get All Users List
@@ -34,6 +59,11 @@ class HomeController extends Controller
                 $is_swipe_allow = $user->isSwipeAllow();
                 
                 if ($is_swipe_allow) {
+                    $limit = $request->limit;
+                    $offset = $request->offset;
+                    $paginate = (int)$limit+(int)$offset;
+                    $homefeedskey = 'discover/homefeed/getList/'.$auth_id.':'.$auth_id.'_getlist_'.$paginate;
+                    $totalhomefeedskey = 'discover/homefeed/getList/'.$auth_id.':'.$auth_id.'_totallist';
 
                     $auth_interest = $user->interest ? $user->interest : 'Both';
                     $radius = $user->discover_distance;
@@ -50,63 +80,65 @@ class HomeController extends Controller
                     $onlineStatus = $user->discover_online_status;
                     $relationStatus = $user->discover_relationship_status;
                     $education = $user->discover_education;
-                    
 
-                //     dd(
-                //     date("Y-m-d", strtotime("-1 week")),
-                //     $profile_ranking,
-                //     $hasPhoto,
-                //     $searchNearMe,
-                //     $searchByState,
-                //     $state,
-                //     $onlineStatus,
-                //     $relationStatus,
-                //     $education
-                //    );
+                    $getListData = $this->redis->get($homefeedskey);
+                    $data=[];
+                    if($getListData){
+                        $data['users'] = json_decode($getListData);
+                        $data['count'] = $this->redis->get($totalhomefeedskey);
+                    }else{
 
-                    $languages  = UserSetting::whereUserId($auth_id)->whereNotNull('language_id')->distinct()->pluck('language_id')->toArray();
-                    if(empty($languages)){
-                        $languages[]  = $user->language_id;
-                    }
+                        $languages  = UserSetting::whereUserId($auth_id)->whereNotNull('language_id')->distinct()->pluck('language_id')->toArray();
+                        if(empty($languages)){
+                            $languages[]  = $user->language_id;
+                        }
 
-                    $disLikes   =   DisLike::whereDisLikerId($auth_id)->whereBetween('updated_at', [$last7thDate, $currentDate])
+                       $disLikes   =   DisLike::whereDisLikerId($auth_id)->whereBetween('updated_at', [$last7thDate, $currentDate])
                         ->whereNotNull('user_id')->distinct()->pluck('user_id')->toArray();
-                    $likes   =   Like::select('user_id')->whereLikerId($auth_id)
+                       $likes   =   Like::select('user_id')->whereLikerId($auth_id)
                         ->where('is_superlike','n')->whereBetween('updated_at', [$last7thDate, $currentDate])
                         ->whereNotNull('user_id')->distinct()->pluck('user_id')->toArray();
                         
-                    $superlikes   =   Like::select(DB::raw('(CASE WHEN `liker_id` = '.$auth_id.' THEN `user_id` ELSE `liker_id` END) AS user_id'))->where(function($query)use($auth_id){
+                       $superlikes   =   Like::select(DB::raw('(CASE WHEN `liker_id` = '.$auth_id.' THEN `user_id` ELSE `liker_id` END) AS user_id'))->where(function($query)use($auth_id){
                             $query->where('liker_id',$auth_id);
                             $query->orWhere('user_id',$auth_id);
                         })
                         ->where('is_superlike','y')->distinct()->pluck('user_id')->toArray();
 
-                    $reported = ProfileReport::select('reported_user_id')->where('user_id', $auth_id)
+                       $reported = ProfileReport::select('reported_user_id')->where('user_id', $auth_id)
                         ->whereBetween('updated_at', [$last30thDate, $currentDate])
                         ->whereNotNull('user_id')->distinct()->pluck('reported_user_id')->toArray();
 
-                    $exclusiveData['latitude'] = $latitude;
-                    $exclusiveData['longitude'] = $longitude;
-                    $exclusiveData['radius'] = $radius;
-                    $exclusiveData['languages'] = $languages;
-                    $exclusiveData['disLikes'] = $disLikes;
-                    $exclusiveData['likes'] = $likes;
-                    $exclusiveData['superlikes'] = $superlikes;
-                    $exclusiveData['reported'] = $reported;
-                    $exclusiveData['auth_id'] = $auth_id;
-                    $exclusiveData['auth_interest'] = $auth_interest;
-                    $exclusiveData['profile_ranking'] = $profile_ranking;
-                    $exclusiveData['hasPhoto'] =$hasPhoto;
-                    $exclusiveData['searchNearMe'] = $searchNearMe;
-                    $exclusiveData['searchByState'] = $searchByState;
-                    $exclusiveData['state'] = $state;
-                    $exclusiveData['onlineStatus'] = $onlineStatus;
-                    $exclusiveData['relationStatus'] = $relationStatus;
-                    $exclusiveData['education'] = $education;
-                    $data = $this->fetchHomeCardData($user, $exclusiveData,$request->limit,$request->offset);
-                    
-                    if($data['users']->isEmpty()){
-                        $data = $this->callUsersOfCountry($user, $exclusiveData,$request->limit,$request->offset); 
+                        $exclusiveData['latitude'] = $latitude;
+                        $exclusiveData['longitude'] = $longitude;
+                        $exclusiveData['radius'] = $radius;
+                        $exclusiveData['languages'] = $languages;
+                        $exclusiveData['disLikes'] = $disLikes;
+                        $exclusiveData['likes'] = $likes;
+                        $exclusiveData['superlikes'] = $superlikes;
+                        $exclusiveData['reported'] = $reported;
+                        $exclusiveData['auth_id'] = $auth_id;
+                        $exclusiveData['auth_interest'] = $auth_interest;
+                        $exclusiveData['profile_ranking'] = $profile_ranking;
+                        $exclusiveData['hasPhoto'] =$hasPhoto;
+                        $exclusiveData['searchNearMe'] = $searchNearMe;
+                        $exclusiveData['searchByState'] = $searchByState;
+                        $exclusiveData['state'] = $state;
+                        $exclusiveData['onlineStatus'] = $onlineStatus;
+                        $exclusiveData['relationStatus'] = $relationStatus;
+                        $exclusiveData['education'] = $education;
+                        $data = $this->fetchHomeCardData($user, $exclusiveData,$request->limit,$request->offset);
+                        
+                        if($data['users']->isEmpty()){
+                            $data = $this->callUsersOfCountry($user, $exclusiveData,$request->limit,$request->offset); 
+                        }
+
+                        if($data['users']->isNotEmpty()){
+                            $jsonData = json_encode($data['users']->toArray());
+                            // $data['users'] = json_decode($jsonData);
+                            $this->redis->set($totalhomefeedskey, $data['count']); 
+                            $this->redis->set($homefeedskey, $jsonData);
+                        } 
                     }
 
                     $is_profile_photo = false;
@@ -114,7 +146,7 @@ class HomeController extends Controller
                         $is_profile_photo = true;
                     }
 
-                    if ($data['users']->isNotEmpty()) { //return $users;
+                    if ($data['users']->isNotEmpty()) {
                         return (HomeResource::collection($data['users']))->additional([
                             'meta' => [
                                 'limit'     =>  $request->limit,
@@ -382,7 +414,7 @@ class HomeController extends Controller
                     if($user->discover_location_id == NULL && $user->location_id != NULL){
                         $user->discover_location_id = $user->location_id;
                     }
-                    // dd($auth_id,$user->discover_location_id);
+                    
                     if($user->discover_location_id != NULL){
     
                         $query->whereIn('location_id',function ($query1) use ($user) {
