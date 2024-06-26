@@ -15,4 +15,9 @@ class LocationTranslation extends Model
     {
         return $this->hasMany('App\Models\LocationTranslation', 'location_id', 'location_id');
     }
+
+    public function location()
+    {
+        return $this->belongsTo('App\Models\Location');
+    }
 }

@@ -168,6 +168,69 @@ class User extends Authenticatable implements MustVerifyEmail, TranslatableContr
             })->count();
     }
 
+    /**
+     * Check if all specified columns are NULL
+     *
+     * @return bool
+     */
+    public function areAllColumnsNull()
+    {
+        $columns = ['discover_profile_ranking','discover_search_near_me','discover_by_state','discover_state','discover_online_status','discover_start_age','discover_end_age'];
+
+        foreach ($columns as $column) {
+            if (((int)$this->$column != false)) {
+                return false;
+            }else if($this->$column != NULL){
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    public function scopecommonGrouping($users, $auth_interest, $disLikes, $likes, $reported, $auth_id, $languages, $location_id, $discover_location_id){
+
+        $users->where('users.id', '!=', $auth_id)
+              ->whereNotNull('profile_photo')
+              ->whereNotNull('users.location_id')
+              ->where('users.is_active','y')
+              ->where('users.id','!=',config('utility.system.system_user_id'))
+              ->whereUserStatus('active')
+              ->whereNull('users.deleted_at');
+            if ($auth_interest != 'Both') {
+              $users->where('gender', $auth_interest);
+            }     // Interested in Gender
+             
+         
+             if (count($disLikes) > 0) {
+                 $users->whereNotIn('users.id', $disLikes);    // Restrict DisLiked Profile
+             }
+     
+             if (count($likes) > 0) {
+                 $users->whereNotIn('users.id', $likes);   // Restrict Liked Profile
+             }
+     
+             if (count($reported) > 0) {
+                 $users->whereNotIn('users.id', $reported);    // Restrict Reported Profile
+             }
+     
+             $users->whereDoesntHave('blockedTos',function($query1)use($auth_id){
+                 $query1->where('block_by',$auth_id);
+             });
+             
+             $users->whereDoesntHave('hiddenTos',function($query2)use($auth_id){
+                 $query2->where('block_by',$auth_id);
+             });                                          
+     
+             $users->where(function ($query3)  use ($languages) {
+                 if (count($languages) > 0) {
+                     $query3->orWhereIn('language_id', $languages);   // Languages
+                 }
+             });
+            //  dd($users);
+        return $users;     
+  }
+
     public function chatMessagesReceived(){ return $this->hasMany('App\Models\ChatMessage', 'receiver_id', 'id'); }
 
     public function getProfileImages(){
