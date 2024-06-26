@@ -47,10 +47,6 @@ class HomeController extends Controller
         return response()->json(['message' => 'Cache deleted successfully']);
     }
 
-    public function authenticateNewUser($user){
-
-    }
-
     // Get All Users List
     public function getHomeFeeds(Request $request)
     {
