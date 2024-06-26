@@ -21,6 +21,10 @@ class LocationResource extends JsonResource
         //         $lang_name = $result ? $result->name : '';
         //     }
         // }
+        if(isset($this->location_translation)){
+            $this->locationTranslation = $this->location_translation;
+        }
+        
         return [
             'id'            =>  $this->custom_id,
             'name'          =>  $this->locationTranslation ? $this->locationTranslation->name : "",

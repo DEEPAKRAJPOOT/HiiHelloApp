@@ -47,6 +47,10 @@ class HomeController extends Controller
         return response()->json(['message' => 'Cache deleted successfully']);
     }
 
+    public function authenticateNewUser($user){
+
+    }
+
     // Get All Users List
     public function getHomeFeeds(Request $request)
     {
@@ -62,6 +66,11 @@ class HomeController extends Controller
                     $limit = $request->limit;
                     $offset = $request->offset;
                     $paginate = (int)$limit+(int)$offset;
+                    $prevDataSetKey = 'discover/homefeed/getList/'.$auth_id.':'.$auth_id.'_getlist_'.$offset;
+                    $getPrevDataSet = $this->redis->get($prevDataSetKey);
+                    if(!is_null($getPrevDataSet)){
+                        $this->redis->del($prevDataSetKey);
+                    }
                     $homefeedskey = 'discover/homefeed/getList/'.$auth_id.':'.$auth_id.'_getlist_'.$paginate;
                     $totalhomefeedskey = 'discover/homefeed/getList/'.$auth_id.':'.$auth_id.'_totallist';
 
@@ -80,7 +89,6 @@ class HomeController extends Controller
                     $onlineStatus = $user->discover_online_status;
                     $relationStatus = $user->discover_relationship_status;
                     $education = $user->discover_education;
-
                     $getListData = $this->redis->get($homefeedskey);
                     $data=[];
                     if($getListData){
@@ -127,17 +135,25 @@ class HomeController extends Controller
                         $exclusiveData['onlineStatus'] = $onlineStatus;
                         $exclusiveData['relationStatus'] = $relationStatus;
                         $exclusiveData['education'] = $education;
-                        $data = $this->fetchHomeCardData($user, $exclusiveData,$request->limit,$request->offset);
-                        
+                        $authenticateNewUser = $user->areAllColumnsNull();
+                        // dd($authenticateNewUser);
+                        if($authenticateNewUser){
+                            $data = $this->getNewlyUserHomeFeedCardData($user, $exclusiveData,$request->limit,$request->offset);
+                        }else{
+                            $data = $this->getHomeFeedCardData($user, $exclusiveData,$request->limit,$request->offset);
+                        }
+                        // dd($data);
                         if($data['users']->isEmpty()){
                             $data = $this->callUsersOfCountry($user, $exclusiveData,$request->limit,$request->offset); 
                         }
-
+                        // dd(DB::getQueryLog());
                         if($data['users']->isNotEmpty()){
                             $jsonData = json_encode($data['users']->toArray());
                             // $data['users'] = json_decode($jsonData);
                             $this->redis->set($totalhomefeedskey, $data['count']); 
                             $this->redis->set($homefeedskey, $jsonData);
+                            $data['users'] = json_decode($jsonData);
+                            $data['count'] = $this->redis->get($totalhomefeedskey);
                         } 
                     }
 
@@ -145,8 +161,8 @@ class HomeController extends Controller
                     if ($user->profile_photo != '') {
                         $is_profile_photo = true;
                     }
-
-                    if ($data['users']->isNotEmpty()) {
+                    // dd($data['users']);
+                    if (!empty($data['users'])) {
                         return (HomeResource::collection($data['users']))->additional([
                             'meta' => [
                                 'limit'     =>  $request->limit,
@@ -190,6 +206,262 @@ class HomeController extends Controller
             }
         }
         return $this->returnResponse();
+    } 
+
+    public function getNewlyUserHomeFeedCardData($user, $exclusiveData, $limit, $offset){
+        if($user->discover_location_id == NULL && $user->location_id != NULL){
+            $user->discover_location_id = $user->location_id;
+        }
+        $getUserLocation = $this->getUserState($user->discover_location_id);
+        $city = $getUserLocation->name;
+        $state = $getUserLocation->state;
+        $country = $getUserLocation->country;
+        $latitude = $exclusiveData['latitude'];
+        $longitude = $exclusiveData['longitude'];
+        $radius = $exclusiveData['radius'];
+        $languages = $exclusiveData['languages'];
+        $disLikes = $exclusiveData['disLikes'];
+        $likes    = $exclusiveData['likes'];
+        $reported = $exclusiveData['reported'];
+        $auth_id  = $exclusiveData['auth_id'];
+        $auth_interest = $exclusiveData['auth_interest'];
+        $location_id = $user->location_id;
+        $discover_location_id = $user->discover_location_id;
+
+
+        // First, try to find nearby users
+        $users = User::select('users.id',
+            'users.custom_id',
+            'birth_date',
+            'profile_photo',
+            'gender',
+            'interest',
+            'users.location_id',
+            'language_id',
+            'verify_status',
+            'verify_photo_status',
+            'verify_email_send',
+            'last_online',
+            'users.created_at',
+            'users.voice',
+
+            'trusted_score',
+            'email_verified_at',
+
+            'contact_verified_at',
+
+            'profile_percentage',
+
+            'users.is_active',)
+            ->with(['userDetails:custom_id,user_id,image,video,sequence,is_verified','interests.interest.interestTranslation:title', 'userTranslation','location.locationTranslation:id,location_id,state,name,country'])
+            ->selectRaw('( 6371 * acos( cos( radians(?) ) * cos( radians( users.latitude ) ) * cos( radians( users.longitude ) - radians(?) ) + sin( radians(?) ) * sin( radians( users.latitude ) ) ) ) AS distance', [$latitude, $longitude, $latitude])
+            ->where(function ($query) use ($latitude, $longitude, $radius, $auth_interest, $disLikes, $likes, $reported, $auth_id, $languages, $location_id, $discover_location_id) {
+                 $query->commonGrouping($auth_interest, $disLikes, $likes, $reported, $auth_id, $languages, $location_id, $discover_location_id);
+
+            })->orWhere(function ($query) use ($city, $auth_interest, $disLikes, $likes, $reported, $auth_id, $languages, $location_id, $discover_location_id) {
+                $query->whereHas('location.locationTranslation',function ($q) use ($city){
+                    $q->where('name', $city);
+                });
+                $query->commonGrouping($auth_interest, $disLikes, $likes, $reported, $auth_id, $languages, $location_id, $discover_location_id);
+            })->orWhere(function ($query) use ($state, $auth_interest, $disLikes, $likes, $reported, $auth_id, $languages, $location_id, $discover_location_id) {
+                $query->whereHas('location.locationTranslation',function ($q) use ($state){
+                    $q->where('state', $state);
+                });
+                $query->commonGrouping($auth_interest, $disLikes, $likes, $reported, $auth_id, $languages, $location_id, $discover_location_id);
+            })->orWhere(function ($query) use ($country, $auth_interest, $disLikes, $likes, $reported, $auth_id, $languages, $location_id, $discover_location_id) {
+                $query->whereHas('location.locationTranslation',function ($q) use ($country){
+                    $q->where('country', $country);
+                });
+                $query->commonGrouping($auth_interest, $disLikes, $likes, $reported, $auth_id, $languages, $location_id, $discover_location_id);
+            });
+
+            if ($user->location_id == $user->discover_location_id
+            || $user->discover_location_id == null) {
+
+                if (!empty($radius) && !empty($latitude) && !empty($longitude)) {
+                    $users->having("distance", "<=", $radius);
+                    $users = $users->orderBy('distance');
+                    
+                }
+            }
+
+            $data['count'] = $users->count();
+            $data['users'] = $users->limit($limit ?? config('utility.pagination.limit'))
+            ->offset($offset ?? config('utility.pagination.offset'))
+            ->get();  
+            // dd(DB::getQueryLog());
+        return  $data;
+    }
+
+    public function getHomeFeedCardData($user, $exclusiveData, $limit, $offset){
+        if($user->discover_location_id == NULL && $user->location_id != NULL){
+            $user->discover_location_id = $user->location_id;
+        }
+        $latitude = $exclusiveData['latitude'];
+        $longitude = $exclusiveData['longitude'];
+        $radius = $exclusiveData['radius'];
+        $languages = $exclusiveData['languages'];
+        $disLikes = $exclusiveData['disLikes'];
+        $likes    = $exclusiveData['likes'];
+        $reported = $exclusiveData['reported'];
+        $auth_id  = $exclusiveData['auth_id'];
+        $superlikes = $exclusiveData['superlikes'];
+        $auth_interest = $exclusiveData['auth_interest'];
+
+        $getUserLocation = $this->getUserState($user->discover_location_id);
+        $city = $getUserLocation->name;
+        $state = $getUserLocation->state;
+        $country = $getUserLocation->country;
+
+        $discover_start_age = $user->discover_start_age;
+        $discover_end_age = $user->discover_end_age;
+
+        $profile_ranking = $exclusiveData['profile_ranking'];
+        $hasPhoto = $exclusiveData['hasPhoto'];
+        $searchNearMe = $exclusiveData['searchNearMe'];
+        $searchByState = $exclusiveData['searchByState'];
+        $discover_state = $exclusiveData['state'];
+        $onlineStatus = $exclusiveData['onlineStatus'];
+        $endDate = Carbon::now()->toDateString();
+        $startDate = Carbon::now()->subDays(7)->toDateString();
+        $online_time_limit = config('utility.profile.durations.online_time');
+        $recent_time_limit = config('utility.profile.durations.recent_online_time');
+        $location_id = $user->location_id;
+        $discover_location_id = $user->discover_location_id;
+
+        if (!empty($radius) && !empty($latitude) && !empty($longitude)) {
+            if((int)$searchNearMe == 1){
+                $radius = 10;
+            }
+        }
+
+        
+        // First, try to find nearby users
+        $users = User::select('users.id',
+            'users.custom_id',
+            'birth_date',
+            'profile_photo',
+            'gender',
+            'interest',
+            'users.location_id',
+            'language_id',
+            'verify_status',
+            'verify_photo_status',
+            'verify_email_send',
+            'last_online',
+            'users.created_at',
+            'users.voice',
+            'trusted_score',
+            'email_verified_at',
+
+            'contact_verified_at',
+
+            'profile_percentage',
+
+            'users.is_active')
+            ->with(['userDetails:custom_id,user_id,image,video,sequence,is_verified','interests.interest.interestTranslation:title', 'userTranslation','location.locationTranslation:id,location_id,state,name,country'])
+            ->withCount('likes')
+            ->withCount(['interests' => function($q) use($auth_id) {
+                $q->whereIn('interest_id', function($query1) use ($auth_id){
+                    $query1->select('interest_id')
+                          ->from('user_interests')
+                          ->where('user_id','=',$auth_id);
+                });
+            }])
+            ->selectRaw('( 6371 * acos( cos( radians(?) ) * cos( radians( users.latitude ) ) * cos( radians( users.longitude ) - radians(?) ) + sin( radians(?) ) * sin( radians( users.latitude ) ) ) ) AS distance', [$latitude, $longitude, $latitude])
+            ->where(function ($query) use ($discover_start_age, $discover_end_age, $onlineStatus, $startDate, $endDate, $discover_state, $latitude, $longitude, $radius, $auth_interest, $disLikes, $likes, $reported, $auth_id, $languages, $location_id, $discover_location_id, $searchByState, $profile_ranking) {
+                
+                $query->commonGrouping($auth_interest, $disLikes, $likes, $reported, $auth_id, $languages, $location_id, $discover_location_id);
+
+                if((int)$searchByState == 1){
+                    $query->whereHas('location.locationTranslation',function ($q) use ($discover_state){
+                        $q->where('state', $discover_state);
+                    });
+                }
+                // $query->whereNotNull('users.latitude')
+                //       ->whereNotNull('users.longitude');
+                if (!empty($discover_start_age) && !empty($discover_end_age)) {
+
+                    $query->whereBetween(\DB::raw('TIMESTAMPDIFF(YEAR,users.birth_date,CURDATE())'), array($discover_start_age, $discover_end_age));
+                }
+                if((int)$profile_ranking == 1){
+                    $query->orWhereBetween('users.created_at',[$startDate, $endDate]);
+                }
+
+                if((int)$onlineStatus == 1){
+                    $query->orWhereBetween('users.last_online',[Carbon::now()->subMinutes(1), Carbon::now()])->where('users.id','!=',$auth_id);
+                  
+                  //online today
+                  }else if((int)$onlineStatus == 2){
+                      $query->orWhereBetween('users.last_online',[Carbon::now()->subHours(24), Carbon::now()])->where('users.id','!=',$auth_id);
+          
+                  //online this week    
+                  }else if((int)$onlineStatus == 3){
+                      $query->orWhereBetween('users.last_online',[Carbon::now()->subDays(7), Carbon::now()])->where('users.id','!=',$auth_id);
+                      
+                  }
+                
+            })->orWhere(function ($query) use ($city, $auth_interest, $disLikes, $likes, $reported, $auth_id, $languages, $location_id, $discover_location_id) {
+                
+                $query->commonGrouping($auth_interest, $disLikes, $likes, $reported, $auth_id, $languages, $location_id, $discover_location_id);
+                $query->whereHas('location.locationTranslation',function ($q) use ($city){
+                    $q->where('name', $city);
+                });
+                
+                
+            })->orWhere(function ($query) use ($state, $auth_interest, $disLikes, $likes, $reported, $auth_id, $languages, $location_id, $discover_location_id) {
+                
+                $query->commonGrouping($auth_interest, $disLikes, $likes, $reported, $auth_id, $languages, $location_id, $discover_location_id);
+                $query->whereHas('location.locationTranslation',function ($q) use ($state){
+                    $q->where('state', $state);
+                });
+                
+                
+            })->orWhere(function ($query) use ($country, $auth_interest, $disLikes, $likes, $reported, $auth_id, $languages, $location_id, $discover_location_id) {
+                
+                $query->commonGrouping($auth_interest, $disLikes, $likes, $reported, $auth_id, $languages, $location_id, $discover_location_id);
+                $query->whereHas('location.locationTranslation',function ($q) use ($country){
+                    $q->where('country', $country);
+                });
+                
+               
+            });
+           
+            $users->withTrashed(); 
+            if ($user->location_id == $user->discover_location_id
+            || $user->discover_location_id == null) {
+
+                if (!empty($radius) && !empty($latitude) && !empty($longitude)) {
+                    $users->having("distance", "<=", $radius);
+                    $users = $users->orderBy('distance');
+                    
+                }
+            }               
+            $users = $users->having('interests_count','>',1)
+                       ->orHaving('interests_count','>',1)
+                       ->orHaving('interests_count','=',0);
+            if((int)$searchByState == false){
+                if (!empty($user->discover_location_id)) {
+                    $users = $users->orderByRaw('location_id = '.$user->discover_location_id.' DESC');
+                } 
+           } 
+           
+           if((int)$profile_ranking == 2){
+            $users->orderBy('likes_count','DESC');
+           }
+            
+           $users = $users->orderBy('last_online','DESC')
+                          ->orderBy('email_verified_at', "DESC")
+                          ->orderBy('contact_verified_at', "DESC")
+                          ->orderBy('photo_verified_at', "DESC")
+                          ->orderBy('profile_percentage', "DESC");
+            
+            $data['count'] = $users->count();
+            $data['users'] = $users->limit($limit ?? config('utility.pagination.limit'))
+            ->offset($offset ?? config('utility.pagination.offset'))
+            ->get(); 
+            return $data; 
+       
     }
 
     public function fetchHomeCardData($user, $exclusiveData, $limit, $offset){
@@ -235,7 +507,7 @@ class HomeController extends Controller
             $users = $this->withoutRadius();
         }
         
-        $users = $users->with(['userDetails', 'interests.interest.interestTranslation', 'userTranslation', 'location.locationTranslation','likes']);
+        $users = $users->with(['userDetails:custom_id,user_id,image,video,sequence,is_verified','interests.interest.interestTranslation:title', 'user.userTranslation','location.locationTranslation:id,location_id,state,name']);
         $users = $users->withCount('likes');
 
         $users = $users->withCount(['interests' => function($q) use($auth_id) {
@@ -321,33 +593,6 @@ class HomeController extends Controller
                         ->where('loc.is_active','=','y')
                         ->where('lt.locale','=','en');
                 });
-
-                // $query->orWhereIn('location_id',function ($query1) use ($user) {
-                //     $query1->select(['lt.location_id'])
-                //         ->from('locations as loc')
-                //         ->join('location_translations as lt','loc.id','=','lt.location_id')
-                //         ->where('lt.name', function($query2) use ($user){
-                //             $query2->select('name')
-                //                     ->from('location_translations')
-                //                     ->join('locations','location_translations.location_id', '=' ,'locations.id')
-                //                     ->where('location_id','=',$user->discover_location_id)
-                //                     ->where('locations.is_active','=','y')
-                //                     ->where('location_translations.locale','=','en');
-                //         });
-                // });
-                // $query->orWhereIn('location_id',function ($queryD) use ($user) {
-                //     $queryD->select(['lt.location_id'])
-                //         ->from('locations as loc')
-                //         ->join('location_translations as lt','loc.id','=','lt.location_id')
-                //         ->where('lt.state', function($queryE) use ($user){
-                //             $queryE->select('state')
-                //                     ->from('location_translations')
-                //                     ->join('locations','location_translations.location_id', '=' ,'locations.id')
-                //                     ->where('location_id','=',$user->discover_location_id)
-                //                     ->where('locations.is_active','=','y')
-                //                     ->where('location_translations.locale','=','en');
-                //         });
-                // });
 
             }else{
                 if($user->discover_location_id == NULL && $user->location_id != NULL){
@@ -807,7 +1052,7 @@ class HomeController extends Controller
 
     public function getUserState($location_id)
     {
-       $location =  LocationTranslation::select('state')->where(['location_id'=>$location_id,'locale'=>'en'])->first();
+       $location =  LocationTranslation::select('state','name','country')->where(['location_id'=>$location_id,'locale'=>'en'])->first();
        
        return $location;
     }

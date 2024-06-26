@@ -11,11 +11,35 @@ use App\Http\Requests\Api\General\{PaginationRequest};
 use App\Http\Resources\v1\{LikeResource};
 use App\Models\{Like, User, BlockUser, DisLike, UnMatch};
 use App\Jobs\{NotificationJob};
+use Illuminate\Support\Facades\Redis;
 
 class LikeController extends Controller
 {
     private $version = "v.1.0";
+    protected $redis;
+    function __construct(Request $request,Redis $redis) {
+        $this->redis = Redis::connection();
+    }
+    
     public function getVersion(){ return $this->version; }
+
+    //Delete redis key by pattern
+    public function deleteCacheByPattern($pattern)
+    {
+        $cursor = '0';
+        do {
+            list($cursor, $keys) = Redis::scan($cursor, ['match' => $pattern, 'count' => 100]);
+
+            if (!empty($keys)) {
+                
+                $addedPrefix = str_replace('hi_hello_database_discover', 'discover', $keys[0]);
+                $deleted = Redis::del($addedPrefix);
+                
+            }
+        } while ($cursor != '0');
+
+        return response()->json(['message' => 'Cache deleted successfully']);
+    }
 
     // Add New Like
     public function addNewLike(Request $request)
@@ -28,6 +52,12 @@ class LikeController extends Controller
                 $user = User::select('id')->whereCustomId($request->user_id)->where('id', '!=', $auth_user->id)->where('id', '!=', config('utility.system.system_user_id'))->whereIsActive('y')->firstOrFail();
                 $auth_id = $auth_user->id;
                 $user_id = $user->id;
+
+                $pattern = 'hi_hello_database_discover/homefeed/getList/'.$auth_id.':*';
+                $totaldiscoverkey = $auth_id.'_totalroom:*';
+               
+                $this->deleteCacheByPattern($pattern);
+                Redis::del($totaldiscoverkey);
 
                 $block = BlockUser::select('id')->whereBlockBy($user_id)->whereBlockedTo($auth_id)->first();
 

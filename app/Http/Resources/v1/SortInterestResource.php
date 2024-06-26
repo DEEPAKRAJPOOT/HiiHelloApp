@@ -14,6 +14,12 @@ class SortInterestResource extends JsonResource
      */
     public function toArray($request)
     {
+        if(isset($this->interest_translation)){
+            $this->interestTranslation = $this->interest_translation;
+        }else{
+            $this->interestTranslation = [];
+        }
+        // dd($this->interest_translation);
         return [
             'id'        =>  $this->custom_id ?? "",
             'title'     =>  $this->interestTranslation ? $this->interestTranslation->title : "",
