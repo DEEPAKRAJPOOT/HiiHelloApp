@@ -9,11 +9,35 @@ use Illuminate\Support\Facades\{Auth};
 use App\Http\Requests\Api\Discovery\{SetDiscoveryRequest, SetDiscoveryLocationRequest};
 use App\Http\Resources\v1\{DiscoveryResource};
 use App\Models\{User, UserSetting, Location, Language, LocationTranslation};
+use Illuminate\Support\Facades\Redis;
 
 class DiscoveryController extends Controller
 {
     private $version = "v.1.0";
+    protected $redis;
+    function __construct(Request $request,Redis $redis) {
+        $this->redis = Redis::connection();
+    }
+    
     public function getVersion(){ return $this->version; }
+
+    //Delete redis key by pattern
+    public function deleteCacheByPattern($pattern)
+    {
+        $cursor = '0';
+        do {
+            list($cursor, $keys) = Redis::scan($cursor, ['match' => $pattern, 'count' => 100]);
+
+            if (!empty($keys)) {
+                
+                $addedPrefix = str_replace('hi_hello_database_discover', 'discover', $keys[0]);
+                $deleted = Redis::del($addedPrefix);
+                
+            }
+        } while ($cursor != '0');
+
+        return response()->json(['message' => 'Cache deleted successfully']);
+    }
 
     public function setDiscoveryLocation(Request $request)
     {
@@ -21,6 +45,13 @@ class DiscoveryController extends Controller
         if ($this->apiValidator($request->all(), $setDiscoveryLocationRequest->rules())) {
             try {
                 $user = $request->user();
+                $auth_id = $user->id;
+                $pattern = 'hi_hello_database_discover/homefeed/getList/'.$auth_id.':*';
+                $totaldiscoverkey = $auth_id.'_totallist:*';
+               
+                $this->deleteCacheByPattern($pattern);
+                Redis::del($totaldiscoverkey);
+                
                 if($request->location =""){
                     $lat = $user->latitude;
                     $long = $user->longitude;
@@ -120,6 +151,13 @@ class DiscoveryController extends Controller
                     'స్త్రీ' => 'Female'
                 ];
                 $user = $request->user();
+                $auth_id = $user->id;
+                $pattern = 'hi_hello_database_discover/homefeed/getList/'.$auth_id.':*';
+                $totaldiscoverkey = $auth_id.'_totallist:*';
+               
+                $this->deleteCacheByPattern($pattern);
+                Redis::del($totaldiscoverkey);
+
                 if(empty($request->location)){
                     $lat = $user->latitude;
                     $long = $user->longitude;

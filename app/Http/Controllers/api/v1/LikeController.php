@@ -54,7 +54,7 @@ class LikeController extends Controller
                 $user_id = $user->id;
 
                 $pattern = 'hi_hello_database_discover/homefeed/getList/'.$auth_id.':*';
-                $totaldiscoverkey = $auth_id.'_totalroom:*';
+                $totaldiscoverkey = $auth_id.'_totallist:*';
                
                 $this->deleteCacheByPattern($pattern);
                 Redis::del($totaldiscoverkey);
