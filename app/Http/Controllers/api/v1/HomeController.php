@@ -627,14 +627,14 @@ class HomeController extends Controller
                 'verify_email_send',
                 'last_online',
                 'created_at',
-    
+                'users.voice',
                 'trusted_score',
                 'email_verified_at',
-    
+
                 'contact_verified_at',
-    
+
                 'profile_percentage',
-    
+
                 'is_active',
                 // DB::raw('GROUP_CONCAT(user_interests.interest_id) AS groupC'),
     
