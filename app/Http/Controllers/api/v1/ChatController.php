@@ -242,7 +242,7 @@ class ChatController extends Controller
                         $roomData = $room->toArray();
                         $roomData['participatorTime'] = $participatorTime;
                         $roomData['creatorTime'] = $creatorTime;
-                        $this->redis->set($chatRoomKey, json_encode((object)$roomData));
+                        $this->redis->set($chatRoomKey, json_encode((object)$roomData), 'EX', 3600);
                     } 
                 }
                 if($room->creator_id == $auth_id){
@@ -290,8 +290,8 @@ class ChatController extends Controller
                         ->get();
                     if($messages->isNotEmpty()){
                         $jsonData = json_encode($messages->toArray());
-                        $this->redis->set($totalChatKey, $count); 
-                        $this->redis->set($key, $jsonData); 
+                        $this->redis->set($totalChatKey, $count, 'EX', 3600); 
+                        $this->redis->set($key, $jsonData, 'EX', 3600); 
                     }   
                 }
                 
@@ -305,7 +305,7 @@ class ChatController extends Controller
                         $q->whereCustomId($request->room)->whereIsActive('y');
                     })->latest()->first();
                     if(!empty($callLog)){
-                        $this->redis->set($callLogKey, json_encode((object)$callLog->toArray()));
+                        $this->redis->set($callLogKey, json_encode((object)$callLog->toArray()), 'EX', 3600);
                     }
                      
                 }

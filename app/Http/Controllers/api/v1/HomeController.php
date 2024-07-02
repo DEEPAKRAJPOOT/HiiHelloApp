@@ -122,8 +122,8 @@ class HomeController extends Controller
                         $jsonData = json_encode($data['users']->toArray());
                         
                         $data['users'] = json_decode($jsonData);
-                        $this->redis->set($totalhomefeedskey, $data['count']); 
-                        $this->redis->set($homefeedskey, $jsonData);
+                        $this->redis->set($totalhomefeedskey, $data['count'], 'EX', 3600); 
+                        $this->redis->set($homefeedskey, $jsonData, 'EX', 3600);
                         $data['users'] = json_decode($jsonData);
                         $data['count'] = $this->redis->get($totalhomefeedskey);
                     }
@@ -524,15 +524,15 @@ class HomeController extends Controller
         }
        
 
-        // if(!empty($relationStatus)){
+        if(!empty($relationStatus)){
 
-        //     $users->orWhere('relationship_status_id',$relationStatus);
-        // }
+            $users->orWhere('relationship_status_id',$relationStatus);
+        }
 
-        // if(!empty($education)){
+        if(!empty($education)){
 
-        //     $users->orWhere('education_id',$education);
-        // }   
+            $users->orWhere('education_id',$education);
+        }   
         
         $users->withTrashed();                
         $users = $users->having('interests_count','>',1)
@@ -577,11 +577,12 @@ class HomeController extends Controller
         }
     }
         
-       // $users = $users->orderBy('interests_count', "DESC");
+       
        if((int)$profile_ranking == 2){
         $users->orderBy('likes_count','DESC');
        }
-        
+       
+        $users = $users->orderBy('interests_count', "DESC");
         $users = $users->orderBy('last_online','DESC')
                        ->orderBy('email_verified_at', "DESC")
                        ->orderBy('contact_verified_at', "DESC")

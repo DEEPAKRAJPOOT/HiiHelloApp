@@ -87,8 +87,8 @@ class Chatv2Controller extends Controller
 
                         $jsonData = json_encode($rooms->toArray());
                         $rooms = json_decode($jsonData);
-                        $this->redis->set($totalroomkey, $count); 
-                        $this->redis->set($roomlistkey, $jsonData); 
+                        $this->redis->set($totalroomkey, $count, 'EX', 3600); 
+                        $this->redis->set($roomlistkey, $jsonData, 'EX', 3600); 
                     }
                 }
                 

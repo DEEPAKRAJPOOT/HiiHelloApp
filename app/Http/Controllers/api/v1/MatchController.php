@@ -11,11 +11,36 @@ use App\Http\Requests\Api\Match\{DeleteMatchRequest, GetMatchRequest,SystemMatch
 use App\Http\Resources\v1\{MatchResource};
 use App\Models\{User, Like, ChatRoom, UserInterest, BlockUser, UnMatch, UserPersonality,SystemMatch, Setting};
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Redis;
+use Illuminate\Support\Facades\Cache;
 
 class MatchController extends Controller
 {
     private $version = "v.1.0";
+    protected $redis;
+    function __construct(Request $request,Redis $redis) {
+        $this->redis = Redis::connection();
+    }
+
     public function getVersion(){ return $this->version; }
+
+    //Delete redis key by pattern
+    public function deleteCacheByPattern($pattern)
+    {
+        $cursor = '0';
+        do {
+            list($cursor, $keys) = Redis::scan($cursor, ['match' => $pattern, 'count' => 100]);
+
+            if (!empty($keys)) {
+                
+                $addedPrefix = str_replace('hi_hello_database_discover', 'discover', $keys[0]);
+                $deleted = Redis::del($addedPrefix);
+                
+            }
+        } while ($cursor != '0');
+
+        return response()->json(['message' => 'Cache deleted successfully']);
+    }
 
     /**
      * Get new matched profile details.
@@ -28,7 +53,7 @@ class MatchController extends Controller
         //return $request; exit;
         $getMatchRequest = new GetMatchRequest();
         if ($this->apiValidator($request->all(), $getMatchRequest->rules())) {
-            try {
+            // try {
                
                  $user = $request->user(); 
               
@@ -44,7 +69,21 @@ class MatchController extends Controller
                 $search = $request->search;
                 $user->match_count = 0; // Reset Match Count
                 $user->save();
+                $limit = $request->limit;
+                $offset = $request->offset;
+                $paginate = (int)$limit+(int)$offset;
+                $prevDataSetKey = 'getMatches/'.$auth_id.':'.$auth_id.'_getmatches_'.$offset;
+                $getPrevDataSet = $this->redis->get($prevDataSetKey);
+                if(!is_null($getPrevDataSet)){
+                    $this->redis->del($prevDataSetKey);
+                }
 
+                $getmatchkey = 'getMatches/'.$auth_id.':'.$auth_id.'_getmatches_'.$paginate;
+                if(!is_null($this->redis->get($getmatchkey))){
+                    $matchResourceCollection = $this->redis->get($getmatchkey);
+                    $matchData = json_decode($matchResourceCollection, true);
+                    return response()->json($matchData);   
+                }else{
                 // Config Details
                 $backup_logic       =   config('utility.profile.match.backup_logic') ?? true; 
                 $match_percentage   =   config('utility.profile.match.match_percentage') ?? 20;
@@ -232,7 +271,7 @@ class MatchController extends Controller
                     }
 
 
-                    return (MatchResource::Collection($matches))->additional([
+                    $matchResourceCollection = (MatchResource::Collection($matches))->additional([
                         'meta'  =>  [
                             'limit'     =>  $request->limit,
                             'offset'    =>  $request->offset,
@@ -244,18 +283,39 @@ class MatchController extends Controller
                             'message'   =>  trans('api.list', ['entity' =>  __('New Matches')]),
                         ]
                     ]);
+                    $meta = [
+                            'limit'     =>  $request->limit,
+                            'offset'    =>  $request->offset,
+                            'total'     =>  $count, //$max_limit_apply ? $max_limit : $count,
+                            'url'       =>  url()->current(),
+                            'api'       =>  $this->getVersion(),
+                            'language'  =>  app()->getLocale(),
+                            'is_ban'    =>  false,
+                            'message'   =>  trans('api.list', ['entity' =>  __('New Matches')]),
+                    ];
+
+                    $data = [
+                        'data' => $matchResourceCollection->toArray(request()),
+                        'meta' => $meta,
+                    ];
+
+                    // Convert resource collection to array for caching
+                    $this->redis->set($getmatchkey, json_encode($data), 'EX', 3600); 
+                    return $matchResourceCollection;
+
                 } else {
                     $this->response['meta']['message']  =   trans('api.not_found', ['entity' => __('New Matches')]);
                     $this->response['meta']['is_ban'] = false;
                     $this->status = Response::HTTP_OK;
                 }
-            } catch (ModelNotFoundException $exception) {
-                $this->response['meta']['message'] = trans('api.went_wrong');
-                $this->response['meta']['is_ban'] = false;
-            } catch (\Exception $e) {
-                $this->response['meta']['is_ban'] = false;
-                $this->storeErrorLog($e, 'new_matches');
-            }
+              }  
+            // } catch (ModelNotFoundException $exception) {
+            //     $this->response['meta']['message'] = trans('api.went_wrong');
+            //     $this->response['meta']['is_ban'] = false;
+            // } catch (\Exception $e) {
+            //     $this->response['meta']['is_ban'] = false;
+            //     $this->storeErrorLog($e, 'new_matches');
+            // }
         }
         return $this->returnResponse();
     }

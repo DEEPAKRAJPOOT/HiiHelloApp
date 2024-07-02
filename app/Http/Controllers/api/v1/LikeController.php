@@ -12,6 +12,7 @@ use App\Http\Resources\v1\{LikeResource};
 use App\Models\{Like, User, BlockUser, DisLike, UnMatch};
 use App\Jobs\{NotificationJob};
 use Illuminate\Support\Facades\Redis;
+use Illuminate\Support\Facades\Cache;
 
 class LikeController extends Controller
 {
@@ -24,7 +25,7 @@ class LikeController extends Controller
     public function getVersion(){ return $this->version; }
 
     //Delete redis key by pattern
-    public function deleteCacheByPattern($pattern)
+    public function deleteCacheByPattern($pattern, $orgprefix, $bckendprefix)
     {
         $cursor = '0';
         do {
@@ -32,7 +33,7 @@ class LikeController extends Controller
 
             if (!empty($keys)) {
                 
-                $addedPrefix = str_replace('hi_hello_database_discover', 'discover', $keys[0]);
+                $addedPrefix = str_replace($orgprefix, $bckendprefix, $keys[0]);
                 $deleted = Redis::del($addedPrefix);
                 
             }
@@ -54,9 +55,11 @@ class LikeController extends Controller
                 $user_id = $user->id;
 
                 $pattern = 'hi_hello_database_discover/homefeed/getList/'.$auth_id.':*';
+                $orgprefix = 'hi_hello_database_discover';
+                $bckendprefix = 'discover';
                 $totaldiscoverkey = $auth_id.'_totallist:*';
                
-                $this->deleteCacheByPattern($pattern);
+                $this->deleteCacheByPattern($pattern, $orgprefix, $bckendprefix);
                 Redis::del($totaldiscoverkey);
 
                 $block = BlockUser::select('id')->whereBlockBy($user_id)->whereBlockedTo($auth_id)->first();
@@ -82,9 +85,22 @@ class LikeController extends Controller
                     if ($like->save()) {
                         if ($like->wasRecentlyCreated) {
                             $user->increment('like_count');
+                            //Like will reset in cache according to user id
+                            $pattern = 'hi_hello_database_getLikes'.$user_id.':*';
+                            $orgprefix = 'hi_hello_database_getLikes';
+                            $bckendprefix = 'getLikes';
+                        
+                            $this->deleteCacheByPattern($pattern, $orgprefix, $bckendprefix);
 
                             $matched = Like::select('id')->whereUserId($auth_id)->whereLikerId($user_id)->first();
                             if ($matched) {
+                                //Match will reset in cache according to user id
+                                $pattern = 'hi_hello_database_getMatches'.$user_id.':*';
+                                $orgprefix = 'hi_hello_database_getMatches';
+                                $bckendprefix = 'getMatches';
+                            
+                                $this->deleteCacheByPattern($pattern, $orgprefix, $bckendprefix);
+
                                 $auth_user->increment('match_count');
                                 $user->increment('match_count');
                                 $is_matched = true;
@@ -259,15 +275,27 @@ class LikeController extends Controller
     {
         $paginationRequest = new PaginationRequest();
         if ($this->apiValidator($request->all(), $paginationRequest->rules())) {
-            // try {
+            try {
                 $user = $request->user();
-                // dd($user->toArray());
+                $limit = $request->limit;
+                $offset = $request->offset;
+                $paginate = (int)$limit+(int)$offset;
                 $user_id = $user->id;
                 $is_subscribed = false;
                 $subscription_end_date = "";
                 $user->like_count = 0; // Reset Like Count
                 $user->save();
-
+                $prevDataSetKey = 'getLikes/'.$user_id.':'.$user_id.'_getlikes_'.$offset;
+                $getPrevDataSet = $this->redis->get($prevDataSetKey);
+                if(!is_null($getPrevDataSet)){
+                    $this->redis->del($prevDataSetKey);
+                }
+                $getlikeskey = 'getLikes/'.$user_id.':'.$user_id.'_getlikes_'.$paginate;
+                if(!is_null($this->redis->get($getlikeskey))){
+                    $likeResourceCollection = $this->redis->get($getlikeskey);
+                    $likeData = json_decode($likeResourceCollection, true);
+                    return response()->json($likeData);   
+                }else{
                 if (!Auth::guest()) {
                     if (Auth::user()->is_subscribed == 'y' && Auth::user()->subscription_end_date >= \Carbon\Carbon::today()->format('Y-m-d')) {
                         $is_subscribed = true;
@@ -306,44 +334,74 @@ class LikeController extends Controller
                     ->offset($request->offset ?? config('utility.pagination.offset'))
                     ->get();
                 if ($likes->isNotEmpty()) {
-                    return (LikeResource::collection($likes))
-                        ->additional([
-                            'meta' => [
-                                'offset'        =>  $request->offset,
-                                'limit'         =>  $request->limit,
-                                'total'         =>  $count,
-                                'api'           =>  $this->getVersion(),
-                                'url'           =>  url()->current(),
-                                'language'      =>  app()->getLocale(),
-                                'is_subscribed' =>  $is_subscribed,
-                                'is_ban'        =>  false,
-                                'subscription_end_date'     =>  $subscription_end_date,
-                                'message'       =>  trans('api.list', ['entity' => __("Users")]),
-                            ]
-                        ]);
+                    $likeResourceCollection = LikeResource::collection($likes);
+                    $likeResourceCollection->additional([
+                        'meta' => [
+                            'offset'        =>  $request->offset,
+                            'limit'         =>  $request->limit,
+                            'total'         =>  $count,
+                            'api'           =>  $this->getVersion(),
+                            'url'           =>  url()->current(),
+                            'language'      =>  app()->getLocale(),
+                            'is_subscribed' =>  $is_subscribed,
+                            'is_ban'        =>  false,
+                            'subscription_end_date'     =>  $subscription_end_date,
+                            'message'       =>  trans('api.list', ['entity' => __("Users")]),
+                        ]
+                    ]);
+
+                    $meta = [
+                        'offset'        =>  $request->offset,
+                        'limit'         =>  $request->limit,
+                        'total'         =>  $count,
+                        'api'           =>  $this->getVersion(),
+                        'url'           =>  url()->current(),
+                        'language'      =>  app()->getLocale(),
+                        'is_subscribed' =>  $is_subscribed,
+                        'is_ban'        =>  false,
+                        'subscription_end_date'     =>  $subscription_end_date,
+                        'message'       =>  trans('api.list', ['entity' => __("Users")]),
+                    ];
+
+                    $data = [
+                        'data' => $likeResourceCollection->toArray(request()),
+                        'meta' => $meta,
+                    ];
+
+                    // Convert resource collection to array for caching
+                    $this->redis->set($getlikeskey, json_encode($data), 'EX', 3600); 
+                    return $likeResourceCollection;
+                    
                 } else {
                     $this->response['meta']['message']  =   trans('api.not_found', ['entity' => __("Users")]);
                     $this->response['meta']['is_ban'] = false;
                     $this->status = Response::HTTP_NOT_FOUND;
+                    return $this->returnResponse();
                 }
-            // } catch (ModelNotFoundException $exception) {
-            //     switch ($exception->getModel()) {
-            //         case 'App\Models\User':
-            //             $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("Users")]);
-            //             $this->response['meta']['is_ban'] = false;
-            //             break;
-            //         case 'App\Models\Like':
-            //             $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("Users")]);
-            //             $this->response['meta']['is_ban'] = false;
-            //             break;
-            //         default:
-            //             $this->response['meta']['message'] = trans('api.went_wrong');
-            //             $this->response['meta']['is_ban'] = false;
-            //             break;
-            //     };
-            // } catch (\Exception $e) {
-            //     $this->storeErrorLog($e, 'get_likes');
-            // }
+             }  
+
+            
+            // Return the cached data
+            // return response()->json($likeResourceCollection);
+
+            } catch (ModelNotFoundException $exception) {
+                switch ($exception->getModel()) {
+                    case 'App\Models\User':
+                        $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("Users")]);
+                        $this->response['meta']['is_ban'] = false;
+                        break;
+                    case 'App\Models\Like':
+                        $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("Users")]);
+                        $this->response['meta']['is_ban'] = false;
+                        break;
+                    default:
+                        $this->response['meta']['message'] = trans('api.went_wrong');
+                        $this->response['meta']['is_ban'] = false;
+                        break;
+                };
+            } catch (\Exception $e) {
+                $this->storeErrorLog($e, 'get_likes');
+            }
         }
         return $this->returnResponse();
     }
