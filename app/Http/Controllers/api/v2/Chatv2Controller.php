@@ -7,10 +7,11 @@ use Illuminate\Http\{Request, Response};
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use App\Http\Requests\Api\General\PaginationRequest;
 use Illuminate\Support\Facades\Auth;
-use App\Models\{ChatRoom, ChatMessage, User, CallLog};
-use App\Http\Resources\v2\ChatRoomResource;
+use App\Models\{ChatRoom, ChatMessage, User, CallLog, ChatMessageMongoose, ChatRoomMongoose, UsersMongoose};
+use App\Http\Resources\v2\{ChatRoomResource, ChatRoomResourceMongoose};
+// use App\Http\Resources\v1\{ ChatMessageResource, ChatRoomMongoResource};
 use App\Http\Requests\Api\Chat\GetRoomRequest;
-use DB;
+use DB;use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Redis;
 
 class Chatv2Controller extends Controller
@@ -49,51 +50,48 @@ class Chatv2Controller extends Controller
                         $rooms = json_decode($chatRoomListData);
                         $count = $this->redis->get($totalroomkey);
                     }else{
-                        // echo "No Data Found !!";die;
-                        $rooms = ChatRoom::with('creator','creator.userTranslation','creator.language','participator','participator.userTranslation','participator.language')->whereHas('chatMessages')
-                    ->withCount(['chatMessages'=>function($query){
-                        $query->where('status','!=','read');
-                    }])
-                    ->withCount('blockBy')
-                    ->where(function($query)use($auth_id,$has_system_messages,$system_chat_room_id){
+                        Log::channel('mongodb')->debug('Fetching latest message', [
+                            'id' => $auth_id
+                          ]);
+                    $rooms = ChatRoomMongoose::with('creator','participator','latestMessage.sender:id,custom_id')
+                    ->whereHas('chatMessages')
+                    // ->withCount('blockBy')
+                    ->where(function($query)use($auth_id){
                         $query->where(function($q)use($auth_id){
                             $q->whereCreatorId($auth_id)->whereNull('creator_deleted_at');
                         });
                         $query->orWhere(function($q)use($auth_id){
                             $q->whereParticipateId($auth_id)->whereNull('participate_deleted_at');
                         });
-                        // $query->orWhere('id',$system_chat_room_id);
-                        // if($has_system_messages){
-                        //     $query->orWhere(function($q)use($system_chat_room_id){
-                        //         $q->where('id',$system_chat_room_id);
-                        //     });
-                        // }
                     });
+
                     if(!empty($search)){
                         $rooms->where(function($query)use($search){
-                            $query->whereHas('creator.userTranslations',function($q1)use($search){
+                            $query->whereHas('creator',function($q1)use($search){
                                 $q1->where('full_name','like','%'.$search.'%');
-                            })->orWhereHas('participator.userTranslations',function($q2)use($search){
+                            })->orWhereHas('participator',function($q2)use($search){
                                 $q2->where('full_name','like','%'.$search.'%');
                             });
                         });
                     }
                     $count = $rooms->count();
                     $rooms = $rooms->orderBy('updated_at','desc')->limit($limit)->offset($offset)->get();
+                    Log::channel('mongodb')->debug('Fetching latest message', [
+                        'id' => $rooms
+                      ]);
                     if($rooms->isNotEmpty()){
                         $rooms = $rooms->sortBy(function($room)use($system_chat_room_id){
                             return ($room->id == $system_chat_room_id) ? 0 : 1;
                         });
-
                         $jsonData = json_encode($rooms->toArray());
                         $rooms = json_decode($jsonData);
                         $this->redis->set($totalroomkey, $count, 'EX', 3600); 
                         $this->redis->set($roomlistkey, $jsonData, 'EX', 3600); 
                     }
-                }
+               }
                 
                 if(!empty($rooms)){
-                    return (ChatRoomResource::Collection($rooms))->additional([
+                    return (ChatRoomResourceMongoose::Collection($rooms))->additional([
                         'meta' => [
                             'limit'    => $limit,
                             'offset'   => $offset,

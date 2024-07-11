@@ -4,15 +4,17 @@ namespace App\Http\Controllers\api\v1;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\{Request, Response};
+use MongoDB\BSON\ObjectId;
 use Illuminate\Database\Eloquent\{ModelNotFoundException};
 use App\Http\Requests\Api\General\{PaginationRequest};
 use Illuminate\Support\Facades\{Auth};
 use Illuminate\Support\Facades\Cache;
-use App\Models\{ChatRoom, ChatMessage, User, CallLog};
-use App\Http\Resources\v1\{ChatRoomResource, ChatMessageResource};
+use App\Models\{ChatRoom, ChatMessage, User, CallLog,ChatMessageMongoose, ChatRoomMongoose, UsersMongoose};
+use App\Http\Resources\v1\{ChatRoomResource, ChatMessageResource, ChatRoomMongoResource, ChatMessageMongoResource};
 use App\Http\Requests\Api\Chat\{CreateRoomRequest, ChatMessagesRequest, ClearRoomRequest, DeleteRoomRequest, GetRoomRequest, DisappearModeRequest, VanishModeRequest};
-use DB;
 use Illuminate\Support\Facades\Redis;
+use Illuminate\Support\Facades\Log;
+use DB;
 
 class ChatController extends Controller
 {
@@ -60,31 +62,42 @@ class ChatController extends Controller
                 $participant = User::whereCustomId($request->participant_id)
                     ->where('id', '!=', $auth_id)->where('id', '!=', config('utility.system.system_user_id'))->whereIsActive('y')->firstOrFail();
                 $participant_id = $participant ? $participant->id : NULL;
+                //Here need to check data from mongo and fetch creator and participator data from mysql and send the response
 
-                $chat_room = ChatRoom::with([
-                    'creator:id,custom_id,profile_photo,language_id',
-                    'participator:id,custom_id,profile_photo,language_id',
-                    'creator.userTranslation', 'creator.language:id,lang_code',
-                    'participator.userTranslation', 'participator.language:id,lang_code',
+                  $chat_room = ChatRoomMongoose::with([
+                    'creator:id,user_id,custom_id,profile_photo,language_id,lang_code,full_name',
+                    'participator:id,user_id,custom_id,profile_photo,language_id,lang_code,full_name',
+                    'latestMessage.receiver:id,custom_id',
                     'latestMessage.sender:id,custom_id'
-                ])
-                    ->where(function ($query) use ($auth_id, $participant_id) {
+                   ])->where(function ($query) use ($auth_id, $participant_id) {
                         $query->whereCreatorId($auth_id)->where('participate_id', $participant_id);
                     })->orWhere(function ($query) use ($auth_id, $participant_id) {
                         $query->whereCreatorId($participant_id)->where('participate_id', $auth_id);
                     })->first();
-
+                    
                 if (empty($chat_room)) {
-                    $chat_room = ChatRoom::firstOrCreate([
+                    $chat_room = ChatRoomMongoose::firstOrCreate([
                         'creator_id'        =>  $auth_id,
                         'participate_id'    =>  $participant_id,
+                        'block_by'          => NULL,
+                        'is_active'         => 'y',
+                        'vanish_mode'       => 'n',
+                        'vanish_mode_by'    => NULL,
+                        'disappear_mode'    => 'off',
+                        'disappear_mode_by' => NULL,
+                        'creator_cleared_at'=> NULL,
+                        'participate_cleared_at'=>NULL,
+                        'creator_deleted_at'=>NULL,
+                        'participate_deleted_at'=>NULL,
                     ], [
                         'custom_id'         =>  getUniqueString('chat_rooms'),
                     ]);
+                    // dd($chat_room);
+
                 }
 
                 $this->status = Response::HTTP_OK;
-                return (new ChatRoomResource($chat_room))->additional([
+                return (new ChatRoomMongoResource($chat_room))->additional([
                     'meta'  =>  [
                         'message'   =>  trans('api.save', ['entity' =>  __('Chat room')]),
                         'is_ban'    =>  false,
@@ -121,7 +134,7 @@ class ChatController extends Controller
                 $auth_id = $request->user() ? $request->user()->id : NULL;
                 $search = $request->search;
 
-                    $rooms = ChatRoom::with([
+                $rooms = ChatRoom::with([
                         'creator:id,custom_id,profile_photo,language_id',
                         'participator:id,custom_id,profile_photo,language_id',
                         'creator.language:id,lang_code', 'participator.language:id,lang_code',
@@ -229,7 +242,11 @@ class ChatController extends Controller
                         $creatorTime = $room->creatorTime;
                     }
                 }else{
-                    $room = ChatRoom::whereCustomId($request->room)->whereIsActive('y')->firstOrFail();
+                      $roomId = new ObjectId($request->room);
+                      Log::channel('mongodb')->debug('Fetching latest message', [
+                        'id' => $roomId
+                      ]);
+                    $room = ChatRoomMongoose::where('_id',$roomId)->whereIsActive(true)->firstOrFail();
                     if(!empty($room)){
                         
                         if($room->creator_id == $auth_id){
@@ -237,12 +254,18 @@ class ChatController extends Controller
                         }
                         
                         if($room->participate_id == $auth_id){
+
                             $creatorTime = $room->creator->lastOnlineTimeStamp();
                         }
                         $roomData = $room->toArray();
                         $roomData['participatorTime'] = $participatorTime;
                         $roomData['creatorTime'] = $creatorTime;
-                        $this->redis->set($chatRoomKey, json_encode((object)$roomData), 'EX', 3600);
+                        // Log the result
+                        Log::channel('mongodb')->debug('Fetched message', [
+                            'authMessage' => $room
+                        ]);
+                        // dd($roomData);
+                        // $this->redis->set($chatRoomKey, json_encode((object)$roomData), 'EX', 3600);
                     } 
                 }
                 if($room->creator_id == $auth_id){
@@ -262,32 +285,48 @@ class ChatController extends Controller
                     $count = $this->redis->get($totalChatKey); 
                 }else{
                     // DB::enableQueryLog();
-                    $messages = ChatMessage::select('id', 'custom_id', 'room_id', 'sender_id', 'message', 'status', 'created_at', 'updated_at', 'deleted_at','is_vanished','reply_sender_id','reply_sender_name','reply_message_id','reply_type','reply_value','reply_message_file_path','reply_message_file_type')
-                    ->where(function($expired_query){
-                        $expired_query->where('is_vanished','n');
-                        $expired_query->orWhere('status','!=','read');
+                    $messagesQuery = ChatMessageMongoose::select(
+                        'id', 'custom_id', 'room_id', 'sender_id', 'message', 'status', 'created_at', 
+                        'updated_at', 'deleted_at', 'is_vanished', 'reply_sender_id', 'reply_sender_name', 
+                        'reply_message_id', 'reply_type', 'reply_value', 'reply_message_file_path', 
+                        'reply_message_file_type'
+                    )
+                    ->where(function($expiredQuery) {
+                        $expiredQuery->where('is_vanished', 'n')
+                                     ->orWhere('status', '!=', 'read');
                     })
-                    ->where(function($sender_deleted_query)use($auth_id){
-                        $sender_deleted_query->whereNull('sender_deleted_at');
-                        $sender_deleted_query->orWhere('sender_id','!=',$auth_id);
+                    ->where(function($senderDeletedQuery) use ($auth_id) {
+                        $senderDeletedQuery->whereNull('sender_deleted_at')
+                                           ->orWhere('sender_id', '!=', $auth_id);
                     });
-                    if(!empty($cleared_time)){
-                        $messages->where('created_at','>',$cleared_time);
+                    
+                    if (!empty($cleared_time)) {
+                        $messagesQuery->where('created_at', '>', $cleared_time);
                     }
-                    if($room->id == config('utility.chat.system_chat_room')){
-                        $messages->where('receiver_id',$auth_id);
-                    }else{
-                        $messages->withTrashed();
+                    
+                    if ($room->id == config('utility.chat.system_chat_room')) {
+                        $messagesQuery->where('receiver_id', $auth_id);
+                    } else {
+                        $messagesQuery->withTrashed();
                     }
-                    $messages = $messages->with(['sender:id,custom_id'])
-                        ->whereHas('room', function ($q) use ($request) {
-                            $q->whereCustomId($request->room)->whereIsActive('y');
-                        })->latest();
-
-                    $count      =   $messages->count();
-                    $messages   =   $messages->limit($request->limit ?? config('utility.pagination.limit'))
+                    
+                    // Get room details first to ensure it exists and is active
+                    $room = ChatRoomMongoose::where('_id', $request->room)->where('is_active', true)->first();
+                    
+                    if ($room) {
+                        $messagesQuery->where('room_id', $room->_id);
+                    } else {
+                        // Handle the case where the room doesn't exist or isn't active
+                        return response()->json(['error' => 'Room not found or inactive'], 404);
+                    }
+                    $count = $messagesQuery->count();
+                    $messages = $messagesQuery->limit($request->limit ?? config('utility.pagination.limit'))
                         ->offset($request->offset ?? config('utility.pagination.offset'))
                         ->get();
+                        Log::channel('mongodb')->debug('Fetched message', [
+                            'Messages' => $messages
+                        ]);
+                        
                     if($messages->isNotEmpty()){
                         $jsonData = json_encode($messages->toArray());
                         $this->redis->set($totalChatKey, $count, 'EX', 3600); 
@@ -295,22 +334,22 @@ class ChatController extends Controller
                     }   
                 }
                 
-                
-                $callLogData = $this->redis->get($callLogKey);
-                if($callLogData){
-                    $callLog = $callLogData;
-                }else{
-                    $callLog    =   CallLog::select('id', 'room_id', 'remaining_time')->where('date', now()->format('Y-m-d'))
-                    ->whereHas('room', function ($q) use ($request) {
-                        $q->whereCustomId($request->room)->whereIsActive('y');
-                    })->latest()->first();
-                    if(!empty($callLog)){
-                        $this->redis->set($callLogKey, json_encode((object)$callLog->toArray()), 'EX', 3600);
-                    }
+                $callLog = null;
+                // $callLogData = $this->redis->get($callLogKey);
+                // if($callLogData){
+                //     $callLog = $callLogData;
+                // }else{
+                //     $callLog    =   CallLog::select('id', 'room_id', 'remaining_time')->where('date', now()->format('Y-m-d'))
+                //     ->whereHas('room', function ($q) use ($request) {
+                //         $q->whereCustomId($request->room)->whereIsActive('y');
+                //     })->latest()->first();
+                //     if(!empty($callLog)){
+                //         $this->redis->set($callLogKey, json_encode((object)$callLog->toArray()), 'EX', 3600);
+                //     }
                      
-                }
+                // }
                 if (!empty($messages)) {
-                    return (ChatMessageResource::Collection($messages))->additional([
+                    return (ChatMessageMongoResource::Collection($messages))->additional([
                         'meta'  =>  [
                             'remaining_time'    =>  $callLog ? $callLog->remaining_time : config('utility.twillio.allow_call_time'),
                             'limit'     =>  $request->limit,
@@ -373,15 +412,15 @@ class ChatController extends Controller
                
                 $this->deleteCacheByPattern($pattern);
                 $this->deleteCacheByPattern($totalroomkey);
-                $room = ChatRoom::whereCustomId($request->room_id)
+                $room = ChatRoomMongoose::where('_id',$request->room_id)
                     ->where(function ($query) use ($auth_id) {
                         $query->where('creator_id', $auth_id)
                             ->orWhere('participate_id', $auth_id)
-                            ->orWhere('id', config('utility.chat.system_chat_room'));
+                            ->orWhere('_id', config('utility.chat.system_chat_room'));
                     })->firstOrFail();
 
                 if($room->id == config('utility.chat.system_chat_room')){
-                    ChatMessage::where('room_id',$room->id)->where('receiver_id',$auth_id)->delete();
+                    ChatMessageMongoose::where('room_id',$room->id)->where('receiver_id',$auth_id)->delete();
                 }else{
                     if($room->creator_id == $auth_id){
                         $room->creator_cleared_at = now();
@@ -439,15 +478,15 @@ class ChatController extends Controller
                
                 $this->deleteCacheByPattern($pattern);
                 $this->deleteCacheByPattern($totalroomkey);
-                $room = ChatRoom::whereCustomId($request->room_id)
+                $room = ChatRoomMongoose::where('_id',$request->room_id)
                     ->where(function ($query) use ($auth_id) {
                         $query->where('creator_id', $auth_id)
                             ->orWhere('participate_id', $auth_id)
-                            ->orWhere('id', config('utility.chat.system_chat_room'));
+                            ->orWhere('_id', config('utility.chat.system_chat_room'));
                     })->firstOrFail();
 
                 if($room->id == config('utility.chat.system_chat_room')){
-                    ChatMessage::where('room_id',$room->id)->where('receiver_id',$auth_id)->delete();
+                    ChatMessageMongoose::where('room_id',$room->id)->where('receiver_id',$auth_id)->delete();
                 }else{
                 
                     if($room->creator_id == $auth_id){

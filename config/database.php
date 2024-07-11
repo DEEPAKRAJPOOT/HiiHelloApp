@@ -62,7 +62,15 @@ return [
                 PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
             ]) : [],
         ],
-
+        'mongodb' => [
+            'driver' => 'mongodb',
+            'dsn' => env('DB_MONGO_DSN', 'mongodb://127.0.0.1:27017'),
+            'database' => env('DB_MONGO_DATABASE', 'forge'),
+            'options' => [
+                'database' => env('DB_MONGO_AUTH_DATABASE', 'admin'), // required with Mongo 3+
+                'debug' => true, // Enable debug mode
+            ],
+        ],
         'pgsql' => [
             'driver' => 'pgsql',
             'url' => env('DATABASE_URL'),
