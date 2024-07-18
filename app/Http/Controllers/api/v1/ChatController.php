@@ -50,7 +50,7 @@ class ChatController extends Controller
     {
         $createRoomRequest = new CreateRoomRequest();
         if ($this->apiValidator($request->all(), $createRoomRequest->rules())) {
-            try {
+            // try {
                 $user = $request->user();
                 $auth_id = $user ? $user->id : NULL;
 
@@ -104,24 +104,24 @@ class ChatController extends Controller
                         'is_ban'    =>  false,
                     ]
                 ]);
-            } catch (ModelNotFoundException $exception) {
-                switch ($exception->getModel()) {
-                    case 'App\Models\ChatRoom':
-                        $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("Chat room")]);
-                        $this->response['meta']['is_ban'] = false;
-                        break;
-                    case 'App\Models\User':
-                        $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("User")]);
-                        $this->response['meta']['is_ban'] = false;
-                        break;
-                    default:
-                        $this->response['meta']['message'] = trans('api.went_wrong');
-                        $this->response['meta']['is_ban'] = false;
-                        break;
-                };
-            } catch (\Exception $e) {
-                $this->storeErrorLog($e, 'create_chat_room');
-            }
+            // } catch (ModelNotFoundException $exception) {
+            //     switch ($exception->getModel()) {
+            //         case 'App\Models\ChatRoom':
+            //             $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("Chat room")]);
+            //             $this->response['meta']['is_ban'] = false;
+            //             break;
+            //         case 'App\Models\User':
+            //             $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("User")]);
+            //             $this->response['meta']['is_ban'] = false;
+            //             break;
+            //         default:
+            //             $this->response['meta']['message'] = trans('api.went_wrong');
+            //             $this->response['meta']['is_ban'] = false;
+            //             break;
+            //     };
+            // } catch (\Exception $e) {
+            //     $this->storeErrorLog($e, 'create_chat_room');
+            // }
         }
         return $this->returnResponse();
     }
