@@ -12,13 +12,13 @@ class UsersMongoose extends Eloquent
     protected $connection = 'mongodb';
     protected $collection = 'users';
 
-    protected $fillable = ['user_id', 'custom_id', 'full_name', 'profile_photo', 'language_id', 'lang_code'];
+    protected $fillable = ['user_id', 'custom_id', 'full_name', 'profile_photo', 'language_id', 'lang_code', 'is_active', 'deleted_at'];
 
     // Enable timestamps 
     public $timestamps = true;
 
     // Soft delete field
-    protected $dates = ['deleted_at'];
+    protected $dates = ['created_at','updated_at','deleted_at'];
 
     public function chat_initiations(){ return $this->hasMany('App\Models\ChatRoomMongoose', 'creator_id', 'user_id'); }
     public function countChats(){ 

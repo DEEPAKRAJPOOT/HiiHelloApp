@@ -80,8 +80,8 @@ class ChatController extends Controller
                         'creator_id'        =>  $auth_id,
                         'participate_id'    =>  $participant_id,
                         'block_by'          => NULL,
-                        'is_active'         => 'y',
-                        'vanish_mode'       => 'n',
+                        'is_active'         => true,
+                        'vanish_mode'       => true,
                         'vanish_mode_by'    => NULL,
                         'disappear_mode'    => 'off',
                         'disappear_mode_by' => NULL,
@@ -89,6 +89,7 @@ class ChatController extends Controller
                         'participate_cleared_at'=>NULL,
                         'creator_deleted_at'=>NULL,
                         'participate_deleted_at'=>NULL,
+                        'deleted_at'=>NULL,
                     ], [
                         'custom_id'         =>  getUniqueString('chat_rooms'),
                     ]);

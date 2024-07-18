@@ -9,7 +9,7 @@ class ChatRoomMongoose extends Eloquent
     protected $connection = 'mongodb';
     protected $collection = 'chat_room';
 
-    protected $fillable = ['custom_id', 'creator_id', 'participate_id', 'block_by', 'vanish_mode', 'vanish_mode_by', 'disappear_mode', 'disappear_mode_by', 'creator_cleared_at', 'participate_cleared_at', 'creator_deleted_at', 'participate_deleted_at'];
+    protected $fillable = ['custom_id', 'creator_id', 'participate_id', 'block_by', 'vanish_mode', 'vanish_mode_by', 'disappear_mode', 'disappear_mode_by', 'creator_cleared_at', 'participate_cleared_at', 'creator_deleted_at', 'participate_deleted_at','is_active','deleted_at'];
 
     // Enable timestamps
     public $timestamps = true;
