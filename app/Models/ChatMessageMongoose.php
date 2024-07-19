@@ -24,7 +24,7 @@ class ChatMessageMongoose extends Eloquent
     public $timestamps = true;
 
     // Soft delete field
-    protected $dates = ['deleted_at', 'sender_deleted_at'];
+    protected $dates = ['created_at', 'updated_at', 'deleted_at', 'expired_at', 'sender_deleted_at'];
 
 
     public function getRouteKeyName(){ return 'custom_id'; }

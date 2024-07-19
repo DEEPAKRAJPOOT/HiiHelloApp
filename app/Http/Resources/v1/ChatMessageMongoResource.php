@@ -4,6 +4,7 @@ namespace App\Http\Resources\v1;
 
 use App\Models\UsersMongoose;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Carbon\Carbon;
 
 class ChatMessageMongoResource extends JsonResource
 {
@@ -15,7 +16,7 @@ class ChatMessageMongoResource extends JsonResource
      */
     public function toArray($request)
     {
-        // dd($this);
+        // dd(Carbon::parse($this->created_at)->toDateTimeString());
         $resource =  [
             'id'        =>  $this->_id ?? "",
             'message'   =>  $this->getMessage($this->message) ?? NULL,

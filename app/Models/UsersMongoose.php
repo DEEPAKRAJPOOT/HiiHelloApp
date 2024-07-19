@@ -12,7 +12,7 @@ class UsersMongoose extends Eloquent
     protected $connection = 'mongodb';
     protected $collection = 'users';
 
-    protected $fillable = ['user_id', 'custom_id', 'full_name', 'profile_photo', 'language_id', 'lang_code', 'is_active', 'deleted_at'];
+    protected $fillable = ['user_id', 'custom_id', 'full_name', 'profile_photo', 'language_id', 'lang_code', 'is_active', 'deleted_at','last_online'];
 
     // Enable timestamps 
     public $timestamps = true;
@@ -33,7 +33,14 @@ class UsersMongoose extends Eloquent
             })->count();
     }
 
-    public function lastOnlineTimeStamp() {
+    public function lastOnlineTimeStamp(){
+        if(!empty($this->last_online) && strtotime($this->last_online) > 0){
+            return strtotime($this->last_online) * 1000;
+        }
+        return '';
+    }
+
+    /*public function lastOnlineTimeStamp() {
         // Check if last_online is a MongoDB\BSON\UTCDateTime instance
         if ($this->last_online instanceof UTCDateTime) {
             // Convert the MongoDB\BSON\UTCDateTime to a DateTime string
@@ -46,7 +53,7 @@ class UsersMongoose extends Eloquent
             }
         }
         return '';
-    }
+    }*/
     // public function lastOnlineTimeStamp(){
     //     $mongoUtcDateTime = new UTCDateTime($this->last_online);
     //     $dateTimeString = $this->convertUTCDateTimeToString($this->last_online);

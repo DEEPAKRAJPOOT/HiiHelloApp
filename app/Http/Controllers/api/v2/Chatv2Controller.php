@@ -31,7 +31,7 @@ class Chatv2Controller extends Controller
         
         $getRoomRequest = new GetRoomRequest();
         if($this->apiValidator($request->all(),$getRoomRequest->rules())){
-            try {
+            // try {
                     $limit = !empty($request->limit) ? $request->limit : config('utility.pagination.limit');
                     $offset = !empty($request->offset) ? $request->offset : config('utility.pagination.offset');
                     $paginate = (int)$limit+(int)$offset;
@@ -108,26 +108,26 @@ class Chatv2Controller extends Controller
                     $this->response['meta']['message']  =   trans('api.not_found', ['entity' => __('Chat rooms')]);
                     $this->response['meta']['is_ban'] = false;
                 }
-            } catch (ModelNotFoundException $exception) {
-                $this->status = Response::HTTP_OK;
-                switch ($exception->getModel()) {
-                    case 'App\Models\ChatRoom':
-                        $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("Chat rooms")]);
-                        $this->response['meta']['is_ban'] = false;
-                        break;
-                    case 'App\Models\User':
-                        $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("User")]);
-                        $this->response['meta']['is_ban'] = false;
-                        break;
-                    default:
-                        $this->response['meta']['message'] = trans('api.went_wrong');
-                        $this->response['meta']['is_ban'] = false;
-                        break;
-                };
-            }catch(\Exception $e){
-                $this->status = Response::HTTP_OK;
-                $this->storeErrorLog($e, 'get_chat_rooms');
-            }
+            // } catch (ModelNotFoundException $exception) {
+            //     $this->status = Response::HTTP_OK;
+            //     switch ($exception->getModel()) {
+            //         case 'App\Models\ChatRoom':
+            //             $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("Chat rooms")]);
+            //             $this->response['meta']['is_ban'] = false;
+            //             break;
+            //         case 'App\Models\User':
+            //             $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("User")]);
+            //             $this->response['meta']['is_ban'] = false;
+            //             break;
+            //         default:
+            //             $this->response['meta']['message'] = trans('api.went_wrong');
+            //             $this->response['meta']['is_ban'] = false;
+            //             break;
+            //     };
+            // }catch(\Exception $e){
+            //     $this->status = Response::HTTP_OK;
+            //     $this->storeErrorLog($e, 'get_chat_rooms');
+            // }
         }
         return $this->returnResponse();
     }
