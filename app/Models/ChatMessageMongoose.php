@@ -18,13 +18,13 @@ class ChatMessageMongoose extends Eloquent
     protected $connection = 'mongodb';
     protected $collection = 'messages';
 
-    protected $fillable = ['custom_id', 'room_id', 'sender_id', 'receiver_id', 'message', 'status', 'expired_at', 'is_vanished', 'sender_deleted_at', 'is_verified', 'created_at', 'updated_at', 'reply_sender_name', 'reply_message_id', 'reply_type', 'reply_value', 'reply_message_file_path', 'reply_message_file_type','deleted_at'];
+    protected $fillable = ['custom_id', 'room_id', 'sender_id', 'receiver_id', 'message', 'status', 'expired_at', 'is_vanished', 'sender_deleted_at', 'is_verified', 'created_at', 'updated_at', 'reply_sender_name', 'reply_message_id', 'reply_type', 'reply_value', 'reply_message_file_path', 'reply_message_file_type','deleted_at','created_at', 'updated_at', ];
 
     // Enable timestamps
     public $timestamps = true;
 
     // Soft delete field
-    protected $dates = ['created_at', 'updated_at', 'deleted_at', 'expired_at', 'sender_deleted_at'];
+    protected $dates = ['deleted_at', 'expired_at', 'sender_deleted_at'];
 
 
     public function getRouteKeyName(){ return 'custom_id'; }
@@ -40,6 +40,7 @@ class ChatMessageMongoose extends Eloquent
 
     public function getLatestMessageCreatedAtAttribute()
     {
+       
         if ($this->latestMessage && isset($this->latestMessage->created_at)) {
             return convertMongoUTCDateTimeToIST($this->latestMessage->created_at);
         }
@@ -48,6 +49,7 @@ class ChatMessageMongoose extends Eloquent
 
     public function getLatestMessageUpdatedAtAttribute()
     {
+        
         if ($this->latestMessage && isset($this->latestMessage->updated_at)) {
             return convertMongoUTCDateTimeToIST($this->latestMessage->updated_at);
         }

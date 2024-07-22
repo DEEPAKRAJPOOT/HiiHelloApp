@@ -16,7 +16,7 @@ class ChatRoomResource extends JsonResource
      */
     public function toArray($request)
     {
-        // dd($this);
+        
         $this->authLatestMessage = null;
         $auth_id = $request->user() ? $request->user()->id : NULL;
         

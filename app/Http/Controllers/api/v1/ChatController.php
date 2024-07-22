@@ -81,7 +81,7 @@ class ChatController extends Controller
                         'participate_id'    =>  $participant_id,
                         'block_by'          => NULL,
                         'is_active'         => true,
-                        'vanish_mode'       => true,
+                        'vanish_mode'       => false,
                         'vanish_mode_by'    => NULL,
                         'disappear_mode'    => 'off',
                         'disappear_mode_by' => NULL,

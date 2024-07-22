@@ -8,6 +8,8 @@ use App\Models\{ChatMessageMongoose, UsersMongoose};
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use MongoDB\BSON\ObjectId;
+use Carbon\Carbon;
+use MongoDB\BSON\UTCDateTime;
 
 class ChatRoomResourceMongoose extends JsonResource
 {
@@ -19,7 +21,7 @@ class ChatRoomResourceMongoose extends JsonResource
      */
     public function toArray($request)
     {
-        // dd($this);
+        
         // Log::channel('mongodb')->debug('Fetching latest message', [
         //     'room_id' => $this->id,
         //     'creator_cleared_at' => $this->creator_cleared_at
@@ -41,15 +43,15 @@ class ChatRoomResourceMongoose extends JsonResource
                 ->orderBy('_id', 'desc')
                 ->first();
         } elseif($this->participate_id == $auth_id) {
-            // dd($this->_id);
-            $this->authLatestMessage = ChatMessageMongoose::select('custom_id', 'status', 'created_at', 'updated_at', 'deleted_at', 'expired_at', 'is_vanished', 'message','sender_id')
+
+                $this->authLatestMessage = ChatMessageMongoose::select('custom_id', 'status', 'created_at', 'updated_at', 'deleted_at', 'expired_at', 'is_vanished', 'message','sender_id')
                 ->with(['sender' => function ($query) {
                     $query->select('custom_id');
                 }])
                 ->withTrashed()
                 ->where('room_id', $roomId)
                 ->where(function($query){
-                    $query->where('is_vanished', false);
+                    $query->where('is_vanished', true);
                     $query->orWhere('status', '!=', 'read');
                 })
                 ->where(function($query) use ($auth_id) {
@@ -59,33 +61,37 @@ class ChatRoomResourceMongoose extends JsonResource
                 ->orderBy('_id', 'desc')
                 ->first();
 
+
             Log::channel('mongodb')->debug('Fetched latest message', [
                 'authLatestMessage' => $this->authLatestMessage
             ]);
+            
         } elseif($this->creator_id == $auth_id) {
-            // dd($this->_id);
+            
             $this->authLatestMessage = ChatMessageMongoose::select('custom_id', 'status', 'created_at', 'updated_at', 'deleted_at', 'expired_at', 'is_vanished', 'message','sender_id')
-                ->with(['sender' => function ($query) {
-                    $query->select('custom_id');
-                }])
-                ->withTrashed()
-                ->where('room_id', $roomId)
-                ->where(function($query){
-                    $query->where('is_vanished', false);
-                    $query->orWhere('status', '!=', 'read');
-                })
-                ->where(function($query) use ($auth_id) {
-                    $query->whereNull('sender_deleted_at');
-                    $query->orWhere('sender_id', '!=', $auth_id);
-                })
-                ->orderBy('_id', 'desc')
-                ->first();
+            ->with(['sender' => function ($query) {
+                $query->select('custom_id');
+            }])
+            ->withTrashed()
+            ->where('room_id', $roomId)
+            ->where(function($query){
+                $query->where('is_vanished', true);
+                $query->orWhere('status', '!=', 'read');
+            })
+            ->where(function($query) use ($auth_id) {
+                $query->whereNull('sender_deleted_at');
+                $query->orWhere('sender_id', '!=', $auth_id);
+            })
+            ->orderBy('_id', 'desc')
+            ->first();
+
 
             Log::channel('mongodb')->debug('Fetched latest message', [
                 'authLatestMessage' => $this->authLatestMessage
             ]);
         }
-        // dd($this->authLatestMessage);
+        
+        $lastMessageTimestamp = $this->convertTimeZone($this->authLatestMessage);
         return [
             'id'            =>  $this->_id,
             'is_active'     =>  $this->is_active ? $this->is_active == 'y' ? true : false : false,
@@ -115,8 +121,8 @@ class ChatRoomResourceMongoose extends JsonResource
                     'id'    =>  $this->getSender($this->authLatestMessage->sender_id)?? '',
                 ],
                 'chat_messages_count'   =>  $this->chat_messages_count ?? 0,
-                'created_at'  =>  $this->authLatestMessage->created_at ?? '',
-                'updated_at'  =>  $this->authLatestMessage->updated_at ?? '',
+                'created_at'  =>  $this->authLatestMessage->created_at??'',
+                'updated_at'  =>  $this->authLatestMessage->updated_at??'',
                 'deleted_at'  =>  $this->authLatestMessage->deleted_at ?? '',
                 'expired_at'  =>  $this->authLatestMessage->expired_at ?? '',
                 'is_vanished'  =>  (($this->authLatestMessage->is_vanished ?? 'n') == 'y')
@@ -137,6 +143,45 @@ class ChatRoomResourceMongoose extends JsonResource
                 'language'      =>  app()->getLocale(),
             ],
         ];
+    }
+
+    public function convertTimeZone($document) {
+        // Ensure $document is an object and contains created_at and updated_at
+        if (is_object($document) && isset($document->created_at) && isset($document->updated_at)) {
+            // Check if created_at and updated_at are instances of MongoDB\BSON\UTCDateTime
+            if ($document->created_at instanceof UTCDateTime) {
+                $created_at = $document->created_at->toDateTime();
+            } else {
+                // Handle the error or log it
+                // dd('Invalid created_at format', gettype($document->created_at), $document->created_at);
+                $created_at = null;
+            }
+    
+            if ($document->updated_at instanceof UTCDateTime) {
+                $updated_at = $document->updated_at->toDateTime();
+            } else {
+                // Handle the error or log it
+                // dd('Invalid updated_at format', gettype($document->updated_at), $document->updated_at);
+                $updated_at = null;
+            }
+    
+            // Convert to Carbon instance and set to IST if dates are valid
+            if ($created_at && $updated_at) {
+                $created_at_ist = Carbon::parse($created_at)->setTimezone('Asia/Kolkata');
+                $updated_at_ist = Carbon::parse($updated_at)->setTimezone('Asia/Kolkata');
+                
+                // Format the date
+                $created_at_formatted = $created_at_ist->format('Y-m-d H:i:s');
+                $updated_at_formatted = $updated_at_ist->format('Y-m-d H:i:s');
+                
+                return array('created_at'=>$created_at_formatted, 'updated_at'=>$updated_at_formatted);
+            } else {
+                return [];
+            }
+        } else {
+            // Handle the case where the document doesn't have the necessary fields
+            return [];
+        }
     }
 
     public function getSender($sender_id){
