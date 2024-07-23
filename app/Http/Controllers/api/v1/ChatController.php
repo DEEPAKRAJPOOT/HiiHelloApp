@@ -313,22 +313,6 @@ class ChatController extends Controller
                     } else {
                         $messagesQuery->withTrashed();
                     }
-<<<<<<< Updated upstream
-
-                    if (!empty($cleared_time)) {
-                        $messagesQuery->where('created_at', '>', $cleared_time);
-                    }
-                
-                    if ($room->_id == config('utility.chat.system_chat_room')) {
-                        $messagesQuery->where('receiver_id', $auth_id);
-                    } else {
-                        $messagesQuery->withTrashed();
-                    }
-                
-                    $messagesQuery->where('room_id', $roomId);
-                
-=======
->>>>>>> Stashed changes
                     // Log the query being executed
                     Log::channel('mongodb')->debug('Executing query', [
                         'query' => $messagesQuery->toSql(),
