@@ -40,12 +40,12 @@ class MigrateUsersToMongo extends Command
      */
     public function handle()
     {
-        // UsersMongoose::truncate();die;
+        UsersMongoose::truncate();
         // ChatRoomMongoose::truncate();
-        ChatMessageMongoose::truncate();die;
+        // ChatMessageMongoose::truncate();
         // Retrieve data from MySQL
         $users = User::select('id','custom_id','profile_photo','language_id','is_active','last_online')
-	      ->with(['userTranslation','language:id,lang_code'])->where('email','dayakargoud.bandari@saturdaytechnologies.io')->orWhereIn('contact_no',['7488618520','9205209548','9573791492','9326110491','9867175525'])->get();
+	      ->with(['userTranslation','language:id,lang_code'])->whereIn('email',['dayakargoud.bandari@saturdaytechnologies.io','krunal.vasundhara@gmail.com','rohan.vasundhara19@gmail.com'])->orWhereIn('contact_no',['7488618520','9205209548','9573791492','9326110491','9867175525'])->get();
         $userData=[];
         foreach($users as $user){
             $userData['user_id'] = $user->id;

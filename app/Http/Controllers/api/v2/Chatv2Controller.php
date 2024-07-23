@@ -53,29 +53,83 @@ class Chatv2Controller extends Controller
                         Log::channel('mongodb')->debug('Fetching latest message', [
                             'id' => $auth_id
                           ]);
-                    $rooms = ChatRoomMongoose::with('creator','participator','latestMessage.sender:id,custom_id')
-                    ->whereHas('chatMessages')
-                    // ->withCount('blockBy')
-                    ->where(function($query)use($auth_id){
-                        $query->where(function($q)use($auth_id){
-                            $q->whereCreatorId($auth_id)->whereNull('creator_deleted_at');
-                        });
-                        $query->orWhere(function($q)use($auth_id){
-                            $q->whereParticipateId($auth_id)->whereNull('participate_deleted_at');
-                        });
-                    });
-
-                    if(!empty($search)){
-                        $rooms->where(function($query)use($search){
-                            $query->whereHas('creator',function($q1)use($search){
-                                $q1->where('full_name','like','%'.$search.'%');
-                            })->orWhereHas('participator',function($q2)use($search){
-                                $q2->where('full_name','like','%'.$search.'%');
-                            });
-                        });
-                    }
-                    $count = $rooms->count();
-                    $rooms = $rooms->orderBy('updated_at','desc')->limit($limit)->offset($offset)->get();
+                          $matchStage = [
+                              '$or' => [
+                                  [
+                                      'creator_id' => $auth_id,
+                                      'creator_deleted_at' => null
+                                  ],
+                                  [
+                                      'participate_id' => $auth_id,
+                                      'participate_deleted_at' => null
+                                  ]
+                              ]
+                          ];
+                          
+                          $lookupCreatorStage = [
+                              '$lookup' => [
+                                  'from' => 'users_mongoose', // Collection name
+                                  'localField' => 'creator_id',
+                                  'foreignField' => 'user_id', // Assuming `user_id` is an integer
+                                  'as' => 'creator'
+                              ]
+                          ];
+                          
+                          $lookupParticipatorStage = [
+                              '$lookup' => [
+                                  'from' => 'users_mongoose', // Collection name
+                                  'localField' => 'participate_id',
+                                  'foreignField' => 'user_id', // Assuming `user_id` is an integer
+                                  'as' => 'participator'
+                              ]
+                          ];
+                          
+                          $lookupLatestMessageStage = [
+                              '$lookup' => [
+                                  'from' => 'chat_messages', // Collection name
+                                  'localField' => '_id',
+                                  'foreignField' => 'room_id',
+                                  'as' => 'latestMessage'
+                              ]
+                          ];
+                          
+                          $unwindCreatorStage = ['$unwind' => ['path' => '$creator', 'preserveNullAndEmptyArrays' => true]];
+                          $unwindParticipatorStage = ['$unwind' => ['path' => '$participator', 'preserveNullAndEmptyArrays' => true]];
+                          
+                          $sortStage = ['$sort' => ['updated_at' => -1]];
+                          $skipStage = ['$skip' => (int) $offset];
+                          $limitStage = ['$limit' => (int) $limit];
+                          
+                          $pipeline = [
+                              ['$match' => $matchStage],
+                              $lookupCreatorStage,
+                              $unwindCreatorStage,
+                              $lookupParticipatorStage,
+                              $unwindParticipatorStage,
+                              $lookupLatestMessageStage,
+                              $sortStage,
+                              $skipStage,
+                              $limitStage
+                          ];
+                          
+                          if (!empty($search)) {
+                              $searchStage = [
+                                  '$match' => [
+                                      '$or' => [
+                                          ['creator.full_name' => ['$regex' => $search, '$options' => 'i']],
+                                          ['participator.full_name' => ['$regex' => $search, '$options' => 'i']]
+                                      ]
+                                  ]
+                              ];
+                              array_splice($pipeline, 1, 0, [$searchStage]);
+                          }
+                          
+                          $rooms = ChatRoomMongoose::raw(function($collection) use ($pipeline) {
+                              return $collection->aggregate($pipeline);
+                          });
+                          
+                          $roomsArray = iterator_to_array($rooms);
+                        //   dd($roomsArray);
                     Log::channel('mongodb')->debug('Fetching latest message', [
                         'id' => $rooms
                       ]);
@@ -85,17 +139,17 @@ class Chatv2Controller extends Controller
                         });
                         $jsonData = json_encode($rooms->toArray());
                         $rooms = json_decode($jsonData);
-                        $this->redis->set($totalroomkey, $count, 'EX', 3600); 
-                        $this->redis->set($roomlistkey, $jsonData, 'EX', 3600); 
+                        // $this->redis->set($totalroomkey, $count, 'EX', 3600); 
+                        // $this->redis->set($roomlistkey, $jsonData, 'EX', 3600); 
                     }
                }
-                
+                // dd($rooms);
                 if(!empty($rooms)){
                     return (ChatRoomResourceMongoose::Collection($rooms))->additional([
                         'meta' => [
                             'limit'    => $limit,
                             'offset'   => $offset,
-                            'total'    => $count,
+                            'total'    => count($roomsArray),
                             'url'      => url()->current(),
                             'api'      => $this->getVersion(),
                             'language' => app()->getLocale(),

@@ -3,9 +3,7 @@
 namespace App\Http\Resources\v2;
 
 use Illuminate\Http\Resources\Json\JsonResource;
-
 use App\Models\{ChatMessageMongoose, UsersMongoose};
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use MongoDB\BSON\ObjectId;
 use Carbon\Carbon;
@@ -21,20 +19,15 @@ class ChatRoomResourceMongoose extends JsonResource
      */
     public function toArray($request)
     {
-        
-        // Log::channel('mongodb')->debug('Fetching latest message', [
-        //     'room_id' => $this->id,
-        //     'creator_cleared_at' => $this->creator_cleared_at
-        // ]);
-        $this->authLatestMessage = null;
-        // dd($this->_id);
-        $auth_id = $request->user() ? $request->user()->id : NULL;
+        $auth_id = $request->user() ? $request->user()->id : null;
 
         // Convert room_id to ObjectId if necessary
         $roomId = $this->_id instanceof ObjectId ? $this->_id : new ObjectId($this->_id);
-        
-        if($this->_id == config('utility.chat.system_chat_room')){
-            $this->authLatestMessage = ChatMessageMongoose::select('custom_id', 'status', 'created_at', 'updated_at', 'deleted_at', 'expired_at', 'is_vanished', 'message','sender_id')
+
+        $authLatestMessage = null;
+
+        if ($this->_id == config('utility.chat.system_chat_room')) {
+            $authLatestMessage = ChatMessageMongoose::select('custom_id', 'status', 'created_at', 'updated_at', 'deleted_at', 'expired_at', 'is_vanished', 'message','sender_id')
                 ->with(['sender' => function ($query) {
                     $query->select('custom_id');
                 }])
@@ -42,96 +35,76 @@ class ChatRoomResourceMongoose extends JsonResource
                 ->where('receiver_id', $auth_id)
                 ->orderBy('_id', 'desc')
                 ->first();
-        } elseif($this->participate_id == $auth_id) {
-
-                $this->authLatestMessage = ChatMessageMongoose::select('custom_id', 'status', 'created_at', 'updated_at', 'deleted_at', 'expired_at', 'is_vanished', 'message','sender_id')
+        } elseif ($this->participate_id == $auth_id) {
+            $authLatestMessage = ChatMessageMongoose::select('custom_id', 'status', 'created_at', 'updated_at', 'deleted_at', 'expired_at', 'is_vanished', 'message','sender_id')
                 ->with(['sender' => function ($query) {
                     $query->select('custom_id');
                 }])
                 ->withTrashed()
                 ->where('room_id', $roomId)
-                ->where(function($query){
+                ->where(function ($query) {
                     $query->where('is_vanished', true);
-                    $query->orWhere('status', '!=', 'read');
+                    // $query->orWhere('status', '!=', 'read');
                 })
-                ->where(function($query) use ($auth_id) {
+                ->where(function ($query) use ($auth_id) {
                     $query->whereNull('sender_deleted_at');
                     $query->orWhere('sender_id', '!=', $auth_id);
                 })
+                ->orWhere(function ($query) {
+                    $query->where('is_vanished', false);
+                    // $query->orWhere('status', '!=', 'read');
+                })
                 ->orderBy('_id', 'desc')
                 ->first();
-
-
-            Log::channel('mongodb')->debug('Fetched latest message', [
-                'authLatestMessage' => $this->authLatestMessage
-            ]);
-            
-        } elseif($this->creator_id == $auth_id) {
-            
-            $this->authLatestMessage = ChatMessageMongoose::select('custom_id', 'status', 'created_at', 'updated_at', 'deleted_at', 'expired_at', 'is_vanished', 'message','sender_id')
-            ->with(['sender' => function ($query) {
-                $query->select('custom_id');
-            }])
-            ->withTrashed()
-            ->where('room_id', $roomId)
-            ->where(function($query){
-                $query->where('is_vanished', true);
-                $query->orWhere('status', '!=', 'read');
-            })
-            ->where(function($query) use ($auth_id) {
-                $query->whereNull('sender_deleted_at');
-                $query->orWhere('sender_id', '!=', $auth_id);
-            })
-            ->orderBy('_id', 'desc')
-            ->first();
-
-
-            Log::channel('mongodb')->debug('Fetched latest message', [
-                'authLatestMessage' => $this->authLatestMessage
-            ]);
+        } elseif ($this->creator_id == $auth_id) {
+            $authLatestMessage = ChatMessageMongoose::select('custom_id', 'status', 'created_at', 'updated_at', 'deleted_at', 'expired_at', 'is_vanished', 'message','sender_id')
+                ->with(['sender' => function ($query) {
+                    $query->select('custom_id');
+                }])
+                ->withTrashed()
+                ->where('room_id', $roomId)
+                ->where(function ($query) {
+                    $query->where('is_vanished', true);
+                    // $query->orWhere('status', '!=', 'read');
+                })
+                ->where(function ($query) use ($auth_id) {
+                    $query->whereNull('sender_deleted_at');
+                    $query->orWhere('sender_id', '!=', $auth_id);
+                })
+                ->orWhere(function ($query) {
+                    $query->where('is_vanished', false);
+                    // $query->orWhere('status', '!=', 'read');
+                })
+                ->orderBy('_id', 'desc')
+                ->first();
         }
-        
-        $lastMessageTimestamp = $this->convertTimeZone($this->authLatestMessage);
+
+        $lastMessageTimestamp = $this->convertTimeZone($authLatestMessage);
+        // dd($this->participate_id);
         return [
             'id'            =>  $this->_id,
             'is_active'     =>  $this->is_active ? $this->is_active == 'y' ? true : false : false,
-            'is_blocked'    =>  (isset($this->block_by_count) && !empty($this->block_by_count))?$this->block_by_count:false,
-            'creator'  =>  [
-                'id'            =>  $this->creator ? $this->creator->custom_id : "",
-                'full_name'     =>  $this->creator ?$this->creator->full_name : "",
-                'profile'       =>  $this->creator ? $this->creator->profile_photo : "",
-                'language'      =>  [
-                    'lang_code' =>  $this->creator ? $this->creator->lang_code : "",
-                ],
-            ],
-            'participator'  =>  [
-                'id'            =>  $this->participator ? $this->participator->custom_id : "",
-                'full_name'     =>  $this->participator ? 
-                                        $this->participator->full_name : "",
-                'profile'       =>  $this->participator ? $this->participator->profile_photo : "",
-                'language'      =>  [
-                    'lang_code' =>  $this->participator ? $this->participator->lang_code : "",
-                ],
-            ],
-            'latest_message'    =>  $this->authLatestMessage ? [
-                'id'        =>  $this->authLatestMessage->custom_id ?? '',
-                'message'   =>  $this->authLatestMessage->getMessage() ?? null,
-                'status'    =>  strtr($this->authLatestMessage->status ?? '',['send'=>'sent','read'=>'seen']),
+            'is_blocked'    =>  (isset($this->block_by_count) && !empty($this->block_by_count)) ? $this->block_by_count : false,
+            'creator'  =>  $this->transformUser($this->creator_id ?? null),
+            'participator'  =>  $this->transformUser($this->participate_id ?? null),
+            'latest_message'    =>  $authLatestMessage ? [
+                'id'        =>  $authLatestMessage->custom_id ?? '',
+                'message'   =>  $authLatestMessage->getMessage() ?? null,
+                'status'    =>  strtr($authLatestMessage->status ?? '', ['send' => 'sent', 'read' => 'seen']),
                 'sender'  =>  [
-                    'id'    =>  $this->getSender($this->authLatestMessage->sender_id)?? '',
+                    'id'    =>  $this->getSender($authLatestMessage->sender_id) ?? '',
                 ],
                 'chat_messages_count'   =>  $this->chat_messages_count ?? 0,
-                'created_at'  =>  $this->authLatestMessage->created_at??'',
-                'updated_at'  =>  $this->authLatestMessage->updated_at??'',
-                'deleted_at'  =>  $this->authLatestMessage->deleted_at ?? '',
-                'expired_at'  =>  $this->authLatestMessage->expired_at ?? '',
-                'is_vanished'  =>  (($this->authLatestMessage->is_vanished ?? 'n') == 'y')
+                'created_at'  =>  $authLatestMessage->created_at ?? '',
+                'updated_at'  =>  $authLatestMessage->updated_at ?? '',
+                'deleted_at'  =>  $authLatestMessage->deleted_at ?? '',
+                'expired_at'  =>  $authLatestMessage->expired_at ?? '',
+                'is_vanished'  =>  (($authLatestMessage->is_vanished ?? 'n') == 'y')
             ] : null,
             'is_system_room' =>  ($this->_id == config('utility.chat.system_chat_room')),
             'vanish_mode'    =>  (($this->vanish_mode ?? 'n') == 'y'),
             'disappear_mode' =>  $this->disappear_mode ?? 'off',
         ];
-        return parent::toArray($request);
     }
 
     public function with($request)
@@ -145,6 +118,32 @@ class ChatRoomResourceMongoose extends JsonResource
         ];
     }
 
+    private function transformUser($user_id)
+    {
+        // dd($user_id);
+        $user = UsersMongoose::where('user_id',$user_id)->first();
+        if (!$user || empty($user)) {
+            return [
+                'id' => '',
+                'full_name' => '',
+                'profile' => '',
+                'language' => ['lang_code' => ''],
+            ];
+        }
+
+        // Ensure $user is an array and has the first element
+        $userData = is_array($user) && isset($user[0]) ? $user[0] : $user;
+
+        return [
+            'id'            =>  $userData['custom_id'] ?? "",
+            'full_name'     =>  $userData['full_name'] ?? "",
+            'profile'       =>  $userData['profile_photo'] ?? "",
+            'language'      =>  [
+                'lang_code' =>  $userData['lang_code'] ?? "",
+            ],
+        ];
+    }
+
     public function convertTimeZone($document) {
         // Ensure $document is an object and contains created_at and updated_at
         if (is_object($document) && isset($document->created_at) && isset($document->updated_at)) {
@@ -152,19 +151,15 @@ class ChatRoomResourceMongoose extends JsonResource
             if ($document->created_at instanceof UTCDateTime) {
                 $created_at = $document->created_at->toDateTime();
             } else {
-                // Handle the error or log it
-                // dd('Invalid created_at format', gettype($document->created_at), $document->created_at);
                 $created_at = null;
             }
-    
+
             if ($document->updated_at instanceof UTCDateTime) {
                 $updated_at = $document->updated_at->toDateTime();
             } else {
-                // Handle the error or log it
-                // dd('Invalid updated_at format', gettype($document->updated_at), $document->updated_at);
                 $updated_at = null;
             }
-    
+
             // Convert to Carbon instance and set to IST if dates are valid
             if ($created_at && $updated_at) {
                 $created_at_ist = Carbon::parse($created_at)->setTimezone('Asia/Kolkata');
@@ -174,20 +169,20 @@ class ChatRoomResourceMongoose extends JsonResource
                 $created_at_formatted = $created_at_ist->format('Y-m-d H:i:s');
                 $updated_at_formatted = $updated_at_ist->format('Y-m-d H:i:s');
                 
-                return array('created_at'=>$created_at_formatted, 'updated_at'=>$updated_at_formatted);
+                return ['created_at' => $created_at_formatted, 'updated_at' => $updated_at_formatted];
             } else {
                 return [];
             }
         } else {
-            // Handle the case where the document doesn't have the necessary fields
             return [];
         }
     }
 
-    public function getSender($sender_id){
-        if(!is_null($sender_id)){
-            $senderData = UsersMongoose::select('custom_id')->where('user_id',$sender_id)->first();
-            if(!empty($senderData)){
+    public function getSender($sender_id)
+    {
+        if (!is_null($sender_id)) {
+            $senderData = UsersMongoose::select('custom_id')->where('user_id', $sender_id)->first();
+            if (!empty($senderData)) {
                 return $senderData->custom_id;
             }
         }
