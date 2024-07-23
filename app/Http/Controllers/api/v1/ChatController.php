@@ -293,24 +293,20 @@ class ChatController extends Controller
                         'reply_message_id', 'reply_type', 'reply_value', 'reply_message_file_path',
                         'reply_message_file_type'
                     )
-                    ->where(function($expiredQuery) {
-                        $expiredQuery->where('is_vanished', false);
+                    ->where(function($expired_query){
+                        $expired_query->where('is_vanished',false);
+                        $expired_query->orWhere('status','!=','read');
                     })
-                    ->where(function($senderDeletedQuery) use ($auth_id) {
-                        $senderDeletedQuery->whereNull('sender_deleted_at')
-                                           ->where('sender_id', '!=', $auth_id);
-                    })->orWhere(function($senderDeletedQuery) use ($auth_id) {
-                        $senderDeletedQuery->whereNull('sender_deleted_at')
-                                           ->where('receiver_id', '!=', $auth_id);
+                    ->where(function($sender_deleted_query)use($auth_id){
+                        $sender_deleted_query->whereNull('sender_deleted_at');
+                        $sender_deleted_query->orWhere('sender_id','!=',$auth_id);
                     });
-                    
-                    if (!empty($cleared_time)) {
-                        $messagesQuery->where('created_at', '>', $cleared_time);
+                    if(!empty($cleared_time)){
+                        $messagesQuery->where('created_at','>',$cleared_time);
                     }
-                    
-                    if ($room->id == config('utility.chat.system_chat_room')) {
-                        $messagesQuery->where('receiver_id', $auth_id);
-                    } else {
+                    if($room->id == config('utility.chat.system_chat_room')){
+                        $messagesQuery->where('receiver_id',$auth_id);
+                    }else{
                         $messagesQuery->withTrashed();
                     }
                     // Log the query being executed
