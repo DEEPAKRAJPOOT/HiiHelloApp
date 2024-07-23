@@ -41,23 +41,44 @@ class MigrateUsersToMongo extends Command
     public function handle()
     {
         UsersMongoose::truncate();
-        // ChatRoomMongoose::truncate();
-        // ChatMessageMongoose::truncate();
-        // Retrieve data from MySQL
-        $users = User::select('id','custom_id','profile_photo','language_id','is_active','last_online')
-	      ->with(['userTranslation','language:id,lang_code'])->whereIn('email',['dayakargoud.bandari@saturdaytechnologies.io','krunal.vasundhara@gmail.com','rohan.vasundhara19@gmail.com'])->orWhereIn('contact_no',['7488618520','9205209548','9573791492','9326110491','9867175525'])->get();
-        $userData=[];
-        foreach($users as $user){
-            $userData['user_id'] = $user->id;
-            $userData['custom_id'] = $user->custom_id;
-            $userData['full_name'] = $user->userTranslation->full_name?$user->userTranslation->full_name : "";
-            $userData['profile_photo'] = $user->profile_photo;
-            $userData['language_id'] = $user->language->id?$user->language->id : "";
-            $userData['lang_code'] = $user->language->lang_code?$user->language->lang_code:"";
-            $userData['is_active'] = ($user->is_active == 'y')?true:false;
-            $userData['last_online'] = $user->last_online;
-            $userData['deleted_at'] = NULL;
-            $usersSaved = UsersMongoose::firstOrCreate($userData);
+
+        // Define the users to exclude
+        $excludedEmails = [
+            'dayakargoud.bandari@saturdaytechnologies.io',
+            'krunal.vasundhara@gmail.com',
+            'rohan.vasundhara19@gmail.com'
+        ];
+
+        $excludedContacts = [
+            '7488618520',
+            '9205209548',
+            '9573791492',
+            '9326110491',
+            '9867175525'
+        ];
+
+        // Retrieve data from MySQL, excluding specified users
+        $users = User::select('id', 'custom_id', 'profile_photo', 'language_id', 'is_active', 'last_online')
+            ->with(['userTranslation', 'language:id,lang_code'])
+            ->whereNotIn('email', $excludedEmails)
+            ->whereNotIn('contact_no', $excludedContacts)
+            ->get();
+
+        $userData = [];
+        foreach($users as $user) {
+            $userData = [
+                'user_id' => $user->id,
+                'custom_id' => $user->custom_id,
+                'full_name' => $user->userTranslation->full_name ?? "",
+                'profile_photo' => $user->profile_photo,
+                'language_id' => $user->language->id ?? "",
+                'lang_code' => $user->language->lang_code ?? "",
+                'is_active' => ($user->is_active == 'y') ? true : false,
+                'last_online' => $user->last_online,
+                'deleted_at' => null,
+            ];
+
+            UsersMongoose::firstOrCreate($userData);
         }
 
         $this->info('Users migrated successfully.');

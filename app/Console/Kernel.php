@@ -89,6 +89,9 @@ class Kernel extends ConsoleKernel
         
         */
 
+        // Schedule the migration command to run once, checking the flag file
+        $schedule->command('migrate:users')->withoutOverlapping()->runInBackground();
+
         // Google Translate Command
         $schedule->call(function () {
             $scheculeCommand = new GoogleTranslation;
