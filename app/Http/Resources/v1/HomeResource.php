@@ -14,7 +14,8 @@ class HomeResource extends JsonResource
      * @return array|\Illuminate\Contracts\Support\Arrayable|\JsonSerializable
      */
     public function toArray($request)
-    {          
+    {       
+        // print_r($this->custom_id);   
         return [
             'id'                =>  $this->custom_id ?? "",
             'full_name'         =>  $this->full_name ? $this->full_name : "",
@@ -26,7 +27,7 @@ class HomeResource extends JsonResource
             'is_photo_verify'   =>  ($this->verify_photo_status=='verified') ? true : false,
             'trusted_score'     =>  $this->trusted_score,
             'location'          =>  new LocationResource($this->location),
-            'interests'         =>  HomeInterestResource::collection($this->interests),
+            'interests'         =>  (!empty($this->interests))?HomeInterestResource::collection($this->interests):[],
             'profile_photo'     =>  generateURL($this->profile_photo) ?? "",           
             'media' =>  [
                 'profile_images'    =>  $this->getProfileImages(),
