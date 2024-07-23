@@ -313,6 +313,7 @@ class ChatController extends Controller
                     } else {
                         $messagesQuery->withTrashed();
                     }
+<<<<<<< Updated upstream
 
                     if (!empty($cleared_time)) {
                         $messagesQuery->where('created_at', '>', $cleared_time);
@@ -326,6 +327,8 @@ class ChatController extends Controller
                 
                     $messagesQuery->where('room_id', $roomId);
                 
+=======
+>>>>>>> Stashed changes
                     // Log the query being executed
                     Log::channel('mongodb')->debug('Executing query', [
                         'query' => $messagesQuery->toSql(),
