@@ -26,6 +26,11 @@ class HomeResource extends JsonResource
             'is_contact_verify' =>  ($this->contactVerifyStatus()=='verified') ? true : false,
             'is_photo_verify'   =>  ($this->verify_photo_status=='verified') ? true : false,
             'trusted_score'     =>  $this->trusted_score,
+<<<<<<< Updated upstream
+=======
+            'relationship_status_id'=> (isset($this->relationship_status_id))?$this->relationship_status_id:null,
+            'education_id'      => (isset($this->education_id))?$this->education_id:null,
+>>>>>>> Stashed changes
             'location'          =>  new LocationResource($this->location),
             'interests'         =>  (!empty($this->interests))?HomeInterestResource::collection($this->interests):[],
             'profile_photo'     =>  generateURL($this->profile_photo) ?? "",           
@@ -33,8 +38,8 @@ class HomeResource extends JsonResource
                 'profile_images'    =>  $this->getProfileImages(),
                 'profile_videos'    =>  $this->getProfileVideos(),
                 'profile_voice'     =>  [
-                    'voice'         =>  generateURL($this->voice),
-                    'voice_answer'  =>  $this->voice_answer ?? "",
+                    'voice'         =>  (isset($this->voice))?generateURL($this->voice):null,
+                    'voice_answer'  =>  (isset($this->voice_answer))?generateURL($this->voice_answer):null ?? "",
                 ],
             ],
             'flags'             =>  [
