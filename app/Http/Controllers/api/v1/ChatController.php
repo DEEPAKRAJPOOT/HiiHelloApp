@@ -285,6 +285,7 @@ class ChatController extends Controller
                 //     $messages = json_decode($jsonData);
                 //     $count = $this->redis->get($totalChatKey); 
                 // }else{
+                    // ->orWhere('status', '!=', 'read')
                     // DB::enableQueryLog();
                     $messagesQuery = ChatMessageMongoose::select(
                         'id', 'custom_id', 'room_id', 'sender_id', 'message', 'status', 'created_at',
@@ -293,12 +294,14 @@ class ChatController extends Controller
                         'reply_message_file_type'
                     )
                     ->where(function($expiredQuery) {
-                        $expiredQuery->where('is_vanished', true)
-                                     ->orWhere('status', '!=', 'read');
+                        $expiredQuery->where('is_vanished', false);
                     })
                     ->where(function($senderDeletedQuery) use ($auth_id) {
                         $senderDeletedQuery->whereNull('sender_deleted_at')
-                                           ->orWhere('sender_id', '!=', $auth_id);
+                                           ->where('sender_id', '!=', $auth_id);
+                    })->orWhere(function($senderDeletedQuery) use ($auth_id) {
+                        $senderDeletedQuery->whereNull('sender_deleted_at')
+                                           ->where('receiver_id', '!=', $auth_id);
                     });
                     
                     if (!empty($cleared_time)) {
