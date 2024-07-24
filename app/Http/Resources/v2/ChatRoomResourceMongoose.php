@@ -27,7 +27,7 @@ class ChatRoomResourceMongoose extends JsonResource
         $authLatestMessage = null;
 
         if ($this->_id == config('utility.chat.system_chat_room')) {
-            $authLatestMessage = ChatMessageMongoose::select('custom_id', 'status', 'created_at', 'updated_at', 'deleted_at', 'expired_at', 'is_vanished', 'message','sender_id')
+            $authLatestMessage = ChatMessageMongoose::select('custom_id', 'status', 'created_at', 'updated_at', 'deleted_at', 'expired_at', 'is_vanished', 'message','sender_id','created_on')
                 ->with(['sender' => function ($query) {
                     $query->select('custom_id');
                 }])
@@ -37,7 +37,7 @@ class ChatRoomResourceMongoose extends JsonResource
                 ->first();
         } elseif ($this->participate_id == $auth_id) {
             
-            $authLatestMessage = ChatMessageMongoose::select('custom_id', 'status', 'created_at', 'updated_at', 'deleted_at', 'expired_at', 'is_vanished', 'message','sender_id')
+            $authLatestMessage = ChatMessageMongoose::select('custom_id', 'status', 'created_at', 'updated_at', 'deleted_at', 'expired_at', 'is_vanished', 'message','sender_id','created_on')
                 ->with(['sender' => function ($query) {
                     $query->select('custom_id');
                 }])
@@ -54,7 +54,7 @@ class ChatRoomResourceMongoose extends JsonResource
                 ->orderBy('_id', 'desc')
                 ->first();
         } elseif ($this->creator_id == $auth_id) {
-            $authLatestMessage = ChatMessageMongoose::select('custom_id', 'status', 'created_at', 'updated_at', 'deleted_at', 'expired_at', 'is_vanished', 'message','sender_id')
+            $authLatestMessage = ChatMessageMongoose::select('custom_id', 'status', 'created_at', 'updated_at', 'deleted_at', 'expired_at', 'is_vanished', 'message','sender_id','created_on')
                 ->with(['sender' => function ($query) {
                     $query->select('custom_id');
                 }])
@@ -72,7 +72,7 @@ class ChatRoomResourceMongoose extends JsonResource
                 ->first();
         }
 
-        $lastMessageTimestamp = $this->convertTimeZone($authLatestMessage);
+        // $lastMessageTimestamp = $this->convertTimeZone($authLatestMessage);
         // dd($this->participate_id);
         return [
             'id'            =>  $this->_id,
@@ -88,10 +88,10 @@ class ChatRoomResourceMongoose extends JsonResource
                     'id'    =>  $this->getSender($authLatestMessage->sender_id) ?? '',
                 ],
                 'chat_messages_count'   =>  $this->chat_messages_count ?? 0,
-                'created_at'  =>  $authLatestMessage->created_at ?? '',
-                'updated_at'  =>  $authLatestMessage->updated_at ?? '',
-                'deleted_at'  =>  $authLatestMessage->deleted_at ?? '',
-                'expired_at'  =>  $authLatestMessage->expired_at ?? '',
+                'created_at'  =>  $authLatestMessage->created_on ? $this->convertTimeZone($authLatestMessage->created_on) : '',
+                'updated_at'  =>  $authLatestMessage->updated_at ? $this->convertTimeZone($authLatestMessage->updated_at) : '',
+                'deleted_at'  =>  $authLatestMessage->deleted_at ? $this->convertTimeZone($authLatestMessage->deleted_at) : '',
+                'expired_at'  =>  $authLatestMessage->expired_at ? $this->convertTimeZone($authLatestMessage->deleted_at) : '',
                 'is_vanished'  =>  (($authLatestMessage->is_vanished ?? 'n') == 'y')
             ] : null,
             'is_system_room' =>  ($this->_id == config('utility.chat.system_chat_room')),
@@ -137,7 +137,7 @@ class ChatRoomResourceMongoose extends JsonResource
         ];
     }
 
-    public function convertTimeZone($document) {
+    /*public function convertTimeZone($document) {
         // Ensure $document is an object and contains created_at and updated_at
         if (is_object($document) && isset($document->created_at) && isset($document->updated_at)) {
             // Check if created_at and updated_at are instances of MongoDB\BSON\UTCDateTime
@@ -169,7 +169,7 @@ class ChatRoomResourceMongoose extends JsonResource
         } else {
             return [];
         }
-    }
+    }*/
 
     public function getSender($sender_id)
     {
@@ -181,5 +181,12 @@ class ChatRoomResourceMongoose extends JsonResource
         }
 
         return "";
+    }
+
+    public function convertTimeZone($utcTimestamp){
+        // $utcTimestamp = '2024-07-24 04:51:47';
+        $istTimestamp = Carbon::createFromFormat('Y-m-d H:i:s', $utcTimestamp, 'UTC')->setTimezone('Asia/Kolkata');
+
+        return $istTimestamp->toDateTimeString(); // Outputs the date and time in IST
     }
 }

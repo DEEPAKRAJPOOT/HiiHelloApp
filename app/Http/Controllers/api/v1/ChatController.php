@@ -14,6 +14,8 @@ use App\Http\Resources\v1\{ChatRoomResource, ChatMessageResource, ChatRoomMongoR
 use App\Http\Requests\Api\Chat\{CreateRoomRequest, ChatMessagesRequest, ClearRoomRequest, DeleteRoomRequest, GetRoomRequest, DisappearModeRequest, VanishModeRequest};
 use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\Log;
+use Jenssegers\Mongodb\Eloquent\Model as EloquentModel;
+use Jenssegers\Mongodb\Eloquent\Builder as EloquentBuilder;
 use DB;
 
 class ChatController extends Controller
@@ -226,62 +228,42 @@ class ChatController extends Controller
             // try {
                 $user_type = 'participant';
                 $cleared_time = '';
-                $auth_id = $request->user() ? $request->user()->id : NULL;
-                // $paginate = (int)$request->limit+(int)$request->offset;
-                // $chatRoomKey = 'chat/room/'.$auth_id.':'.$request->room.'-'.$auth_id.'chatmessageChatRoom';
-                // $key = 'chat/message/'.$auth_id.':'.$request->room.'-'.$auth_id.'chatmessage'.$paginate;
-                // $callLogKey = 'chat/calllog/'.$auth_id.':'.$request->room.'-'.$auth_id.'chatmessageCallLog';
-                // $totalChatKey = 'chat/message/'.$auth_id.':'.$request->room.'-'.$auth_id.'totalchat';
-                
-                // $chatRoomData = $this->redis->get($chatRoomKey);
-                $participatorTime = '';$creatorTime = '';
-                // if($chatRoomData){
-                //     $room = json_decode($chatRoomData);
-                //     if(!empty($room)){
-                //         // dd($room);
-                //         $participatorTime = $room->participatorTime;
-                //         $creatorTime = $room->creatorTime;
-                //     }
-                // }else{
-                      $roomId = new ObjectId($request->room);
-                    //   Log::channel('mongodb')->debug('Fetching latest message', [
-                    //     'id' => $roomId
-                    //   ]);
-                    $room = ChatRoomMongoose::where('_id',$roomId)->whereIsActive(true)->firstOrFail();
-                    if(!empty($room)){
-                        // dd($room->creator_id,$room->participate_id,$auth_id);
-                        if($room->creator_id == $auth_id){
-                            $participatorTime =  $room->participator->lastOnlineTimeStamp();
-                        }
-                        
-                        if($room->participate_id == $auth_id){
+                $auth_id = $request->user() ? $request->user()->id : null;
+                $limit = (int)($request->limit ?? config('utility.pagination.limit'));
+                $offset = (int)($request->offset ?? config('utility.pagination.offset'));
 
-                            $creatorTime = $room->creator->lastOnlineTimeStamp();
-                        }
-                        $roomData = $room->toArray();
-                        $roomData['participatorTime'] = $participatorTime;
-                        $roomData['creatorTime'] = $creatorTime;
-                        // Log the result
-                        // Log::channel('mongodb')->debug('Fetched message', [
-                        //     'authMessage' => $room
-                        // ]);
-                        // dd($roomData);
-                        // $this->redis->set($chatRoomKey, json_encode((object)$roomData), 'EX', 3600);
-                    } 
-                //}
-                if($room->creator_id == $auth_id){
-                    $user_type = 'creator';
-                    $cleared_time  = $room->creator_cleared_at;
+                $participatorTime = '';
+                $creatorTime = '';
+
+                $roomId = new ObjectId($request->room);
+                $room = ChatRoomMongoose::where('_id', $roomId)->whereIsActive(true)->firstOrFail();
+                if ($room) {
+                    if ($room->creator_id == $auth_id) {
+                        $participatorTime = $room->participator->lastOnlineTimeStamp();
+                    }
+
+                    if ($room->participate_id == $auth_id) {
+                        $creatorTime = $room->creator->lastOnlineTimeStamp();
+                    }
+
+                    $roomData = $room->toArray();
+                    $roomData['participatorTime'] = $participatorTime;
+                    $roomData['creatorTime'] = $creatorTime;
                 }
 
-                if($room->participate_id == $auth_id){
+                if ($room->creator_id == $auth_id) {
+                    $user_type = 'creator';
+                    $cleared_time = $room->creator_cleared_at;
+                }
+
+                if ($room->participate_id == $auth_id) {
                     $cleared_time = $room->participate_cleared_at;
                 }
-                
+
                 // $jsonData = $this->redis->get($key);
                 // $messages=[];
                 // if($jsonData){
-                    
+
                 //     $messages = json_decode($jsonData);
                 //     $count = $this->redis->get($totalChatKey); 
                 // }else{
@@ -291,7 +273,8 @@ class ChatController extends Controller
                         'id', 'custom_id', 'room_id', 'sender_id', 'message', 'status', 'created_at',
                         'updated_at', 'deleted_at', 'is_vanished', 'reply_sender_id', 'reply_sender_name',
                         'reply_message_id', 'reply_type', 'reply_value', 'reply_message_file_path',
-                        'reply_message_file_type'
+                        'reply_message_file_type',
+                        'created_on'
                     )
                     ->where(function($expired_query){
                         $expired_query->where('is_vanished',false);
@@ -303,7 +286,7 @@ class ChatController extends Controller
                     });
                     if(!empty($cleared_time)){
                         $messagesQuery->where('created_at','>',$cleared_time);
-                    }
+                }
                     if($room->id == config('utility.chat.system_chat_room')){
                         $messagesQuery->where('receiver_id',$auth_id);
                     }else{
@@ -313,9 +296,9 @@ class ChatController extends Controller
                     Log::channel('mongodb')->debug('Executing query', [
                         'query' => $messagesQuery->toSql(),
                         'bindings' => $messagesQuery->getBindings()
-                    ]);
-                    
-                    
+                ]);
+
+                  $messagesQuery->orderBy('created_at','desc');
                     // Execute the query and fetch results
                     $count = $messagesQuery->count();
                     $messages = $messagesQuery->limit($request->limit ?? config('utility.pagination.limit'))
@@ -333,7 +316,7 @@ class ChatController extends Controller
                         // $this->redis->set($key, $jsonData, 'EX', 3600); 
                     }   
                 //}
-                
+
                 $callLog = null;
                 // $callLogData = $this->redis->get($callLogKey);
                 // if($callLogData){
@@ -346,7 +329,7 @@ class ChatController extends Controller
                 //     if(!empty($callLog)){
                 //         $this->redis->set($callLogKey, json_encode((object)$callLog->toArray()), 'EX', 3600);
                 //     }
-                     
+
                 // }
                 if (!empty($messages)) {
                     return (ChatMessageMongoResource::Collection($messages))->additional([

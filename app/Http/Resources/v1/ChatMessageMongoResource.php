@@ -16,7 +16,7 @@ class ChatMessageMongoResource extends JsonResource
      */
     public function toArray($request)
     {
-        // dd(Carbon::parse($this->created_at)->toDateTimeString());
+        // dd($this);
         $resource =  [
             'id'        =>  $this->_id ?? "",
             'message'   =>  $this->getMessage($this->message) ?? NULL,
@@ -24,7 +24,7 @@ class ChatMessageMongoResource extends JsonResource
             'sender'  =>  [
                 'id'    =>  $this->getSender($this->sender_id),//$this->sender ? $this->sender->custom_id : "",
             ],
-            'created_at'  =>  $this->created_at?$this->convertTimeZone($this->created_at) : "",
+            'created_at'  =>  $this->created_on?$this->convertTimeZone($this->created_on) : "",
             'updated_at'  =>  $this->updated_at?$this->convertTimeZone($this->updated_at) : "",
             'deleted_at'  =>  $this->deleted_at ?? "",
             'is_vanished' =>  (($this->is_vanished ?? 'n') == 'y')

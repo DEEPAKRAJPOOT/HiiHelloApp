@@ -41,8 +41,8 @@ class MigrateUsersToMongo extends Command
     public function handle()
     {
         // UsersMongoose::truncate();
-        ChatRoomMongoose::truncate();
-        ChatMessageMongoose::truncate();
+        // ChatRoomMongoose::truncate();
+        ChatMessageMongoose::truncate();die;
 
 
         // Define the users to exclude
