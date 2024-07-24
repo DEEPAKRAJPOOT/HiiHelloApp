@@ -24,8 +24,8 @@ class ChatMessageMongoResource extends JsonResource
             'sender'  =>  [
                 'id'    =>  $this->getSender($this->sender_id),//$this->sender ? $this->sender->custom_id : "",
             ],
-            'created_at'  =>  $this->created_at ?? "",
-            'updated_at'  =>  $this->updated_at ?? "",
+            'created_at'  =>  $this->created_at?$this->convertTimeZone($this->created_at) : "",
+            'updated_at'  =>  $this->updated_at?$this->convertTimeZone($this->updated_at) : "",
             'deleted_at'  =>  $this->deleted_at ?? "",
             'is_vanished' =>  (($this->is_vanished ?? 'n') == 'y')
         ];
@@ -81,5 +81,12 @@ class ChatMessageMongoResource extends JsonResource
         }
 
         return "";
+    }
+
+    public function convertTimeZone($utcTimestamp){
+        // $utcTimestamp = '2024-07-24 04:51:47';
+        $istTimestamp = Carbon::createFromFormat('Y-m-d H:i:s', $utcTimestamp, 'UTC')->setTimezone('Asia/Kolkata');
+
+        return $istTimestamp->toDateTimeString(); // Outputs the date and time in IST
     }
 }
