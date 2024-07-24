@@ -36,6 +36,7 @@ class ChatRoomResourceMongoose extends JsonResource
                 ->orderBy('_id', 'desc')
                 ->first();
         } elseif ($this->participate_id == $auth_id) {
+            
             $authLatestMessage = ChatMessageMongoose::select('custom_id', 'status', 'created_at', 'updated_at', 'deleted_at', 'expired_at', 'is_vanished', 'message','sender_id')
                 ->with(['sender' => function ($query) {
                     $query->select('custom_id');
@@ -43,16 +44,12 @@ class ChatRoomResourceMongoose extends JsonResource
                 ->withTrashed()
                 ->where('room_id', $roomId)
                 ->where(function ($query) {
-                    $query->where('is_vanished', true);
-                    // $query->orWhere('status', '!=', 'read');
+                    $query->where('is_vanished', false);
+                    $query->orWhere('status', '!=', 'read');
                 })
                 ->where(function ($query) use ($auth_id) {
                     $query->whereNull('sender_deleted_at');
                     $query->orWhere('sender_id', '!=', $auth_id);
-                })
-                ->orWhere(function ($query) {
-                    $query->where('is_vanished', false);
-                    // $query->orWhere('status', '!=', 'read');
                 })
                 ->orderBy('_id', 'desc')
                 ->first();
@@ -64,16 +61,12 @@ class ChatRoomResourceMongoose extends JsonResource
                 ->withTrashed()
                 ->where('room_id', $roomId)
                 ->where(function ($query) {
-                    $query->where('is_vanished', true);
-                    // $query->orWhere('status', '!=', 'read');
+                    $query->where('is_vanished', false);
+                    $query->orWhere('status', '!=', 'read');
                 })
                 ->where(function ($query) use ($auth_id) {
                     $query->whereNull('sender_deleted_at');
                     $query->orWhere('sender_id', '!=', $auth_id);
-                })
-                ->orWhere(function ($query) {
-                    $query->where('is_vanished', false);
-                    // $query->orWhere('status', '!=', 'read');
                 })
                 ->orderBy('_id', 'desc')
                 ->first();

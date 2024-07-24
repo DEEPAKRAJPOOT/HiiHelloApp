@@ -40,7 +40,10 @@ class MigrateUsersToMongo extends Command
      */
     public function handle()
     {
-        UsersMongoose::truncate();
+        // UsersMongoose::truncate();
+        ChatRoomMongoose::truncate();
+        // ChatMessageMongoose::truncate();die;
+
 
         // Define the users to exclude
         $excludedEmails = [
@@ -56,14 +59,14 @@ class MigrateUsersToMongo extends Command
             '9326110491',
             '9867175525'
         ];
-
+        DB::enableQueryLog();
         // Retrieve data from MySQL, excluding specified users
         $users = User::select('id', 'custom_id', 'profile_photo', 'language_id', 'is_active', 'last_online')
             ->with(['userTranslation', 'language:id,lang_code'])
             ->whereNotIn('email', $excludedEmails)
             ->whereNotIn('contact_no', $excludedContacts)
             ->get();
-
+        // dd(DB::getQueryLog());
         $userData = [];
         foreach($users as $user) {
             $userData = [

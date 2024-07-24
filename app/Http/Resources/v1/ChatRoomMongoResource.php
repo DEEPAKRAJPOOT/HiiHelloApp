@@ -3,6 +3,7 @@
 namespace App\Http\Resources\v1;
 
 use Illuminate\Http\Resources\Json\JsonResource;
+use App\Models\{ChatMessageMongoose, UsersMongoose};
 use Carbon\Carbon;
 use MongoDB\BSON\UTCDateTime as MongoDateTime;
 
@@ -16,31 +17,13 @@ class ChatRoomMongoResource extends JsonResource
      */
     public function toArray($request)
     {
-        // dd($this->latest_message);
+        // dd($this);
         return [
             'id'            =>  $this->_id,
             'is_active'     =>  $this->is_active,
             'is_blocked'    =>  isset($this->block_by_count)?$this->block_by_count ? $this->block_by_count > 0 ? true : false : false:false,
-            'creator'  =>  [
-                'id'            =>  $this->creator ? $this->creator->custom_id : "",
-                'full_name'     =>  $this->creator ? 
-                                        $this->creator->full_name ? $this->creator->full_name : ""
-                                    : "",
-                'profile'       =>  $this->creator ? $this->creator->profile_photo : "",
-                'language'      =>  [
-                    'lang_code' =>  $this->creator ? $this->creator->lang_code ? $this->creator->lang_code : "": "",
-                ],
-            ],
-            'participator'  =>  [
-                'id'            =>  $this->participator ? $this->participator->custom_id : "",
-                'full_name'     =>  $this->participator ? 
-                                        $this->participator->full_name ? $this->participator->full_name : ""
-                                    : "",
-                'profile'       =>  $this->participator ? $this->participator->profile_photo : "",
-                'language'      =>  [
-                    'lang_code' =>  $this->participator ? $this->participator->lang_code ? $this->participator->lang_code : "": "",
-                ],
-            ],
+            'creator'  =>  $this->transformUser($this->creator_id ?? null),
+            'participator'  =>  $this->transformUser($this->participate_id ?? null),
             'latest_message'    =>  [
                 'id'        =>  $this->latestMessage->id ?? '',
                 'message'   =>  $this->latestMessage ? ($this->latestMessage->getMessage() ?? null) : null,
@@ -66,6 +49,33 @@ class ChatRoomMongoResource extends JsonResource
                 'api'           =>  'v.1.0',
                 'url'           =>  url()->current(),
                 'language'      =>  app()->getLocale(),
+            ],
+        ];
+    }
+
+
+    private function transformUser($user_id)
+    {
+        // dd($user_id);
+        $user = UsersMongoose::where('user_id',$user_id)->first();
+        if (!$user || empty($user)) {
+            return [
+                'id' => '',
+                'full_name' => '',
+                'profile' => '',
+                'language' => ['lang_code' => ''],
+            ];
+        }
+
+        // Ensure $user is an array and has the first element
+        $userData = is_array($user) && isset($user[0]) ? $user[0] : $user;
+
+        return [
+            'id'            =>  $userData['custom_id'] ?? "",
+            'full_name'     =>  $userData['full_name'] ?? "",
+            'profile'       =>  $userData['profile_photo'] ?? "",
+            'language'      =>  [
+                'lang_code' =>  $userData['lang_code'] ?? "",
             ],
         ];
     }
