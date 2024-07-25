@@ -274,7 +274,7 @@ class ChatController extends Controller
                         'updated_at', 'deleted_at', 'is_vanished', 'reply_sender_id', 'reply_sender_name',
                         'reply_message_id', 'reply_type', 'reply_value', 'reply_message_file_path',
                         'reply_message_file_type',
-                        'created_on'
+                        'created_on', 'updated_on'
                     )
                     ->where(function($expired_query){
                         $expired_query->where('is_vanished',false);
@@ -392,10 +392,10 @@ class ChatController extends Controller
                 $auth_id = $request->user() ? $request->user()->id : NULL;
                 $pattern = 'hi_hello_database_chat/room/roomList/'.$auth_id.':*';
                 $totalroomkey = $auth_id.'_totalroom:*';
-               
+                $roomId = new ObjectId($request->room_id);
                 $this->deleteCacheByPattern($pattern);
                 $this->deleteCacheByPattern($totalroomkey);
-                $room = ChatRoomMongoose::where('_id',$request->room_id)
+                $room = ChatRoomMongoose::where('_id',$roomId)
                     ->where(function ($query) use ($auth_id) {
                         $query->where('creator_id', $auth_id)
                             ->orWhere('participate_id', $auth_id)
@@ -403,7 +403,7 @@ class ChatController extends Controller
                     })->firstOrFail();
 
                 if($room->id == config('utility.chat.system_chat_room')){
-                    ChatMessageMongoose::where('room_id',$room->id)->where('receiver_id',$auth_id)->delete();
+                    ChatMessageMongoose::where('room_id',ObjectId($room->id))->where('receiver_id',$auth_id)->delete();
                 }else{
                     if($room->creator_id == $auth_id){
                         $room->creator_cleared_at = now();
@@ -458,18 +458,17 @@ class ChatController extends Controller
                 $auth_id = $request->user() ? $request->user()->id : NULL;
                 $pattern = 'hi_hello_database_chat/room/roomList/'.$auth_id.':*';
                 $totalroomkey = $auth_id.'_totalroom:*';
-               
+                $roomId = new ObjectId($request->room_id);
                 $this->deleteCacheByPattern($pattern);
                 $this->deleteCacheByPattern($totalroomkey);
-                $room = ChatRoomMongoose::where('_id',$request->room_id)
+                $room = ChatRoomMongoose::where('_id',$roomId)
                     ->where(function ($query) use ($auth_id) {
                         $query->where('creator_id', $auth_id)
                             ->orWhere('participate_id', $auth_id)
                             ->orWhere('_id', config('utility.chat.system_chat_room'));
                     })->firstOrFail();
-
                 if($room->id == config('utility.chat.system_chat_room')){
-                    ChatMessageMongoose::where('room_id',$room->id)->where('receiver_id',$auth_id)->delete();
+                    ChatMessageMongoose::where('room_id',ObjectId($room->id))->where('receiver_id',$auth_id)->delete();
                 }else{
                 
                     if($room->creator_id == $auth_id){
@@ -621,6 +620,7 @@ class ChatController extends Controller
 
     public function sendChatPush(Request $request, $chatmessage, $message = "")
     {
+        
         $chatMessage = ChatMessageMongoose::with(['sender','receiver'])->where('custom_id', $chatmessage)->firstOrFail();
         if ($message != "") $message =  str_limit($message, 70);
         $chatMessage->notifyChatMessageToUser($message);

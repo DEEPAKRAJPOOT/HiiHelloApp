@@ -25,7 +25,7 @@ class ChatMessageMongoResource extends JsonResource
                 'id'    =>  $this->getSender($this->sender_id),//$this->sender ? $this->sender->custom_id : "",
             ],
             'created_at'  =>  $this->created_on?$this->convertTimeZone($this->created_on) : "",
-            'updated_at'  =>  $this->updated_at?$this->convertTimeZone($this->updated_at) : "",
+            'updated_at'  =>  $this->updated_on?$this->convertTimeZone($this->updated_on) : "",
             'deleted_at'  =>  $this->deleted_at ?? "",
             'is_vanished' =>  (($this->is_vanished ?? 'n') == 'y')
         ];

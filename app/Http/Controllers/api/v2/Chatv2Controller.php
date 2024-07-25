@@ -42,15 +42,15 @@ class Chatv2Controller extends Controller
                     if(!empty($search)){
                         $searchKey = str_replace(' ', '_', $search);
                     }
-                   $roomlistkey = 'chat/room/roomList/'.$auth_id.':'.$auth_id.'_roomlist_'.$searchKey.'_'.$paginate;
-                   $totalroomkey = 'chat/room/roomList/'.$auth_id.':'.$auth_id.'_totalroom';
-                    // $has_system_messages = ChatMessage::where('room_id',$system_chat_room_id)->where('receiver_id',$auth_id)->exists();
-                    $chatRoomListData = $this->redis->get($roomlistkey);
-                    if($chatRoomListData){
-                        $rooms = json_decode($chatRoomListData);
-                        $count = $this->redis->get($totalroomkey);
-                    }else{
-                        Log::channel('mongodb')->debug('Fetching latest message', [
+                //    $roomlistkey = 'chat/room/roomList/'.$auth_id.':'.$auth_id.'_roomlist_'.$searchKey.'_'.$paginate;
+                //    $totalroomkey = 'chat/room/roomList/'.$auth_id.':'.$auth_id.'_totalroom';
+                //     // $has_system_messages = ChatMessage::where('room_id',$system_chat_room_id)->where('receiver_id',$auth_id)->exists();
+                //     $chatRoomListData = $this->redis->get($roomlistkey);
+                //     if($chatRoomListData){
+                //         $rooms = json_decode($chatRoomListData);
+                //         $count = $this->redis->get($totalroomkey);
+                //     }else{
+                          Log::channel('mongodb')->debug('Fetching latest message', [
                             'id' => $auth_id
                           ]);
                           $matchStage = [
@@ -142,7 +142,7 @@ class Chatv2Controller extends Controller
                         // $this->redis->set($totalroomkey, $count, 'EX', 3600); 
                         // $this->redis->set($roomlistkey, $jsonData, 'EX', 3600); 
                     }
-               }
+               //}
                 // dd($rooms);
                 if(!empty($rooms)){
                     return (ChatRoomResourceMongoose::Collection($rooms))->additional([

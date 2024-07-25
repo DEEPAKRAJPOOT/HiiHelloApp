@@ -27,7 +27,7 @@ class ChatRoomResourceMongoose extends JsonResource
         $authLatestMessage = null;
 
         if ($this->_id == config('utility.chat.system_chat_room')) {
-            $authLatestMessage = ChatMessageMongoose::select('custom_id', 'status', 'created_at', 'updated_at', 'deleted_at', 'expired_at', 'is_vanished', 'message','sender_id','created_on')
+            $authLatestMessage = ChatMessageMongoose::select('custom_id', 'status', 'created_at', 'updated_at', 'deleted_at', 'expired_at', 'is_vanished', 'message','sender_id','created_on', 'updated_on')
                 ->with(['sender' => function ($query) {
                     $query->select('custom_id');
                 }])
@@ -37,7 +37,7 @@ class ChatRoomResourceMongoose extends JsonResource
                 ->first();
         } elseif ($this->participate_id == $auth_id) {
             
-            $authLatestMessage = ChatMessageMongoose::select('custom_id', 'status', 'created_at', 'updated_at', 'deleted_at', 'expired_at', 'is_vanished', 'message','sender_id','created_on')
+            $authLatestMessage = ChatMessageMongoose::select('custom_id', 'status', 'created_at', 'updated_at', 'deleted_at', 'expired_at', 'is_vanished', 'message','sender_id','created_on', 'updated_on')
                 ->with(['sender' => function ($query) {
                     $query->select('custom_id');
                 }])
@@ -54,7 +54,7 @@ class ChatRoomResourceMongoose extends JsonResource
                 ->orderBy('_id', 'desc')
                 ->first();
         } elseif ($this->creator_id == $auth_id) {
-            $authLatestMessage = ChatMessageMongoose::select('custom_id', 'status', 'created_at', 'updated_at', 'deleted_at', 'expired_at', 'is_vanished', 'message','sender_id','created_on')
+            $authLatestMessage = ChatMessageMongoose::select('custom_id', 'status', 'created_at', 'updated_at', 'deleted_at', 'expired_at', 'is_vanished', 'message','sender_id','created_on', 'updated_on')
                 ->with(['sender' => function ($query) {
                     $query->select('custom_id');
                 }])
@@ -89,7 +89,7 @@ class ChatRoomResourceMongoose extends JsonResource
                 ],
                 'chat_messages_count'   =>  $this->chat_messages_count ?? 0,
                 'created_at'  =>  $authLatestMessage->created_on ? $this->convertTimeZone($authLatestMessage->created_on) : '',
-                'updated_at'  =>  $authLatestMessage->updated_at ? $this->convertTimeZone($authLatestMessage->updated_at) : '',
+                'updated_at'  =>  $authLatestMessage->updated_on ? $this->convertTimeZone($authLatestMessage->updated_on) : '',
                 'deleted_at'  =>  $authLatestMessage->deleted_at ? $this->convertTimeZone($authLatestMessage->deleted_at) : '',
                 'expired_at'  =>  $authLatestMessage->expired_at ? $this->convertTimeZone($authLatestMessage->deleted_at) : '',
                 'is_vanished'  =>  (($authLatestMessage->is_vanished ?? 'n') == 'y')
