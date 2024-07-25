@@ -106,14 +106,16 @@ class MatchController extends Controller
                 $personalities  =   UserPersonality::whereUserId($auth_id)->whereNotNull('personality_id')->distinct()->pluck('personality_id')->toArray();
 
                 // if chat is open then restrict in match profiles
-                $rooms = ChatRoom::whereHas('chatMessages')
-                    ->where(function ($query) use ($auth_id) {
-                        $query->whereCreatorId($auth_id)->orWhere('participate_id', $auth_id);
-                    });
-                $creators = $rooms->whereNotNull('creator_id')->pluck('creator_id')->toArray();
-                $participants = $rooms->whereNotNull('participate_id')->pluck('participate_id')->toArray();
-
+                // $rooms = ChatRoom::whereHas('chatMessages')
+                //     ->where(function ($query) use ($auth_id) {
+                //         $query->whereCreatorId($auth_id)->orWhere('participate_id', $auth_id);
+                //     });
+                // $creators = $rooms->whereNotNull('creator_id')->pluck('creator_id')->toArray();
+                // $participants = $rooms->whereNotNull('participate_id')->pluck('participate_id')->toArray();
+                // dd($hidden, $creators, $participants);
+                $creators =[]; $participants=[];
                 $restricted_ids = array_unique(array_merge($unmatched, $blocked, $hidden, $creators, $participants));
+                
                 if (($key = array_search($auth_id, $restricted_ids)) !== false) {
                     unset($restricted_ids[$key]);
                 }

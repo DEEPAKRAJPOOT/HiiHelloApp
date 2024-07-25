@@ -621,9 +621,8 @@ class ChatController extends Controller
 
     public function sendChatPush(Request $request, $chatmessage, $message = "")
     {
-        $chatMessage = ChatMessage::where('custom_id', $chatmessage)->firstOrFail();
+        $chatMessage = ChatMessageMongoose::with(['sender','receiver'])->where('custom_id', $chatmessage)->firstOrFail();
         if ($message != "") $message =  str_limit($message, 70);
-
         $chatMessage->notifyChatMessageToUser($message);
         $this->status = Response::HTTP_OK;
         $this->response['meta']['message'] = __("Notification sent successfully");

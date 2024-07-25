@@ -5,6 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use App\Models\UsersMongoose;
+use App\Models\User;
+use App\Notifications\ChatNotification;
 use Jenssegers\Mongodb\Eloquent\Model as Eloquent;
 use Carbon\Carbon;
 use MongoDB\BSON\UTCDateTime as MongoDateTime;
@@ -65,15 +67,18 @@ class ChatMessageMongoose extends Eloquent
 
     public function notifyChatMessageToUser($message) {
         if($this->receiver){
+            // dd($this->receiver);
             $this->receiver->increment('chat_count');
-            $this->receiver->notify(new ChatNotification($this->chatPushNFData($this->sender, $this, $message))); 
+            $receiver = User::where('custom_id',$this->receiver->custom_id)->first();
+            $sender = User::where('custom_id',$this->sender->custom_id)->first();
+            $receiver->notify(new ChatNotification($this->chatPushNFData($sender, $this, $message))); 
         }
     }
 
     protected function chatPushNFData($account, $chatMessage, $message = ""){
         $message = trim( preg_replace("/\r|\n/", " ", $message) );
 
-        $lang_code = $this->receiver ? $this->receiver->language ? $this->receiver->language->lang_code : "en" : "en";
+        $lang_code = $this->receiver ? $this->receiver->lang_code ? $this->receiver->lang_code : "en" : "en";
         $userTranslation = UserTranslation::select('full_name')->whereUserId($account->id)->whereLocale($lang_code)->first();
         if($userTranslation){ 
             $full_name = $userTranslation->full_name ?? "";
