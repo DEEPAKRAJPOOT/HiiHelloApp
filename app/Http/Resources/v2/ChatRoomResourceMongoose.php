@@ -54,14 +54,18 @@ class ChatRoomResourceMongoose extends JsonResource
 
     private function getLatestMessage($roomId, $auth_id, $cleared_at)
     {
-        return ChatMessageMongoose::select('custom_id', 'status', 'created_at', 'updated_at', 'deleted_at', 'expired_at', 'is_vanished', 'message', 'sender_id', 'created_on', 'updated_on')
+        $authLatestMessage = ChatMessageMongoose::select('custom_id', 'status', 'created_at', 'updated_at', 'deleted_at', 'expired_at', 'is_vanished', 'message', 'sender_id', 'created_on', 'updated_on')
             ->with(['sender' => function ($query) {
                 $query->select('custom_id');
             }])
             ->withTrashed()
-            ->where('room_id', $roomId)
-            ->where('created_at', '>', $cleared_at ? new \MongoDB\BSON\UTCDateTime(new \DateTime($cleared_at)) : '')
-            ->where(function ($query) {
+            ->where('room_id', $roomId);
+
+        if (!is_null($cleared_at)) {
+            $authLatestMessage->where('created_at', '>', new \MongoDB\BSON\UTCDateTime(new \DateTime($cleared_at)));
+        }
+        
+        $authLatestMessage = $authLatestMessage->where(function ($query) {
                 $query->where('is_vanished', false);
                 $query->orWhere('status', '!=', 'read');
             })
@@ -69,26 +73,33 @@ class ChatRoomResourceMongoose extends JsonResource
                 $query->whereNull('sender_deleted_at');
                 $query->orWhere('sender_id', '!=', $auth_id);
             })
-            ->orderBy('_id', 'desc')
+            ->orderBy('created_at', 'desc')
             ->first();
+
+        return $authLatestMessage;
     }
 
     private function transformMessage($message)
     {
-        return [
-            'id'            =>  $message->custom_id ?? '',
-            'message'       =>  $message->getMessage() ?? null,
-            'status'        =>  strtr($message->status ?? '', ['send' => 'sent', 'read' => 'seen']),
-            'sender'        =>  [
-                'id'        =>  $this->getSender($message->sender_id) ?? '',
-            ],
-            'chat_messages_count' =>  $this->chat_messages_count ?? 0,
-            'created_at'    =>  $message->created_on ? $this->convertTimeZone($message->created_on) : '',
-            'updated_at'    =>  $message->updated_on ? $this->convertTimeZone($message->updated_on) : '',
-            'deleted_at'    =>  $message->deleted_at ? $this->convertTimeZone($message->deleted_at) : '',
-            'expired_at'    =>  $message->expired_at ? $this->convertTimeZone($message->expired_at) : '',
-            'is_vanished'   =>  (($message->is_vanished ?? 'n') == 'y')
-        ];
+        // Ensure $message is an instance of the model
+        if ($message instanceof ChatMessageMongoose) {
+            return [
+                'id'            =>  $message->custom_id ?? '',
+                'message'       =>  $message->getMessage() ?? null,
+                'status'        =>  strtr($message->status ?? '', ['send' => 'sent', 'read' => 'seen']),
+                'sender'        =>  [
+                    'id'        =>  $this->getSender($message->sender_id) ?? '',
+                ],
+                'chat_messages_count' =>  $this->chat_messages_count ?? 0,
+                'created_at'    =>  $message->created_on ? $this->convertTimeZone($message->created_on) : '',
+                'updated_at'    =>  $message->updated_on ? $this->convertTimeZone($message->updated_on) : '',
+                'deleted_at'    =>  $message->deleted_at ? $this->convertTimeZone($message->deleted_at) : '',
+                'expired_at'    =>  $message->expired_at ? $this->convertTimeZone($message->expired_at) : '',
+                'is_vanished'   =>  (($message->is_vanished ?? 'n') == 'y')
+            ];
+        }
+
+        return null;
     }
 
     public function with($request)
