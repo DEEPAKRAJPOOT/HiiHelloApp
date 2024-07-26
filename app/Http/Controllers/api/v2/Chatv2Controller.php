@@ -67,22 +67,22 @@ class Chatv2Controller extends Controller
                           ];
                           
                           $lookupCreatorStage = [
-                              '$lookup' => [
-                                  'from' => 'users_mongoose', // Collection name
-                                  'localField' => 'creator_id',
-                                  'foreignField' => 'user_id', // Assuming `user_id` is an integer
-                                  'as' => 'creator'
-                              ]
-                          ];
+                            '$lookup' => [
+                                'from' => 'users',
+                                'localField' => 'creator_id',
+                                'foreignField' => 'user_id',
+                                'as' => 'creator'
+                            ]
+                        ];
                           
-                          $lookupParticipatorStage = [
-                              '$lookup' => [
-                                  'from' => 'users_mongoose', // Collection name
-                                  'localField' => 'participate_id',
-                                  'foreignField' => 'user_id', // Assuming `user_id` is an integer
-                                  'as' => 'participator'
-                              ]
-                          ];
+                        $lookupParticipatorStage = [
+                            '$lookup' => [
+                                'from' => 'users',
+                                'localField' => 'participate_id',
+                                'foreignField' => 'user_id',
+                                'as' => 'participator'
+                            ]
+                        ];
                           
                           $lookupLatestMessageStage = [
                               '$lookup' => [
@@ -92,10 +92,42 @@ class Chatv2Controller extends Controller
                                   'as' => 'latestMessage'
                               ]
                           ];
+
                           
-                          $unwindCreatorStage = ['$unwind' => ['path' => '$creator', 'preserveNullAndEmptyArrays' => true]];
-                          $unwindParticipatorStage = ['$unwind' => ['path' => '$participator', 'preserveNullAndEmptyArrays' => true]];
                           
+                          $unwindCreatorStage = [
+                            '$unwind' => [
+                                'path' => '$creator',
+                                'preserveNullAndEmptyArrays' => true
+                            ]
+                        ];
+                        $unwindParticipatorStage = [
+                            '$unwind' => [
+                                'path' => '$participator',
+                                'preserveNullAndEmptyArrays' => true
+                            ]
+                        ];
+
+                        $replaceRootStage = [
+                            '$replaceRoot' => [
+                                'newRoot' => [
+                                    '$mergeObjects' => [
+                                        '$doc',
+                                        ['blockByCount' => '$block_by_count']
+                                    ]
+                                ]
+                            ]
+                        ];
+
+
+                          $blockByCountStage = [
+                            '$group' => [
+                                '_id' => '$_id',
+                                'block_by_count' => ['$sum' => ['$cond' => [['$eq' => ['$block_by', $auth_id]], 1, 0]]],
+                                'doc' => ['$first' => '$$ROOT']
+                            ]
+                        ];
+
                           $sortStage = ['$sort' => ['updated_at' => -1]];
                           $skipStage = ['$skip' => (int) $offset];
                           $limitStage = ['$limit' => (int) $limit];
@@ -107,6 +139,8 @@ class Chatv2Controller extends Controller
                               $lookupParticipatorStage,
                               $unwindParticipatorStage,
                               $lookupLatestMessageStage,
+                              $blockByCountStage,
+                              $replaceRootStage,
                               $sortStage,
                               $skipStage,
                               $limitStage

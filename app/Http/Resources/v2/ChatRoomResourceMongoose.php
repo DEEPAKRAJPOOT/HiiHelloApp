@@ -18,7 +18,7 @@ class ChatRoomResourceMongoose extends JsonResource
     public function toArray($request)
     {
         $auth_id = $request->user() ? $request->user()->id : null;
-
+        // dd($this);
         // Convert room_id to ObjectId if necessary
         $roomId = $this->_id instanceof ObjectId ? $this->_id : new ObjectId($this->_id);
 
@@ -38,11 +38,12 @@ class ChatRoomResourceMongoose extends JsonResource
         } elseif ($this->creator_id == $auth_id) {
             $authLatestMessage = $this->getLatestMessage($roomId, $auth_id, $this->creator_cleared_at);
         }
-
+        // $is_block = (isset($this->blockByCount) && $this->blockByCount > 0) ? true : false;
+        // dd($this->blockByCount);
         return [
             'id'            =>  $this->_id,
             'is_active'     =>  $this->is_active ? $this->is_active == 'y' ? true : false : false,
-            'is_blocked'    =>  (isset($this->block_by_count) && !empty($this->block_by_count)) ? $this->block_by_count : false,
+            'is_blocked'    =>  (isset($this->blockByCount) && !empty($this->blockByCount)) ? true : false,
             'creator'       =>  $this->transformUser($this->creator_id ?? null),
             'participator'  =>  $this->transformUser($this->participate_id ?? null),
             'latest_message'=>  $authLatestMessage ? $this->transformMessage($authLatestMessage) : null,

@@ -9,7 +9,7 @@ use App\Http\Requests\Api\General\{PaginationRequest};
 use Illuminate\Database\Eloquent\{ModelNotFoundException};
 use App\Http\Resources\v1\{BlockProfileResource};
 use Illuminate\Support\Facades\{Auth, DB};
-use App\Models\{User, BlockUser, ChatRoom, ChatMessageMongoose, ChatRoomMongoose};
+use App\Models\{User, BlockUser, ChatRoom, ChatMessageMongoose, ChatRoomMongoose, UsersMongoose};
 // use App\Models\{ChatRoom, ChatMessage, User, CallLog,ChatMessageMongoose, ChatRoomMongoose, UsersMongoose};
 
 class BlockController extends Controller
