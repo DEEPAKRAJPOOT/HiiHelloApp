@@ -18,7 +18,7 @@ class ChatMessageMongoResource extends JsonResource
     {
         // dd($this);
         $resource =  [
-            'id'        =>  $this->_id ?? "",
+            'id'        =>  $this->custom_id ?? "",
             'message'   =>  $this->getMessage($this->message) ?? NULL,
             'status'    =>  strtr($this->status ?? "",['send'=>'sent','read'=>'seen']),
             'sender'  =>  [
