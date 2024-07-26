@@ -75,10 +75,11 @@ class ChatController extends Controller
                         $query->whereCreatorId($auth_id)->where('participate_id', $participant_id);
                     })->orWhere(function ($query) use ($auth_id, $participant_id) {
                         $query->whereCreatorId($participant_id)->where('participate_id', $auth_id);
-                    })->first();
-                    
+                    })->orderBy('created_at','desc')->first();
+                    // dd($chat_room);
                 // Check if both creator and participator have deleted the room
                 if (!empty($chat_room) && !is_null($chat_room->creator_deleted_at) && !is_null($chat_room->participate_deleted_at)) {
+                    // dd($chat_room, $chat_room->creator_deleted_at, $chat_room->participate_deleted_at);
                     // If both have deleted, create a fresh room
                     $chat_room = ChatRoomMongoose::create([
                         'creator_id'        =>  $auth_id,
