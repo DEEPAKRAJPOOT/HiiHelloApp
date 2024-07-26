@@ -77,8 +77,10 @@ class ChatController extends Controller
                         $query->whereCreatorId($participant_id)->where('participate_id', $auth_id);
                     })->first();
                     
-                if (empty($chat_room)) {
-                    $chat_room = ChatRoomMongoose::firstOrCreate([
+                // Check if both creator and participator have deleted the room
+                if (!empty($chat_room) && !is_null($chat_room->creator_deleted_at) && !is_null($chat_room->participate_deleted_at)) {
+                    // If both have deleted, create a fresh room
+                    $chat_room = ChatRoomMongoose::create([
                         'creator_id'        =>  $auth_id,
                         'participate_id'    =>  $participant_id,
                         'block_by'          => NULL,
@@ -92,11 +94,26 @@ class ChatController extends Controller
                         'creator_deleted_at'=>NULL,
                         'participate_deleted_at'=>NULL,
                         'deleted_at'=>NULL,
-                    ], [
                         'custom_id'         =>  getUniqueString('chat_rooms'),
                     ]);
-                    // dd($chat_room);
-
+                } elseif (empty($chat_room)) {
+                    // Create a new chat room if none exists
+                    $chat_room = ChatRoomMongoose::create([
+                        'creator_id'        =>  $auth_id,
+                        'participate_id'    =>  $participant_id,
+                        'block_by'          => NULL,
+                        'is_active'         => true,
+                        'vanish_mode'       => false,
+                        'vanish_mode_by'    => NULL,
+                        'disappear_mode'    => 'off',
+                        'disappear_mode_by' => NULL,
+                        'creator_cleared_at'=> NULL,
+                        'participate_cleared_at'=>NULL,
+                        'creator_deleted_at'=>NULL,
+                        'participate_deleted_at'=>NULL,
+                        'deleted_at'=>NULL,
+                        'custom_id'         =>  getUniqueString('chat_rooms'),
+                    ]);
                 }
 
                 $this->status = Response::HTTP_OK;
@@ -153,15 +170,15 @@ class ChatController extends Controller
                     ->withCount('blockBy')
                     ->where(function($query)use($auth_id){
                         $query->where(function($q)use($auth_id){
-                            $q->whereCreatorId($auth_id)
+                            $q->where('creator_id',$auth_id)
                             ->whereNull('creator_deleted_at');
                         });
                         $query->orWhere(function($q)use($auth_id){
-                            $q->whereParticipateId($auth_id)
+                            $q->where('participate_id', $auth_id)
                             ->whereNull('participate_deleted_at');
                         });
                     });
-
+                
                 if (!empty($search)) {
                     $rooms = $rooms->where(function ($query) use ($search) {
                         $query->whereHas('creator.userTranslations', function ($q1) use ($search) {
@@ -521,15 +538,16 @@ class ChatController extends Controller
         if ($this->apiValidator($request->all(), $vanishModeRequest->rules())) {
             try {
                 $auth_id = $request->user() ? $request->user()->id : NULL;
-                $room = ChatRoom::whereCustomId($request->room_id)
+                $roomId = new ObjectId($request->room_id);
+                $room = ChatRoomMongoose::where('_id',$roomId)
                     ->where(function ($query) use ($auth_id) {
                         $query->where('creator_id', $auth_id)
                             ->orWhere('participate_id', $auth_id);
                     })->firstOrFail();
                 if(!empty($request->vanish_mode) && $request->vanish_mode != 'false'){
-                    $room->vanish_mode = 'y';
+                    $room->vanish_mode = true;
                 }else{
-                    $room->vanish_mode = 'n';
+                    $room->vanish_mode = false;
                 }
                 $room->vanish_mode_by = $auth_id;
                 $room->save();
@@ -574,7 +592,8 @@ class ChatController extends Controller
         if ($this->apiValidator($request->all(), $disappearModeRequest->rules())) {
             try {
                 $auth_id = $request->user() ? $request->user()->id : NULL;
-                $room = ChatRoom::whereCustomId($request->room_id)
+                $roomId = new ObjectId($request->room_id);
+                $room = ChatRoom::where('_id',$roomId)
                     ->where(function ($query) use ($auth_id) {
                         $query->where('creator_id', $auth_id)
                             ->orWhere('participate_id', $auth_id);
