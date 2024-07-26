@@ -25,7 +25,7 @@ class ChatRoomResourceMongoose extends JsonResource
         $roomId = $this->_id instanceof ObjectId ? $this->_id : new ObjectId($this->_id);
 
         $authLatestMessage = null;
-        dd($this->participate_cleared_at);
+        // dd($this->participate_cleared_at);
         if ($this->_id == config('utility.chat.system_chat_room')) {
             $authLatestMessage = ChatMessageMongoose::select('custom_id', 'status', 'created_at', 'updated_at', 'deleted_at', 'expired_at', 'is_vanished', 'message','sender_id','created_on', 'updated_on')
                 ->with(['sender' => function ($query) {
