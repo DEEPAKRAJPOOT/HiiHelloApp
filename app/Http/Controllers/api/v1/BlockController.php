@@ -9,7 +9,8 @@ use App\Http\Requests\Api\General\{PaginationRequest};
 use Illuminate\Database\Eloquent\{ModelNotFoundException};
 use App\Http\Resources\v1\{BlockProfileResource};
 use Illuminate\Support\Facades\{Auth, DB};
-use App\Models\{User, BlockUser, ChatRoom};
+use App\Models\{User, BlockUser, ChatRoom, ChatMessageMongoose, ChatRoomMongoose};
+// use App\Models\{ChatRoom, ChatMessage, User, CallLog,ChatMessageMongoose, ChatRoomMongoose, UsersMongoose};
 
 class BlockController extends Controller
 {
@@ -31,10 +32,10 @@ class BlockController extends Controller
                 $auth_id = $request->user() ? $request->user()->id : NULL;
                 $block_user = User::select('id')->whereCustomId($request->user_id)->where('id','!=',config('utility.system.system_user_id'))->firstOrFail();
 
-                $chat_room = ChatRoom::where(function ($query) use ($auth_id, $block_user) {
-                    $query->whereCreatorId($auth_id)->where('participate_id', $block_user->id);
+                $chat_room = ChatRoomMongoose::where(function ($query) use ($auth_id, $block_user) {
+                    $query->where('creator_id',$auth_id)->where('participate_id', $block_user->id);
                 })->orWhere(function ($query) use ($auth_id, $block_user) {
-                    $query->whereCreatorId($block_user->id)->where('participate_id', $auth_id);
+                    $query->where('creator_id',$block_user->id)->where('participate_id', $auth_id);
                 })->first();
 
                 if ($request->status == 'block') {
