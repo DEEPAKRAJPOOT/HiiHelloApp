@@ -54,17 +54,13 @@ class Chatv2Controller extends Controller
                             'id' => $auth_id
                           ]);
                           $matchStage = [
-                              '$or' => [
-                                  [
-                                      'creator_id' => $auth_id,
-                                      'creator_deleted_at' => null
-                                  ],
-                                  [
-                                      'participate_id' => $auth_id,
-                                      'participate_deleted_at' => null
-                                  ]
-                              ]
-                          ];
+                            '$match' => [
+                                '$or' => [
+                                    ['creator_id' => $auth_id, 'creator_deleted_at' => null],
+                                    ['participate_id' => $auth_id, 'participate_deleted_at' => null]
+                                ]
+                            ]
+                        ];
                           
                           $lookupCreatorStage = [
                             '$lookup' => [
@@ -108,6 +104,22 @@ class Chatv2Controller extends Controller
                             ]
                         ];
 
+                        $blockByCountStage = [
+                            '$group' => [
+                                '_id' => '$_id',
+                                'block_by_count' => [
+                                    '$sum' => [
+                                        '$cond' => [
+                                            ['$eq' => ['$block_by', $auth_id]],
+                                            1,
+                                            0
+                                        ]
+                                    ]
+                                ],
+                                'doc' => ['$first' => '$$ROOT']
+                            ]
+                        ];
+                        
                         $replaceRootStage = [
                             '$replaceRoot' => [
                                 'newRoot' => [
@@ -119,32 +131,23 @@ class Chatv2Controller extends Controller
                             ]
                         ];
 
-
-                          $blockByCountStage = [
-                            '$group' => [
-                                '_id' => '$_id',
-                                'block_by_count' => ['$sum' => ['$cond' => [['$eq' => ['$block_by', $auth_id]], 1, 0]]],
-                                'doc' => ['$first' => '$$ROOT']
-                            ]
-                        ];
-
                           $sortStage = ['$sort' => ['updated_at' => -1]];
                           $skipStage = ['$skip' => (int) $offset];
                           $limitStage = ['$limit' => (int) $limit];
                           
                           $pipeline = [
-                              ['$match' => $matchStage],
-                              $lookupCreatorStage,
-                              $unwindCreatorStage,
-                              $lookupParticipatorStage,
-                              $unwindParticipatorStage,
-                              $lookupLatestMessageStage,
-                              $blockByCountStage,
-                              $replaceRootStage,
-                              $sortStage,
-                              $skipStage,
-                              $limitStage
-                          ];
+                            $matchStage,
+                            $lookupCreatorStage,
+                            $unwindCreatorStage,
+                            $lookupParticipatorStage,
+                            $unwindParticipatorStage,
+                            $lookupLatestMessageStage,
+                            $blockByCountStage,
+                            $replaceRootStage,
+                            $sortStage,
+                            $skipStage,
+                            $limitStage
+                        ];
                           
                           if (!empty($search)) {
                               $searchStage = [
