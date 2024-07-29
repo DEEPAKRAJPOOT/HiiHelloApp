@@ -67,10 +67,11 @@ class ChatMessageMongoose extends Eloquent
 
     public function notifyChatMessageToUser($message) {
         if($this->receiver){
-            // dd($this->receiver);
+            
             $this->receiver->increment('chat_count');
-            $receiver = User::where('custom_id',$this->receiver->custom_id)->first();
-            $sender = User::where('custom_id',$this->sender->custom_id)->first();
+            $receiver = UsersMongoose::where('custom_id',$this->receiver->custom_id)->first();
+            $sender = UsersMongoose::where('custom_id',$this->sender->custom_id)->first();
+            // dd($sender, $this, $message);
             $receiver->notify(new ChatNotification($this->chatPushNFData($sender, $this, $message))); 
         }
     }
