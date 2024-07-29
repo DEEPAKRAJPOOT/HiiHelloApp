@@ -67,11 +67,10 @@ class ChatMessageMongoose extends Eloquent
 
     public function notifyChatMessageToUser($message) {
         if($this->receiver){
-            
+            // dd($this->receiver);
             $this->receiver->increment('chat_count');
-            $receiver = UsersMongoose::where('custom_id',$this->receiver->custom_id)->first();
-            $sender = UsersMongoose::where('custom_id',$this->sender->custom_id)->first();
-            // dd($sender, $this, $message);
+            $receiver = User::where('custom_id',$this->receiver->custom_id)->first();
+            $sender = User::where('custom_id',$this->sender->custom_id)->first();
             $receiver->notify(new ChatNotification($this->chatPushNFData($sender, $this, $message))); 
         }
     }
@@ -90,11 +89,12 @@ class ChatMessageMongoose extends Eloquent
         if( $message == "" ) {
             $message =  $full_name." has sent you a image 📷.";
         }
+        
         return [
             'title'     =>  $full_name,
             'type'      =>  config('utility.notification.type.chat_message'),
             'id'        =>  $chatMessage->custom_id,
-            'room_id'   =>  $chatMessage->room ? $chatMessage->room->custom_id : "",
+            'room_id'   =>  $chatMessage->room ? $chatMessage->room->_id : "",
             'user_id'   =>  $account ? $account->custom_id : "",
             'name'      =>  $full_name,
             'profile'   =>  generateURL($account->profile_photo),
