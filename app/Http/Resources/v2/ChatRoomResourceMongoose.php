@@ -18,7 +18,7 @@ class ChatRoomResourceMongoose extends JsonResource
     public function toArray($request)
     {
         $auth_id = $request->user() ? $request->user()->id : null;
-        // dd($this);
+        // dd($this->getBlockByCount($this));
         // Convert room_id to ObjectId if necessary
         $roomId = $this->_id instanceof ObjectId ? $this->_id : new ObjectId($this->_id);
 
@@ -38,12 +38,13 @@ class ChatRoomResourceMongoose extends JsonResource
         } elseif ($this->creator_id == $auth_id) {
             $authLatestMessage = $this->getLatestMessage($roomId, $auth_id, $this->creator_cleared_at);
         }
+        $blockStatus = $this->getBlockByCount($this);
         // $is_block = (isset($this->blockByCount) && $this->blockByCount > 0) ? true : false;
         // dd($this->blockByCount);
         return [
             'id'            =>  $this->_id,
             'is_active'     =>  $this->is_active ? $this->is_active == 'y' ? true : false : false,
-            'is_blocked'    =>  (isset($this->blockByCount) && !empty($this->blockByCount)) ? true : false,
+            'is_blocked'    =>  $blockStatus,
             'creator'       =>  $this->transformUser($this->creator_id ?? null),
             'participator'  =>  $this->transformUser($this->participate_id ?? null),
             'latest_message'=>  $authLatestMessage ? $this->transformMessage($authLatestMessage) : null,
@@ -51,6 +52,18 @@ class ChatRoomResourceMongoose extends JsonResource
             'vanish_mode'   =>  (($this->vanish_mode ?? 'n') == 'y'),
             'disappear_mode'=>  $this->disappear_mode ?? 'off',
         ];
+    }
+
+    public function getBlockByCount($roomData){
+        $blockStatus = false;
+         if(!is_null($roomData->block_by)){
+             if($roomData->block_by == $roomData->creator_id){
+                $blockStatus = true;
+             }else if($roomData->block_by == $roomData->participate_id){
+                $blockStatus = true;
+             }
+         }
+         return $blockStatus;
     }
 
     private function getLatestMessage($roomId, $auth_id, $cleared_at)

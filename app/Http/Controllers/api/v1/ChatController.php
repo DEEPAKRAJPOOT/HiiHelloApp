@@ -194,7 +194,7 @@ class ChatController extends Controller
                 $rooms = $rooms->limit($request->limit ?? config('utility.pagination.limit'))
                     ->offset($request->offset ?? config('utility.pagination.offset'))
                     ->get();
-
+                
                 if ($rooms->isNotEmpty()) {
                     return (ChatRoomResource::Collection($rooms))->additional([
                         'meta'  =>  [
@@ -277,7 +277,7 @@ class ChatController extends Controller
                 if ($room->participate_id == $auth_id) {
                     $cleared_time = $room->participate_cleared_at;
                 }
-
+                // dd($room);
                 // $jsonData = $this->redis->get($key);
                 // $messages=[];
                 // if($jsonData){
@@ -288,35 +288,36 @@ class ChatController extends Controller
                     // ->orWhere('status', '!=', 'read')
                     // DB::enableQueryLog();
                     $messagesQuery = ChatMessageMongoose::select(
-                        'id', 'custom_id', 'room_id', 'sender_id', 'message', 'status', 'created_at',
-                        'updated_at', 'deleted_at', 'is_vanished', 'reply_sender_id', 'reply_sender_name',
-                        'reply_message_id', 'reply_type', 'reply_value', 'reply_message_file_path',
-                        'reply_message_file_type',
+                        'id', 'custom_id', 'room_id', 'sender_id', 'message', 'status', 'created_at', 'updated_at',
+                        'deleted_at', 'is_vanished', 'reply_sender_id', 'reply_sender_name', 'reply_message_id', 
+                        'reply_type', 'reply_value', 'reply_message_file_path', 'reply_message_file_type',
                         'created_on', 'updated_on'
                     )
-                    ->where(function($expired_query){
-                        $expired_query->where('is_vanished',false);
-                        $expired_query->orWhere('status','!=','read');
+                    ->where('room_id', $roomId)
+                    ->where(function($query) use ($auth_id) {
+                        $query->where('sender_id', $auth_id)
+                              ->orWhere('receiver_id', $auth_id);
                     })
-                    ->where(function($sender_deleted_query)use($auth_id){
-                        $sender_deleted_query->whereNull('sender_deleted_at');
-                        $sender_deleted_query->orWhere('sender_id','!=',$auth_id);
+                    ->where(function($expired_query) {
+                        $expired_query->where('is_vanished', false)
+                                      ->orWhere('status', '!=', 'read');
+                    })
+                    ->where(function($sender_deleted_query) use ($auth_id) {
+                        $sender_deleted_query->whereNull('sender_deleted_at')
+                                             ->orWhere('sender_id', '!=', $auth_id);
                     });
-                    if(!empty($cleared_time)){
-                        $messagesQuery->where('created_at','>',$cleared_time);
-                }
-                    if($room->id == config('utility.chat.system_chat_room')){
-                        $messagesQuery->where('receiver_id',$auth_id);
-                    }else{
+            
+                    if (!empty($cleared_time)) {
+                        $messagesQuery->where('created_at', '>', $cleared_time);
+                    }
+            
+                    if ($room->id == config('utility.chat.system_chat_room')) {
+                        $messagesQuery->where('receiver_id', $auth_id);
+                    } else {
                         $messagesQuery->withTrashed();
                     }
-                    // Log the query being executed
-                    Log::channel('mongodb')->debug('Executing query', [
-                        'query' => $messagesQuery->toSql(),
-                        'bindings' => $messagesQuery->getBindings()
-                ]);
-
-                  $messagesQuery->orderBy('created_at','desc');
+            
+                    $messagesQuery->orderBy('created_at', 'desc');
                     // Execute the query and fetch results
                     $count = $messagesQuery->count();
                     $messages = $messagesQuery->limit($request->limit ?? config('utility.pagination.limit'))
