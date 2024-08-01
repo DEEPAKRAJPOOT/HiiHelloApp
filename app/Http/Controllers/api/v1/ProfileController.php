@@ -285,12 +285,12 @@ class ProfileController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function setMedia(Request $request)
+   /* public function setMedia(Request $request)
     {
         $safe_image = "true";
         $setMediaRequest = new SetMediaRequest();
         if ($this->apiValidator($request->all(), $setMediaRequest->rules())) {
-            try {
+            // try {
                 $user = $request->user();
                 $awsImgResultArr = array();
 
@@ -344,7 +344,7 @@ class ProfileController extends Controller
 
                 // Store New Images
                 if (!empty($request->image_path)) {
-
+                 
 
                     $s3_file_url = generateURL($request->image_path);
                     // $s3_file_url = $request->image_path;
@@ -360,6 +360,8 @@ class ProfileController extends Controller
                     } else {
                         $safe_image = "false";
                     }
+                    $safe_image = "true";
+                    $awsImgResultArr["is_safe_image"] == true;
 
                     if (count($awsImgResultArr) > 0) {
                         if ($awsImgResultArr["is_safe_image"] == true) {
@@ -502,28 +504,191 @@ class ProfileController extends Controller
                         'is_ban'        =>  false,
                         'image_description' => $awsImgResultArr
                     ]]);
-            } catch (ModelNotFoundException $exception) {
-                switch ($exception->getModel()) {
-                    case 'App\Models\UserDetail':
-                        $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("User details")]);
-                        $this->response['meta']['is_ban'] = false;
-                        break;
-                    case 'App\Models\User':
-                        $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("User")]);
-                        $this->response['meta']['is_ban'] = false;
-                        break;
-                    default:
-                        $this->response['meta']['message'] = trans('api.went_wrong');
-                        $this->response['meta']['is_ban'] = false;
-                        break;
-                };
-            } catch (\Exception $e) {
-                $this->storeErrorLog($e, 'set_users_media');
+            // } catch (ModelNotFoundException $exception) {
+            //     switch ($exception->getModel()) {
+            //         case 'App\Models\UserDetail':
+            //             $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("User details")]);
+            //             $this->response['meta']['is_ban'] = false;
+            //             break;
+            //         case 'App\Models\User':
+            //             $this->response['meta']['message'] = trans('api.not_found', ['entity' => __("User")]);
+            //             $this->response['meta']['is_ban'] = false;
+            //             break;
+            //         default:
+            //             $this->response['meta']['message'] = trans('api.went_wrong');
+            //             $this->response['meta']['is_ban'] = false;
+            //             break;
+            //     };
+            // } catch (\Exception $e) {
+            //     $this->storeErrorLog($e, 'set_users_media');
+            // }
+        }
+
+        return $this->returnResponse();
+    }*/
+    public function setMedia(Request $request)
+    {
+        $safe_image = "true";
+        $setMediaRequest = new SetMediaRequest();
+        if ($this->apiValidator($request->all(), $setMediaRequest->rules())) {
+            $user = $request->user();
+            
+            // Delete Voice
+            if (!empty($request->remove_voice) && $request->remove_voice == 'y') {
+                if (!empty($user->voice)) {
+                    if (Storage::exists($user->voice)) {
+                        Storage::delete($user->voice);
+                    }
+                }
+                $user->voice = null;
+                $user->voice_answer = null;
+                $user->save();
             }
+
+            // Store Audio
+            if (!empty($request->voice) && !empty($request->voice_answer)) {
+                if (!empty($user->voice)) {
+                    if (Storage::exists($user->voice)) {
+                        Storage::delete($user->voice);
+                    }
+                }
+                $user->voice = $request->voice;
+                $user->voice_answer = $request->voice_answer;
+                $user->save();
+            }
+
+            // Store Video
+            if (!empty($request->video)) {
+                UserDetail::updateOrCreate([
+                    'user_id' => $user->id,
+                    'video' => $request->video,
+                ], [
+                    'custom_id' => getUniqueString('user_details'),
+                ]);
+            }
+
+            // Delete Video
+            if (!empty($request->remove_video)) {
+                $rmv_video = UserDetail::select('id', 'video')
+                    ->whereUserId($user->id)
+                    ->whereCustomId($request->remove_video)
+                    ->first();
+                if ($rmv_video) {
+                    if (Storage::exists($rmv_video->video)) {
+                        Storage::delete($rmv_video->video);
+                    }
+                    $rmv_video->delete();
+                }
+            }
+
+            // Store New Images
+            if (!empty($request->image_path)) {
+                $s3_file_url = generateURL($request->image_path);
+
+                if ($s3_file_url != "") {
+                    $safe_image = "true";
+                    if (empty($user->profile_photo)) {
+                        $user->profile_photo = $request->image_path;
+                        $user->is_media_checked = 'n';
+                        $user->save();
+                    } else {
+                        $count_images = $user->userDetails->whereNotNull('image')->count();
+                        $new_sequence = $count_images + 1;
+
+                        $new_image = UserDetail::updateOrCreate([
+                            'user_id' => $user->id,
+                            'image' => $request->image_path,
+                        ], [
+                            'custom_id' => getUniqueString('user_details'),
+                        ]);
+
+                        if ($new_image->wasRecentlyCreated) {
+                            $new_image->sequence = $new_sequence;
+                            $new_image->is_verified = 'n';
+                            $new_image->save();
+                        }
+                    }
+                } else {
+                    $safe_image = "false";
+                }
+            }
+
+            // Delete Image
+            if (!empty($request->remove_image)) {
+                if ($user->profile_photo == $request->remove_image) {
+                    if (Storage::exists($user->profile_photo)) {
+                        Storage::delete($user->profile_photo);
+                    }
+                    $user->profile_photo = null;
+                    $add_image = UserDetail::select('image')->whereUserId($user->id)->orderBy('sequence')->first();
+                    if ($add_image) {
+                        $user->profile_photo = $add_image->image;
+                        UserDetail::whereUserId($user->id)->whereImage($add_image->image)->delete();
+                    }
+                    $user->save();
+                } else {
+                    $rmv_image = UserDetail::select('id', 'image')
+                        ->whereUserId($user->id)
+                        ->whereImage($request->remove_image)
+                        ->first();
+                    if ($rmv_image) {
+                        if (Storage::exists($rmv_image->image)) {
+                            Storage::delete($rmv_image->image);
+                        }
+                        $rmv_image->delete();
+                    }
+                }
+            }
+
+            // Change Sequence
+            if (!empty($request->image_sequence)) {
+                $original_photo = $user->profile_photo;
+
+                foreach ($request->image_sequence as $i => $custom_id) {
+                    $old_sequence = $i + 1;
+
+                    if ($custom_id == 'profile_photo' && !empty($original_photo)) {
+                        if ($old_sequence > 1) {
+                            $old_sequence -= 1;
+                        }
+
+                        UserDetail::updateOrCreate([
+                            'user_id' => $user->id,
+                            'image' => $original_photo,
+                        ], [
+                            'custom_id' => getUniqueString('user_details'),
+                            'sequence' => $old_sequence,
+                        ]);
+                    } else {
+                        $image_data = UserDetail::whereUserId($user->id)->whereCustomId($custom_id)->first();
+                        if ($image_data) {
+                            $image_data->update(['sequence' => $old_sequence]);
+                            $image_data->save();
+                        } else {
+                            $user->profile_photo = $custom_id;
+                            $user->save();
+
+                            UserDetail::whereUserId($user->id)->whereImage($custom_id)->delete();
+                        }
+                    }
+                }
+            }
+
+            $user = User::with(['userTranslation', 'personalities', 'userDetails', 'interests'])
+                ->whereId($user->id)
+                ->firstOrFail();
+
+            return (new MediaResource($user))
+                ->additional(['meta' => [
+                    'message' => trans('api.profile_setuped'),
+                    'safe_image' => $safe_image,
+                    'is_ban' => false,
+                ]]);
         }
 
         return $this->returnResponse();
     }
+
     public function setCollege(Request $request){
         $setCollegeRequest = new SetCollegeRequest();
         if($this->apiValidator($request->all(),$setCollegeRequest->rules())){
