@@ -99,22 +99,22 @@ class ImageModerationController extends Controller
         //GET TODAYS TOTAL APPROVED RECORD
         $today_start_date = date("Y-m-d")." 00:00:00";        
         $today_end_date = date("Y-m-d")." 23:59:59";
-        $count_today_approved = $this->getImageLogSummury($today_start_date,$today_end_date,1);
-        $count_today_decline = $this->getImageLogSummury($today_start_date,$today_end_date,0);
+        // $count_today_approved = $this->getImageLogSummury($today_start_date,$today_end_date,1);
+        // $count_today_decline = $this->getImageLogSummury($today_start_date,$today_end_date,0);
 
 
         //GET WEEKLY TOTAL APPROVED RECORD
         $today_start_date =  date('Y-m-d', strtotime('-7 days'))." 00:00:00";        
         $today_end_date = date("Y-m-d")." 23:59:59";
 
-        $count_weekly_approved = $this->getImageLogSummury($today_start_date,$today_end_date,1);
-        $count_weekly_decline = $this->getImageLogSummury($today_start_date,$today_end_date,0);
+        // $count_weekly_approved = $this->getImageLogSummury($today_start_date,$today_end_date,1);
+        // $count_weekly_decline = $this->getImageLogSummury($today_start_date,$today_end_date,0);
 
 
-        $records['summury']['today_approved'] = $count_today_approved;
-        $records['summury']['today_decline'] = $count_today_decline;
-        $records['summury']['weekly_approved'] = $count_weekly_approved;
-        $records['summury']['weekly_decline'] = $count_weekly_decline;
+        $records['summury']['today_approved'] =  0;//$count_today_approved;
+        $records['summury']['today_decline'] =   0;//$count_today_decline;
+        $records['summury']['weekly_approved'] = 0;//$count_weekly_approved;
+        $records['summury']['weekly_decline'] =  0;//$count_weekly_decline;
 
         
         return $records;
