@@ -204,6 +204,7 @@ class AuthenticationController extends Controller
                     $safe_image = true;
                     $awsImgResultArr=[];
                     $awsImgResultArr["is_safe_image"] = true;
+                    
                     if ($awsImgResultArr["is_safe_image"]) {
                         $user->profile_photo = $request->file('profile_photo')->store('users/profile_photo');
                         $user->save();
