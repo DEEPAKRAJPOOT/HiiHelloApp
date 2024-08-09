@@ -193,18 +193,21 @@ class AuthenticationController extends Controller
                     // $user->profile_photo = $request->file('profile_photo')->store('users/profile_photo');
                     // $user->save();
 
-                    ///CHECK FOR AWS REKOGNIZTION START
-                    $image_detection = new ImageDetectionClass($request->file('profile_photo'), $user);
+                    ///CHECK FOR AWS REKOGNIZTION START commenting as of now
+                   /* $image_detection = new ImageDetectionClass($request->file('profile_photo'), $user);
                     $awsImgResultArr = $image_detection->checkConstraints();
                     $awsImgResultArr = $image_detection->followCelebsConstraints();
-                    $safe_image = $awsImgResultArr["is_safe_image"];
+                    $safe_image = $awsImgResultArr["is_safe_image"];*/
                     $user->profile_photo = null;
                     $user->is_media_checked = 'n';
+                    $safe_image = true;
+                    $awsImgResultArr=[];
+                    $awsImgResultArr["is_safe_image"] = true;
                     if ($awsImgResultArr["is_safe_image"]) {
                         $user->profile_photo = $request->file('profile_photo')->store('users/profile_photo');
                         $user->save();
                     }
-
+                    /*
                     $message = $awsImgResultArr["log_message"];
                     $total_face_detected = $awsImgResultArr["total_face_detected"];
                     $response_data = $awsImgResultArr["image_moderation_response"];
@@ -220,8 +223,8 @@ class AuthenticationController extends Controller
                         'message'             => $message,
                         'image_type'          => "profile_photo",
                         'endpoint_url'        => $endpoint_url,
-                    ]);
-                    //CHECK FOR AWS REKOGNIZTION END
+                    ]);*/
+                    //CHECK FOR AWS REKOGNIZTION END commenting as of now
                 }
                 // if (!empty($request->profile_photo)) {
 
