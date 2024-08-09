@@ -198,6 +198,7 @@ class AuthenticationController extends Controller
                     $awsImgResultArr = $image_detection->checkConstraints();
                     $awsImgResultArr = $image_detection->followCelebsConstraints();
                     $safe_image = $awsImgResultArr["is_safe_image"];*/
+                    
                     $user->profile_photo = null;
                     $user->is_media_checked = 'n';
                     $safe_image = true;
