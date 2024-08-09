@@ -36,7 +36,7 @@ class Kernel extends ConsoleKernel
         ChatMediaCheker::class,
         AutoVerifyProfile::class,
         LocationTranslations::class,
-        TrustScore::class,
+        // TrustScore::class,
         AdminDashboard::class,
         AdminData::class,
         UserReminderMessages::class,
@@ -129,10 +129,10 @@ class Kernel extends ConsoleKernel
         })->name('AdminDataUpdate')->hourly()->withoutOverlapping();
 
         // Calculate Trust Scroe on the first day of every month at 2:00
-        $schedule->call(function () {
+        /*$schedule->call(function () {
             $scheculeCommand = new TrustScore;
             $scheculeCommand->handle();
-        })->name('TrustScoreUpdate')->monthlyOn(1, '2:00')->withoutOverlapping();
+        })->name('TrustScoreUpdate')->monthlyOn(1, '2:00')->withoutOverlapping();*/
 
 
         // Send Reminders to Users about Profile, Photos etc
