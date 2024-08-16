@@ -28,6 +28,7 @@ use Illuminate\Support\Str;
 use App\Jobs\NotificationJob;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Response;
+use Illuminate\Support\Facades\Cache;
 
 class UsersController extends Controller
 {
@@ -73,8 +74,65 @@ class UsersController extends Controller
         };
     }
 
-
     public function index()
+    {
+        // Optimize states query using raw SQL
+        $states = Cache::remember('states_with_user_count', 60, function() {
+            return DB::select("
+                SELECT 
+                    state, 
+                    COUNT(users.id) as user_count, 
+                    GROUP_CONCAT(DISTINCT location_translations.location_id) as loc_ids 
+                FROM 
+                    location_translations 
+                JOIN 
+                    users 
+                ON 
+                    users.location_id = location_translations.location_id 
+                WHERE 
+                    location_translations.locale = 'en' 
+                GROUP BY 
+                    location_translations.state 
+                HAVING 
+                    user_count > 0 
+                ORDER BY 
+                    user_count DESC
+            ");
+        });
+    
+        // Cache the locations query result for 60 minutes
+        $locations = Cache::remember('locations_with_user_count', 60, function() {
+            return DB::select("
+                SELECT 
+                    name, 
+                    state, 
+                    COUNT(users.id) as user_count, 
+                    GROUP_CONCAT(DISTINCT location_translations.location_id) as loc_ids 
+                FROM 
+                    location_translations 
+                JOIN 
+                    users 
+                ON 
+                    users.location_id = location_translations.location_id 
+                WHERE 
+                    location_translations.locale = 'en' 
+                GROUP BY 
+                    location_translations.name, 
+                    location_translations.state 
+                HAVING 
+                    user_count > 0 
+                ORDER BY 
+                    user_count DESC
+            ");
+        });
+    
+        return view('admin.pages.users.index', [
+            'locations' => $locations,
+            'states' => $states
+        ])->with(['custom_title' => 'Users']);
+    }
+
+   /* public function index()
     {
         $states = LocationTranslation::select(
             DB::raw(
@@ -89,7 +147,6 @@ class UsersController extends Controller
             ->orderBy('user_count', 'desc')
             ->havingRaw('user_count > 0')
             ->get();
-
 
         $locations = LocationTranslation::select(
             DB::raw(
@@ -124,7 +181,7 @@ class UsersController extends Controller
         //             ));
 
         return view('admin.pages.users.index', ['locations' => $locations, 'states' => $states])->with(['custom_title' => 'Users']);
-    }
+    }*/
 
     /**
      * Show the form for creating a new resource.
@@ -1041,7 +1098,7 @@ class UsersController extends Controller
         return $res;
     }
 
-    public function listing(Request $request){
+    /*public function listing(Request $request){
         session_write_close();
         $users = User::query();
         if(!empty($request->get('user_filter'))){
@@ -1110,7 +1167,100 @@ class UsersController extends Controller
         })
         ->rawColumns(['checkbox','action'])
         ->toJson();
+    }*/
+
+    public function listing(Request $request) {
+        session_write_close();
+    
+        // Initialize the User query builder
+        $users = User::with('location');
+    
+        if ($filter = $request->get('user_filter')) {
+            switch ($filter) {
+                case 'photo_under_review':
+                    $users->where('verify_photo_status', 'under_review')
+                          ->whereNotNull('verify_photo');
+                    break;
+                case 'email_under_review':
+                    $users->whereNull('email_verified_at');
+                    break;
+                case 'deleted':
+                    $users->onlyTrashed();
+                    break;
+                case 'test_users':
+                    $users->where('is_test_user', 'y');
+                    break;
+            }
+        }
+    
+        if ($request->filled(['from_date', 'to_date'])) {
+            $users->whereBetween('created_at', [
+                $request->from_date,
+                now()->create($request->to_date)->addDay()->format('Y-m-d')
+            ]);
+        }
+    
+        if ($gender = $request->get('gender_filter')) {
+            $users->where('gender', $gender);
+        }
+    
+        if ($status = $request->get('status_filter')) {
+            $users->where('user_status', $status);
+        }
+    
+        if ($profilePercentage = $request->get('profile_percentage')) {
+            $users->where('profile_percentage', $profilePercentage);
+        } elseif ($request->get('profile_percentage') === '0') {
+            $users->where('profile_percentage', 0);
+        }
+    
+        if ($cityFilter = $request->get('city_filter')) {
+            $users->whereIn('location_id', explode(',', $cityFilter));
+        }
+    
+        if ($stateFilter = $request->get('state_filter')) {
+            $users->whereIn('location_id', explode(',', $stateFilter));
+        }
+    
+        return DataTables::eloquent($users)
+            ->editColumn('profile_photo', function($user) {
+                return !empty($user->profile_photo) ? generateURL($user->profile_photo) : "";
+            })
+            ->editColumn('verify_photo', function($user) {
+                return !empty($user->verify_photo) ? generateURL($user->verify_photo) : "";
+            })
+            ->editColumn('created_at', function($user) {
+                return $user->created_at->timezone('Asia/Kolkata')->format('Y-m-d H:i:s');
+            })
+            ->addColumn('checkbox', function(User $user) {
+                return view('admin.layouts.includes.checkbox', [
+                    'params' => [
+                        'id' => $user->custom_id,
+                        'checked' => $user->is_active == 'y' ? 'checked' : '',
+                        'getaction' => $user->is_active,
+                        'user_id' => $user->id,
+                        'male_user' => $user->gender == 'Male' ? 'selected' : '',
+                        'female_user' => $user->gender == 'Female' ? 'selected' : '',
+                        'na_user' => $user->gender == '' ? 'selected' : '',
+                    ]
+                ])->render();
+            })
+            ->addColumn('city', function(User $user) {
+                return $user->location->name ?? 'N/A';
+            })
+            ->addColumn('action', function(User $user) {
+                return view('admin.layouts.includes.actions', [
+                    'custom_title' => 'User',
+                    'id' => $user->custom_id,
+                    'deleted_entry' => $user->trashed(),
+                    'restorable' => true
+                ])->render();
+            })
+            ->rawColumns(['checkbox', 'action'])
+            ->toJson();
     }
+    
+    
 
     public function listingOld(Request $request)
     {

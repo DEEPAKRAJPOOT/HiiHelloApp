@@ -38,7 +38,7 @@
             </div>
 
             <div class="card-toolbar">
-
+                <!-- Toolbar buttons -->
                 @if(request()->get('user_filter') == 'photo_under_review')
                     <a href="javascript:void(0);" id="photo_verification" class="btn btn-sm btn-primary font-weight-bolder text-uppercase mr-2">
                         <i class="fa fa-check"></i> Verify Photo
@@ -119,7 +119,6 @@
         </div>
 
         <div class="card-body">
-
             {{-- Filter Start --}}
             <table class="mb-5" align="center">
                 <tr>
@@ -149,7 +148,7 @@
                         <select name="city_filter" id="city_filter" class="form-control">
                             <option value="">Select City</option>
                             @foreach($locations as $location)
-                                <option value="{{ $location['loc_ids'] }}">{{ $location['name'].' (' .$location['user_count'].')' }}</option> 
+                                <option value="{{ $location->loc_ids }}">{{ $location->name.' (' .$location->user_count.')' }}</option> 
                             @endforeach
                         </select>
                     </td>
@@ -157,7 +156,7 @@
                         <select name="state_filter" id="state_filter" class="form-control">
                             <option value="">Select State</option>
                             @foreach($states as $state)
-                                <option value="{{ $state['loc_ids'] }}">{{ $state['state'].' (' .$state['user_count'].')' }}</option> 
+                                <option value="{{ $state->loc_ids }}">{{ $state->state.' (' .$state->user_count.')' }}</option> 
                             @endforeach
                         </select>
                     </td>
