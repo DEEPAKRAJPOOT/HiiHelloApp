@@ -201,6 +201,7 @@ class AuthenticationController extends Controller
                     
                     $user->profile_photo = null;
                     $user->is_media_checked = 'n';
+                    
                     $awsImgResultArr=[];
                     $safe_image = true;
                     $awsImgResultArr["is_safe_image"] = true;
