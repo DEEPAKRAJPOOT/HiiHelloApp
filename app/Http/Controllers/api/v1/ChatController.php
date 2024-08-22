@@ -370,7 +370,13 @@ class ChatController extends Controller
                 $auth_id = $request->user() ? $request->user()->id : NULL;
                 $pattern = 'hi_hello_database_chat/room/roomList/'.$auth_id.':*';
                 $totalroomkey = $auth_id.'_totalroom:*';
-               
+                
+                $chatRoomKey = 'chat/room/'.$auth_id.':'.$request->room_id.'-'.$auth_id.'chatmessageChatRoom';
+                $key = 'chat/message/'.$auth_id.':'.$request->room_id.'-'.$auth_id.'chatmessage:*';
+                $totalChatKey = 'chat/message/'.$auth_id.':'.$request->room_id.'-'.$auth_id.'totalchat';
+                $this->deleteCacheByPattern($key);
+                Redis::del($totalChatKey);
+                Redis::del($totalChatKey);
                 $this->deleteCacheByPattern($pattern);
                 $this->deleteCacheByPattern($totalroomkey);
                 $room = ChatRoom::whereCustomId($request->room_id)
@@ -499,7 +505,10 @@ class ChatController extends Controller
         $vanishModeRequest = new VanishModeRequest();
         if ($this->apiValidator($request->all(), $vanishModeRequest->rules())) {
             try {
+                
                 $auth_id = $request->user() ? $request->user()->id : NULL;
+                $chatRoomKey = 'chat/room/'.$auth_id.':'.$request->room.'-'.$auth_id.'chatmessageChatRoom';
+                Redis::del($chatRoomKey);
                 $room = ChatRoom::whereCustomId($request->room_id)
                     ->where(function ($query) use ($auth_id) {
                         $query->where('creator_id', $auth_id)
