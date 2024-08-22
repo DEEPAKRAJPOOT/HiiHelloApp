@@ -376,7 +376,7 @@ class ChatController extends Controller
                 $totalChatKey = 'chat/message/'.$auth_id.':'.$request->room_id.'-'.$auth_id.'totalchat';
                 $this->deleteCacheByPattern($key);
                 Redis::del($totalChatKey);
-                Redis::del($totalChatKey);
+                Redis::del($chatRoomKey);
                 $this->deleteCacheByPattern($pattern);
                 $this->deleteCacheByPattern($totalroomkey);
                 $room = ChatRoom::whereCustomId($request->room_id)
@@ -507,7 +507,11 @@ class ChatController extends Controller
             try {
                 
                 $auth_id = $request->user() ? $request->user()->id : NULL;
-                $chatRoomKey = 'chat/room/'.$auth_id.':'.$request->room.'-'.$auth_id.'chatmessageChatRoom';
+                $chatRoomKey = 'chat/room/'.$auth_id.':'.$request->room_id.'-'.$auth_id.'chatmessageChatRoom';
+                $key = 'chat/message/'.$auth_id.':'.$request->room_id.'-'.$auth_id.'chatmessage:*';
+                $totalChatKey = 'chat/message/'.$auth_id.':'.$request->room_id.'-'.$auth_id.'totalchat';
+                $this->deleteCacheByPattern($key);
+                Redis::del($totalChatKey);
                 Redis::del($chatRoomKey);
                 $room = ChatRoom::whereCustomId($request->room_id)
                     ->where(function ($query) use ($auth_id) {
