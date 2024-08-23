@@ -379,6 +379,7 @@ class ChatController extends Controller
                 Redis::del($chatRoomKey);
                 $this->deleteCacheByPattern($pattern);
                 $this->deleteCacheByPattern($totalroomkey);
+                
                 $room = ChatRoom::whereCustomId($request->room_id)
                     ->where(function ($query) use ($auth_id) {
                         $query->where('creator_id', $auth_id)
@@ -513,6 +514,11 @@ class ChatController extends Controller
                 $this->deleteCacheByPattern($key);
                 Redis::del($totalChatKey);
                 Redis::del($chatRoomKey);
+                $pattern = 'hi_hello_database_chat/room/roomList/'.$auth_id.':*';
+                $totalroomkey = $auth_id.'_totalroom:*';
+                $this->deleteCacheByPattern($pattern);
+                $this->deleteCacheByPattern($totalroomkey);
+
                 $room = ChatRoom::whereCustomId($request->room_id)
                     ->where(function ($query) use ($auth_id) {
                         $query->where('creator_id', $auth_id)
