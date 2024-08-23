@@ -511,6 +511,7 @@ class ChatController extends Controller
                 $chatRoomKey = 'chat/room/'.$auth_id.':'.$request->room_id.'-'.$auth_id.'chatmessageChatRoom';
                 $key = 'chat/message/'.$auth_id.':'.$request->room_id.'-'.$auth_id.'chatmessage:*';
                 $totalChatKey = 'chat/message/'.$auth_id.':'.$request->room_id.'-'.$auth_id.'totalchat';
+                
                 $this->deleteCacheByPattern($key);
                 Redis::del($totalChatKey);
                 Redis::del($chatRoomKey);
