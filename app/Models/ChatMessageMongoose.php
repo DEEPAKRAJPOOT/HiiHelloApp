@@ -14,7 +14,6 @@ use MongoDB\BSON\UTCDateTime as MongoDateTime;
 class ChatMessageMongoose extends Eloquent
 {
     use HasFactory, SoftDeletes;
-
    
 
     protected $connection = 'mongodb';
